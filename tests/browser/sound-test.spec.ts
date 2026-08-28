@@ -1,157 +1,169 @@
 import { expect, test, type Page } from "@playwright/test";
 
-async function installDeterministicAudioContext(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    type OscillatorRecord = {
-      frequency: number;
-      starts: number[];
-      stops: number[];
-    };
+async function installDeterministicAudioContext(
+  page: Page,
+  failOscillatorAt: number | null = null,
+): Promise<void> {
+  await page.addInitScript(
+    ({ configuredFailureIndex }) => {
+      type OscillatorRecord = {
+        frequency: number;
+        starts: number[];
+        stops: number[];
+      };
 
-    const oscillatorRecords: OscillatorRecord[] = [];
-    const gainValues: number[] = [];
-    Reflect.set(window, "__soundOscillators", oscillatorRecords);
-    Reflect.set(window, "__soundGainValues", gainValues);
-    Reflect.set(window, "__soundAudioContextCount", 0);
-    Reflect.set(window, "__soundClosedAudioContextCount", 0);
+      const oscillatorRecords: OscillatorRecord[] = [];
+      const gainValues: number[] = [];
+      let oscillatorCreateCount = 0;
+      Reflect.set(window, "__soundOscillators", oscillatorRecords);
+      Reflect.set(window, "__soundGainValues", gainValues);
+      Reflect.set(window, "__soundAudioContextCount", 0);
+      Reflect.set(window, "__soundClosedAudioContextCount", 0);
 
-    const incrementWindowCounter = (key: string) => {
-      const current = Number(Reflect.get(window, key) ?? 0);
-      Reflect.set(window, key, current + 1);
-    };
+      const incrementWindowCounter = (key: string) => {
+        const current = Number(Reflect.get(window, key) ?? 0);
+        Reflect.set(window, key, current + 1);
+      };
 
-    class FakeAudioParam {
-      value = 1;
-      readonly onSet: ((value: number) => void) | undefined;
+      class FakeAudioParam {
+        value = 1;
+        readonly onSet: ((value: number) => void) | undefined;
 
-      constructor(onSet?: (value: number) => void) {
-        this.onSet = onSet;
+        constructor(onSet?: (value: number) => void) {
+          this.onSet = onSet;
+        }
+
+        cancelAndHoldAtTime(time: number) {
+          void time;
+          return this;
+        }
+
+        cancelScheduledValues(time: number) {
+          void time;
+          return this;
+        }
+
+        setValueAtTime(value: number, time: number) {
+          void time;
+          this.value = value;
+          this.onSet?.(value);
+          return this;
+        }
+
+        linearRampToValueAtTime(value: number, time: number) {
+          void time;
+          this.value = value;
+          this.onSet?.(value);
+          return this;
+        }
       }
 
-      cancelAndHoldAtTime(time: number) {
-        void time;
-        return this;
+      class FakeAudioNode {
+        connect(destination: unknown, output = 0, input = 0) {
+          void output;
+          void input;
+          return destination;
+        }
+
+        disconnect() {
+          // The deterministic browser double owns no native resources.
+        }
       }
 
-      cancelScheduledValues(time: number) {
-        void time;
-        return this;
+      class FakeGainNode extends FakeAudioNode {
+        readonly gain: FakeAudioParam;
+
+        constructor(index: number) {
+          super();
+          this.gain = new FakeAudioParam((value) => {
+            gainValues[index] = value;
+          });
+        }
       }
 
-      setValueAtTime(value: number, time: number) {
-        void time;
-        this.value = value;
-        this.onSet?.(value);
-        return this;
+      class FakeOscillatorNode extends FakeAudioNode {
+        readonly frequency: FakeAudioParam;
+        type: OscillatorType = "sine";
+        readonly record: OscillatorRecord;
+
+        constructor() {
+          super();
+          this.record = { frequency: 0, starts: [], stops: [] };
+          oscillatorRecords.push(this.record);
+          this.frequency = new FakeAudioParam((value) => {
+            this.record.frequency = value;
+          });
+        }
+
+        start(time = 0) {
+          this.record.starts.push(time);
+        }
+
+        stop(time = 0) {
+          this.record.stops.push(time);
+        }
+
+        addEventListener(
+          type: string,
+          listener: EventListenerOrEventListenerObject,
+          options?: boolean | AddEventListenerOptions,
+        ) {
+          void type;
+          void listener;
+          void options;
+        }
       }
 
-      linearRampToValueAtTime(value: number, time: number) {
-        void time;
-        this.value = value;
-        this.onSet?.(value);
-        return this;
-      }
-    }
+      class FakeAudioContext {
+        currentTime = 10;
+        sampleRate = 48_000;
+        state = "suspended";
+        destination = new FakeAudioNode();
+        gainIndex = 0;
 
-    class FakeAudioNode {
-      connect(destination: unknown, output = 0, input = 0) {
-        void output;
-        void input;
-        return destination;
-      }
+        constructor() {
+          incrementWindowCounter("__soundAudioContextCount");
+        }
 
-      disconnect() {
-        // The deterministic browser double owns no native resources.
-      }
-    }
+        async resume() {
+          this.state = "running";
+        }
 
-    class FakeGainNode extends FakeAudioNode {
-      readonly gain: FakeAudioParam;
+        async close() {
+          this.state = "closed";
+          incrementWindowCounter("__soundClosedAudioContextCount");
+        }
 
-      constructor(index: number) {
-        super();
-        this.gain = new FakeAudioParam((value) => {
-          gainValues[index] = value;
-        });
-      }
-    }
+        createGain() {
+          const node = new FakeGainNode(this.gainIndex);
+          gainValues[this.gainIndex] = node.gain.value;
+          this.gainIndex += 1;
+          return node;
+        }
 
-    class FakeOscillatorNode extends FakeAudioNode {
-      readonly frequency: FakeAudioParam;
-      type: OscillatorType = "sine";
-      readonly record: OscillatorRecord;
+        createOscillator() {
+          oscillatorCreateCount += 1;
+          if (configuredFailureIndex === oscillatorCreateCount) {
+            throw new Error("Injected oscillator creation failure");
+          }
+          return new FakeOscillatorNode();
+        }
 
-      constructor() {
-        super();
-        this.record = { frequency: 0, starts: [], stops: [] };
-        oscillatorRecords.push(this.record);
-        this.frequency = new FakeAudioParam((value) => {
-          this.record.frequency = value;
-        });
+        createChannelMerger(numberOfInputs = 2) {
+          void numberOfInputs;
+          return new FakeAudioNode();
+        }
       }
 
-      start(time = 0) {
-        this.record.starts.push(time);
-      }
-
-      stop(time = 0) {
-        this.record.stops.push(time);
-      }
-
-      addEventListener(
-        type: string,
-        listener: EventListenerOrEventListenerObject,
-        options?: boolean | AddEventListenerOptions,
-      ) {
-        void type;
-        void listener;
-        void options;
-      }
-    }
-
-    class FakeAudioContext {
-      currentTime = 10;
-      sampleRate = 48_000;
-      state = "suspended";
-      destination = new FakeAudioNode();
-      gainIndex = 0;
-
-      constructor() {
-        incrementWindowCounter("__soundAudioContextCount");
-      }
-
-      async resume() {
-        this.state = "running";
-      }
-
-      async close() {
-        this.state = "closed";
-        incrementWindowCounter("__soundClosedAudioContextCount");
-      }
-
-      createGain() {
-        const node = new FakeGainNode(this.gainIndex);
-        gainValues[this.gainIndex] = node.gain.value;
-        this.gainIndex += 1;
-        return node;
-      }
-
-      createOscillator() {
-        return new FakeOscillatorNode();
-      }
-
-      createChannelMerger(numberOfInputs = 2) {
-        void numberOfInputs;
-        return new FakeAudioNode();
-      }
-    }
-
-    Object.defineProperty(window, "AudioContext", {
-      configurable: true,
-      writable: true,
-      value: FakeAudioContext,
-    });
-  });
+      Object.defineProperty(window, "AudioContext", {
+        configurable: true,
+        writable: true,
+        value: FakeAudioContext,
+      });
+      Reflect.set(window, "__soundFakeAudioContextInstalled", true);
+    },
+    { configuredFailureIndex: failOscillatorAt },
+  );
 }
 
 async function readWindowNumber(page: Page, key: string): Promise<number> {
@@ -171,6 +183,11 @@ test("Sound Test exposes a safe lazy idle baseline", async ({ page }) => {
   await installDeterministicAudioContext(page);
   await page.goto("/sound-test");
 
+  expect(
+    await page.evaluate(
+      () => Reflect.get(window, "__soundFakeAudioContextInstalled") === true,
+    ),
+  ).toBe(true);
   await expect(
     page.getByRole("heading", { name: "Sound Test", level: 1 }),
   ).toBeVisible();
@@ -251,6 +268,26 @@ test("Sound Test schedules the canonical guided sequence and exposes Stop", asyn
   await expect(page.locator("#sound-status")).toContainText("Stopped");
   await expect(page.locator("[data-active-channel-label]")).toHaveText("None");
   await expect(page.getByRole("button", { name: "Run sequence" })).toBeEnabled();
+});
+
+test("Sound Test cleans a partial sequence start failure and remains retryable", async ({
+  page,
+}) => {
+  await installDeterministicAudioContext(page, 2);
+  await page.goto("/sound-test");
+
+  await page.getByRole("button", { name: "Run sequence" }).click();
+  await expect(page.locator("#sound-status")).toContainText("Audio unavailable");
+  await expect(page.locator("[data-active-channel-label]")).toHaveText("None");
+  await expect(page.getByRole("button", { name: "Stop" })).toBeDisabled();
+  await expect(page.getByRole("button", { name: "Run sequence" })).toBeEnabled();
+
+  const failedRunOscillators = await readOscillators(page);
+  expect(failedRunOscillators).toHaveLength(1);
+  expect(failedRunOscillators[0].stops).toContain(10.05);
+
+  await page.getByRole("button", { name: "Left" }).click();
+  await expect(page.locator("#sound-status")).toContainText("Playing Left");
 });
 
 test("Sound Test closes its tool-local AudioContext on pagehide", async ({ page }) => {
