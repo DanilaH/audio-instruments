@@ -49,7 +49,8 @@ class FakeNode {
   readonly connections: Array<{ destination: FakeNode; input: number }> = [];
   disconnected = false;
 
-  connect(destination: FakeNode, _output = 0, input = 0) {
+  connect(destination: FakeNode, output = 0, input = 0) {
+    void output;
     this.connections.push({ destination, input });
     return destination as unknown as AudioNode;
   }
