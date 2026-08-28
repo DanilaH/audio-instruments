@@ -1,10 +1,14 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { getPublicTools } from "../registry/tools";
+
+const hasLiveTools = getPublicTools().length > 0;
 ---
 
 <BaseLayout
   title="Privacy — Browser Audio Lab"
   description="How Browser Audio Lab handles microphone audio and local calibration data."
+  hasLiveTools={hasLiveTools}
 >
   <article class="shell prose">
     <p class="eyebrow">Privacy</p>
