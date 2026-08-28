@@ -190,6 +190,9 @@ export class NoiseEngine {
 
     if (options.conditionLoopBoundary ?? true) {
       conditionLoopBoundary(samples);
+      if (kind === "brown") {
+        removeDcMean(samples);
+      }
       normalizePeak(samples);
     }
 
