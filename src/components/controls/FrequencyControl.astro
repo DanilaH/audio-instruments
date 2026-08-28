@@ -94,8 +94,18 @@ const sliderPosition =
 
     numeric.addEventListener("input", () => {
       const bounds = readBounds();
-      const frequencyHz = Number(numeric.value);
-      if (!bounds || !Number.isFinite(frequencyHz)) return;
+      const rawValue = numeric.value.trim();
+      if (!bounds || rawValue === "") return;
+
+      const frequencyHz = Number(rawValue);
+      if (
+        !Number.isFinite(frequencyHz) ||
+        frequencyHz < bounds.minHz ||
+        frequencyHz > bounds.maxHz
+      ) {
+        return;
+      }
+
       slider.value = String(
         frequencyToSliderPosition(frequencyHz, bounds.minHz, bounds.maxHz),
       );
