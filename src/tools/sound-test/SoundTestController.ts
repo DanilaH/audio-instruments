@@ -225,6 +225,7 @@ export class SoundTestController {
   #handleStartError(error: unknown, token: number): void {
     if (!this.#isCurrentRun(token)) return;
     console.error("Sound Test playback failed", error);
+    this.#engine?.stop();
     this.#starting = false;
     this.#playbacks = [];
     this.#clearTimers();
