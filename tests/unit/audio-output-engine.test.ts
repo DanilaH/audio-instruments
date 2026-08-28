@@ -229,6 +229,22 @@ describe("AudioOutputEngine", () => {
     );
   });
 
+  it("returns a Level-profile snapshot that cannot mutate the engine cap", () => {
+    const context = new FakeAudioContext();
+    const engine = new AudioOutputEngine(context as unknown as AudioContext);
+    const master = context.gains[0]?.gain;
+    const snapshot = engine.levelProfile as { maxDb: number };
+
+    snapshot.maxDb = 0;
+    engine.setLevelDb(0);
+
+    expect(master?.events.at(-1)).toMatchObject({
+      kind: "linear",
+      value: dbToGain(-12),
+    });
+    expect(engine.levelProfile.maxDb).toBe(-12);
+  });
+
   it("fades every generated source in from silence over the shared 50 ms ramp", () => {
     const oscillatorContext = new FakeAudioContext();
     const oscillatorEngine = new AudioOutputEngine(
@@ -339,6 +355,28 @@ describe("AudioOutputEngine", () => {
       value: 100,
       time: 9,
     });
+  });
+
+  it("cleans non-looping buffer resources when playback ends naturally", () => {
+    const context = new FakeAudioContext();
+    const engine = new AudioOutputEngine(context as unknown as AudioContext);
+    const playback = engine.startBuffer({} as AudioBuffer);
+    const source = context.bufferSources[0];
+    const sourceGain = context.gains[1];
+    const leftGain = context.gains[2];
+    const rightGain = context.gains[3];
+    const merger = context.mergers[0];
+
+    source?.emitEnded();
+
+    expect(source?.disconnected).toBe(true);
+    expect(sourceGain?.disconnected).toBe(true);
+    expect(leftGain?.disconnected).toBe(true);
+    expect(rightGain?.disconnected).toBe(true);
+    expect(merger?.disconnected).toBe(true);
+
+    playback.stop();
+    expect(source?.stops).toEqual([]);
   });
 
   it("uses a ramped idempotent stop and releases nodes after ended", () => {
