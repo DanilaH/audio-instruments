@@ -5,10 +5,11 @@ node_modules/
 dist/
 .astro/
 
-# Tests / coverage
+# Tests / coverage / generated QA
 coverage/
 playwright-report/
 test-results/
+visual-qa/
 
 # Local environment
 .env

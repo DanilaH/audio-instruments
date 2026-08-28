@@ -1,9 +1,27 @@
 import { expect, test } from "@playwright/test";
 
-import { toolRegistry } from "../../src/registry/tools";
+import {
+  getPublicTools,
+  toolRegistry,
+  type ToolDefinition,
+} from "../../src/registry/tools";
 
 const plannedRoutes = toolRegistry
   .filter((tool) => tool.status === "planned")
+  .map((tool) => tool.route);
+const publicRoutes = getPublicTools().map((tool) => tool.route);
+const featuredTargetIds = [
+  "tone-generator",
+  "speaker-test",
+  "microphone-test",
+  "headphone-test",
+] as const;
+const featuredRoutes = featuredTargetIds
+  .map((id) => toolRegistry.find((tool) => tool.id === id))
+  .filter(
+    (tool): tool is ToolDefinition =>
+      tool !== undefined && tool.status === "live",
+  )
   .map((tool) => tool.route);
 
 const targetViewports = [
@@ -13,12 +31,13 @@ const targetViewports = [
   { width: 390, height: 844 },
 ] as const;
 
-for (const path of ["/", "/privacy"]) {
+for (const path of ["/", "/privacy", ...publicRoutes]) {
   test(`${path} renders without page errors`, async ({ page }) => {
     const errors: Error[] = [];
     page.on("pageerror", (error) => errors.push(error));
 
-    await page.goto(path);
+    const response = await page.goto(path);
+    expect(response?.status()).toBe(200);
     await expect(page.locator("body")).toBeVisible();
 
     expect(errors).toEqual([]);
@@ -42,12 +61,32 @@ for (const path of ["/", "/privacy"]) {
   }
 }
 
-test("homepage exposes no planned tool links or empty tools anchor", async ({
+test("homepage exposes live tools while keeping planned tools invisible", async ({
   page,
 }) => {
   await page.goto("/");
 
-  await expect(page.locator('a[href="/#tools"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/#tools"]')).toHaveCount(
+    publicRoutes.length > 0 ? 1 : 0,
+  );
+
+  for (const route of publicRoutes) {
+    await expect(page.locator(`#tools a[href="${route}"]`)).toHaveCount(1);
+  }
+
+  for (const route of featuredRoutes) {
+    await expect(
+      page.locator(`.tool-grid--featured a[href="${route}"]`),
+    ).toHaveCount(1);
+  }
+
+  for (const route of publicRoutes.filter(
+    (route) => !featuredRoutes.includes(route),
+  )) {
+    await expect(
+      page.locator(`.tool-grid--featured a[href="${route}"]`),
+    ).toHaveCount(0);
+  }
 
   for (const route of plannedRoutes) {
     await expect(page.locator(`a[href="${route}"]`)).toHaveCount(0);

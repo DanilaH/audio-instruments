@@ -1,0 +1,109 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import ToneGenerator from "../tools/tone-generator/ToneGenerator.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const toneTool = toolRegistry.find((tool) => tool.id === "tone-generator");
+if (!toneTool) throw new Error("Tone Generator registry entry is missing");
+
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = toneTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Tone Generator — Browser Audio Lab"
+  description="Generate a controlled 20 Hz–20 kHz digital tone in your browser with waveform, level and stereo channel controls."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Signal & frequency"
+    title="Tone Generator"
+    description="Generate a controlled digital oscillator, switch waveform and stereo channel live, and tune frequency with a logarithmic control."
+    accent="lavender"
+  >
+    <ToneGenerator />
+
+    <section class="tone-content" aria-labelledby="tone-about-title">
+      <div>
+        <p class="eyebrow">What this tool does</p>
+        <h2 id="tone-about-title">A direct browser-generated reference tone</h2>
+      </div>
+      <div class="tone-content__copy">
+        <p>
+          The displayed frequency is the requested digital oscillator frequency
+          generated through the Web Audio API. It is useful for checking
+          channels, comparing tones and exploring audible frequency ranges.
+        </p>
+        <p>
+          It does not measure your speaker, headphones, room response or
+          physical sound-pressure level. Device volume and playback hardware
+          remain outside the browser's control.
+        </p>
+      </div>
+    </section>
+
+    <section class="tone-help" aria-labelledby="tone-help-title">
+      <h2 id="tone-help-title">If you cannot hear a tone</h2>
+      <div class="tone-help__grid">
+        <p>
+          First confirm the correct output device and try a mid-range preset
+          such as 440 Hz or 1 kHz. Very low and very high frequencies may be
+          limited by your hearing or playback hardware.
+        </p>
+        <p>
+          Do not compensate for an inaudible high or low tone by sharply
+          increasing system volume. Return to a comfortable audible frequency
+          instead.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .tone-content,
+  .tone-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .tone-content h2,
+  .tone-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .tone-content__copy,
+  .tone-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .tone-content p,
+  .tone-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .tone-content,
+    .tone-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>

@@ -1,0 +1,64 @@
+---
+interface RelatedToolLink {
+  readonly title: string;
+  readonly route: string;
+}
+
+interface Props {
+  relatedTools: readonly RelatedToolLink[];
+}
+
+const { relatedTools } = Astro.props;
+---
+
+{
+  relatedTools.length > 0 && (
+    <section class="related-tools" aria-labelledby="related-tools-title">
+      <h2 id="related-tools-title">Related tools</h2>
+      <div class="related-tools__grid">
+        {relatedTools.map((tool) => (
+          <a href={tool.route}>
+            <strong>{tool.title}</strong>
+            <span>Open tool</span>
+          </a>
+        ))}
+      </div>
+    </section>
+  )
+}
+
+<style>
+  .related-tools {
+    margin-top: 54px;
+  }
+
+  .related-tools h2 {
+    font-size: clamp(1.5rem, 3vw, 2.2rem);
+  }
+
+  .related-tools__grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 12px;
+    margin-top: 18px;
+  }
+
+  .related-tools a {
+    display: grid;
+    gap: 5px;
+    padding: 18px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-card);
+    background: var(--color-surface);
+    text-decoration: none;
+  }
+
+  .related-tools a:hover {
+    box-shadow: 0 12px 34px rgb(31 36 48 / 0.06);
+  }
+
+  .related-tools span {
+    color: var(--color-ink-muted);
+    font-size: 0.88rem;
+  }
+</style>

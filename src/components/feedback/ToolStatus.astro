@@ -1,0 +1,54 @@
+---
+interface Props {
+  id: string;
+  label?: string;
+  state?:
+    "idle" | "ready" | "playing" | "paused" | "error" | "limited_capability";
+}
+
+const { id, label = "Idle", state = "idle" } = Astro.props;
+---
+
+<p
+  id={id}
+  class="tool-status"
+  data-tool-status
+  data-state={state}
+  aria-live="polite"
+>
+  <span class="tool-status__dot" aria-hidden="true"></span>
+  <span data-status-label>{label}</span>
+</p>
+
+<style>
+  .tool-status {
+    display: inline-flex;
+    min-height: 36px;
+    align-items: center;
+    gap: 8px;
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 0.9rem;
+    font-weight: 750;
+  }
+
+  .tool-status__dot {
+    width: 9px;
+    height: 9px;
+    border: 2px solid currentColor;
+    border-radius: 999px;
+    background: transparent;
+  }
+
+  .tool-status[data-state="playing"] {
+    color: var(--color-focus);
+  }
+
+  .tool-status[data-state="playing"] .tool-status__dot {
+    background: currentColor;
+  }
+
+  .tool-status[data-state="error"] {
+    color: #9b2f2f;
+  }
+</style>
