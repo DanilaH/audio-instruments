@@ -1,12 +1,12 @@
 import type { SessionResource } from "../audio-session/AudioSession";
 import {
   DEFAULT_RAMP_SECONDS,
-  GENERAL_LEVEL_DEFAULT_DB,
-  GENERAL_LEVEL_MAX_DB,
-  GENERAL_LEVEL_MIN_DB,
+  GENERAL_LEVEL_PROFILE,
   clamp,
   dbToGain,
   getSweepEndpoints,
+  validateLevelProfile,
+  type LevelProfile,
   type SweepDefinition,
 } from "../../utils/audio";
 
@@ -50,6 +50,11 @@ export interface BufferStartOptions {
   readonly sourceCoefficient?: number;
 }
 
+export interface AudioOutputEngineOptions {
+  readonly destination?: AudioNode;
+  readonly levelProfile?: LevelProfile;
+}
+
 function validateSourceCoefficient(value: number): number {
   if (!Number.isFinite(value) || value <= 0 || value > 1) {
     throw new RangeError("sourceCoefficient must be in the range (0, 1]");
@@ -83,7 +88,10 @@ function scheduleSourceFadeIn(
   startTime: number,
 ): void {
   param.setValueAtTime(0, startTime);
-  param.linearRampToValueAtTime(coefficient, startTime + DEFAULT_RAMP_SECONDS);
+  param.linearRampToValueAtTime(
+    coefficient,
+    startTime + DEFAULT_RAMP_SECONDS,
+  );
 }
 
 class StereoChannelRouter {
@@ -160,20 +168,22 @@ function scheduleSweepOnParam(
 export class AudioOutputEngine implements SessionResource {
   readonly #context: AudioContext;
   readonly #masterGain: GainNode;
+  readonly #levelProfile: LevelProfile;
   readonly #active = new Set<SessionResource>();
   #disposed = false;
 
-  constructor(
-    context: AudioContext,
-    destination: AudioNode = context.destination,
-  ) {
+  constructor(context: AudioContext, options: AudioOutputEngineOptions = {}) {
     this.#context = context;
+    const profile = validateLevelProfile(
+      options.levelProfile ?? GENERAL_LEVEL_PROFILE,
+    );
+    this.#levelProfile = { ...profile };
     this.#masterGain = context.createGain();
     this.#masterGain.gain.setValueAtTime(
-      dbToGain(GENERAL_LEVEL_DEFAULT_DB),
+      dbToGain(this.#levelProfile.defaultDb),
       context.currentTime,
     );
-    this.#masterGain.connect(destination);
+    this.#masterGain.connect(options.destination ?? context.destination);
   }
 
   get levelDb(): number {
@@ -182,9 +192,17 @@ export class AudioOutputEngine implements SessionResource {
     );
   }
 
+  get levelProfile(): Readonly<LevelProfile> {
+    return this.#levelProfile;
+  }
+
   setLevelDb(db: number): void {
     this.#assertUsable();
-    const safeDb = clamp(db, GENERAL_LEVEL_MIN_DB, GENERAL_LEVEL_MAX_DB);
+    const safeDb = clamp(
+      db,
+      this.#levelProfile.minDb,
+      this.#levelProfile.maxDb,
+    );
     rampParam(
       this.#masterGain.gain,
       dbToGain(safeDb),
@@ -304,7 +322,11 @@ export class AudioOutputEngine implements SessionResource {
       },
       setPan: (value) => {
         if (!stopped) {
-          rampParam(panner.pan, clamp(value, -1, 1), this.#context.currentTime);
+          rampParam(
+            panner.pan,
+            clamp(value, -1, 1),
+            this.#context.currentTime,
+          );
         }
       },
       stop: () => {
