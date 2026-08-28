@@ -117,11 +117,9 @@ The Astro plugin is explicitly registered.
 
 `.astro` files use the Astro parser.
 
-Formatting check:
+Formatting check uses the exact source/tests/config glob script defined below.
 
-```text
-prettier --check .
-```
+Do not expand it to `prettier --check .`; the documentation corpus is intentionally outside the P0 formatting gate.
 
 ## Exact scripts
 

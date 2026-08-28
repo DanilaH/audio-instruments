@@ -13,7 +13,8 @@ Changes:
 - aligned ESLint with the current recommended flat-config baseline by adding `@eslint/js` recommended rules;
 - fixed Playwright diagnostics: retries remain `0`, but failed runs now retain traces/screenshots;
 - added failure-only `test-results` upload through `actions/upload-artifact@v7`;
-- corrected README wording that previously implied `package.json` already existed before P0.
+- corrected README wording that previously implied `package.json` already existed before P0;
+- removed the conflicting broad `prettier --check .` wording so the exact source/tests/config formatting script is the single P0 contract.
 
 ## v1.8 — 2026-08-28
 
