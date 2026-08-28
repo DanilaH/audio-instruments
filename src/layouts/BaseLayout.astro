@@ -1,0 +1,44 @@
+---
+import '@phosphor-icons/web/regular';
+import '../styles/global.css';
+
+interface Props {
+  title: string;
+  description: string;
+}
+
+const { title, description } = Astro.props;
+const year = new Date().getFullYear();
+---
+
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width" />
+    <meta name="description" content={description} />
+    <meta name="robots" content="noindex,nofollow" />
+    <meta name="generator" content={Astro.generator} />
+    <title>{title}</title>
+  </head>
+  <body>
+    <header class="site-header">
+      <div class="shell site-header__inner">
+        <a class="brand" href="/" aria-label="Browser Audio Lab home">
+          <span class="brand__mark" aria-hidden="true"><i class="ph ph-waveform"></i></span>
+          <span>Browser Audio Lab</span>
+        </a>
+        <nav class="site-nav" aria-label="Primary">
+          <a href="/privacy">Privacy</a>
+        </nav>
+      </div>
+    </header>
+    <main><slot /></main>
+    <footer class="site-footer">
+      <div class="shell site-footer__inner">
+        <span>© {year} Browser Audio Lab</span>
+        <a href="/privacy">Privacy</a>
+      </div>
+    </footer>
+  </body>
+</html>

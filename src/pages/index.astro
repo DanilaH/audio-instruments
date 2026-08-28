@@ -1,0 +1,49 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+import { getPublicTools } from '../registry/tools';
+
+const publicTools = getPublicTools();
+---
+
+<BaseLayout
+  title="Browser Audio Lab"
+  description="Browser-based audio testing and measurement tools with clear limitations and local-first microphone processing."
+>
+  <section class="hero">
+    <div class="shell hero__grid">
+      <div>
+        <p class="eyebrow">Browser-based audio tools</p>
+        <h1>Understand what your audio setup is doing.</h1>
+        <p class="lede">
+          Focused tools for testing playback, signals, microphones and audio analysis — designed to show what the browser actually knows without pretending it can measure what it cannot.
+        </p>
+      </div>
+      <div class="hero-visual" aria-label="Abstract audio waveform illustration">
+        <svg class="waveform" viewBox="0 0 620 180" role="img" aria-label="Audio waveform">
+          <path d="M5 91 C42 91 49 26 82 26 S123 150 157 150 196 58 230 58 268 119 303 119 341 18 378 18 417 159 455 159 493 73 528 73 566 105 615 91" fill="none" stroke="currentColor" stroke-width="8" stroke-linecap="round" />
+        </svg>
+        <p class="visual-label">Signal first. Claims second.</p>
+      </div>
+    </div>
+  </section>
+
+  {publicTools.length > 0 && <section id="tools" class="shell" aria-label="Live audio tools"></section>}
+
+  <section class="trust">
+    <div class="shell trust__panel">
+      <div>
+        <p class="eyebrow">Built for honest diagnostics</p>
+        <h2>Useful browser signals, with the limits visible.</h2>
+      </div>
+      <div>
+        <p class="trust__copy">
+          No account is required. Core microphone tools are designed to process audio locally in your browser, and core v1 does not upload microphone recordings or microphone audio to our server.
+        </p>
+        <div class="trust__facts" aria-label="Product principles">
+          <div class="fact">Local-first microphone processing</div>
+          <div class="fact">No account required</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>

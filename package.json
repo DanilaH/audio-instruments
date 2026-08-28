@@ -1,0 +1,38 @@
+{
+  "name": "browser-audio-lab",
+  "version": "0.0.0",
+  "private": true,
+  "type": "module",
+  "packageManager": "pnpm@11.21.0",
+  "engines": {
+    "node": ">=24.16 <25"
+  },
+  "scripts": {
+    "dev": "astro dev",
+    "build": "astro build",
+    "preview": "astro preview --host 127.0.0.1",
+    "check": "astro check",
+    "test": "vitest run",
+    "test:browser": "pnpm build && playwright test",
+    "lint": "eslint \"src/**/*.{js,mjs,ts,astro}\" \"tests/**/*.{js,mjs,ts}\" \"playwright.config.ts\"",
+    "format:check": "prettier --check \"src/**/*.{astro,css,js,mjs,ts}\" \"tests/**/*.{js,mjs,ts}\" \"playwright.config.ts\" \"eslint.config.mjs\" \".prettierrc.mjs\" \"astro.config.mjs\" \"package.json\" \"tsconfig.json\""
+  },
+  "dependencies": {
+    "@phosphor-icons/web": "2.1.2",
+    "astro": "7.2.9",
+    "motion": "13.1.1"
+  },
+  "devDependencies": {
+    "@astrojs/check": "0.9.10",
+    "@eslint/js": "10.0.1",
+    "@playwright/test": "1.62.1",
+    "@typescript-eslint/parser": "8.68.0",
+    "eslint": "10.9.1",
+    "eslint-plugin-astro": "3.1.0",
+    "prettier": "3.9.6",
+    "prettier-plugin-astro": "0.14.1",
+    "typescript": "6.0.3",
+    "typescript-eslint": "8.68.0",
+    "vitest": "4.1.10"
+  }
+}

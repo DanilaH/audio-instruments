@@ -1,8 +1,6 @@
 import { describe, expect, it } from 'vitest';
 
-// P0 replaces this temporary import path with the final registry module path
-// established by the scaffold. The assertions themselves are mandatory.
-import { getPublicTools, toolRegistry } from '../../src/config/tools';
+import { getPublicTools, toolRegistry } from '../../src/registry/tools';
 
 describe('tool registry', () => {
   it('contains only planned/live statuses', () => {

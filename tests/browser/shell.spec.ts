@@ -15,8 +15,17 @@ for (const path of ['/', '/privacy']) {
 test('homepage exposes no planned tool links', async ({ page }) => {
   await page.goto('/');
 
-  const plannedLinks = page.locator('[data-tool-status="planned"] a');
-  await expect(plannedLinks).toHaveCount(0);
+  const plannedRoutes = [
+    '/tone-generator',
+    '/sound-test',
+    '/speaker-test',
+    '/headphone-test',
+    '/microphone-test',
+  ];
+
+  for (const route of plannedRoutes) {
+    await expect(page.locator(`a[href="${route}"]`)).toHaveCount(0);
+  }
 });
 
 test('desktop shell has no horizontal overflow', async ({ page }) => {

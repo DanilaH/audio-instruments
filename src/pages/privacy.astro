@@ -1,0 +1,30 @@
+---
+import BaseLayout from '../layouts/BaseLayout.astro';
+---
+
+<BaseLayout title="Privacy — Browser Audio Lab" description="How Browser Audio Lab handles microphone audio and local calibration data.">
+  <article class="shell prose">
+    <p class="eyebrow">Privacy</p>
+    <h1>What stays in your browser.</h1>
+    <p>
+      Browser Audio Lab is designed around local browser processing for its core audio tools. This page describes the core v1 baseline before analytics or advertising providers are added.
+    </p>
+
+    <h2>Accounts and microphone audio</h2>
+    <ul>
+      <li>No account is required.</li>
+      <li>Core microphone tools process audio locally in the browser.</li>
+      <li>Core v1 does not upload microphone recordings or microphone audio to our server.</li>
+    </ul>
+
+    <h2>Local calibration data</h2>
+    <p>
+      The Decibel Meter may store a calibration setting in browser storage for the selected input device under <code>browserAudioLab.dbCalibration.v2</code>. This stores device-scoped calibration metadata, not raw microphone audio. Resetting calibration removes the relevant local calibration entry.
+    </p>
+
+    <h2>Future analytics or advertising</h2>
+    <p>
+      If analytics or advertising is introduced later, this notice and any required consent behavior must be updated before those providers are enabled. Microphone or recording content must not be sent to analytics.
+    </p>
+  </article>
+</BaseLayout>
