@@ -231,3 +231,15 @@ const categories: readonly { id: NavigationCategory; label: string }[] = [
     </div>
   </section>
 </BaseLayout>
+
+<style>
+  .hero h1 {
+    font-size: clamp(3rem, 5.2vw, 4.8rem);
+  }
+
+  @media (max-width: 520px) {
+    .hero h1 {
+      font-size: clamp(2.7rem, 15vw, 4.2rem);
+    }
+  }
+</style>
