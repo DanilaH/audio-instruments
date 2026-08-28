@@ -31,7 +31,9 @@ for (const path of ["/", "/privacy"]) {
   });
 }
 
-test("homepage exposes no planned tool links or empty tools anchor", async ({ page }) => {
+test("homepage exposes no planned tool links or empty tools anchor", async ({
+  page,
+}) => {
   await page.goto("/");
 
   await expect(page.locator('a[href="/#tools"]')).toHaveCount(0);
