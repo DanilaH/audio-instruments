@@ -237,9 +237,7 @@ test("Tone Generator wires live controls and explicit Stop across browsers", asy
   const frequency = page.locator("#tone-frequency-number");
   await frequency.fill("1000");
   await expect(frequency).toHaveValue("1000");
-  await expect(page.locator("#tone-frequency-readout")).toHaveText(
-    "1,000 Hz",
-  );
+  await expect(page.locator("#tone-frequency-readout")).toHaveText("1,000 Hz");
 
   const squarePill = page.locator("label.mode-pill").filter({
     hasText: "Square",
@@ -449,12 +447,12 @@ test.describe("Tone waveform high-DPR rendering", () => {
   test("caps backing-store DPR at 2", async ({ page }) => {
     await openTone(page);
 
-    const metrics = await page.locator("[data-tone-waveform]").evaluate(
-      (canvas: HTMLCanvasElement) => ({
+    const metrics = await page
+      .locator("[data-tone-waveform]")
+      .evaluate((canvas: HTMLCanvasElement) => ({
         cssWidth: canvas.getBoundingClientRect().width,
         pixelWidth: canvas.width,
-      }),
-    );
+      }));
 
     expect(metrics.pixelWidth).toBeLessThanOrEqual(
       Math.ceil(metrics.cssWidth * 2) + 1,

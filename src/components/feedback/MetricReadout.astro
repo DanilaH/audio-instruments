@@ -17,9 +17,9 @@ const { id, value, unit = "", label, size = "default" } = Astro.props;
   data-size={size}
   aria-label={label}
 >
-  <span data-metric-value>{value}</span>{unit && " "}{unit && (
-    <span data-metric-unit>{unit}</span>
-  )}
+  <span data-metric-value>{value}</span>{unit && " "}{
+    unit && <span data-metric-unit>{unit}</span>
+  }
 </output>
 
 <style>
