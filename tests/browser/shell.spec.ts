@@ -6,6 +6,16 @@ const plannedRoutes = toolRegistry
   .filter((tool) => tool.status === "planned")
   .map((tool) => tool.route);
 const publicRoutes = getPublicTools().map((tool) => tool.route);
+const featuredTargetIds = [
+  "tone-generator",
+  "speaker-test",
+  "microphone-test",
+  "headphone-test",
+] as const;
+const featuredRoutes = featuredTargetIds
+  .map((id) => toolRegistry.find((tool) => tool.id === id))
+  .filter((tool) => tool?.status === "live")
+  .map((tool) => tool.route);
 
 const targetViewports = [
   { width: 1440, height: 900 },
@@ -54,10 +64,21 @@ test("homepage exposes live tools while keeping planned tools invisible", async 
   );
 
   for (const route of publicRoutes) {
+    await expect(page.locator(`#tools a[href="${route}"]`)).toHaveCount(1);
+  }
+
+  for (const route of featuredRoutes) {
     await expect(
       page.locator(`.tool-grid--featured a[href="${route}"]`),
     ).toHaveCount(1);
-    await expect(page.locator(`#tools a[href="${route}"]`)).toHaveCount(1);
+  }
+
+  for (const route of publicRoutes.filter(
+    (route) => !featuredRoutes.includes(route),
+  )) {
+    await expect(
+      page.locator(`.tool-grid--featured a[href="${route}"]`),
+    ).toHaveCount(0);
   }
 
   for (const route of plannedRoutes) {
