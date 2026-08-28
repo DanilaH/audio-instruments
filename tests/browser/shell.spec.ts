@@ -151,9 +151,9 @@ for (const viewport of [
 
     const box = await heroAction.boundingBox();
     expect(box).not.toBeNull();
-    expect((box?.y ?? viewport.height) + (box?.height ?? 0)).toBeLessThanOrEqual(
-      viewport.height,
-    );
+    expect(
+      (box?.y ?? viewport.height) + (box?.height ?? 0),
+    ).toBeLessThanOrEqual(viewport.height);
   });
 }
 
