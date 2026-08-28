@@ -26,7 +26,6 @@ jobs:
       - name: Normalize Review #1 fixes
         run: >-
           pnpm exec prettier --write
-          .gitignore
           src/components/controls/FrequencyControl.astro
           src/components/feedback/MetricReadout.astro
           src/tools/tone-generator/ToneGenerator.astro
