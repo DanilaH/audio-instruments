@@ -54,7 +54,10 @@ test("homepage exposes live tools while keeping planned tools invisible", async 
   );
 
   for (const route of publicRoutes) {
-    await expect(page.locator(`a[href="${route}"]`)).toHaveCount(1);
+    await expect(
+      page.locator(`.tool-grid--featured a[href="${route}"]`),
+    ).toHaveCount(1);
+    await expect(page.locator(`#tools a[href="${route}"]`)).toHaveCount(1);
   }
 
   for (const route of plannedRoutes) {
