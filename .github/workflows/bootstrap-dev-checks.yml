@@ -20,8 +20,12 @@ jobs:
         with:
           version: 11.21.0
           runtime: node@24
-          cache: true
+          cache: false
           install: false
+      - name: Resolve a mature Astro release
+        run: |
+          pnpm pkg set dependencies.astro=7.2.4
+          pnpm install --lockfile-only
       - run: pnpm install --frozen-lockfile
       - name: Format implementation files
         run: >-
@@ -38,7 +42,7 @@ jobs:
       - run: pnpm check
       - run: pnpm test
       - run: pnpm build
-      - name: Commit formatted sources and remove bootstrap workflow
+      - name: Commit normalized sources and remove bootstrap workflow
         run: |
           rm .github/workflows/bootstrap-dev-checks.yml
           git config user.name "github-actions[bot]"
