@@ -317,9 +317,9 @@ for (const viewport of primaryViewportTargets) {
     const safetyBox = await safety.boundingBox();
     expect(playBox).not.toBeNull();
     expect(safetyBox).not.toBeNull();
-    expect(
-      (playBox?.y ?? 9999) + (playBox?.height ?? 0),
-    ).toBeLessThanOrEqual(viewport.height);
+    expect((playBox?.y ?? 9999) + (playBox?.height ?? 0)).toBeLessThanOrEqual(
+      viewport.height,
+    );
     expect(
       (safetyBox?.y ?? 9999) + (safetyBox?.height ?? 0),
     ).toBeLessThanOrEqual(viewport.height);
