@@ -1,0 +1,150 @@
+---
+interface Props {
+  id: string;
+  valueHz: number;
+  minHz: number;
+  maxHz: number;
+  numericStep?: number;
+  disabled?: boolean;
+}
+
+const {
+  id,
+  valueHz,
+  minHz,
+  maxHz,
+  numericStep = 1,
+  disabled = false,
+} = Astro.props;
+
+const sliderPosition =
+  Math.log(Math.min(maxHz, Math.max(minHz, valueHz)) / minHz) /
+  Math.log(maxHz / minHz);
+---
+
+<div
+  class="frequency-control"
+  data-frequency-control
+  data-min-hz={minHz}
+  data-max-hz={maxHz}
+>
+  <div class="frequency-control__header">
+    <label for={`${id}-number`}>Frequency</label>
+    <span>Hz</span>
+  </div>
+  <input
+    id={`${id}-number`}
+    data-frequency-number
+    type="number"
+    min={minHz}
+    max={maxHz}
+    step={numericStep}
+    value={valueHz}
+    disabled={disabled}
+    inputmode="decimal"
+  />
+  <input
+    id={`${id}-slider`}
+    data-frequency-slider
+    type="range"
+    min="0"
+    max="1"
+    step="0.001"
+    value={sliderPosition}
+    disabled={disabled}
+    aria-label="Frequency logarithmic slider"
+  />
+</div>
+
+<script>
+  import {
+    frequencyToSliderPosition,
+    sliderPositionToFrequency,
+  } from "./controlMath";
+
+  for (const root of document.querySelectorAll<HTMLElement>(
+    "[data-frequency-control]",
+  )) {
+    if (root.dataset.bound === "true") continue;
+
+    const numeric = root.querySelector<HTMLInputElement>("[data-frequency-number]");
+    const slider = root.querySelector<HTMLInputElement>("[data-frequency-slider]");
+    const minHz = Number(root.dataset.minHz);
+    const maxHz = Number(root.dataset.maxHz);
+    if (!numeric || !slider || !Number.isFinite(minHz) || !Number.isFinite(maxHz)) {
+      continue;
+    }
+
+    root.dataset.bound = "true";
+
+    numeric.addEventListener("input", () => {
+      const frequencyHz = Number(numeric.value);
+      if (!Number.isFinite(frequencyHz)) return;
+      slider.value = String(
+        frequencyToSliderPosition(frequencyHz, minHz, maxHz),
+      );
+    });
+
+    slider.addEventListener("input", () => {
+      const frequencyHz = sliderPositionToFrequency(
+        Number(slider.value),
+        minHz,
+        maxHz,
+      );
+      numeric.value = String(Math.round(frequencyHz));
+      numeric.dispatchEvent(new Event("input", { bubbles: true }));
+    });
+  }
+</script>
+
+<style>
+  .frequency-control {
+    display: grid;
+    grid-template-columns: minmax(120px, 180px) minmax(180px, 1fr);
+    gap: 10px 16px;
+    min-width: 0;
+  }
+
+  .frequency-control__header {
+    display: flex;
+    grid-column: 1 / -1;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .frequency-control label {
+    font-weight: 750;
+  }
+
+  .frequency-control__header span {
+    color: var(--color-ink-muted);
+    font-size: 0.85rem;
+  }
+
+  .frequency-control input[type="number"] {
+    min-height: 44px;
+    width: 100%;
+    padding: 0 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .frequency-control input[type="range"] {
+    width: 100%;
+    min-height: 44px;
+    accent-color: var(--color-focus);
+  }
+
+  @media (max-width: 520px) {
+    .frequency-control {
+      grid-template-columns: 1fr;
+    }
+
+    .frequency-control__header {
+      grid-column: 1;
+    }
+  }
+</style>
