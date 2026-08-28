@@ -1,7 +1,7 @@
-import { expect, test } from "@playwright/test";
+import { expect, test, type Locator } from "@playwright/test";
 
 async function expectInsideViewport(
-  locator: ReturnType<import("@playwright/test").Page["locator"]>,
+  locator: Locator,
   viewportHeight: number,
 ): Promise<void> {
   await expect(locator).toBeVisible();
