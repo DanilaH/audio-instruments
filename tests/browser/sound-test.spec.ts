@@ -15,6 +15,11 @@ async function installDeterministicAudioContext(page: Page): Promise<void> {
     Reflect.set(window, "__soundAudioContextCount", 0);
     Reflect.set(window, "__soundClosedAudioContextCount", 0);
 
+    const incrementWindowCounter = (key: string) => {
+      const current = Number(Reflect.get(window, key) ?? 0);
+      Reflect.set(window, key, current + 1);
+    };
+
     class FakeAudioParam {
       value = 1;
       readonly onSet: ((value: number) => void) | undefined;
@@ -55,7 +60,9 @@ async function installDeterministicAudioContext(page: Page): Promise<void> {
         return destination;
       }
 
-      disconnect() {}
+      disconnect() {
+        // The deterministic browser double owns no native resources.
+      }
     }
 
     class FakeGainNode extends FakeAudioNode {
@@ -107,11 +114,10 @@ async function installDeterministicAudioContext(page: Page): Promise<void> {
       sampleRate = 48_000;
       state = "suspended";
       destination = new FakeAudioNode();
-      #gainIndex = 0;
+      gainIndex = 0;
 
       constructor() {
-        const count = Number(Reflect.get(window, "__soundAudioContextCount") ?? 0);
-        Reflect.set(window, "__soundAudioContextCount", count + 1);
+        incrementWindowCounter("__soundAudioContextCount");
       }
 
       async resume() {
@@ -120,16 +126,13 @@ async function installDeterministicAudioContext(page: Page): Promise<void> {
 
       async close() {
         this.state = "closed";
-        const count = Number(
-          Reflect.get(window, "__soundClosedAudioContextCount") ?? 0,
-        );
-        Reflect.set(window, "__soundClosedAudioContextCount", count + 1);
+        incrementWindowCounter("__soundClosedAudioContextCount");
       }
 
       createGain() {
-        const node = new FakeGainNode(this.#gainIndex);
-        gainValues[this.#gainIndex] = node.gain.value;
-        this.#gainIndex += 1;
+        const node = new FakeGainNode(this.gainIndex);
+        gainValues[this.gainIndex] = node.gain.value;
+        this.gainIndex += 1;
         return node;
       }
 
