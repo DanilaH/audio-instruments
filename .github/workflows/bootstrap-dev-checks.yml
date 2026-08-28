@@ -22,10 +22,11 @@ jobs:
           runtime: node@24
           cache: false
           install: false
-      - name: Resolve a mature Astro release
+      - name: Rebuild lockfile with a mature Astro release
         run: |
           pnpm pkg set dependencies.astro=7.2.4
-          pnpm install --lockfile-only
+          pnpm clean --lockfile
+          pnpm install
       - run: pnpm install --frozen-lockfile
       - name: Format implementation files
         run: >-
