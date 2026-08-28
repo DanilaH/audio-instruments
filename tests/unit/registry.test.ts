@@ -1,28 +1,28 @@
-import { describe, expect, it } from 'vitest';
+import { describe, expect, it } from "vitest";
 
-import { getPublicTools, toolRegistry } from '../../src/registry/tools';
+import { getPublicTools, toolRegistry } from "../../src/registry/tools";
 
 const expectedToolIds = [
-  'sound-test',
-  'speaker-test',
-  'headphone-test',
-  'stereo-test',
-  'phase-test',
-  'surround-sound-test',
-  'bass-test',
-  'tone-generator',
-  'frequency-sweep',
-  'noise-generator',
-  'microphone-test',
-  'spectrum-analyzer',
-  'pitch-detector',
-  'decibel-meter',
-  'audio-latency-test',
-  'hearing-frequency-test',
+  "sound-test",
+  "speaker-test",
+  "headphone-test",
+  "stereo-test",
+  "phase-test",
+  "surround-sound-test",
+  "bass-test",
+  "tone-generator",
+  "frequency-sweep",
+  "noise-generator",
+  "microphone-test",
+  "spectrum-analyzer",
+  "pitch-detector",
+  "decibel-meter",
+  "audio-latency-test",
+  "hearing-frequency-test",
 ];
 
-describe('tool registry', () => {
-  it('contains the complete 16-tool v1 set exactly once', () => {
+describe("tool registry", () => {
+  it("contains the complete 16-tool v1 set exactly once", () => {
     const ids = toolRegistry.map((tool) => tool.id);
     const routes = toolRegistry.map((tool) => tool.route);
 
@@ -32,21 +32,21 @@ describe('tool registry', () => {
     expect(new Set(routes).size).toBe(routes.length);
   });
 
-  it('contains only planned/live statuses', () => {
+  it("contains only planned/live statuses", () => {
     for (const tool of toolRegistry) {
-      expect(['planned', 'live']).toContain(tool.status);
+      expect(["planned", "live"]).toContain(tool.status);
     }
   });
 
-  it('public tools contain only live entries', () => {
-    expect(getPublicTools().every((tool) => tool.status === 'live')).toBe(true);
+  it("public tools contain only live entries", () => {
+    expect(getPublicTools().every((tool) => tool.status === "live")).toBe(true);
   });
 
-  it('never leaks a planned tool into public data', () => {
+  it("never leaks a planned tool into public data", () => {
     const publicIds = new Set(getPublicTools().map((tool) => tool.id));
 
     for (const tool of toolRegistry) {
-      if (tool.status === 'planned') {
+      if (tool.status === "planned") {
         expect(publicIds.has(tool.id)).toBe(false);
       }
     }
