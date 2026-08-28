@@ -1,23 +1,17 @@
 import { expect, test } from "@playwright/test";
 
-const plannedRoutes = [
-  "/sound-test",
-  "/speaker-test",
-  "/headphone-test",
-  "/stereo-test",
-  "/phase-test",
-  "/surround-sound-test",
-  "/bass-test",
-  "/tone-generator",
-  "/frequency-sweep",
-  "/noise-generator",
-  "/microphone-test",
-  "/spectrum-analyzer",
-  "/pitch-detector",
-  "/decibel-meter",
-  "/audio-latency-test",
-  "/hearing-frequency-test",
-];
+import { toolRegistry } from "../../src/registry/tools";
+
+const plannedRoutes = toolRegistry
+  .filter((tool) => tool.status === "planned")
+  .map((tool) => tool.route);
+
+const targetViewports = [
+  { width: 1440, height: 900 },
+  { width: 1366, height: 768 },
+  { width: 1024, height: 768 },
+  { width: 390, height: 844 },
+] as const;
 
 for (const path of ["/", "/privacy"]) {
   test(`${path} renders without page errors`, async ({ page }) => {
@@ -29,6 +23,23 @@ for (const path of ["/", "/privacy"]) {
 
     expect(errors).toEqual([]);
   });
+
+  for (const viewport of targetViewports) {
+    test(`${path} has no horizontal overflow at ${viewport.width}x${viewport.height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto(path);
+
+      const hasOverflow = await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth,
+      );
+
+      expect(hasOverflow).toBe(false);
+    });
+  }
 }
 
 test("homepage exposes no planned tool links or empty tools anchor", async ({
@@ -48,17 +59,4 @@ test("planned tool routes are not built", async ({ page }) => {
     const response = await page.goto(route);
     expect(response?.status()).toBe(404);
   }
-});
-
-test("desktop shell has no horizontal overflow", async ({ page }) => {
-  await page.setViewportSize({ width: 1366, height: 768 });
-  await page.goto("/");
-
-  const hasOverflow = await page.evaluate(
-    () =>
-      document.documentElement.scrollWidth >
-      document.documentElement.clientWidth,
-  );
-
-  expect(hasOverflow).toBe(false);
 });
