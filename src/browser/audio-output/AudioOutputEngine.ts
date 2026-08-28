@@ -1,12 +1,12 @@
 import type { SessionResource } from "../audio-session/AudioSession";
 import {
   DEFAULT_RAMP_SECONDS,
-  GENERAL_LEVEL_PROFILE,
   clamp,
   dbToGain,
+  getLevelProfile,
   getSweepEndpoints,
-  validateLevelProfile,
   type LevelProfile,
+  type LevelProfileName,
   type SweepDefinition,
 } from "../../utils/audio";
 
@@ -52,7 +52,7 @@ export interface BufferStartOptions {
 
 export interface AudioOutputEngineOptions {
   readonly destination?: AudioNode;
-  readonly levelProfile?: LevelProfile;
+  readonly levelProfile?: LevelProfileName;
 }
 
 function validateSourceCoefficient(value: number): number {
@@ -88,7 +88,10 @@ function scheduleSourceFadeIn(
   startTime: number,
 ): void {
   param.setValueAtTime(0, startTime);
-  param.linearRampToValueAtTime(coefficient, startTime + DEFAULT_RAMP_SECONDS);
+  param.linearRampToValueAtTime(
+    coefficient,
+    startTime + DEFAULT_RAMP_SECONDS,
+  );
 }
 
 class StereoChannelRouter {
@@ -171,10 +174,7 @@ export class AudioOutputEngine implements SessionResource {
 
   constructor(context: AudioContext, options: AudioOutputEngineOptions = {}) {
     this.#context = context;
-    const profile = validateLevelProfile(
-      options.levelProfile ?? GENERAL_LEVEL_PROFILE,
-    );
-    this.#levelProfile = { ...profile };
+    this.#levelProfile = { ...getLevelProfile(options.levelProfile ?? "general") };
     this.#masterGain = context.createGain();
     this.#masterGain.gain.setValueAtTime(
       dbToGain(this.#levelProfile.defaultDb),
@@ -195,6 +195,10 @@ export class AudioOutputEngine implements SessionResource {
 
   setLevelDb(db: number): void {
     this.#assertUsable();
+    if (!Number.isFinite(db)) {
+      throw new RangeError("Level must be a finite dB value");
+    }
+
     const safeDb = clamp(
       db,
       this.#levelProfile.minDb,
@@ -319,7 +323,11 @@ export class AudioOutputEngine implements SessionResource {
       },
       setPan: (value) => {
         if (!stopped) {
-          rampParam(panner.pan, clamp(value, -1, 1), this.#context.currentTime);
+          rampParam(
+            panner.pan,
+            clamp(value, -1, 1),
+            this.#context.currentTime,
+          );
         }
       },
       stop: () => {
