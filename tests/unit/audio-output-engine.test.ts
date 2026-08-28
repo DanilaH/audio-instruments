@@ -196,7 +196,7 @@ describe("AudioOutputEngine", () => {
   it("enforces the hearing -36 dB default and -24 dB maximum in the shared engine", () => {
     const context = new FakeAudioContext();
     const engine = new AudioOutputEngine(context as unknown as AudioContext, {
-      levelProfile: HEARING_LEVEL_PROFILE,
+      levelProfile: "hearing",
     });
     const master = context.gains[0]?.gain;
 
@@ -210,6 +210,23 @@ describe("AudioOutputEngine", () => {
       value: dbToGain(-24),
       time: 2.05,
     });
+  });
+
+  it("rejects unknown profiles and non-finite Level values at the engine boundary", () => {
+    const invalidContext = new FakeAudioContext();
+    expect(
+      () =>
+        new AudioOutputEngine(invalidContext as unknown as AudioContext, {
+          levelProfile: "custom" as "hearing",
+        }),
+    ).toThrow("Unknown Level profile");
+
+    const context = new FakeAudioContext();
+    const engine = new AudioOutputEngine(context as unknown as AudioContext);
+    expect(() => engine.setLevelDb(Number.NaN)).toThrow("finite dB value");
+    expect(() => engine.setLevelDb(Number.POSITIVE_INFINITY)).toThrow(
+      "finite dB value",
+    );
   });
 
   it("fades every generated source in from silence over the shared 50 ms ramp", () => {
