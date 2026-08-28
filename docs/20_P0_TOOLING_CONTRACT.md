@@ -24,6 +24,7 @@ P0 installs:
 
 ```text
 typescript
+@types/node
 @astrojs/check
 
 vitest
@@ -40,6 +41,8 @@ prettier
 prettier-plugin-astro
 ```
 
+`@types/node` is required because repository TypeScript validation includes Node-hosted configuration such as `playwright.config.ts`, which reads `process.env.CI`.
+
 P8 only:
 
 ```text
@@ -47,6 +50,38 @@ P8 only:
 ```
 
 Do not install `@astrojs/sitemap` during P0–P6 merely to satisfy future production-indexing tests.
+
+## pnpm 11 supply-chain baseline
+
+Keep the pnpm 11 supply-chain defaults enabled.
+
+In particular:
+
+```text
+minimum release-age verification remains enabled
+strict dependency-build approval remains enabled
+```
+
+If a newly published dependency is rejected by the release-age policy, prefer a mature reviewed version rather than disabling the policy merely to take the newest release.
+
+P0 requires:
+
+```text
+pnpm-workspace.yaml
+```
+
+with the narrow install-script allowlist:
+
+```yaml
+allowBuilds:
+  esbuild: true
+```
+
+`esbuild` is approved because the validated Astro/Vite toolchain requires its install step.
+
+Do not use `dangerouslyAllowAllBuilds`.
+
+Any additional dependency lifecycle-script approval requires normal review and a documented reason.
 
 ## Astro type/check contract
 
@@ -61,9 +96,28 @@ Required packages:
 ```text
 @astrojs/check
 typescript
+@types/node
 ```
 
 Strict TypeScript remains enabled through the Astro/TS config.
+
+The official Phosphor web package exposes weight-specific side-effect imports such as the Regular CSS payload. Because that CSS subpath does not provide TypeScript declarations, P0 declares only the used Regular subpath in `src/env.d.ts`; this declaration must not be widened to hide unrelated missing-module errors.
+
+## Vitest contract
+
+Configuration file:
+
+```text
+vitest.config.ts
+```
+
+Unit discovery is explicitly limited to:
+
+```text
+tests/unit/**/*.test.ts
+```
+
+Vitest must not collect `tests/browser/**`; Playwright owns that suite.
 
 ## ESLint contract
 
@@ -91,7 +145,7 @@ eslint-plugin-astro recommended flat config
 Lint script:
 
 ```text
-eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts"
+eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts"
 ```
 
 Do not use an ESLint invocation that silently skips `.astro` files.
@@ -132,8 +186,8 @@ preview      = astro preview --host 127.0.0.1
 check        = astro check
 test         = vitest run
 test:browser = pnpm build && playwright test
-lint         = eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts"
-format:check = prettier --check "src/**/*.{astro,css,js,mjs,ts}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts" "eslint.config.mjs" ".prettierrc.mjs" "astro.config.mjs" "package.json" "tsconfig.json" 
+lint         = eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts"
+format:check = prettier --check "src/**/*.{astro,css,js,mjs,ts}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts" "eslint.config.mjs" ".prettierrc.mjs" "astro.config.mjs" "pnpm-workspace.yaml" "package.json" "tsconfig.json"
 ```
 
 `test` is never watch mode.
@@ -245,6 +299,7 @@ tests/unit/registry.test.ts
 Minimum assertions:
 
 ```text
+registry contains the complete 16-tool v1 set without duplicate ids/routes
 registry entries satisfy the planned/live schema
 public filtering returns only live entries
 planned entries are excluded from public navigation data
@@ -267,6 +322,9 @@ GET /
 GET /privacy
 → page renders
 → no unhandled page error
+
+all planned tool routes
+→ return 404 until explicitly promoted live and implemented
 
 desktop smoke viewport
 → document has no horizontal overflow
