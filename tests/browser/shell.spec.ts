@@ -1,5 +1,24 @@
 import { expect, test } from '@playwright/test';
 
+const plannedRoutes = [
+  '/sound-test',
+  '/speaker-test',
+  '/headphone-test',
+  '/stereo-test',
+  '/phase-test',
+  '/surround-sound-test',
+  '/bass-test',
+  '/tone-generator',
+  '/frequency-sweep',
+  '/noise-generator',
+  '/microphone-test',
+  '/spectrum-analyzer',
+  '/pitch-detector',
+  '/decibel-meter',
+  '/audio-latency-test',
+  '/hearing-frequency-test',
+];
+
 for (const path of ['/', '/privacy']) {
   test(`${path} renders without page errors`, async ({ page }) => {
     const errors: Error[] = [];
@@ -14,14 +33,6 @@ for (const path of ['/', '/privacy']) {
 
 test('homepage exposes no planned tool links', async ({ page }) => {
   await page.goto('/');
-
-  const plannedRoutes = [
-    '/tone-generator',
-    '/sound-test',
-    '/speaker-test',
-    '/headphone-test',
-    '/microphone-test',
-  ];
 
   for (const route of plannedRoutes) {
     await expect(page.locator(`a[href="${route}"]`)).toHaveCount(0);

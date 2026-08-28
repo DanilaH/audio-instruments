@@ -1,8 +1,23 @@
 ---
 import BaseLayout from '../layouts/BaseLayout.astro';
-import { getPublicTools } from '../registry/tools';
+import {
+  getPublicTools,
+  getPublicToolsByCategory,
+  type NavigationCategory,
+} from '../registry/tools';
 
 const publicTools = getPublicTools();
+const featuredTargetIds = ['tone-generator', 'speaker-test', 'microphone-test', 'headphone-test'];
+const featuredTools = featuredTargetIds
+  .map((id) => publicTools.find((tool) => tool.id === id))
+  .filter((tool) => tool !== undefined);
+
+const categories: readonly { id: NavigationCategory; label: string }[] = [
+  { id: 'output', label: 'Output diagnostics' },
+  { id: 'signal-frequency', label: 'Signal and frequency' },
+  { id: 'input-analysis', label: 'Input and analysis' },
+  { id: 'timing-specialist', label: 'Timing / specialist' },
+];
 ---
 
 <BaseLayout
@@ -27,7 +42,53 @@ const publicTools = getPublicTools();
     </div>
   </section>
 
-  {publicTools.length > 0 && <section id="tools" class="shell" aria-label="Live audio tools"></section>}
+  {
+    featuredTools.length > 0 && (
+      <section class="shell tools-section" aria-labelledby="featured-tools-title">
+        <p class="eyebrow">Featured tools</p>
+        <h2 id="featured-tools-title">Start with a focused check.</h2>
+        <div class="tool-grid tool-grid--featured">
+          {featuredTools.map((tool) => (
+            <a class="tool-card" href={tool.route} data-tool-status={tool.status}>
+              <span class="tool-card__accent" data-accent={tool.accent} aria-hidden="true" />
+              <strong>{tool.title}</strong>
+              <span>Open tool</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    publicTools.length > 0 && (
+      <section id="tools" class="shell tools-section" aria-labelledby="all-tools-title">
+        <p class="eyebrow">All live tools</p>
+        <h2 id="all-tools-title">Audio tools by job.</h2>
+        <div class="tool-categories">
+          {categories.map(({ id, label }) => {
+            const tools = getPublicToolsByCategory(id);
+            if (tools.length === 0) return null;
+
+            return (
+              <section class="tool-category" aria-labelledby={`category-${id}`}>
+                <h3 id={`category-${id}`}>{label}</h3>
+                <div class="tool-grid">
+                  {tools.map((tool) => (
+                    <a class="tool-card" href={tool.route} data-tool-status={tool.status}>
+                      <span class="tool-card__accent" data-accent={tool.accent} aria-hidden="true" />
+                      <strong>{tool.title}</strong>
+                      <span>Open tool</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </section>
+    )
+  }
 
   <section class="trust">
     <div class="shell trust__panel">
