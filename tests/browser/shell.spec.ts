@@ -1,6 +1,10 @@
 import { expect, test } from "@playwright/test";
 
-import { getPublicTools, toolRegistry } from "../../src/registry/tools";
+import {
+  getPublicTools,
+  toolRegistry,
+  type ToolDefinition,
+} from "../../src/registry/tools";
 
 const plannedRoutes = toolRegistry
   .filter((tool) => tool.status === "planned")
@@ -14,7 +18,10 @@ const featuredTargetIds = [
 ] as const;
 const featuredRoutes = featuredTargetIds
   .map((id) => toolRegistry.find((tool) => tool.id === id))
-  .filter((tool) => tool?.status === "live")
+  .filter(
+    (tool): tool is ToolDefinition =>
+      tool !== undefined && tool.status === "live",
+  )
   .map((tool) => tool.route);
 
 const targetViewports = [
