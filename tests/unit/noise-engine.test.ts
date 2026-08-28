@@ -39,9 +39,7 @@ describe("NoiseEngine primitives", () => {
   it("matches the canonical xorshift32 reference mapping", () => {
     const random = createXorshift32(WHITE_NOISE_SEED);
     const expected = [
-      -0.68009846184405,
-      -0.4541176360692172,
-      0.9196747205964464,
+      -0.68009846184405, -0.4541176360692172, 0.9196747205964464,
       -0.708945881973241,
     ];
 
@@ -96,7 +94,9 @@ describe("NoiseEngine primitives", () => {
     expect(first.getChannelData).toHaveBeenCalledWith(0);
     expect(first.channel).toEqual(second.channel);
     expect(first.channel.some((sample) => sample !== 0)).toBe(true);
-    expect(peak(first.channel)).toBeLessThanOrEqual(REFERENCE_NOISE_PEAK + 1e-6);
+    expect(peak(first.channel)).toBeLessThanOrEqual(
+      REFERENCE_NOISE_PEAK + 1e-6,
+    );
     expect(first.channel.at(-1)).toBe(first.channel[0]);
   });
 });

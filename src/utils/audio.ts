@@ -50,7 +50,9 @@ export function validateLevelProfile(profile: LevelProfile): LevelProfile {
     throw new RangeError("Level profile values must be finite numbers");
   }
   if (minDb > defaultDb || defaultDb > maxDb) {
-    throw new RangeError("Level profile must satisfy minDb <= defaultDb <= maxDb");
+    throw new RangeError(
+      "Level profile must satisfy minDb <= defaultDb <= maxDb",
+    );
   }
   if (maxDb > 0) {
     throw new RangeError("Level profile maxDb must not exceed unity gain");
