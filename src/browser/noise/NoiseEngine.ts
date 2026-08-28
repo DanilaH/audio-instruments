@@ -98,7 +98,7 @@ export function conditionLoopBoundary(
 export function generateNoiseSamples(
   kind: NoiseKind,
   sampleCount: number,
-  seed = NOISE_SEEDS[kind],
+  seed: number = NOISE_SEEDS[kind],
 ): Float32Array {
   if (!Number.isInteger(sampleCount) || sampleCount <= 0) {
     throw new RangeError("sampleCount must be a positive integer");
