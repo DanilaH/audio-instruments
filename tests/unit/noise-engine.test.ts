@@ -21,6 +21,10 @@ function peak(samples: Float32Array): number {
   );
 }
 
+function mean(samples: Float32Array): number {
+  return samples.reduce((sum, sample) => sum + sample, 0) / samples.length;
+}
+
 function createFakeAudioBufferContext(length: number) {
   const channel = new Float32Array(length);
   const getChannelData = vi.fn(() => channel);
@@ -39,7 +43,9 @@ describe("NoiseEngine primitives", () => {
   it("matches the canonical xorshift32 reference mapping", () => {
     const random = createXorshift32(WHITE_NOISE_SEED);
     const expected = [
-      -0.68009846184405, -0.4541176360692172, 0.9196747205964464,
+      -0.68009846184405,
+      -0.4541176360692172,
+      0.9196747205964464,
       -0.708945881973241,
     ];
 
@@ -62,10 +68,7 @@ describe("NoiseEngine primitives", () => {
 
   it("removes the brown-noise DC mean before normalization", () => {
     const samples = generateNoiseSamples("brown", 44_100, BROWN_NOISE_SEED);
-    const mean =
-      samples.reduce((sum, sample) => sum + sample, 0) / samples.length;
-
-    expect(Math.abs(mean)).toBeLessThan(1e-5);
+    expect(Math.abs(mean(samples))).toBeLessThan(1e-5);
   });
 
   it("conditions the final loop sample to equal the first", () => {
@@ -73,6 +76,18 @@ describe("NoiseEngine primitives", () => {
     conditionLoopBoundary(samples, REFERENCE_NOISE_SAMPLE_RATE);
 
     expect(samples.at(-1)).toBe(samples[0]);
+  });
+
+  it("preserves brown-noise DC removal after loop-boundary conditioning", () => {
+    const length = REFERENCE_NOISE_SAMPLE_RATE;
+    const fake = createFakeAudioBufferContext(length);
+    const engine = new NoiseEngine(fake.context);
+
+    engine.createNoiseBuffer("brown", { durationSeconds: 1 });
+
+    expect(Math.abs(mean(fake.channel))).toBeLessThan(1e-5);
+    expect(peak(fake.channel)).toBeLessThanOrEqual(REFERENCE_NOISE_PEAK + 1e-6);
+    expect(fake.channel.at(-1)).toBe(fake.channel[0]);
   });
 
   it("creates the phase-test buffer with the locked phase seed at canonical 44.1 kHz", () => {
