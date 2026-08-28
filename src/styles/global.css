@@ -88,6 +88,7 @@ textarea {
 .site-nav {
   display: flex;
   gap: 18px;
+  margin-left: auto;
   color: var(--color-ink-muted);
 }
 .site-nav a {
@@ -97,9 +98,6 @@ textarea {
   color: var(--color-ink);
 }
 
-main {
-  overflow: clip;
-}
 .hero {
   padding: clamp(56px, 9vw, 112px) 0 72px;
 }
@@ -363,7 +361,10 @@ h3 {
 }
 
 @media (max-width: 520px) {
-  .site-header__inner,
+  .site-header__inner {
+    align-items: flex-start;
+    flex-wrap: wrap;
+  }
   .site-footer__inner {
     align-items: flex-start;
   }
