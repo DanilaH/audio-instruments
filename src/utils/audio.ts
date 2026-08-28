@@ -24,6 +24,14 @@ export function dbToGain(db: number): number {
   return 10 ** (db / 20);
 }
 
+export function getWorstCaseSummingCoefficient(sourceCount: number): number {
+  if (!Number.isInteger(sourceCount) || sourceCount <= 0) {
+    throw new RangeError("sourceCount must be a positive integer");
+  }
+
+  return 1 / sourceCount;
+}
+
 export function getEffectiveMaxFrequency(
   sampleRate: number,
   nominalMaxHz: number,
