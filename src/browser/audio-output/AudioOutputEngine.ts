@@ -62,6 +62,13 @@ function validateSourceCoefficient(value: number): number {
   return value;
 }
 
+function normalizePan(value: number): number {
+  if (!Number.isFinite(value)) {
+    throw new RangeError("pan must be a finite number");
+  }
+  return clamp(value, -1, 1);
+}
+
 function holdParamAtTime(param: AudioParam, time: number): void {
   if (typeof param.cancelAndHoldAtTime === "function") {
     param.cancelAndHoldAtTime(time);
@@ -296,13 +303,14 @@ export class AudioOutputEngine implements SessionResource {
     if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) {
       throw new RangeError("frequencyHz must be a positive finite number");
     }
+    const safePan = normalizePan(pan);
 
     const oscillator = this.#context.createOscillator();
     const sourceGain = this.#context.createGain();
     const panner = this.#context.createStereoPanner();
     oscillator.frequency.setValueAtTime(frequencyHz, startTime);
     scheduleSourceFadeIn(sourceGain.gain, 1, startTime);
-    panner.pan.setValueAtTime(clamp(pan, -1, 1), startTime);
+    panner.pan.setValueAtTime(safePan, startTime);
     oscillator.connect(sourceGain);
     sourceGain.connect(panner);
     panner.connect(this.#masterGain);
@@ -334,7 +342,7 @@ export class AudioOutputEngine implements SessionResource {
       },
       setPan: (value) => {
         if (!stopped) {
-          rampParam(panner.pan, clamp(value, -1, 1), this.#context.currentTime);
+          rampParam(panner.pan, normalizePan(value), this.#context.currentTime);
         }
       },
       stop: () => {
