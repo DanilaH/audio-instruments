@@ -46,6 +46,22 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
       </section>
 
       <section class="tone-controls" aria-label="Tone settings">
+        <div class="tone-primary">
+          <div class="tone-actions">
+            <PlayStopControl id="tone-play-stop" isActive={false} />
+            <span>Stops with a short click-reduction fade.</span>
+          </div>
+
+          <div class="tone-safety">
+            <i class="ph ph-speaker-low" aria-hidden="true"></i>
+            <p>
+              Start with your device/headphone volume low. Increase it only to a
+              comfortable listening level. Do not turn the volume up to
+              compensate for a tone you cannot hear.
+            </p>
+          </div>
+        </div>
+
         <FrequencyControl
           id="tone-frequency"
           valueHz={440}
@@ -81,22 +97,8 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
 
         <LevelControl id="tone-level" valueDb={-24} minDb={-60} maxDb={-12} />
 
-        <div class="tone-safety">
-          <i class="ph ph-speaker-low" aria-hidden="true"></i>
-          <p>
-            Start with your device/headphone volume low. Increase it only to a
-            comfortable listening level. Do not turn the volume up to compensate
-            for a tone you cannot hear.
-          </p>
-        </div>
-
         <CapabilityNotice id="tone-frequency-cap" />
         <p class="tone-error" data-tone-error role="alert" hidden></p>
-
-        <div class="tone-actions">
-          <PlayStopControl id="tone-play-stop" isActive={false} />
-          <span>Stops with a short click-reduction fade.</span>
-        </div>
       </section>
     </div>
   </InstrumentSurface>
@@ -177,11 +179,16 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
 
   .tone-controls {
     display: grid;
-    align-content: center;
+    align-content: start;
     gap: 18px;
     min-width: 0;
     padding: clamp(22px, 3vw, 34px);
     background: rgb(255 253 252 / 0.72);
+  }
+
+  .tone-primary {
+    display: grid;
+    gap: 12px;
   }
 
   .tone-presets {
@@ -222,7 +229,7 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
     display: grid;
     grid-template-columns: auto 1fr;
     gap: 10px;
-    padding: 12px 14px;
+    padding: 11px 13px;
     border-radius: var(--radius-control);
     background: rgb(255 215 106 / 0.18);
   }
@@ -234,8 +241,8 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
   .tone-safety p,
   .tone-error {
     margin: 0;
-    font-size: 0.84rem;
-    line-height: 1.5;
+    font-size: 0.8rem;
+    line-height: 1.45;
   }
 
   .tone-error {
