@@ -57,11 +57,11 @@ describe("NoiseEngine primitives", () => {
     const channel = new Float32Array(
       REFERENCE_NOISE_SAMPLE_RATE * PHASE_TEST_DURATION_SECONDS,
     );
-    const copyToChannel = vi.fn((source: Float32Array) => channel.set(source));
+    const getChannelData = vi.fn(() => channel);
     const buffer = {
       sampleRate: REFERENCE_NOISE_SAMPLE_RATE,
       length: channel.length,
-      copyToChannel,
+      getChannelData,
     } as unknown as AudioBuffer;
     const createBuffer = vi.fn(() => buffer);
     const context = { createBuffer } as unknown as AudioContext;
@@ -75,6 +75,7 @@ describe("NoiseEngine primitives", () => {
       REFERENCE_NOISE_SAMPLE_RATE * PHASE_TEST_DURATION_SECONDS,
       REFERENCE_NOISE_SAMPLE_RATE,
     );
-    expect(copyToChannel).toHaveBeenCalledTimes(1);
+    expect(getChannelData).toHaveBeenCalledWith(0);
+    expect(channel.some((sample) => sample !== 0)).toBe(true);
   });
 });
