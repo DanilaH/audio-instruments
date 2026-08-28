@@ -1,0 +1,108 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import SoundTest from "../tools/sound-test/SoundTest.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const soundTool = toolRegistry.find((tool) => tool.id === "sound-test");
+if (!soundTool) throw new Error("Sound Test registry entry is missing");
+
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = soundTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Sound Test — Browser Audio Lab"
+  description="Run a quick browser sound test with 500 Hz Left, Both and Right reference bursts plus a guided stereo output sequence."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Output diagnostics"
+    title="Sound Test"
+    description="Run a fast output smoke test with the same short reference signal on the left channel, both channels or the right channel."
+    accent="peach"
+  >
+    <SoundTest />
+
+    <section class="sound-content" aria-labelledby="sound-about-title">
+      <div>
+        <p class="eyebrow">What to listen for</p>
+        <h2 id="sound-about-title">Confirm the expected channel is audible</h2>
+      </div>
+      <div class="sound-content__copy">
+        <p>
+          Left, Both and Right each use the same browser-generated 500 Hz sine
+          burst. Use them as a quick check that audio is reaching the output you
+          expect before moving on to more detailed diagnostics.
+        </p>
+        <p>
+          The browser controls the digital channel target only. It cannot verify
+          which physical speaker played, diagnose hardware health or measure
+          acoustic loudness, so the result is your own listening observation.
+        </p>
+      </div>
+    </section>
+
+    <section class="sound-help" aria-labelledby="sound-help-title">
+      <h2 id="sound-help-title">If a channel is missing or unexpected</h2>
+      <div class="sound-help__grid">
+        <p>
+          Confirm the selected system output device, cable or Bluetooth
+          connection, then repeat Left and Right at a comfortable system volume.
+        </p>
+        <p>
+          A missing or swapped result is a useful troubleshooting signal, not an
+          automatic diagnosis. More detailed speaker and stereo checks will stay
+          separate from this quick smoke test.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .sound-content,
+  .sound-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .sound-content h2,
+  .sound-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .sound-content__copy,
+  .sound-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .sound-content p,
+  .sound-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .sound-content,
+    .sound-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
