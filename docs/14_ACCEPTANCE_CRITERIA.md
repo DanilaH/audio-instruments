@@ -342,8 +342,8 @@ does not interpret unavailable hearing frequencies as unheard
 A PR is not mergeable unless:
 
 ```text
-independent Review #1 recorded
-independent Review #2 recorded
+Review #1 cold pass recorded
+Review #2 cold pass recorded
 full-ci-approved added only after Review #2
 PR moved from Draft → Ready only after authorization
 full-validation successful on latest reviewed commit

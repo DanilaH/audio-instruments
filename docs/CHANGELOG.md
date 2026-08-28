@@ -14,7 +14,8 @@ Changes:
 - separated Vitest unit discovery from Playwright browser discovery through `vitest.config.ts`;
 - expanded registry acceptance coverage to the complete 16-tool set with unique ids/routes;
 - expanded browser smoke coverage so every planned tool route must remain `404` until implementation and `live` promotion happen together;
-- validated the scaffold with frozen install, Prettier, ESLint, `astro check`, Vitest and production build before independent review.
+- validated the scaffold with frozen install, Prettier, ESLint, `astro check`, Vitest and production build before required review passes;
+- adopted the owner-approved autonomous review mode: the project assistant performs Review #1 and Review #2 itself as distinct cold passes over the actual PR diff; casual implementation-time self-checking still does not count.
 
 ## v1.9 — 2026-08-28
 

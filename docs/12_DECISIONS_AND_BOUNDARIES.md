@@ -166,14 +166,14 @@ SEO-09 Sitemap implementation uses @astrojs/sitemap in P8 only when indexing is 
 ```text
 PROC-01 Development occurs on a dedicated branch.
 PROC-02 Early Draft PR uses the minimum checkpoint commit required by Git.
-PROC-03 Review #1 and Review #2 are independent from the implementing agent.
+PROC-03 Review #1 and Review #2 are separate cold review passes over the actual PR diff; in the owner-approved single-assistant mode, the same project assistant performs them after explicitly switching from implementation to review mode.
 PROC-04 Draft remains Draft through Review #2.
 PROC-05 After Review #2, add label `full-ci-approved` while still Draft.
 PROC-06 Then mark PR Ready for review.
 PROC-07 `full-validation` runs only when Ready + `full-ci-approved`.
 PROC-08 Branch protection requires `merge-gate`, not `full-validation`.
 PROC-09 `merge-gate` always executes for tracked PR events and fails unless authorization exists and full-validation succeeded.
-PROC-10 Failed validation triggers fix, commit, appropriate independent re-review and rerun.
+PROC-10 Failed validation triggers fix, commit, appropriate cold re-review and rerun.
 PROC-11 Material re-review returns PR to Draft and removes `full-ci-approved` before a new Review #2.
 PROC-12 Merge requires required reviews, `merge-gate` green and acceptance criteria.
 PROC-13 Default roadmap merge strategy is squash merge.

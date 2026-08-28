@@ -325,23 +325,27 @@ Avoid unrelated refactors.
 
 Update authoritative docs only when a real decision changes.
 
-## 17. Independent-review requirement
+## 17. Required review-pass separation
 
-Implementer self-review is useful but **does not count** as Review #1 or Review #2.
+Review #1 and Review #2 must inspect the actual PR diff as separate cold-review passes.
 
-A qualifying review must be performed by one of:
+Per explicit project-owner decision, the same project assistant that implemented the task also performs these reviews. This is the default autonomous workflow.
+
+Required separation:
 
 ```text
-human reviewer
-separate review agent/model
-separate ChatGPT review context acting only as reviewer
+implementation stops
+→ reviewer pass re-reads specs + actual diff
+→ findings recorded durably
+→ implementation fixes
+→ second reviewer pass re-reads updated diff
 ```
 
-The reviewer must inspect the actual PR diff.
+Ordinary implementation-time self-checking does **not** count as Review #1 or Review #2.
 
-Review findings should be recorded in the PR conversation or another durable review artifact.
+A human, separate agent/model or separate ChatGPT context may be used when useful, but is not required.
 
-If a post-validation fix materially changes product behavior, architecture, UX, claims, privacy or safety, the changed diff requires another independent substantive review before merge.
+If a post-validation fix materially changes product behavior, architecture, UX, claims, privacy or safety, the changed diff requires another substantive cold review before merge.
 
 ## 18. Frequency capability rule
 
