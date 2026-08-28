@@ -2,16 +2,19 @@ name: Bootstrap Lockfile
 
 on:
   pull_request:
-    types: [opened, synchronize]
+    types: [synchronize]
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   lockfile:
+    if: ${{ github.actor != 'github-actions[bot]' }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
       - uses: pnpm/setup@v2
         with:
           version: 11.21.0
@@ -19,8 +22,11 @@ jobs:
           cache: false
           install: false
       - run: pnpm install --lockfile-only
-      - uses: actions/upload-artifact@v7
-        with:
-          name: p0-pnpm-lock
-          path: pnpm-lock.yaml
-          if-no-files-found: error
+      - name: Commit resolved lockfile and remove bootstrap workflow
+        run: |
+          rm .github/workflows/bootstrap-lockfile.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add pnpm-lock.yaml .github/workflows/bootstrap-lockfile.yml
+          git commit -m "chore: add resolved pnpm lockfile"
+          git push origin HEAD:${{ github.head_ref }}
