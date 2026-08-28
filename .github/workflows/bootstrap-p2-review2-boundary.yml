@@ -1,0 +1,53 @@
+name: Bootstrap P2 Review 2 Boundary Gate
+
+on:
+  pull_request:
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  review2-boundary-gate:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: false
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Normalize boundary fix
+        run: >-
+          pnpm exec prettier --write
+          src/components/navigation/RelatedTools.astro
+          src/pages/tone-generator.astro
+      - name: Lint boundary fix
+        run: >-
+          pnpm exec eslint
+          src/components/navigation/RelatedTools.astro
+          src/pages/tone-generator.astro
+      - run: pnpm check
+      - name: Verify components do not import registry metadata
+        run: |
+          if grep -R --line-number --include='*.astro' --include='*.ts' 'registry/' src/components; then
+            echo 'src/components must not import registry/* per docs/06_ARCHITECTURE.md'
+            exit 1
+          fi
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Verify publication and planned-route contract
+        run: pnpm build && pnpm exec playwright test tests/browser/shell.spec.ts
+      - name: Commit normalized sources and remove temporary workflow
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+DanilaH@users.noreply.github.com"
+          git add src/components/navigation/RelatedTools.astro src/pages/tone-generator.astro
+          git rm .github/workflows/bootstrap-p2-review2-boundary.yml
+          git commit -m "chore: finalize Review #2 boundary fix"
+          git push origin HEAD:${{ github.head_ref }}
