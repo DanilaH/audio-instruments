@@ -1,0 +1,79 @@
+name: Bootstrap P2 Visual QA
+
+on:
+  pull_request:
+    types: [synchronize]
+
+permissions:
+  contents: write
+
+jobs:
+  visual-qa:
+    if: ${{ github.actor != 'github-actions[bot]' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.head_ref }}
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: false
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Capture target viewport screenshots
+        run: |
+          pnpm preview > /tmp/browser-audio-lab-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill "$PREVIEW_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4321/tone-generator > /dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          mkdir -p visual-qa
+          node --input-type=module <<'NODE'
+          import { chromium } from '@playwright/test';
+
+          const browser = await chromium.launch();
+          const targets = [
+            { name: 'tone-1366x768', width: 1366, height: 768 },
+            { name: 'tone-390x844', width: 390, height: 844 },
+          ];
+
+          for (const target of targets) {
+            const context = await browser.newContext({
+              viewport: { width: target.width, height: target.height },
+            });
+            const page = await context.newPage();
+            await page.goto('http://127.0.0.1:4321/tone-generator', {
+              waitUntil: 'networkidle',
+            });
+            await page.screenshot({
+              path: `visual-qa/${target.name}.png`,
+              fullPage: false,
+            });
+            await context.close();
+          }
+
+          await browser.close();
+          NODE
+      - uses: actions/upload-artifact@v7
+        with:
+          name: p2-tone-visual-qa
+          path: visual-qa
+          if-no-files-found: error
+          retention-days: 7
+      - name: Remove temporary visual QA workflow
+        run: |
+          rm .github/workflows/bootstrap-p2-visual-qa.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "chore: remove P2.1 visual QA workflow"
+          git push origin HEAD:${{ github.head_ref }}
