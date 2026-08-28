@@ -77,6 +77,18 @@ function rampParam(
   param.linearRampToValueAtTime(target, time + durationSeconds);
 }
 
+function scheduleSourceFadeIn(
+  param: AudioParam,
+  coefficient: number,
+  startTime: number,
+): void {
+  param.setValueAtTime(0, startTime);
+  param.linearRampToValueAtTime(
+    coefficient,
+    startTime + DEFAULT_RAMP_SECONDS,
+  );
+}
+
 class StereoChannelRouter {
   readonly #context: AudioContext;
   readonly #leftGain: GainNode;
@@ -165,7 +177,9 @@ export class AudioOutputEngine implements SessionResource {
   }
 
   get levelDb(): number {
-    return 20 * Math.log10(Math.max(this.#masterGain.gain.value, Number.EPSILON));
+    return 20 * Math.log10(
+      Math.max(this.#masterGain.gain.value, Number.EPSILON),
+    );
   }
 
   setLevelDb(db: number): void {
@@ -197,7 +211,7 @@ export class AudioOutputEngine implements SessionResource {
 
     oscillator.type = options.waveform ?? "sine";
     oscillator.frequency.setValueAtTime(options.frequencyHz, startTime);
-    sourceGain.gain.setValueAtTime(coefficient, startTime);
+    scheduleSourceFadeIn(sourceGain.gain, coefficient, startTime);
     oscillator.connect(sourceGain);
     oscillator.start(startTime);
 
@@ -211,7 +225,10 @@ export class AudioOutputEngine implements SessionResource {
           throw new RangeError("frequencyHz must be a positive finite number");
         }
         holdParamAtTime(oscillator.frequency, this.#context.currentTime);
-        oscillator.frequency.setValueAtTime(frequencyHz, this.#context.currentTime);
+        oscillator.frequency.setValueAtTime(
+          frequencyHz,
+          this.#context.currentTime,
+        );
       },
       setWaveform: (type) => {
         if (!stopped) oscillator.type = type;
@@ -259,6 +276,7 @@ export class AudioOutputEngine implements SessionResource {
     const sourceGain = this.#context.createGain();
     const panner = this.#context.createStereoPanner();
     oscillator.frequency.setValueAtTime(frequencyHz, startTime);
+    scheduleSourceFadeIn(sourceGain.gain, 1, startTime);
     panner.pan.setValueAtTime(clamp(pan, -1, 1), startTime);
     oscillator.connect(sourceGain);
     sourceGain.connect(panner);
@@ -281,7 +299,11 @@ export class AudioOutputEngine implements SessionResource {
       },
       setPan: (value) => {
         if (!stopped) {
-          rampParam(panner.pan, clamp(value, -1, 1), this.#context.currentTime);
+          rampParam(
+            panner.pan,
+            clamp(value, -1, 1),
+            this.#context.currentTime,
+          );
         }
       },
       stop: () => {
@@ -308,7 +330,10 @@ export class AudioOutputEngine implements SessionResource {
     return playback;
   }
 
-  startBuffer(buffer: AudioBuffer, options: BufferStartOptions = {}): BufferPlayback {
+  startBuffer(
+    buffer: AudioBuffer,
+    options: BufferStartOptions = {},
+  ): BufferPlayback {
     this.#assertUsable();
     const source = this.#context.createBufferSource();
     const sourceGain = this.#context.createGain();
@@ -323,7 +348,7 @@ export class AudioOutputEngine implements SessionResource {
 
     source.buffer = buffer;
     source.loop = options.loop ?? false;
-    sourceGain.gain.setValueAtTime(coefficient, startTime);
+    scheduleSourceFadeIn(sourceGain.gain, coefficient, startTime);
     source.connect(sourceGain);
     source.start(startTime, options.offsetSeconds ?? 0);
 
