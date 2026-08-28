@@ -291,30 +291,37 @@ test("Tone Generator unlocks a real AudioContext in Chromium", async ({
   await expect(page.locator("#tone-status")).toContainText("Idle");
 });
 
-test("Tone primary interaction remains reachable in the 1366x768 first viewport", async ({
-  page,
-}) => {
-  await page.setViewportSize({ width: 1366, height: 768 });
-  await openTone(page);
+const primaryViewportTargets = [
+  { width: 1366, height: 768 },
+  { width: 390, height: 844 },
+] as const;
 
-  const instrument = page.locator(
-    '[aria-label="Tone Generator controls and waveform"]',
-  );
-  const playStop = page.locator("#tone-play-stop");
-  const safety = page.locator(".tone-safety");
+for (const viewport of primaryViewportTargets) {
+  test(`Tone safety and primary action are visible at ${viewport.width}x${viewport.height}`, async ({
+    page,
+  }) => {
+    await page.setViewportSize(viewport);
+    await openTone(page);
 
-  await expect(instrument).toBeVisible();
-  await expect(playStop).toBeVisible();
-  await expect(safety).toBeVisible();
+    const instrument = page.locator(
+      '[aria-label="Tone Generator controls and waveform"]',
+    );
+    const playStop = page.locator("#tone-play-stop");
+    const safety = page.locator(".tone-safety");
 
-  const playBox = await playStop.boundingBox();
-  const safetyBox = await safety.boundingBox();
-  expect(playBox).not.toBeNull();
-  expect(safetyBox).not.toBeNull();
-  expect((playBox?.y ?? 9999) + (playBox?.height ?? 0)).toBeLessThanOrEqual(
-    768,
-  );
-  expect((safetyBox?.y ?? 9999) + (safetyBox?.height ?? 0)).toBeLessThanOrEqual(
-    768,
-  );
-});
+    await expect(instrument).toBeVisible();
+    await expect(playStop).toBeVisible();
+    await expect(safety).toBeVisible();
+
+    const playBox = await playStop.boundingBox();
+    const safetyBox = await safety.boundingBox();
+    expect(playBox).not.toBeNull();
+    expect(safetyBox).not.toBeNull();
+    expect(
+      (playBox?.y ?? 9999) + (playBox?.height ?? 0),
+    ).toBeLessThanOrEqual(viewport.height);
+    expect(
+      (safetyBox?.y ?? 9999) + (safetyBox?.height ?? 0),
+    ).toBeLessThanOrEqual(viewport.height);
+  });
+}
