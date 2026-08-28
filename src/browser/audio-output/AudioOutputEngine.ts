@@ -239,7 +239,6 @@ export class AudioOutputEngine implements SessionResource {
 
     let stopped = false;
     let cleaned = false;
-    let playback!: OscillatorPlayback;
     const cleanup = () => {
       if (cleaned) return;
       cleaned = true;
@@ -250,7 +249,7 @@ export class AudioOutputEngine implements SessionResource {
       this.#active.delete(playback);
     };
 
-    playback = {
+    const playback: OscillatorPlayback = {
       oscillator,
       setChannelMode: (mode) => router.setMode(mode),
       setFrequency: (frequencyHz) => {
@@ -313,7 +312,6 @@ export class AudioOutputEngine implements SessionResource {
 
     let stopped = false;
     let cleaned = false;
-    let playback!: PannedOscillatorPlayback;
     const cleanup = () => {
       if (cleaned) return;
       cleaned = true;
@@ -324,7 +322,7 @@ export class AudioOutputEngine implements SessionResource {
       this.#active.delete(playback);
     };
 
-    playback = {
+    const playback: PannedOscillatorPlayback = {
       oscillator,
       setFrequency: (nextFrequencyHz) => {
         if (stopped) return;
@@ -387,7 +385,6 @@ export class AudioOutputEngine implements SessionResource {
 
     let stopped = false;
     let cleaned = false;
-    let playback!: BufferPlayback;
     const cleanup = () => {
       if (cleaned) return;
       cleaned = true;
@@ -398,7 +395,7 @@ export class AudioOutputEngine implements SessionResource {
       this.#active.delete(playback);
     };
 
-    playback = {
+    const playback: BufferPlayback = {
       source,
       setChannelMode: (mode) => router.setMode(mode),
       stop: () => {
