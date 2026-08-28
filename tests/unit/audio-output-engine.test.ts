@@ -189,6 +189,38 @@ describe("AudioOutputEngine", () => {
     });
   });
 
+  it("fades every generated source in from silence over the shared 50 ms ramp", () => {
+    const oscillatorContext = new FakeAudioContext();
+    const oscillatorEngine = new AudioOutputEngine(
+      oscillatorContext as unknown as AudioContext,
+    );
+    oscillatorEngine.startOscillator({ frequencyHz: 440 });
+    expect(oscillatorContext.gains[1]?.gain.events.slice(0, 2)).toEqual([
+      { kind: "set", value: 0, time: 2 },
+      { kind: "linear", value: 1, time: 2.05 },
+    ]);
+
+    const pannedContext = new FakeAudioContext();
+    const pannedEngine = new AudioOutputEngine(
+      pannedContext as unknown as AudioContext,
+    );
+    pannedEngine.startPannedOscillator(500);
+    expect(pannedContext.gains[1]?.gain.events.slice(0, 2)).toEqual([
+      { kind: "set", value: 0, time: 2 },
+      { kind: "linear", value: 1, time: 2.05 },
+    ]);
+
+    const bufferContext = new FakeAudioContext();
+    const bufferEngine = new AudioOutputEngine(
+      bufferContext as unknown as AudioContext,
+    );
+    bufferEngine.startBuffer({} as AudioBuffer);
+    expect(bufferContext.gains[1]?.gain.events.slice(0, 2)).toEqual([
+      { kind: "set", value: 0, time: 2 },
+      { kind: "linear", value: 1, time: 2.05 },
+    ]);
+  });
+
   it("uses explicit per-channel gains and a merger for hard Left/Both/Right routing", () => {
     const context = new FakeAudioContext();
     const engine = new AudioOutputEngine(context as unknown as AudioContext);
