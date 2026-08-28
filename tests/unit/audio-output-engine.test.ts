@@ -307,7 +307,16 @@ describe("AudioOutputEngine", () => {
     });
   });
 
-  it("uses StereoPannerNode only for continuous pan", () => {
+  it("uses StereoPannerNode only for continuous pan and rejects non-finite pan values", () => {
+    const invalidContext = new FakeAudioContext();
+    const invalidEngine = new AudioOutputEngine(
+      invalidContext as unknown as AudioContext,
+    );
+    expect(() => invalidEngine.startPannedOscillator(500, Number.NaN)).toThrow(
+      "pan must be a finite number",
+    );
+    expect(invalidContext.panners).toHaveLength(0);
+
     const context = new FakeAudioContext();
     const engine = new AudioOutputEngine(context as unknown as AudioContext);
     const playback = engine.startPannedOscillator(500, -1);
@@ -321,6 +330,9 @@ describe("AudioOutputEngine", () => {
       kind: "linear",
       value: 1,
     });
+    expect(() => playback.setPan(Number.NaN)).toThrow(
+      "pan must be a finite number",
+    );
   });
 
   it("schedules linear and logarithmic sweeps with the canonical AudioParam ramps", () => {
