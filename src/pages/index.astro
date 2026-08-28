@@ -28,6 +28,7 @@ const categories: readonly { id: NavigationCategory; label: string }[] = [
 <BaseLayout
   title="Browser Audio Lab"
   description="Browser-based audio testing and measurement tools with clear limitations and local-first microphone processing."
+  hasLiveTools={publicTools.length > 0}
 >
   <section class="hero">
     <div class="shell hero__grid">
