@@ -63,8 +63,8 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "output",
     implementationPhase: "P3.2",
     accent: "lavender",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: ["sound-test", "phase-test", "speaker-test", "headphone-test"],
   },
   {
     id: "phase-test",
@@ -73,8 +73,8 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "output",
     implementationPhase: "P3.2",
     accent: "lavender",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: ["stereo-test", "sound-test", "speaker-test", "headphone-test"],
   },
   {
     id: "surround-sound-test",
