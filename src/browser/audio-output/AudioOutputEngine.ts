@@ -88,10 +88,7 @@ function scheduleSourceFadeIn(
   startTime: number,
 ): void {
   param.setValueAtTime(0, startTime);
-  param.linearRampToValueAtTime(
-    coefficient,
-    startTime + DEFAULT_RAMP_SECONDS,
-  );
+  param.linearRampToValueAtTime(coefficient, startTime + DEFAULT_RAMP_SECONDS);
 }
 
 class StereoChannelRouter {
@@ -174,7 +171,9 @@ export class AudioOutputEngine implements SessionResource {
 
   constructor(context: AudioContext, options: AudioOutputEngineOptions = {}) {
     this.#context = context;
-    this.#levelProfile = { ...getLevelProfile(options.levelProfile ?? "general") };
+    this.#levelProfile = {
+      ...getLevelProfile(options.levelProfile ?? "general"),
+    };
     this.#masterGain = context.createGain();
     this.#masterGain.gain.setValueAtTime(
       dbToGain(this.#levelProfile.defaultDb),
@@ -323,11 +322,7 @@ export class AudioOutputEngine implements SessionResource {
       },
       setPan: (value) => {
         if (!stopped) {
-          rampParam(
-            panner.pan,
-            clamp(value, -1, 1),
-            this.#context.currentTime,
-          );
+          rampParam(panner.pan, clamp(value, -1, 1), this.#context.currentTime);
         }
       },
       stop: () => {

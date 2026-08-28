@@ -43,9 +43,7 @@ describe("NoiseEngine primitives", () => {
   it("matches the canonical xorshift32 reference mapping", () => {
     const random = createXorshift32(WHITE_NOISE_SEED);
     const expected = [
-      -0.68009846184405,
-      -0.4541176360692172,
-      0.9196747205964464,
+      -0.68009846184405, -0.4541176360692172, 0.9196747205964464,
       -0.708945881973241,
     ];
 
