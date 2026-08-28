@@ -5,7 +5,7 @@ import {
 } from "../../browser/audio-output/AudioOutputEngine";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 import { frequencyToSliderPosition } from "../../components/controls/controlMath";
-import { getEffectiveMaxFrequency } from "../../utils/audio";
+import { clamp, getEffectiveMaxFrequency } from "../../utils/audio";
 import {
   ToneWaveformRenderer,
   type ToneWaveform,
@@ -14,6 +14,8 @@ import {
 const TONE_MIN_HZ = 20;
 const TONE_NOMINAL_MAX_HZ = 20_000;
 const TONE_DEFAULT_HZ = 440;
+const TONE_MIN_LEVEL_DB = -60;
+const TONE_MAX_LEVEL_DB = -12;
 const TONE_DEFAULT_LEVEL_DB = -24;
 
 function requireElement<T extends Element>(
@@ -25,6 +27,29 @@ function requireElement<T extends Element>(
     throw new Error(`Tone Generator is missing required element: ${selector}`);
   }
   return element;
+}
+
+function parseWaveform(value: string | undefined): ToneWaveform | null {
+  switch (value) {
+    case "sine":
+    case "square":
+    case "triangle":
+    case "sawtooth":
+      return value;
+    default:
+      return null;
+  }
+}
+
+function parseChannelMode(value: string | undefined): StereoChannelMode | null {
+  switch (value) {
+    case "left":
+    case "both":
+    case "right":
+      return value;
+    default:
+      return null;
+  }
 }
 
 export class ToneGeneratorController {
@@ -83,6 +108,8 @@ export class ToneGeneratorController {
     );
     this.#visual = new ToneWaveformRenderer(canvas);
 
+    this.#hydrateRestoredControls();
+    this.#resetIdleUi();
     this.#bindEvents();
     this.#renderState();
   }
@@ -99,6 +126,53 @@ export class ToneGeneratorController {
     this.#playback = null;
     this.#engine = null;
     await this.#session.dispose();
+  }
+
+  #hydrateRestoredControls(): void {
+    this.#effectiveMaxHz = TONE_NOMINAL_MAX_HZ;
+    this.#frequencyRoot.dataset.maxHz = String(TONE_NOMINAL_MAX_HZ);
+    this.#frequencyNumber.max = String(TONE_NOMINAL_MAX_HZ);
+
+    const restoredFrequency = Number(this.#frequencyNumber.value);
+    if (Number.isFinite(restoredFrequency)) {
+      this.#frequencyHz = Math.round(
+        clamp(restoredFrequency, TONE_MIN_HZ, TONE_NOMINAL_MAX_HZ),
+      );
+    }
+
+    const restoredLevel = Number(this.#levelInput.value);
+    if (Number.isFinite(restoredLevel)) {
+      this.#levelDb = clamp(
+        restoredLevel,
+        TONE_MIN_LEVEL_DB,
+        TONE_MAX_LEVEL_DB,
+      );
+    }
+
+    const restoredWaveform = parseWaveform(
+      this.#root.querySelector<HTMLInputElement>(
+        'input[name="tone-waveform"]:checked',
+      )?.value,
+    );
+    if (restoredWaveform) this.#waveform = restoredWaveform;
+
+    const restoredChannel = parseChannelMode(
+      this.#root.querySelector<HTMLInputElement>(
+        'input[name="tone-channel"]:checked',
+      )?.value,
+    );
+    if (restoredChannel) this.#channelMode = restoredChannel;
+
+    for (const button of this.#presetButtons) button.disabled = false;
+    this.#capabilityNotice.hidden = true;
+    this.#capabilityNotice.removeAttribute("role");
+    this.#setFrequency(this.#frequencyHz);
+  }
+
+  #resetIdleUi(): void {
+    this.#playButton.disabled = false;
+    this.#setStatus("idle", "Idle");
+    this.#hideError();
   }
 
   #bindEvents(): void {
@@ -131,7 +205,9 @@ export class ToneGeneratorController {
         "change",
         () => {
           if (!radio.checked) return;
-          this.#waveform = radio.value as ToneWaveform;
+          const waveform = parseWaveform(radio.value);
+          if (!waveform) return;
+          this.#waveform = waveform;
           this.#playback?.setWaveform(this.#waveform);
           this.#renderVisual();
         },
@@ -146,7 +222,9 @@ export class ToneGeneratorController {
         "change",
         () => {
           if (!radio.checked) return;
-          this.#channelMode = radio.value as StereoChannelMode;
+          const channelMode = parseChannelMode(radio.value);
+          if (!channelMode) return;
+          this.#channelMode = channelMode;
           this.#playback?.setChannelMode(this.#channelMode);
         },
         { signal },
@@ -224,7 +302,7 @@ export class ToneGeneratorController {
 
   #setFrequency(requestedHz: number): void {
     const frequencyHz = Math.round(
-      Math.min(this.#effectiveMaxHz, Math.max(TONE_MIN_HZ, requestedHz)),
+      clamp(requestedHz, TONE_MIN_HZ, this.#effectiveMaxHz),
     );
     this.#frequencyHz = frequencyHz;
     this.#frequencyNumber.value = String(frequencyHz);
