@@ -88,7 +88,10 @@ function scheduleSourceFadeIn(
   startTime: number,
 ): void {
   param.setValueAtTime(0, startTime);
-  param.linearRampToValueAtTime(coefficient, startTime + DEFAULT_RAMP_SECONDS);
+  param.linearRampToValueAtTime(
+    coefficient,
+    startTime + DEFAULT_RAMP_SECONDS,
+  );
 }
 
 class StereoChannelRouter {
@@ -189,7 +192,7 @@ export class AudioOutputEngine implements SessionResource {
   }
 
   get levelProfile(): Readonly<LevelProfile> {
-    return this.#levelProfile;
+    return { ...this.#levelProfile };
   }
 
   setLevelDb(db: number): void {
@@ -233,10 +236,21 @@ export class AudioOutputEngine implements SessionResource {
     oscillator.frequency.setValueAtTime(options.frequencyHz, startTime);
     scheduleSourceFadeIn(sourceGain.gain, coefficient, startTime);
     oscillator.connect(sourceGain);
-    oscillator.start(startTime);
 
     let stopped = false;
-    const playback: OscillatorPlayback = {
+    let cleaned = false;
+    let playback!: OscillatorPlayback;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      stopped = true;
+      oscillator.disconnect();
+      sourceGain.disconnect();
+      router.dispose();
+      this.#active.delete(playback);
+    };
+
+    playback = {
       oscillator,
       setChannelMode: (mode) => router.setMode(mode),
       setFrequency: (frequencyHz) => {
@@ -267,21 +281,13 @@ export class AudioOutputEngine implements SessionResource {
         rampParam(sourceGain.gain, 0, now);
         holdParamAtTime(oscillator.frequency, now);
         oscillator.stop(now + DEFAULT_RAMP_SECONDS);
-        oscillator.addEventListener(
-          "ended",
-          () => {
-            oscillator.disconnect();
-            sourceGain.disconnect();
-            router.dispose();
-            this.#active.delete(playback);
-          },
-          { once: true },
-        );
       },
       dispose: () => playback.stop(),
     };
 
+    oscillator.addEventListener("ended", cleanup, { once: true });
     this.#active.add(playback);
+    oscillator.start(startTime);
     return playback;
   }
 
@@ -304,10 +310,21 @@ export class AudioOutputEngine implements SessionResource {
     oscillator.connect(sourceGain);
     sourceGain.connect(panner);
     panner.connect(this.#masterGain);
-    oscillator.start(startTime);
 
     let stopped = false;
-    const playback: PannedOscillatorPlayback = {
+    let cleaned = false;
+    let playback!: PannedOscillatorPlayback;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      stopped = true;
+      oscillator.disconnect();
+      sourceGain.disconnect();
+      panner.disconnect();
+      this.#active.delete(playback);
+    };
+
+    playback = {
       oscillator,
       setFrequency: (nextFrequencyHz) => {
         if (stopped) return;
@@ -322,7 +339,11 @@ export class AudioOutputEngine implements SessionResource {
       },
       setPan: (value) => {
         if (!stopped) {
-          rampParam(panner.pan, clamp(value, -1, 1), this.#context.currentTime);
+          rampParam(
+            panner.pan,
+            clamp(value, -1, 1),
+            this.#context.currentTime,
+          );
         }
       },
       stop: () => {
@@ -331,21 +352,13 @@ export class AudioOutputEngine implements SessionResource {
         const now = this.#context.currentTime;
         rampParam(sourceGain.gain, 0, now);
         oscillator.stop(now + DEFAULT_RAMP_SECONDS);
-        oscillator.addEventListener(
-          "ended",
-          () => {
-            oscillator.disconnect();
-            sourceGain.disconnect();
-            panner.disconnect();
-            this.#active.delete(playback);
-          },
-          { once: true },
-        );
       },
       dispose: () => playback.stop(),
     };
 
+    oscillator.addEventListener("ended", cleanup, { once: true });
     this.#active.add(playback);
+    oscillator.start(startTime);
     return playback;
   }
 
@@ -371,10 +384,21 @@ export class AudioOutputEngine implements SessionResource {
     source.loop = options.loop ?? false;
     scheduleSourceFadeIn(sourceGain.gain, coefficient, startTime);
     source.connect(sourceGain);
-    source.start(startTime, options.offsetSeconds ?? 0);
 
     let stopped = false;
-    const playback: BufferPlayback = {
+    let cleaned = false;
+    let playback!: BufferPlayback;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      stopped = true;
+      source.disconnect();
+      sourceGain.disconnect();
+      router.dispose();
+      this.#active.delete(playback);
+    };
+
+    playback = {
       source,
       setChannelMode: (mode) => router.setMode(mode),
       stop: () => {
@@ -383,21 +407,13 @@ export class AudioOutputEngine implements SessionResource {
         const now = this.#context.currentTime;
         rampParam(sourceGain.gain, 0, now);
         source.stop(now + DEFAULT_RAMP_SECONDS);
-        source.addEventListener(
-          "ended",
-          () => {
-            source.disconnect();
-            sourceGain.disconnect();
-            router.dispose();
-            this.#active.delete(playback);
-          },
-          { once: true },
-        );
       },
       dispose: () => playback.stop(),
     };
 
+    source.addEventListener("ended", cleanup, { once: true });
     this.#active.add(playback);
+    source.start(startTime, options.offsetSeconds ?? 0);
     return playback;
   }
 
