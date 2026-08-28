@@ -14,8 +14,8 @@
     "check": "astro check",
     "test": "vitest run",
     "test:browser": "pnpm build && playwright test",
-    "lint": "eslint \"src/**/*.{js,mjs,ts,astro}\" \"tests/**/*.{js,mjs,ts}\" \"playwright.config.ts\"",
-    "format:check": "prettier --check \"src/**/*.{astro,css,js,mjs,ts}\" \"tests/**/*.{js,mjs,ts}\" \"playwright.config.ts\" \"eslint.config.mjs\" \".prettierrc.mjs\" \"astro.config.mjs\" \"package.json\" \"tsconfig.json\""
+    "lint": "eslint \"src/**/*.{js,mjs,ts,astro}\" \"tests/**/*.{js,mjs,ts}\" \"playwright.config.ts\" \"vitest.config.ts\"",
+    "format:check": "prettier --check \"src/**/*.{astro,css,js,mjs,ts}\" \"tests/**/*.{js,mjs,ts}\" \"playwright.config.ts\" \"vitest.config.ts\" \"eslint.config.mjs\" \".prettierrc.mjs\" \"astro.config.mjs\" \"pnpm-workspace.yaml\" \"package.json\" \"tsconfig.json\""
   },
   "dependencies": {
     "@phosphor-icons/web": "2.1.2",

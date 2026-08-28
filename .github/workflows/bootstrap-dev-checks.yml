@@ -24,7 +24,6 @@ jobs:
           install: false
       - name: Rebuild lockfile with a mature Astro release
         run: |
-          pnpm pkg set dependencies.astro=7.2.4
           pnpm clean --lockfile
           pnpm install
       - run: pnpm install --frozen-lockfile
@@ -34,9 +33,11 @@ jobs:
           "src/**/*.{astro,css,js,mjs,ts}"
           "tests/**/*.{js,mjs,ts}"
           "playwright.config.ts"
+          "vitest.config.ts"
           "eslint.config.mjs"
           ".prettierrc.mjs"
           "astro.config.mjs"
+          "pnpm-workspace.yaml"
           "package.json"
           "tsconfig.json"
       - run: pnpm lint

@@ -39,6 +39,13 @@ test('homepage exposes no planned tool links', async ({ page }) => {
   }
 });
 
+test('planned tool routes are not built', async ({ page }) => {
+  for (const route of plannedRoutes) {
+    const response = await page.goto(route);
+    expect(response?.status()).toBe(404);
+  }
+});
+
 test('desktop shell has no horizontal overflow', async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto('/');
