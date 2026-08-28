@@ -1,9 +1,20 @@
 export const REFERENCE_NOISE_SAMPLE_RATE = 44_100;
 export const NOISE_GENERATOR_DURATION_SECONDS = 8;
 export const PHASE_TEST_DURATION_SECONDS = 4;
-export const DEFAULT_NOISE_SEED = 0x6d2b79f5;
+export const REFERENCE_NOISE_PEAK = 0.8;
 
 export type NoiseKind = "white" | "pink" | "brown";
+
+export const WHITE_NOISE_SEED = 0xa341316c;
+export const PINK_NOISE_SEED = 0xc8013ea4;
+export const BROWN_NOISE_SEED = 0xad90777d;
+export const PHASE_PINK_SEED = 0x7e95761e;
+
+export const NOISE_SEEDS = {
+  white: WHITE_NOISE_SEED,
+  pink: PINK_NOISE_SEED,
+  brown: BROWN_NOISE_SEED,
+} as const satisfies Readonly<Record<NoiseKind, number>>;
 
 export interface NoiseBufferOptions {
   readonly durationSeconds?: number;
@@ -11,21 +22,22 @@ export interface NoiseBufferOptions {
   readonly conditionLoopBoundary?: boolean;
 }
 
-function normalizeSeed(seed: number): number {
+function normalizeSeed(seed: number, fallbackSeed: number): number {
   const normalized = seed >>> 0;
-  return normalized === 0 ? DEFAULT_NOISE_SEED : normalized;
+  return normalized === 0 ? fallbackSeed : normalized;
 }
 
-export function createXorshift32(seed = DEFAULT_NOISE_SEED): () => number {
-  let state = normalizeSeed(seed);
+export function createXorshift32(seed: number): () => number {
+  let state = normalizeSeed(seed, WHITE_NOISE_SEED);
 
   return () => {
     state ^= state << 13;
     state ^= state >>> 17;
     state ^= state << 5;
-    state >>>= 0;
+    const uint = state >>> 0;
+    state = uint;
 
-    return (state / 0x1_0000_0000) * 2 - 1;
+    return uint / 2_147_483_647.5 - 1;
   };
 }
 
@@ -41,7 +53,14 @@ export function removeDcMean(samples: Float32Array): void {
   }
 }
 
-export function normalizePeak(samples: Float32Array): void {
+export function normalizePeak(
+  samples: Float32Array,
+  targetPeak = REFERENCE_NOISE_PEAK,
+): void {
+  if (!Number.isFinite(targetPeak) || targetPeak <= 0 || targetPeak > 1) {
+    throw new RangeError("targetPeak must be in the range (0, 1]");
+  }
+
   let peak = 0;
   for (const sample of samples) {
     peak = Math.max(peak, Math.abs(sample));
@@ -49,7 +68,7 @@ export function normalizePeak(samples: Float32Array): void {
 
   if (peak <= Number.EPSILON) return;
 
-  const scale = 1 / peak;
+  const scale = targetPeak / peak;
   for (let index = 0; index < samples.length; index += 1) {
     samples[index] = (samples[index] ?? 0) * scale;
   }
@@ -79,13 +98,13 @@ export function conditionLoopBoundary(
 export function generateNoiseSamples(
   kind: NoiseKind,
   sampleCount: number,
-  seed = DEFAULT_NOISE_SEED,
+  seed = NOISE_SEEDS[kind],
 ): Float32Array {
   if (!Number.isInteger(sampleCount) || sampleCount <= 0) {
     throw new RangeError("sampleCount must be a positive integer");
   }
 
-  const random = createXorshift32(seed);
+  const random = createXorshift32(normalizeSeed(seed, NOISE_SEEDS[kind]));
   const samples = new Float32Array(sampleCount);
 
   if (kind === "white") {
@@ -113,7 +132,8 @@ export function generateNoiseSamples(
       b3 = 0.8665 * b3 + white * 0.3104856;
       b4 = 0.55 * b4 + white * 0.5329522;
       b5 = -0.7616 * b5 - white * 0.016898;
-      samples[index] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+      samples[index] =
+        b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
       b6 = white * 0.115926;
     }
 
@@ -171,12 +191,13 @@ export class NoiseEngine {
 
     if (options.conditionLoopBoundary ?? true) {
       conditionLoopBoundary(samples);
+      normalizePeak(samples);
     }
 
     return writeMonoBuffer(this.#context, samples);
   }
 
-  createPhaseTestPinkBuffer(seed = DEFAULT_NOISE_SEED): AudioBuffer {
+  createPhaseTestPinkBuffer(seed = PHASE_PINK_SEED): AudioBuffer {
     return this.createNoiseBuffer("pink", {
       durationSeconds: PHASE_TEST_DURATION_SECONDS,
       seed,
