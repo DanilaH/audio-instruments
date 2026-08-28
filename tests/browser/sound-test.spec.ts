@@ -284,7 +284,8 @@ test("Sound Test cleans a partial sequence start failure and remains retryable",
 
   const failedRunOscillators = await readOscillators(page);
   expect(failedRunOscillators).toHaveLength(1);
-  expect(failedRunOscillators[0].stops).toContain(10.05);
+  expect(failedRunOscillators[0].stops).toHaveLength(2);
+  expect(failedRunOscillators[0].stops[1]).toBeCloseTo(10.05, 10);
 
   await page.getByRole("button", { name: "Left" }).click();
   await expect(page.locator("#sound-status")).toContainText("Playing Left");
