@@ -238,11 +238,17 @@ describe("AudioOutputEngine", () => {
 
     playback.setChannelMode("both");
     expect(leftGain?.events.at(-1)).toMatchObject({ kind: "linear", value: 1 });
-    expect(rightGain?.events.at(-1)).toMatchObject({ kind: "linear", value: 1 });
+    expect(rightGain?.events.at(-1)).toMatchObject({
+      kind: "linear",
+      value: 1,
+    });
 
     playback.setChannelMode("right");
     expect(leftGain?.events.at(-1)).toMatchObject({ kind: "linear", value: 0 });
-    expect(rightGain?.events.at(-1)).toMatchObject({ kind: "linear", value: 1 });
+    expect(rightGain?.events.at(-1)).toMatchObject({
+      kind: "linear",
+      value: 1,
+    });
   });
 
   it("uses StereoPannerNode only for continuous pan", () => {
@@ -263,11 +269,7 @@ describe("AudioOutputEngine", () => {
 
   it("schedules linear and logarithmic sweeps with the canonical AudioParam ramps", () => {
     const linearParam = new FakeAudioParam();
-    scheduleSweepOnParam(
-      linearParam as unknown as AudioParam,
-      linearSweep,
-      3,
-    );
+    scheduleSweepOnParam(linearParam as unknown as AudioParam, linearSweep, 3);
 
     expect(linearParam.events).toContainEqual({
       kind: "set",

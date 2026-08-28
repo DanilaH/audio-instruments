@@ -83,10 +83,7 @@ function scheduleSourceFadeIn(
   startTime: number,
 ): void {
   param.setValueAtTime(0, startTime);
-  param.linearRampToValueAtTime(
-    coefficient,
-    startTime + DEFAULT_RAMP_SECONDS,
-  );
+  param.linearRampToValueAtTime(coefficient, startTime + DEFAULT_RAMP_SECONDS);
 }
 
 class StereoChannelRouter {
@@ -166,7 +163,10 @@ export class AudioOutputEngine implements SessionResource {
   readonly #active = new Set<SessionResource>();
   #disposed = false;
 
-  constructor(context: AudioContext, destination: AudioNode = context.destination) {
+  constructor(
+    context: AudioContext,
+    destination: AudioNode = context.destination,
+  ) {
     this.#context = context;
     this.#masterGain = context.createGain();
     this.#masterGain.gain.setValueAtTime(
@@ -177,8 +177,8 @@ export class AudioOutputEngine implements SessionResource {
   }
 
   get levelDb(): number {
-    return 20 * Math.log10(
-      Math.max(this.#masterGain.gain.value, Number.EPSILON),
+    return (
+      20 * Math.log10(Math.max(this.#masterGain.gain.value, Number.EPSILON))
     );
   }
 
@@ -200,7 +200,9 @@ export class AudioOutputEngine implements SessionResource {
 
     const oscillator = this.#context.createOscillator();
     const sourceGain = this.#context.createGain();
-    const coefficient = validateSourceCoefficient(options.sourceCoefficient ?? 1);
+    const coefficient = validateSourceCoefficient(
+      options.sourceCoefficient ?? 1,
+    );
     const startTime = options.startTime ?? this.#context.currentTime;
     const router = new StereoChannelRouter(
       this.#context,
@@ -233,7 +235,10 @@ export class AudioOutputEngine implements SessionResource {
       setWaveform: (type) => {
         if (!stopped) oscillator.type = type;
       },
-      scheduleSweep: (definition, sweepStartTime = this.#context.currentTime) => {
+      scheduleSweep: (
+        definition,
+        sweepStartTime = this.#context.currentTime,
+      ) => {
         if (stopped) return;
         scheduleSweepOnParam(oscillator.frequency, definition, sweepStartTime);
       },
@@ -299,11 +304,7 @@ export class AudioOutputEngine implements SessionResource {
       },
       setPan: (value) => {
         if (!stopped) {
-          rampParam(
-            panner.pan,
-            clamp(value, -1, 1),
-            this.#context.currentTime,
-          );
+          rampParam(panner.pan, clamp(value, -1, 1), this.#context.currentTime);
         }
       },
       stop: () => {
@@ -337,7 +338,9 @@ export class AudioOutputEngine implements SessionResource {
     this.#assertUsable();
     const source = this.#context.createBufferSource();
     const sourceGain = this.#context.createGain();
-    const coefficient = validateSourceCoefficient(options.sourceCoefficient ?? 1);
+    const coefficient = validateSourceCoefficient(
+      options.sourceCoefficient ?? 1,
+    );
     const startTime = options.startTime ?? this.#context.currentTime;
     const router = new StereoChannelRouter(
       this.#context,

@@ -113,8 +113,7 @@ export function generateNoiseSamples(
       b3 = 0.8665 * b3 + white * 0.3104856;
       b4 = 0.55 * b4 + white * 0.5329522;
       b5 = -0.7616 * b5 - white * 0.016898;
-      samples[index] =
-        b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
+      samples[index] = b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362;
       b6 = white * 0.115926;
     }
 

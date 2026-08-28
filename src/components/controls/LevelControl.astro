@@ -33,11 +33,15 @@ const {
     disabled={disabled}
     aria-describedby={`${id}-unit`}
   />
-  <span id={`${id}-unit`} class="level-control__hint">dB relative to unity gain</span>
+  <span id={`${id}-unit`} class="level-control__hint"
+    >dB relative to unity gain</span
+  >
 </div>
 
 <script>
-  for (const root of document.querySelectorAll<HTMLElement>("[data-level-control]")) {
+  for (const root of document.querySelectorAll<HTMLElement>(
+    "[data-level-control]",
+  )) {
     const input = root.querySelector<HTMLInputElement>('input[type="range"]');
     const output = root.querySelector<HTMLOutputElement>("output");
     if (!input || !output || root.dataset.bound === "true") continue;

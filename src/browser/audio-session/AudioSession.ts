@@ -17,7 +17,9 @@ async function runSettled(
 
   for (const resource of resources) {
     const action =
-      operation === "dispose" ? (resource.dispose ?? resource.stop) : resource.stop;
+      operation === "dispose"
+        ? (resource.dispose ?? resource.stop)
+        : resource.stop;
 
     if (!action) continue;
 

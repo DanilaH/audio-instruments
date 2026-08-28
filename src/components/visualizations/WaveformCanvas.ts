@@ -9,7 +9,9 @@ export type WaveformSampleReader = () => Float32Array | null;
 export class WaveformCanvas {
   readonly #canvas: HTMLCanvasElement;
   readonly #context: CanvasRenderingContext2D;
-  readonly #options: Required<Omit<WaveformCanvasOptions, "backgroundStyle">> & {
+  readonly #options: Required<
+    Omit<WaveformCanvasOptions, "backgroundStyle">
+  > & {
     backgroundStyle: string | null;
   };
 

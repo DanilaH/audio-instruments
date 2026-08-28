@@ -67,11 +67,20 @@ const sliderPosition =
   )) {
     if (root.dataset.bound === "true") continue;
 
-    const numeric = root.querySelector<HTMLInputElement>("[data-frequency-number]");
-    const slider = root.querySelector<HTMLInputElement>("[data-frequency-slider]");
+    const numeric = root.querySelector<HTMLInputElement>(
+      "[data-frequency-number]",
+    );
+    const slider = root.querySelector<HTMLInputElement>(
+      "[data-frequency-slider]",
+    );
     const minHz = Number(root.dataset.minHz);
     const maxHz = Number(root.dataset.maxHz);
-    if (!numeric || !slider || !Number.isFinite(minHz) || !Number.isFinite(maxHz)) {
+    if (
+      !numeric ||
+      !slider ||
+      !Number.isFinite(minHz) ||
+      !Number.isFinite(maxHz)
+    ) {
       continue;
     }
 
