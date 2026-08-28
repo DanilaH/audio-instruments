@@ -106,11 +106,11 @@ manual notes when browser/hardware behavior matters
 
 Do not mark ready to merge.
 
-### Step 5 — Independent Review #1
+### Step 5 — Cold Review #1
 
-Perform a substantive first review by a reviewer independent from the implementing agent.
+Perform a substantive first cold review of the actual PR diff.
 
-Implementer self-review does not satisfy this step.
+In the owner-approved single-assistant mode, the same project assistant may perform this review only as a separate review pass after implementation is paused. Ordinary implementation-time self-checking does not satisfy this step.
 
 Review for:
 
@@ -136,11 +136,11 @@ Commit scope should remain understandable.
 
 Do not hide unrelated refactors inside fixes.
 
-### Step 7 — Independent Review #2
+### Step 7 — Cold Review #2
 
-A reviewer independent from the implementing agent reviews the updated PR again.
+Perform a second cold review of the updated actual PR diff after Review #1 fixes.
 
-This may be the same independent reviewer as Review #1 or another independent reviewer.
+In single-assistant mode, this is a new review pass by the project assistant, not a continuation of implementation reasoning.
 
 Review #2 checks:
 
@@ -156,7 +156,7 @@ Only after Review #2 is satisfactory may the PR leave Draft state.
 
 ### Step 8 — Authorize full CI, then mark Ready
 
-After independent Review #2 is satisfactory, while the PR is still Draft:
+After the Review #2 cold pass is satisfactory, while the PR is still Draft:
 
 ```text
 add label: full-ci-approved
@@ -267,7 +267,7 @@ FIXES
   ↓
 COMMIT(S)
   ↓
-INDEPENDENT REVIEW #2
+COLD REVIEW #2
   ↓
 ADD full-ci-approved
   ↓
@@ -340,17 +340,26 @@ This rule optimizes agent workflow cost while preserving a strict pre-merge qual
 
 Targeted debugging during implementation is allowed when necessary, but it does not replace or pre-empt the formal validation stage.
 
-## Review independence
+## Review-pass separation
 
-A qualifying required review must inspect the actual PR diff and be performed by:
+A qualifying required review must inspect the actual PR diff in a deliberately separate cold-review pass.
+
+Project default is owner-approved single-assistant orchestration:
 
 ```text
-human reviewer
-separate review agent/model
-or separate ChatGPT review context acting as reviewer
+implementation pass
+→ stop implementation
+→ re-read actual PR diff + acceptance/specs as reviewer
+→ record Review #1 findings durably
+→ fixes
+→ stop implementation
+→ re-read updated diff as reviewer
+→ record Review #2 durably
 ```
 
-Implementer self-review is encouraged as hygiene but does not count toward Review #1 or Review #2.
+The same project assistant may perform both required review passes. What does not count is casual implementation-time self-checking presented as a review.
+
+A human, separate model or separate ChatGPT context may still be used when useful, but is not required.
 
 Record review findings durably in the PR conversation or equivalent review artifact.
 
@@ -385,7 +394,7 @@ privacy
 safety
 ```
 
-perform another substantive independent review before merge.
+perform another substantive cold review before merge.
 
 ## Re-opening the review gate
 
@@ -394,7 +403,7 @@ If a material post-validation fix changes product behavior, architecture, UX, cl
 ```text
 convert PR to Draft
 remove full-ci-approved
-perform independent review
+perform cold review
 add full-ci-approved only after the new Review #2
 mark Ready again
 ```

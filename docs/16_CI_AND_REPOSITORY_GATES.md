@@ -2,7 +2,7 @@
 
 ## Purpose
 
-Mechanically enforce:
+Define and execute the project merge discipline:
 
 ```text
 development
@@ -35,13 +35,7 @@ repository gate mode = manual
 
 Therefore the workflow may run and provide the `merge-gate` check, but the repository must not claim that GitHub mechanically prevents an administrator from bypassing it until protected branches/rulesets become available.
 
-Resolution options:
-
-```text
-make the repository public
-upgrade to a GitHub plan supporting protected private repositories
-or obtain explicit user approval for temporary manual enforcement
-```
+The project owner has explicitly accepted this manual mode as the current operating model. No visibility change or paid GitHub plan is required for P0–P8. The assistant still treats a green `merge-gate` as mandatory before performing a merge, while documenting that GitHub itself does not make the rule unbypassable.
 
 ## Tracked PR events
 
@@ -70,7 +64,7 @@ pull_request.draft == false
 full-ci-approved label present
 ```
 
-`full-ci-approved` is added only after independent Review #2 while the PR is still Draft.
+`full-ci-approved` is added only after the Review #2 cold pass while the PR is still Draft.
 
 Then the PR is marked Ready.
 
@@ -251,30 +245,29 @@ reviewed major tags
 
 See `20_P0_TOOLING_CONTRACT.md`.
 
-## Branch-protection hardening
+## Repository-gate operating mode
 
-Before the first roadmap PR is mergeable, configure the `main` rule/ruleset with:
+The ideal mechanical target remains:
 
 ```text
 Require a pull request before merging
 Require status check: merge-gate
-Required-check source/app: GitHub Actions where the UI supports source binding
-Do not allow bypassing the above settings
 Block force pushes
 Block branch deletion
+Disable bypass where supported
 ```
 
-Repository administrators/maintainers must not retain a practical bypass path for the normal roadmap workflow.
+The current private/free repository cannot expose those controls. The owner explicitly accepts manual enforcement, so P0 is complete when the process itself is followed and the latest `merge-gate` is green.
 
-If the repository/account plan does not support these protections for the current repository visibility:
+Current mandatory policy:
 
 ```text
-P0 surfaces the limitation explicitly
-do not claim the workflow is mechanically enforced
-either:
-- change repository visibility/plan/settings so the gate is enforceable
-or
-- obtain explicit user approval for a temporary manual enforcement mode
+no direct roadmap pushes to main
+PR stays Draft through Review #2
+full-ci-approved only after Review #2
+Ready triggers full-validation
+merge only after full-validation + merge-gate success
+squash merge by default
 ```
 
-Do not silently downgrade to “we will remember not to bypass it”.
+Do not describe this as mechanically unbypassable GitHub protection. Do not repeatedly reopen the unavailable-protection issue unless repository visibility or plan changes.

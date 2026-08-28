@@ -290,9 +290,9 @@ In particular:
 ```text
 development
 → Draft PR
-→ independent review #1
+→ cold Review #1
 → fixes/commit
-→ independent review #2
+→ cold Review #2
 → mark Ready for review
 → full validation gate
 → green CI
@@ -325,23 +325,27 @@ Avoid unrelated refactors.
 
 Update authoritative docs only when a real decision changes.
 
-## 17. Independent-review requirement
+## 17. Required review-pass separation
 
-Implementer self-review is useful but **does not count** as Review #1 or Review #2.
+Review #1 and Review #2 must inspect the actual PR diff as separate cold-review passes.
 
-A qualifying review must be performed by one of:
+Per explicit project-owner decision, the same project assistant that implemented the task also performs these reviews. This is the default autonomous workflow.
+
+Required separation:
 
 ```text
-human reviewer
-separate review agent/model
-separate ChatGPT review context acting only as reviewer
+implementation stops
+→ reviewer pass re-reads specs + actual diff
+→ findings recorded durably
+→ implementation fixes
+→ second reviewer pass re-reads updated diff
 ```
 
-The reviewer must inspect the actual PR diff.
+Ordinary implementation-time self-checking does **not** count as Review #1 or Review #2.
 
-Review findings should be recorded in the PR conversation or another durable review artifact.
+A human, separate agent/model or separate ChatGPT context may be used when useful, but is not required.
 
-If a post-validation fix materially changes product behavior, architecture, UX, claims, privacy or safety, the changed diff requires another independent substantive review before merge.
+If a post-validation fix materially changes product behavior, architecture, UX, claims, privacy or safety, the changed diff requires another substantive cold review before merge.
 
 ## 18. Frequency capability rule
 
@@ -441,7 +445,7 @@ PR is not Draft
 label: full-ci-approved
 ```
 
-The label is added only after independent Review #2 while the PR is still Draft, then the PR is marked Ready.
+The label is added only after the Review #2 cold pass while the PR is still Draft, then the PR is marked Ready.
 
 Do not add that label early to “get CI started”.
 
@@ -474,7 +478,7 @@ P0 must verify the repository-plan/settings capability and record any limitation
 
 ## 29. Current repository-gate mode
 
-The repository may temporarily be unable to enforce protected-branch/ruleset controls because of GitHub plan/visibility limits.
+The repository intentionally remains private on the current free GitHub plan. Protected-branch/ruleset controls are unavailable for this setup, and the project owner has explicitly accepted **manual repository-gate enforcement** as the operating mode.
 
 When `docs/MANIFEST.json` reports:
 
@@ -484,9 +488,10 @@ repository_gate.mode = manual
 
 then:
 
-- the PR/review/CI sequence remains mandatory policy;
-- do not claim it is mechanically unbypassable;
+- branch → Draft PR → Review #1 → fixes → Review #2 → full CI → merge remains mandatory project policy;
+- `merge-gate` must be green before the assistant performs the merge;
 - do not direct-push roadmap implementation to `main`;
-- P0 cannot claim the repository gate is mechanically complete until protection becomes available or the user explicitly accepts temporary manual enforcement.
+- do not claim GitHub mechanically prevents an owner/admin bypass;
+- unavailable branch protection is **not** a P0 blocker and must not be raised again unless repository visibility/plan changes.
 
-The only direct-to-main exception is the initial empty-repository documentation/bootstrap seed before normal roadmap development begins.
+The only direct-to-main exception remains the already-completed empty-repository baseline seed.

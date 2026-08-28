@@ -1,31 +1,62 @@
-import { expect, test } from '@playwright/test';
+import { expect, test } from "@playwright/test";
 
-for (const path of ['/', '/privacy']) {
+import { toolRegistry } from "../../src/registry/tools";
+
+const plannedRoutes = toolRegistry
+  .filter((tool) => tool.status === "planned")
+  .map((tool) => tool.route);
+
+const targetViewports = [
+  { width: 1440, height: 900 },
+  { width: 1366, height: 768 },
+  { width: 1024, height: 768 },
+  { width: 390, height: 844 },
+] as const;
+
+for (const path of ["/", "/privacy"]) {
   test(`${path} renders without page errors`, async ({ page }) => {
     const errors: Error[] = [];
-    page.on('pageerror', (error) => errors.push(error));
+    page.on("pageerror", (error) => errors.push(error));
 
     await page.goto(path);
-    await expect(page.locator('body')).toBeVisible();
+    await expect(page.locator("body")).toBeVisible();
 
     expect(errors).toEqual([]);
   });
+
+  for (const viewport of targetViewports) {
+    test(`${path} has no horizontal overflow at ${viewport.width}x${viewport.height}`, async ({
+      page,
+    }) => {
+      await page.setViewportSize(viewport);
+      await page.goto(path);
+
+      const hasOverflow = await page.evaluate(
+        () =>
+          document.documentElement.scrollWidth >
+          document.documentElement.clientWidth,
+      );
+
+      expect(hasOverflow).toBe(false);
+    });
+  }
 }
 
-test('homepage exposes no planned tool links', async ({ page }) => {
-  await page.goto('/');
+test("homepage exposes no planned tool links or empty tools anchor", async ({
+  page,
+}) => {
+  await page.goto("/");
 
-  const plannedLinks = page.locator('[data-tool-status="planned"] a');
-  await expect(plannedLinks).toHaveCount(0);
+  await expect(page.locator('a[href="/#tools"]')).toHaveCount(0);
+
+  for (const route of plannedRoutes) {
+    await expect(page.locator(`a[href="${route}"]`)).toHaveCount(0);
+  }
 });
 
-test('desktop shell has no horizontal overflow', async ({ page }) => {
-  await page.setViewportSize({ width: 1366, height: 768 });
-  await page.goto('/');
-
-  const hasOverflow = await page.evaluate(
-    () => document.documentElement.scrollWidth > document.documentElement.clientWidth,
-  );
-
-  expect(hasOverflow).toBe(false);
+test("planned tool routes are not built", async ({ page }) => {
+  for (const route of plannedRoutes) {
+    const response = await page.goto(route);
+    expect(response?.status()).toBe(404);
+  }
 });

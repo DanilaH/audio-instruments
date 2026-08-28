@@ -1,0 +1,153 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import {
+  getPublicTools,
+  getPublicToolsByCategory,
+  type NavigationCategory,
+} from "../registry/tools";
+
+const publicTools = getPublicTools();
+const featuredTargetIds = [
+  "tone-generator",
+  "speaker-test",
+  "microphone-test",
+  "headphone-test",
+];
+const featuredTools = featuredTargetIds
+  .map((id) => publicTools.find((tool) => tool.id === id))
+  .filter((tool) => tool !== undefined);
+
+const categories: readonly { id: NavigationCategory; label: string }[] = [
+  { id: "output", label: "Output diagnostics" },
+  { id: "signal-frequency", label: "Signal and frequency" },
+  { id: "input-analysis", label: "Input and analysis" },
+  { id: "timing-specialist", label: "Timing / specialist" },
+];
+---
+
+<BaseLayout
+  title="Browser Audio Lab"
+  description="Browser-based audio testing and measurement tools with clear limitations and local-first microphone processing."
+  hasLiveTools={publicTools.length > 0}
+>
+  <section class="hero">
+    <div class="shell hero__grid">
+      <div>
+        <p class="eyebrow">Browser-based audio tools</p>
+        <h1>Understand what your audio setup is doing.</h1>
+        <p class="lede">
+          Focused tools for testing playback, signals, microphones and audio
+          analysis — designed to show what the browser actually knows without
+          pretending it can measure what it cannot.
+        </p>
+      </div>
+      <div class="hero-visual">
+        <svg
+          class="waveform"
+          viewBox="0 0 620 180"
+          role="img"
+          aria-label="Audio waveform"
+        >
+          <path
+            d="M5 91 C42 91 49 26 82 26 S123 150 157 150 196 58 230 58 268 119 303 119 341 18 378 18 417 159 455 159 493 73 528 73 566 105 615 91"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="8"
+            stroke-linecap="round"></path>
+        </svg>
+        <p class="visual-label">Signal first. Claims second.</p>
+      </div>
+    </div>
+  </section>
+
+  {
+    featuredTools.length > 0 && (
+      <section
+        class="shell tools-section"
+        aria-labelledby="featured-tools-title"
+      >
+        <p class="eyebrow">Featured tools</p>
+        <h2 id="featured-tools-title">Start with a focused check.</h2>
+        <div class="tool-grid tool-grid--featured">
+          {featuredTools.map((tool) => (
+            <a
+              class="tool-card"
+              href={tool.route}
+              data-tool-status={tool.status}
+            >
+              <span
+                class="tool-card__accent"
+                data-accent={tool.accent}
+                aria-hidden="true"
+              />
+              <strong>{tool.title}</strong>
+              <span>Open tool</span>
+            </a>
+          ))}
+        </div>
+      </section>
+    )
+  }
+
+  {
+    publicTools.length > 0 && (
+      <section
+        id="tools"
+        class="shell tools-section"
+        aria-labelledby="all-tools-title"
+      >
+        <p class="eyebrow">All live tools</p>
+        <h2 id="all-tools-title">Audio tools by job.</h2>
+        <div class="tool-categories">
+          {categories.map(({ id, label }) => {
+            const tools = getPublicToolsByCategory(id);
+            if (tools.length === 0) return null;
+
+            return (
+              <section class="tool-category" aria-labelledby={`category-${id}`}>
+                <h3 id={`category-${id}`}>{label}</h3>
+                <div class="tool-grid">
+                  {tools.map((tool) => (
+                    <a
+                      class="tool-card"
+                      href={tool.route}
+                      data-tool-status={tool.status}
+                    >
+                      <span
+                        class="tool-card__accent"
+                        data-accent={tool.accent}
+                        aria-hidden="true"
+                      />
+                      <strong>{tool.title}</strong>
+                      <span>Open tool</span>
+                    </a>
+                  ))}
+                </div>
+              </section>
+            );
+          })}
+        </div>
+      </section>
+    )
+  }
+
+  <section class="trust">
+    <div class="shell trust__panel">
+      <div>
+        <p class="eyebrow">Built for honest diagnostics</p>
+        <h2>Useful browser signals, with the limits visible.</h2>
+      </div>
+      <div>
+        <p class="trust__copy">
+          No account is required. Core microphone tools are designed to process
+          audio locally in your browser, and core v1 does not upload microphone
+          recordings or microphone audio to our server.
+        </p>
+        <div class="trust__facts" aria-label="Product principles">
+          <div class="fact">Local-first microphone processing</div>
+          <div class="fact">No account required</div>
+        </div>
+      </div>
+    </div>
+  </section>
+</BaseLayout>
