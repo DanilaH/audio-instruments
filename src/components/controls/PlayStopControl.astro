@@ -1,0 +1,51 @@
+---
+interface Props {
+  id?: string;
+  isActive: boolean;
+  disabled?: boolean;
+  playLabel?: string;
+  stopLabel?: string;
+}
+
+const {
+  id,
+  isActive,
+  disabled = false,
+  playLabel = "Play",
+  stopLabel = "Stop",
+} = Astro.props;
+---
+
+<button
+  id={id}
+  class="play-stop-control"
+  type="button"
+  data-action={isActive ? "stop" : "play"}
+  disabled={disabled}
+>
+  <i class={isActive ? "ph ph-stop" : "ph ph-play"} aria-hidden="true"></i>
+  <span>{isActive ? stopLabel : playLabel}</span>
+</button>
+
+<style>
+  .play-stop-control {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 9px;
+    padding: 0 20px;
+    border: 1px solid var(--color-ink);
+    border-radius: var(--radius-button);
+    background: var(--color-ink);
+    color: var(--color-surface);
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .play-stop-control:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+</style>
