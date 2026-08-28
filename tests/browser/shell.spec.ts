@@ -163,9 +163,11 @@ test("homepage hero typography stays continuous around the 520px viewport bounda
   const readHeadingFontSize = async (width: number) => {
     await page.setViewportSize({ width, height: 900 });
     await page.goto("/");
-    return page.locator(".hero h1").evaluate((heading) =>
-      Number.parseFloat(window.getComputedStyle(heading).fontSize),
-    );
+    return page
+      .locator(".hero h1")
+      .evaluate((heading) =>
+        Number.parseFloat(window.getComputedStyle(heading).fontSize),
+      );
   };
 
   const fontSizeAt520 = await readHeadingFontSize(520);
