@@ -1,0 +1,85 @@
+---
+interface Props {
+  id: string;
+  valueDb: number;
+  minDb?: number;
+  maxDb?: number;
+  stepDb?: number;
+  disabled?: boolean;
+}
+
+const {
+  id,
+  valueDb,
+  minDb = -60,
+  maxDb = -12,
+  stepDb = 1,
+  disabled = false,
+} = Astro.props;
+---
+
+<div class="level-control" data-level-control>
+  <div class="level-control__header">
+    <label for={id}>Level</label>
+    <output for={id}>{valueDb} dB</output>
+  </div>
+  <input
+    id={id}
+    type="range"
+    min={minDb}
+    max={maxDb}
+    step={stepDb}
+    value={valueDb}
+    disabled={disabled}
+    aria-describedby={`${id}-unit`}
+  />
+  <span id={`${id}-unit`} class="level-control__hint"
+    >dB relative to unity gain</span
+  >
+</div>
+
+<script>
+  for (const root of document.querySelectorAll<HTMLElement>(
+    "[data-level-control]",
+  )) {
+    const input = root.querySelector<HTMLInputElement>('input[type="range"]');
+    const output = root.querySelector<HTMLOutputElement>("output");
+    if (!input || !output || root.dataset.bound === "true") continue;
+
+    root.dataset.bound = "true";
+    input.addEventListener("input", () => {
+      output.value = `${input.value} dB`;
+    });
+  }
+</script>
+
+<style>
+  .level-control {
+    display: grid;
+    gap: 10px;
+    min-width: 0;
+  }
+
+  .level-control__header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .level-control label,
+  .level-control output {
+    font-weight: 750;
+  }
+
+  .level-control input {
+    width: 100%;
+    min-height: 44px;
+    accent-color: var(--color-focus);
+  }
+
+  .level-control__hint {
+    color: var(--color-ink-muted);
+    font-size: 0.8rem;
+  }
+</style>
