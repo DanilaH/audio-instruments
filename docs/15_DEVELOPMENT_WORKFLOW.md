@@ -156,7 +156,7 @@ Only after Review #2 is satisfactory may the PR leave Draft state.
 
 ### Step 8 — Authorize full CI, then mark Ready
 
-After independent Review #2 is satisfactory, while the PR is still Draft:
+After the Review #2 cold pass is satisfactory, while the PR is still Draft:
 
 ```text
 add label: full-ci-approved

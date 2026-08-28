@@ -1,6 +1,6 @@
 {
-  "version": "1.9",
-  "status": "pre-code cold review passed; P0 implementation may begin; repository gate currently manual until GitHub plan/visibility enables protection or user explicitly accepts manual enforcement",
+  "version": "1.10",
+  "status": "P0 implemented and in final review/full-CI gate; owner-approved manual repository enforcement is the accepted operating mode",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
     "docs/01_RESEARCH_AND_EVIDENCE.md",
@@ -27,12 +27,18 @@
   "evidence_ledgers": [
     "docs/evidence/competitor-evidence.csv"
   ],
-  "workflow": "development -> checkpoint commit -> Draft PR -> independent review #1 -> fixes/commits -> independent review #2 -> add full-ci-approved -> Ready -> full-validation -> merge-gate -> fix/re-review/rerun if needed -> squash merge -> next branch",
+  "workflow": "development -> checkpoint commit -> Draft PR -> cold Review #1 by project assistant -> fixes/commits -> cold Review #2 by project assistant -> add full-ci-approved -> Ready -> full-validation -> merge-gate -> fix/cold re-review/rerun if needed -> squash merge -> next branch",
   "repository_files": [
     ".gitignore",
     ".github/workflows/ci.yml",
     ".github/dependabot.yml",
     ".nvmrc",
+    "package.json",
+    "pnpm-lock.yaml",
+    "pnpm-workspace.yaml",
+    "astro.config.mjs",
+    "tsconfig.json",
+    "vitest.config.ts",
     "playwright.config.ts",
     "eslint.config.mjs",
     ".prettierrc.mjs",
@@ -72,7 +78,8 @@
   "tooling": {
     "astro_check": [
       "@astrojs/check",
-      "typescript"
+      "typescript",
+      "@types/node"
     ],
     "lint": [
       "eslint",
@@ -88,9 +95,9 @@
     "browser_test": "@playwright/test"
   },
   "documentation_policy": {
-    "state": "reviewed-and-frozen",
+    "state": "implementation-evidence-synchronized",
     "cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
-    "next_step": "P0 implementation",
+    "next_step": "complete P0 Review #2 and full CI, then begin P1",
     "reopen_for": [
       "implementation-discovered contradiction",
       "real CI/browser failure requiring source-of-truth correction",
@@ -99,17 +106,15 @@
   },
   "repository_gate": {
     "mode": "manual",
+    "accepted_by_owner": true,
     "observed_at": "2026-08-28",
-    "reason": "private repository on current GitHub plan does not expose protected branches/rulesets",
-    "mechanical_target": {
-      "required_check": "merge-gate",
-      "requires_pull_request": true,
-      "block_direct_main": true
+    "reason": "private repository on current free GitHub plan does not expose protected branches/rulesets",
+    "policy": {
+      "pull_request_required_by_process": true,
+      "latest_merge_gate_must_be_green": true,
+      "direct_roadmap_push_to_main": false,
+      "mechanically_unbypassable": false
     },
-    "resolution": [
-      "make repository public",
-      "upgrade GitHub plan",
-      "explicitly accept temporary manual enforcement"
-    ]
+    "reopen_only_if": "repository visibility or GitHub plan changes"
   }
 }

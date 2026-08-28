@@ -621,21 +621,29 @@ Dependabot config present
 workflow permissions remain contents: read
 ```
 
-## Branch-protection enforcement acceptance
+## Repository-gate acceptance
 
-Before the first roadmap merge:
+Mechanical target when the platform supports it:
 
 ```text
 main requires PR
 main requires merge-gate
-bypass of required protections disabled
+bypass disabled
 force pushes blocked
 branch deletion blocked
-required check bound to GitHub Actions when supported
-repository-plan capability verified
 ```
 
-If plan/visibility prevents the intended rule, P0 is not allowed to describe CI enforcement as mechanical until that limitation is resolved or explicitly accepted by the user.
+Current private/free repository mode is an explicitly owner-accepted exception:
+
+```text
+repository gate mode = manual
+PR/review/CI sequence remains mandatory
+latest merge-gate must be green before merge
+no direct roadmap push to main
+no claim of mechanically unbypassable protection
+```
+
+Unavailable protected-branch/ruleset controls are not a P0 blocker in this accepted mode.
 
 ## P0 bootstrap-test acceptance
 

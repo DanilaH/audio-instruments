@@ -14,12 +14,13 @@ The working visual direction is **Soft Sonic Studio**: a warm, friendly, express
 
 ## Documentation status
 
-Documentation baseline: **v1.9**
+Documentation baseline: **v1.10**
 
 Implementation readiness:
 
 ```text
-P0–P6 specification           IMPLEMENTATION-READY
+P0 repository bootstrap       IMPLEMENTED
+P1–P6 specification           IMPLEMENTATION-READY
 P7 SEO evidence refresh       PHASE-GATED
 P8 Release                    PHASE-GATED
 ```
@@ -31,8 +32,7 @@ BLOCKER = 0
 MAJOR = 0
 ```
 
-The current private repository/plan does not expose GitHub protected branches/rulesets.
-Until that external repository setting is resolved, the documented `merge-gate` workflow is a required **manual policy**, not a mechanically unbypassable protection.
+The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The assistant still requires the documented PR/review/CI sequence and a green `merge-gate` before merging, without claiming GitHub makes it unbypassable.
 
 P7 depends on the upgraded research runner.  
 P8 depends on real-device/browser QA and production decisions.
@@ -50,7 +50,7 @@ Locked baseline:
 - Motion
 - Phosphor Icons
 - pnpm `11.21.0`
-- Node `24` LTS pinned in `.nvmrc`; `package.json` receives the matching engine range during P0
+- Node `24` LTS pinned in `.nvmrc`; `package.json` enforces `>=24.16 <25`
 - Vitest
 - Playwright
 - ESLint
@@ -133,10 +133,10 @@ Short form:
 development
 → checkpoint commit + push
 → Draft PR
-→ independent review #1
+→ cold Review #1
 → fixes
 → reviewed commit(s)
-→ independent review #2
+→ cold Review #2
 → add `full-ci-approved`
 → mark PR Ready for review
 → only then full typecheck/tests/browser/build gate
@@ -224,13 +224,13 @@ full-validation runs
 
 ## Documentation freeze rule
 
-v1.9 closes the final pre-code documentation hardening pass.
+v1.10 records the first implementation-evidence synchronization during P0.
 
-After this version:
+Current rule:
 
 ```text
-do not run another speculative documentation review
-start P0 implementation
+do not run speculative documentation churn
+update source of truth only from implementation / CI / browser evidence or explicit owner decisions
 ```
 
 Further source-of-truth edits require evidence from:
