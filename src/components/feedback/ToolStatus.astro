@@ -2,13 +2,20 @@
 interface Props {
   id: string;
   label?: string;
-  state?: "idle" | "ready" | "playing" | "paused" | "error" | "limited_capability";
+  state?:
+    "idle" | "ready" | "playing" | "paused" | "error" | "limited_capability";
 }
 
 const { id, label = "Idle", state = "idle" } = Astro.props;
 ---
 
-<p id={id} class="tool-status" data-tool-status data-state={state} aria-live="polite">
+<p
+  id={id}
+  class="tool-status"
+  data-tool-status
+  data-state={state}
+  aria-live="polite"
+>
   <span class="tool-status__dot" aria-hidden="true"></span>
   <span data-status-label>{label}</span>
 </p>

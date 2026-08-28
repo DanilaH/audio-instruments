@@ -99,7 +99,10 @@ export class ToneWaveformRenderer {
       }
 
       if (this.#previousTimestamp !== null) {
-        const deltaSeconds = Math.min(0.05, (timestamp - this.#previousTimestamp) / 1000);
+        const deltaSeconds = Math.min(
+          0.05,
+          (timestamp - this.#previousTimestamp) / 1000,
+        );
         this.#phase = (this.#phase + deltaSeconds * 0.42) % 1;
       }
       this.#previousTimestamp = timestamp;
@@ -125,17 +128,24 @@ export class ToneWaveformRenderer {
     context.clearRect(0, 0, width, height);
 
     const reducedMotion = this.#motionQuery.matches;
-    const trails = this.#state.active && !reducedMotion
-      ? [
-          { offset: -0.055, alpha: 0.08, blur: 12 },
-          { offset: -0.035, alpha: 0.13, blur: 9 },
-          { offset: -0.018, alpha: 0.2, blur: 6 },
-          { offset: 0, alpha: 0.92, blur: 3 },
-        ]
-      : [{ offset: 0, alpha: 0.9, blur: 0 }];
+    const trails =
+      this.#state.active && !reducedMotion
+        ? [
+            { offset: -0.055, alpha: 0.08, blur: 12 },
+            { offset: -0.035, alpha: 0.13, blur: 9 },
+            { offset: -0.018, alpha: 0.2, blur: 6 },
+            { offset: 0, alpha: 0.92, blur: 3 },
+          ]
+        : [{ offset: 0, alpha: 0.9, blur: 0 }];
 
     for (const trail of trails) {
-      this.#drawPath(width, height, this.#phase + trail.offset, trail.alpha, trail.blur);
+      this.#drawPath(
+        width,
+        height,
+        this.#phase + trail.offset,
+        trail.alpha,
+        trail.blur,
+      );
     }
   }
 
@@ -188,7 +198,10 @@ export class ToneWaveformRenderer {
     const pixelWidth = Math.round(width * pixelRatio);
     const pixelHeight = Math.round(height * pixelRatio);
 
-    if (this.#canvas.width !== pixelWidth || this.#canvas.height !== pixelHeight) {
+    if (
+      this.#canvas.width !== pixelWidth ||
+      this.#canvas.height !== pixelHeight
+    ) {
       this.#canvas.width = pixelWidth;
       this.#canvas.height = pixelHeight;
     }

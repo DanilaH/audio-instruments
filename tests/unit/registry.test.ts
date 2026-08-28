@@ -39,9 +39,9 @@ describe("tool registry", () => {
   });
 
   it("publishes Tone Generator as the only P2.1 live tool", () => {
-    expect(
-      getPublicTools().map(({ id, route }) => ({ id, route })),
-    ).toEqual([{ id: "tone-generator", route: "/tone-generator" }]);
+    expect(getPublicTools().map(({ id, route }) => ({ id, route }))).toEqual([
+      { id: "tone-generator", route: "/tone-generator" },
+    ]);
   });
 
   it("never leaks a planned tool into public data", () => {

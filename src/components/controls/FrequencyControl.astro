@@ -97,11 +97,7 @@ const sliderPosition =
       const frequencyHz = Number(numeric.value);
       if (!bounds || !Number.isFinite(frequencyHz)) return;
       slider.value = String(
-        frequencyToSliderPosition(
-          frequencyHz,
-          bounds.minHz,
-          bounds.maxHz,
-        ),
+        frequencyToSliderPosition(frequencyHz, bounds.minHz, bounds.maxHz),
       );
     });
 

@@ -70,11 +70,17 @@ export class ToneGeneratorController {
       "[data-capability-message]",
     );
     this.#errorMessage = requireElement(root, "[data-tone-error]");
-    this.#frequencyReadout = requireElement(root, "[data-tone-frequency-readout]");
+    this.#frequencyReadout = requireElement(
+      root,
+      "[data-tone-frequency-readout]",
+    );
     this.#presetButtons = [
       ...root.querySelectorAll<HTMLButtonElement>("[data-tone-preset]"),
     ];
-    const canvas = requireElement<HTMLCanvasElement>(root, "[data-tone-waveform]");
+    const canvas = requireElement<HTMLCanvasElement>(
+      root,
+      "[data-tone-waveform]",
+    );
     this.#visual = new ToneWaveformRenderer(canvas);
 
     this.#bindEvents();
@@ -182,7 +188,9 @@ export class ToneGeneratorController {
       this.#applyFrequencyCapability(context.sampleRate);
 
       if (!this.#engine) {
-        this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
+        this.#engine = new AudioOutputEngine(context, {
+          levelProfile: "general",
+        });
         this.#session.register(this.#engine);
       }
 
@@ -221,11 +229,7 @@ export class ToneGeneratorController {
     this.#frequencyHz = frequencyHz;
     this.#frequencyNumber.value = String(frequencyHz);
     this.#frequencySlider.value = String(
-      frequencyToSliderPosition(
-        frequencyHz,
-        TONE_MIN_HZ,
-        this.#effectiveMaxHz,
-      ),
+      frequencyToSliderPosition(frequencyHz, TONE_MIN_HZ, this.#effectiveMaxHz),
     );
     this.#frequencyReadout.textContent = `${frequencyHz.toLocaleString()} Hz`;
     this.#playback?.setFrequency(frequencyHz);
@@ -242,7 +246,8 @@ export class ToneGeneratorController {
 
     for (const button of this.#presetButtons) {
       const presetHz = Number(button.dataset.tonePreset);
-      button.disabled = Number.isFinite(presetHz) && presetHz > this.#effectiveMaxHz;
+      button.disabled =
+        Number.isFinite(presetHz) && presetHz > this.#effectiveMaxHz;
     }
 
     if (this.#effectiveMaxHz < TONE_NOMINAL_MAX_HZ) {

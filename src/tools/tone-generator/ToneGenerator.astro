@@ -24,7 +24,10 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
 ---
 
 <div data-tone-generator>
-  <InstrumentSurface label="Tone Generator controls and waveform" accent="lavender">
+  <InstrumentSurface
+    label="Tone Generator controls and waveform"
+    accent="lavender"
+  >
     <div class="tone-instrument">
       <section class="tone-visual" aria-label="Generated waveform preview">
         <div class="tone-visual__header">
@@ -37,7 +40,8 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
           <canvas data-tone-waveform></canvas>
         </div>
         <p class="tone-visual__note">
-          Stylized waveform preview. The numeric control is the requested digital frequency.
+          Stylized waveform preview. The numeric control is the requested
+          digital frequency.
         </p>
       </section>
 
@@ -80,7 +84,9 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
         <div class="tone-safety">
           <i class="ph ph-speaker-low" aria-hidden="true"></i>
           <p>
-            Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.
+            Start with your device/headphone volume low. Increase it only to a
+            comfortable listening level. Do not turn the volume up to compensate
+            for a tone you cannot hear.
           </p>
         </div>
 
