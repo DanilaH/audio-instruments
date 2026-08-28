@@ -47,11 +47,6 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
 
       <section class="tone-controls" aria-label="Tone settings">
         <div class="tone-primary">
-          <div class="tone-actions">
-            <PlayStopControl id="tone-play-stop" isActive={false} />
-            <span>Stops with a short click-reduction fade.</span>
-          </div>
-
           <div class="tone-safety">
             <i class="ph ph-speaker-low" aria-hidden="true"></i>
             <p>
@@ -59,6 +54,11 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
               comfortable listening level. Do not turn the volume up to
               compensate for a tone you cannot hear.
             </p>
+          </div>
+
+          <div class="tone-actions">
+            <PlayStopControl id="tone-play-stop" isActive={false} />
+            <span>Stops with a short click-reduction fade.</span>
           </div>
         </div>
 
@@ -294,12 +294,14 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
 
   @media (max-width: 560px) {
     .tone-visual {
-      min-height: 280px;
+      grid-template-rows: auto 120px auto;
+      min-height: 0;
+      padding: 18px 20px;
     }
 
     .tone-canvas-wrap,
     .tone-canvas-wrap canvas {
-      min-height: 180px;
+      min-height: 120px;
     }
 
     .tone-mode-grid {
@@ -309,6 +311,7 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
     .tone-actions {
       align-items: flex-start;
       flex-direction: column;
+      gap: 8px;
     }
   }
 </style>
