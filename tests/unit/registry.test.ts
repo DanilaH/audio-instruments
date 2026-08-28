@@ -38,8 +38,10 @@ describe("tool registry", () => {
     }
   });
 
-  it("public tools contain only live entries", () => {
-    expect(getPublicTools().every((tool) => tool.status === "live")).toBe(true);
+  it("publishes Tone Generator as the only P2.1 live tool", () => {
+    expect(
+      getPublicTools().map(({ id, route }) => ({ id, route })),
+    ).toEqual([{ id: "tone-generator", route: "/tone-generator" }]);
   });
 
   it("never leaks a planned tool into public data", () => {
