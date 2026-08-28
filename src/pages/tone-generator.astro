@@ -7,12 +7,19 @@ import { getPublicTools, toolRegistry } from "../registry/tools";
 
 const toneTool = toolRegistry.find((tool) => tool.id === "tone-generator");
 if (!toneTool) throw new Error("Tone Generator registry entry is missing");
+
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = toneTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
 ---
 
 <BaseLayout
   title="Tone Generator — Browser Audio Lab"
   description="Generate a controlled 20 Hz–20 kHz digital tone in your browser with waveform, level and stereo channel controls."
-  hasLiveTools={getPublicTools().length > 0}
+  hasLiveTools={publicTools.length > 0}
 >
   <ToolShell
     eyebrow="Signal & frequency"
@@ -57,10 +64,7 @@ if (!toneTool) throw new Error("Tone Generator registry entry is missing");
       </div>
     </section>
 
-    <RelatedTools
-      currentToolId={toneTool.id}
-      relatedToolIds={toneTool.relatedToolIds}
-    />
+    <RelatedTools relatedTools={relatedTools} />
   </ToolShell>
 </BaseLayout>
 
