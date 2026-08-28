@@ -1,0 +1,115 @@
+{
+  "version": "1.9",
+  "status": "pre-code cold review passed; P0 implementation may begin; repository gate currently manual until GitHub plan/visibility enables protection or user explicitly accepts manual enforcement",
+  "authoritative_docs": [
+    "docs/00_OVERVIEW.md",
+    "docs/01_RESEARCH_AND_EVIDENCE.md",
+    "docs/02_PRODUCT_SCOPE.md",
+    "docs/03_TOOL_SPECS.md",
+    "docs/04_VISUAL_SYSTEM.md",
+    "docs/05_UX_UI.md",
+    "docs/06_ARCHITECTURE.md",
+    "docs/07_BROWSER_CAPABILITIES.md",
+    "docs/08_MEASUREMENT_HONESTY_AND_SAFETY.md",
+    "docs/09_SEO_ARCHITECTURE.md",
+    "docs/10_TESTING_AND_QA.md",
+    "docs/11_RELEASE_AND_ANALYTICS.md",
+    "docs/12_DECISIONS_AND_BOUNDARIES.md",
+    "docs/13_BACKLOG_AND_ROADMAP.md",
+    "docs/14_ACCEPTANCE_CRITERIA.md",
+    "docs/15_DEVELOPMENT_WORKFLOW.md",
+    "docs/16_CI_AND_REPOSITORY_GATES.md",
+    "docs/17_TECHNICAL_REFERENCES.md",
+    "docs/18_HOMEPAGE_AND_SITE_SHELL.md",
+    "docs/19_PRIVACY_AND_LEGAL.md",
+    "docs/20_P0_TOOLING_CONTRACT.md"
+  ],
+  "evidence_ledgers": [
+    "docs/evidence/competitor-evidence.csv"
+  ],
+  "workflow": "development -> checkpoint commit -> Draft PR -> independent review #1 -> fixes/commits -> independent review #2 -> add full-ci-approved -> Ready -> full-validation -> merge-gate -> fix/re-review/rerun if needed -> squash merge -> next branch",
+  "repository_files": [
+    ".gitignore",
+    ".github/workflows/ci.yml",
+    ".github/dependabot.yml",
+    ".nvmrc",
+    "playwright.config.ts",
+    "eslint.config.mjs",
+    ".prettierrc.mjs",
+    ".prettierignore"
+  ],
+  "runtime": {
+    "node": ">=24.16 <25",
+    "pnpm": "11.21.0",
+    "packageManager": "pnpm@11.21.0",
+    "ciSetup": "pnpm/setup@v2",
+    "localNvmrc": "24.16.0"
+  },
+  "indexing_gate": {
+    "default": "noindex",
+    "enable": "SITE_INDEXING=enabled + valid SITE_ORIGIN"
+  },
+  "ci_gate": {
+    "authorization_label": "full-ci-approved",
+    "required_check": "merge-gate",
+    "expensive_job": "full-validation",
+    "requires_ready": true,
+    "events": [
+      "opened",
+      "ready_for_review",
+      "converted_to_draft",
+      "labeled",
+      "unlabeled",
+      "synchronize",
+      "reopened"
+    ]
+  },
+  "dependencies": {
+    "animation": "motion",
+    "icons": "@phosphor-icons/web",
+    "release_sitemap": "@astrojs/sitemap (P8)"
+  },
+  "tooling": {
+    "astro_check": [
+      "@astrojs/check",
+      "typescript"
+    ],
+    "lint": [
+      "eslint",
+      "@eslint/js",
+      "typescript-eslint",
+      "@typescript-eslint/parser",
+      "eslint-plugin-astro"
+    ],
+    "format": [
+      "prettier",
+      "prettier-plugin-astro"
+    ],
+    "browser_test": "@playwright/test"
+  },
+  "documentation_policy": {
+    "state": "reviewed-and-frozen",
+    "cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
+    "next_step": "P0 implementation",
+    "reopen_for": [
+      "implementation-discovered contradiction",
+      "real CI/browser failure requiring source-of-truth correction",
+      "new blocking factual error"
+    ]
+  },
+  "repository_gate": {
+    "mode": "manual",
+    "observed_at": "2026-08-28",
+    "reason": "private repository on current GitHub plan does not expose protected branches/rulesets",
+    "mechanical_target": {
+      "required_check": "merge-gate",
+      "requires_pull_request": true,
+      "block_direct_main": true
+    },
+    "resolution": [
+      "make repository public",
+      "upgrade GitHub plan",
+      "explicitly accept temporary manual enforcement"
+    ]
+  }
+}

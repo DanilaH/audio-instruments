@@ -1,0 +1,492 @@
+# AGENTS.md
+
+Operational contract for coding agents working in this repository.
+
+Read this file before changing code.
+
+## 1. Authority order
+
+When instructions conflict:
+
+```text
+1. explicit current user instruction
+2. docs/12_DECISIONS_AND_BOUNDARIES.md
+3. relevant authoritative topic document
+4. docs/14_ACCEPTANCE_CRITERIA.md
+5. docs/15_DEVELOPMENT_WORKFLOW.md
+6. AGENTS.md
+7. README.md
+8. existing implementation conventions
+```
+
+Do not silently reconcile material conflicts.
+
+## 2. Documentation ownership
+
+```text
+Overview / product thesis
+→ docs/00_OVERVIEW.md
+
+Research evidence
+→ docs/01_RESEARCH_AND_EVIDENCE.md
+
+Scope / jobs / route distinctions
+→ docs/02_PRODUCT_SCOPE.md
+
+Exact tool behavior and algorithms
+→ docs/03_TOOL_SPECS.md
+
+Visual system
+→ docs/04_VISUAL_SYSTEM.md
+
+UX / layout / states / accessibility
+→ docs/05_UX_UI.md
+
+Code architecture / imports / dependency map
+→ docs/06_ARCHITECTURE.md
+
+Browser capability / fallback policy
+→ docs/07_BROWSER_CAPABILITIES.md
+
+Claims / safety / signal-level policy
+→ docs/08_MEASUREMENT_HONESTY_AND_SAFETY.md
+
+SEO / routes / internal links
+→ docs/09_SEO_ARCHITECTURE.md
+
+Testing / QA
+→ docs/10_TESTING_AND_QA.md
+
+Release / analytics
+→ docs/11_RELEASE_AND_ANALYTICS.md
+
+Locked decisions / non-goals
+→ docs/12_DECISIONS_AND_BOUNDARIES.md
+
+Phases / backlog
+→ docs/13_BACKLOG_AND_ROADMAP.md
+
+Definition of Done
+→ docs/14_ACCEPTANCE_CRITERIA.md
+
+Git/PR/review process
+→ docs/15_DEVELOPMENT_WORKFLOW.md
+
+CI trigger / branch protection / merge policy
+→ docs/16_CI_AND_REPOSITORY_GATES.md
+
+External technical facts used by the specs
+→ docs/17_TECHNICAL_REFERENCES.md
+
+Homepage / site shell
+→ docs/18_HOMEPAGE_AND_SITE_SHELL.md
+
+Privacy/legal behavior
+→ docs/19_PRIVACY_AND_LEGAL.md
+
+P0 package/scripts/lint/format/test tooling
+→ docs/20_P0_TOOLING_CONTRACT.md
+```
+
+## 3. Implementation status
+
+P0–P6 are implementation-ready after the 2026-08-28 cold pre-code review closed with 0 blockers / 0 majors.
+
+Implementation may begin.
+
+Do not reopen resolved choices because another implementation seems personally preferable.
+
+P7–P8 remain phase-gated by external evidence/QA.
+
+## 4. Locked stack
+
+```text
+Astro static MPA
+strict TypeScript
+plain CSS/custom properties
+Web Audio / MediaDevices
+Canvas/SVG
+Motion
+Phosphor
+pnpm
+Vitest
+Playwright
+ESLint
+Prettier
+```
+
+No SSR.
+
+No React/Vue/Svelte.
+
+No global state library.
+
+No Rive/OGL/Three.js at bootstrap.
+
+Any new dependency requires:
+
+```text
+problem solved
+native alternative considered
+bundle/runtime cost
+maintenance cost
+```
+
+## 5. Architecture discipline
+
+Follow import boundaries in `06_ARCHITECTURE.md`.
+
+Do not create one giant `AudioService`.
+
+Do not make shared components own browser-resource lifecycles.
+
+Do not make browser services import tool UI.
+
+Do not add circular dependencies.
+
+Do not generalize speculative future behavior.
+
+## 6. State ownership
+
+```text
+tool controller
+→ product interaction state
+
+browser service
+→ browser resource lifecycle
+
+visualization component
+→ drawing-local state
+```
+
+No global store unless a future explicit cross-page requirement is approved.
+
+## 7. Resource ownership
+
+Every started resource must stop deterministically:
+
+```text
+OscillatorNode
+AudioNode connections
+MediaStreamTrack
+MediaRecorder
+requestAnimationFrame
+timers
+event listeners
+object URLs
+```
+
+No mic stream after stop/navigation.
+
+No leaked animation loops.
+
+## 8. Measurement gate
+
+Before implementing a displayed metric or verdict, classify it as:
+
+```text
+A browser-known/generated
+B browser-reported/estimated
+C user-observed physical behavior
+```
+
+Never promote B/C into stronger physical certainty.
+
+If wording is unclear, consult `08_MEASUREMENT_HONESTY_AND_SAFETY.md`.
+
+## 9. Visual boundaries
+
+Locked direction:
+
+```text
+Soft Sonic Studio
+warm near-white base
+soft ink
+rounded/tinted instrument surfaces
+tool-specific visual grammar
+audio-derived visuals
+dynamic waveform motif
+subtle blur + short trail
+```
+
+Allowed later polish:
+
+```text
+spacing
+shadow softness
+illustration detail
+exact timing
+fine palette tuning
+homepage composition
+```
+
+Not allowed ad hoc:
+
+```text
+generic monochrome utility UI
+RGB/neon gaming theme
+generic chart-card replacement
+hidden primary controls
+heavy graphics runtime for core functionality
+```
+
+## 10. Tool-first UX
+
+The primary job belongs in the first meaningful viewport.
+
+Long SEO text belongs below the tool.
+
+Primary controls must remain obvious.
+
+## 11. Accessibility
+
+Required:
+
+```text
+keyboard access
+visible focus
+semantic controls
+labels
+screen-reader states
+sufficient contrast
+reduced motion
+touch-friendly mobile controls
+```
+
+Audio feedback must not be the only feedback.
+
+## 12. Privacy and safety
+
+Core v1 mic processing is local.
+
+Do not upload or analyze audio remotely.
+
+Do not send audio content to analytics.
+
+Use the digital signal-level limits defined in `08_MEASUREMENT_HONESTY_AND_SAFETY.md`.
+
+Those limits are not physical SPL guarantees.
+
+## 13. Browser fallbacks
+
+Use feature detection, not normal UA sniffing.
+
+A missing optional API should degrade the relevant subsection, not automatically kill the entire tool.
+
+## 14. SEO boundaries
+
+No thin synonym pages.
+
+A route requires a distinct job/interaction/result/intent.
+
+SEO priority may change later without redefining functional behavior.
+
+## 15. Workflow is mandatory
+
+Follow `docs/15_DEVELOPMENT_WORKFLOW.md`.
+
+In particular:
+
+```text
+development
+→ Draft PR
+→ independent review #1
+→ fixes/commit
+→ independent review #2
+→ mark Ready for review
+→ full validation gate
+→ green CI
+→ merge
+→ next task
+```
+
+A checkpoint commit is mechanically required before opening the Draft PR.
+
+Do not merge directly to main.
+
+Do not begin the next roadmap task before the current PR is merged unless the user explicitly asks for parallel work.
+
+## 16. Agent task loop
+
+For each task:
+
+```text
+read relevant docs
+→ inspect existing code
+→ identify acceptance criteria
+→ implement narrow scope
+→ follow PR/review workflow
+→ merge
+→ update main
+→ continue
+```
+
+Avoid unrelated refactors.
+
+Update authoritative docs only when a real decision changes.
+
+## 17. Independent-review requirement
+
+Implementer self-review is useful but **does not count** as Review #1 or Review #2.
+
+A qualifying review must be performed by one of:
+
+```text
+human reviewer
+separate review agent/model
+separate ChatGPT review context acting only as reviewer
+```
+
+The reviewer must inspect the actual PR diff.
+
+Review findings should be recorded in the PR conversation or another durable review artifact.
+
+If a post-validation fix materially changes product behavior, architecture, UX, claims, privacy or safety, the changed diff requires another independent substantive review before merge.
+
+## 18. Frequency capability rule
+
+Never assume 20 kHz is valid merely because a tool's nominal range ends at 20 kHz.
+
+Generated-frequency tools must use the shared Nyquist-safe maximum defined in `07_BROWSER_CAPABILITIES.md`.
+
+Do not silently clamp without informing the tool controller/UI when the effective maximum is lower than the nominal range.
+
+## 19. AudioContext ownership
+
+Core v1 uses **tool-local AudioSession ownership**.
+
+Do not create a global AudioContext singleton.
+
+A tool page may share one AudioContext across its own services, but that context must not outlive the tool page.
+
+Exact lifecycle is defined in `06_ARCHITECTURE.md`.
+
+## 20. Realtime accessibility
+
+Do not attach `aria-live` to rapidly changing numerical measurements or visualization data.
+
+Allowed `aria-live` content is limited to discrete meaningful state changes such as:
+
+```text
+Playback started/stopped
+Recording started/stopped
+Permission denied
+Input device lost
+Signal unavailable
+```
+
+Realtime values such as Hz, dBFS, cents, FFT bins and spectrum updates remain labelled readable text but are not repeatedly announced.
+
+## 21. Canonical source purity
+
+Authoritative docs describe current behavior only.
+
+Superseded decisions belong only in `docs/CHANGELOG.md`.
+
+If two current authoritative docs conflict, stop and surface the conflict.
+
+## 22. Microphone feedback prohibition
+
+Mic-based tools never connect live microphone input to `AudioContext.destination`.
+
+Allowed:
+
+```text
+MediaStreamSource → analyser / meter / recorder
+```
+
+Recorded-audio playback is allowed only after recording and explicit Play.
+
+## 23. Analysis sample-rate rule
+
+Downstream Web Audio PCM/FFT/pitch analysis uses:
+
+```text
+AudioContext.sampleRate
+```
+
+Track `sampleRate` remains browser-reported capture metadata only.
+
+## 24. Browser certification rule
+
+Playwright Chromium/Firefox/WebKit are automated regression targets, not proof of branded Safari/iOS Safari/Android Chrome/Edge support.
+
+Production support follows the real-browser matrix in `10_TESTING_AND_QA.md`.
+
+## 25. Live-route publication rule
+
+The registry may describe planned tools, but user-facing navigation may only link tools with:
+
+```text
+status = "live"
+```
+
+Never create:
+
+```text
+Coming Soon tool routes
+placeholder tool pages
+broken homepage links
+related-tool links to planned tools
+```
+
+A tool becomes `live` only in the same merged change that delivers its working route and acceptance criteria.
+
+## 26. Full-CI authorization
+
+Full CI requires both:
+
+```text
+PR is not Draft
+label: full-ci-approved
+```
+
+The label is added only after independent Review #2 while the PR is still Draft, then the PR is marked Ready.
+
+Do not add that label early to “get CI started”.
+
+## 27. Required merge gate
+
+Do not treat a skipped conditional CI job as merge authorization.
+
+Branch protection requires:
+
+```text
+merge-gate
+```
+
+`merge-gate` always executes for tracked PR events and fails unless:
+
+```text
+PR is Ready
+full-ci-approved is present
+full-validation result == success
+```
+
+Do not change this into a job-level `if:` on the required gate.
+
+## 28. Branch-protection bypass
+
+Do not treat branch protection as complete if administrators/maintainers can bypass the required merge gate.
+
+P0 must verify the repository-plan/settings capability and record any limitation instead of assuming protection exists.
+
+
+## 29. Current repository-gate mode
+
+The repository may temporarily be unable to enforce protected-branch/ruleset controls because of GitHub plan/visibility limits.
+
+When `docs/MANIFEST.json` reports:
+
+```text
+repository_gate.mode = manual
+```
+
+then:
+
+- the PR/review/CI sequence remains mandatory policy;
+- do not claim it is mechanically unbypassable;
+- do not direct-push roadmap implementation to `main`;
+- P0 cannot claim the repository gate is mechanically complete until protection becomes available or the user explicitly accepts temporary manual enforcement.
+
+The only direct-to-main exception is the initial empty-repository documentation/bootstrap seed before normal roadmap development begins.

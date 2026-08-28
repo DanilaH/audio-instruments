@@ -1,0 +1,105 @@
+name: Full Validation
+
+on:
+  pull_request:
+    types:
+      - opened
+      - ready_for_review
+      - converted_to_draft
+      - labeled
+      - unlabeled
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+concurrency:
+  group: full-validation-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  authorization:
+    name: authorization
+    runs-on: ubuntu-latest
+    outputs:
+      authorized: ${{ steps.authorization.outputs.authorized }}
+    steps:
+      - id: authorization
+        name: Evaluate full-CI authorization
+        run: |
+          echo "authorized=${{ github.event.pull_request.draft == false && contains(github.event.pull_request.labels.*.name, 'full-ci-approved') }}" >> "$GITHUB_OUTPUT"
+
+  full-validation:
+    name: full-validation
+    needs: authorization
+    if: ${{ needs.authorization.outputs.authorized == 'true' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Astro and TypeScript check
+        run: pnpm check
+
+      - name: Unit and service tests
+        run: pnpm test
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Browser tests
+        run: pnpm test:browser
+
+      - name: Upload browser failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: playwright-failure-${{ github.run_id }}
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 7
+
+  merge-gate:
+    name: merge-gate
+    needs:
+      - authorization
+      - full-validation
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Require authorization and successful full validation
+        env:
+          AUTHORIZED: ${{ needs.authorization.outputs.authorized }}
+          VALIDATION_RESULT: ${{ needs.full-validation.result }}
+        run: |
+          if [ "$AUTHORIZED" != "true" ]; then
+            echo "::error::Full CI is not authorized. Complete Review #2, add full-ci-approved, then mark the PR Ready."
+            exit 1
+          fi
+
+          if [ "$VALIDATION_RESULT" != "success" ]; then
+            echo "::error::full-validation result is '$VALIDATION_RESULT'; merge requires success."
+            exit 1
+          fi
+
+          echo "Merge gate passed."
