@@ -34,8 +34,8 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
           Relationship: <strong data-phase-mode-label>None</strong>
         </p>
         <p class="phase-visual__note">
-          The drawing is a relationship cue, not a measured waveform. Listen for
-          the perceptual image change; this does not diagnose physical wiring.
+          Relationship cue only — not a measured waveform or a physical wiring
+          diagnosis.
         </p>
       </section>
 
@@ -135,7 +135,11 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     gap: 3px;
     text-align: right;
   }
-  .phase-reference strong { font-size: 0.9rem; }
+
+  .phase-reference strong {
+    font-size: 0.9rem;
+  }
+
   .phase-reference span,
   .phase-group span,
   .phase-visual__note {
@@ -150,18 +154,25 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     gap: 12px;
     margin: 14px 0 8px;
   }
+
   .phase-waveform-row {
     display: grid;
     grid-template-columns: 28px 1fr;
     align-items: center;
     gap: 12px;
   }
-  .phase-waveform-row > span { font-weight: 800; color: var(--color-ink-muted); }
+
+  .phase-waveform-row > span {
+    font-weight: 800;
+    color: var(--color-ink-muted);
+  }
+
   .phase-waveform-row svg {
     width: 100%;
     height: 92px;
     overflow: visible;
   }
+
   .phase-waveform-row path {
     fill: none;
     stroke: var(--color-lavender);
@@ -172,21 +183,36 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     transition: transform 50ms linear, opacity 120ms ease;
     transform-origin: 50% 50%;
   }
+
   [data-phase-mode="inverted"] .phase-waveform-row--right path {
     transform: scaleY(-1);
     opacity: 1;
   }
-  [data-phase-mode="in-phase"] .phase-waveform-row path { opacity: 1; }
 
-  .phase-mode { margin: 0; text-align: center; font-size: 0.92rem; }
-  .phase-visual__note { max-width: 560px; margin: 10px auto 0; text-align: center; }
+  [data-phase-mode="in-phase"] .phase-waveform-row path {
+    opacity: 1;
+  }
+
+  .phase-mode {
+    margin: 0;
+    text-align: center;
+    font-size: 0.92rem;
+  }
+
+  .phase-visual__note {
+    max-width: 560px;
+    margin: 8px auto 0;
+    text-align: center;
+  }
 
   .phase-controls {
     display: grid;
     align-content: start;
-    gap: 18px;
+    gap: 12px;
+    padding: clamp(20px, 2.4vw, 24px);
     background: rgb(255 253 252 / 0.74);
   }
+
   .phase-safety {
     display: grid;
     grid-template-columns: auto 1fr;
@@ -195,14 +221,33 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     border-radius: var(--radius-control);
     background: rgb(255 215 106 / 0.18);
   }
-  .phase-safety p,
-  .phase-error { margin: 0; font-size: 0.8rem; line-height: 1.45; }
 
-  .phase-group { display: grid; gap: 12px; }
-  .phase-group > div:first-child { display: grid; gap: 3px; }
-  .phase-actions { display: grid; gap: 8px; }
+  .phase-safety p,
+  .phase-error {
+    margin: 0;
+    font-size: 0.8rem;
+    line-height: 1.45;
+  }
+
+  .phase-group {
+    display: grid;
+    gap: 8px;
+  }
+
+  .phase-group > div:first-child {
+    display: grid;
+    gap: 3px;
+  }
+
+  .phase-actions {
+    display: grid;
+    gap: 8px;
+  }
+
   .phase-actions--modes,
-  .phase-actions--utility { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .phase-actions--utility {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
 
   .phase-actions button {
     min-height: 48px;
@@ -210,15 +255,18 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     font-weight: 800;
     cursor: pointer;
   }
+
   .phase-actions--modes button {
     border: 1px solid var(--color-border);
     background: var(--color-surface);
     color: var(--color-ink);
   }
+
   .phase-actions--modes button[aria-pressed="true"] {
     border-color: rgb(93 74 232 / 0.42);
     background: rgb(143 124 255 / 0.12);
   }
+
   .phase-toggle,
   .phase-stop {
     display: inline-flex;
@@ -226,9 +274,23 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     justify-content: center;
     gap: 8px;
   }
-  .phase-toggle { border: 0; background: var(--color-ink); color: var(--color-surface); }
-  .phase-stop { border: 1px solid var(--color-border); background: transparent; color: var(--color-ink); }
-  button:disabled { cursor: not-allowed; opacity: 0.48; }
+
+  .phase-toggle {
+    border: 0;
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .phase-stop {
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-ink);
+  }
+
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+  }
 
   .phase-error {
     padding: 11px 13px;
@@ -236,22 +298,54 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     background: rgb(155 47 47 / 0.08);
     color: #7f2929;
   }
-  .phase-error[hidden] { display: none; }
+
+  .phase-error[hidden] {
+    display: none;
+  }
 
   @media (max-width: 900px) {
-    .phase-instrument { grid-template-columns: 1fr; }
-    .phase-visual { min-height: 330px; border-right: 0; border-bottom: 1px solid var(--color-border); }
+    .phase-instrument {
+      grid-template-columns: 1fr;
+    }
+
+    .phase-visual {
+      min-height: 330px;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
   }
 
   @media (max-width: 560px) {
-    .phase-visual,
-    .phase-controls { padding: 18px 20px; }
-    .phase-visual { min-height: 280px; }
-    .phase-waveforms { gap: 4px; margin: 4px 0; }
-    .phase-waveform-row svg { height: 64px; }
+    .phase-visual {
+      min-height: 220px;
+      padding: 14px 20px;
+    }
+
+    .phase-controls {
+      padding: 16px 20px;
+    }
+
+    .phase-waveforms {
+      gap: 2px;
+      margin: 2px 0;
+    }
+
+    .phase-waveform-row svg {
+      height: 44px;
+    }
+
+    .phase-reference span {
+      display: none;
+    }
+
+    .phase-visual__note {
+      margin-top: 4px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .phase-waveform-row path { transition: none; }
+    .phase-waveform-row path {
+      transition: none;
+    }
   }
 </style>
