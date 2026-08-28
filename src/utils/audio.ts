@@ -1,9 +1,28 @@
 export const GENERAL_LEVEL_MIN_DB = -60;
 export const GENERAL_LEVEL_DEFAULT_DB = -24;
 export const GENERAL_LEVEL_MAX_DB = -12;
+export const HEARING_LEVEL_MIN_DB = -60;
 export const HEARING_LEVEL_DEFAULT_DB = -36;
 export const HEARING_LEVEL_MAX_DB = -24;
 export const DEFAULT_RAMP_SECONDS = 0.05;
+
+export interface LevelProfile {
+  readonly minDb: number;
+  readonly defaultDb: number;
+  readonly maxDb: number;
+}
+
+export const GENERAL_LEVEL_PROFILE = {
+  minDb: GENERAL_LEVEL_MIN_DB,
+  defaultDb: GENERAL_LEVEL_DEFAULT_DB,
+  maxDb: GENERAL_LEVEL_MAX_DB,
+} as const satisfies LevelProfile;
+
+export const HEARING_LEVEL_PROFILE = {
+  minDb: HEARING_LEVEL_MIN_DB,
+  defaultDb: HEARING_LEVEL_DEFAULT_DB,
+  maxDb: HEARING_LEVEL_MAX_DB,
+} as const satisfies LevelProfile;
 
 export type SweepDirection = "ascending" | "descending";
 export type SweepScale = "linear" | "logarithmic";
@@ -22,6 +41,22 @@ export function clamp(value: number, min: number, max: number): number {
 
 export function dbToGain(db: number): number {
   return 10 ** (db / 20);
+}
+
+export function validateLevelProfile(profile: LevelProfile): LevelProfile {
+  const { minDb, defaultDb, maxDb } = profile;
+
+  if (![minDb, defaultDb, maxDb].every(Number.isFinite)) {
+    throw new RangeError("Level profile values must be finite numbers");
+  }
+  if (minDb > defaultDb || defaultDb > maxDb) {
+    throw new RangeError("Level profile must satisfy minDb <= defaultDb <= maxDb");
+  }
+  if (maxDb > 0) {
+    throw new RangeError("Level profile maxDb must not exceed unity gain");
+  }
+
+  return profile;
 }
 
 export function getWorstCaseSummingCoefficient(sourceCount: number): number {
