@@ -67,7 +67,7 @@ export class ToneGeneratorController {
   readonly #capabilityNotice: HTMLElement;
   readonly #capabilityMessage: HTMLElement;
   readonly #errorMessage: HTMLElement;
-  readonly #frequencyReadout: HTMLElement;
+  readonly #frequencyReadoutValue: HTMLElement;
   readonly #presetButtons: readonly HTMLButtonElement[];
 
   #engine: AudioOutputEngine | null = null;
@@ -95,9 +95,9 @@ export class ToneGeneratorController {
       "[data-capability-message]",
     );
     this.#errorMessage = requireElement(root, "[data-tone-error]");
-    this.#frequencyReadout = requireElement(
+    this.#frequencyReadoutValue = requireElement(
       root,
-      "[data-tone-frequency-readout]",
+      "#tone-frequency-readout [data-metric-value]",
     );
     this.#presetButtons = [
       ...root.querySelectorAll<HTMLButtonElement>("[data-tone-preset]"),
@@ -133,11 +133,14 @@ export class ToneGeneratorController {
     this.#frequencyRoot.dataset.maxHz = String(TONE_NOMINAL_MAX_HZ);
     this.#frequencyNumber.max = String(TONE_NOMINAL_MAX_HZ);
 
-    const restoredFrequency = Number(this.#frequencyNumber.value);
-    if (Number.isFinite(restoredFrequency)) {
-      this.#frequencyHz = Math.round(
-        clamp(restoredFrequency, TONE_MIN_HZ, TONE_NOMINAL_MAX_HZ),
-      );
+    const restoredFrequencyRaw = this.#frequencyNumber.value.trim();
+    if (restoredFrequencyRaw !== "") {
+      const restoredFrequency = Number(restoredFrequencyRaw);
+      if (Number.isFinite(restoredFrequency)) {
+        this.#frequencyHz = Math.round(
+          clamp(restoredFrequency, TONE_MIN_HZ, TONE_NOMINAL_MAX_HZ),
+        );
+      }
     }
 
     const restoredLevel = Number(this.#levelInput.value);
@@ -180,10 +183,13 @@ export class ToneGeneratorController {
 
     this.#frequencyNumber.addEventListener(
       "input",
-      () => {
-        const frequencyHz = Number(this.#frequencyNumber.value);
-        if (Number.isFinite(frequencyHz)) this.#setFrequency(frequencyHz);
-      },
+      () => this.#applyEditableFrequency(),
+      { signal },
+    );
+
+    this.#frequencyNumber.addEventListener(
+      "change",
+      () => this.#commitEditableFrequency(),
       { signal },
     );
 
@@ -252,6 +258,38 @@ export class ToneGeneratorController {
     );
   }
 
+  #applyEditableFrequency(): void {
+    const rawValue = this.#frequencyNumber.value.trim();
+    if (rawValue === "") return;
+
+    const frequencyHz = Number(rawValue);
+    if (
+      !Number.isFinite(frequencyHz) ||
+      frequencyHz < TONE_MIN_HZ ||
+      frequencyHz > this.#effectiveMaxHz
+    ) {
+      return;
+    }
+
+    this.#applyFrequency(frequencyHz, false);
+  }
+
+  #commitEditableFrequency(): void {
+    const rawValue = this.#frequencyNumber.value.trim();
+    if (rawValue === "") {
+      this.#setFrequency(this.#frequencyHz);
+      return;
+    }
+
+    const frequencyHz = Number(rawValue);
+    if (!Number.isFinite(frequencyHz)) {
+      this.#setFrequency(this.#frequencyHz);
+      return;
+    }
+
+    this.#setFrequency(frequencyHz);
+  }
+
   async #startPlayback(): Promise<void> {
     if (this.#disposed || this.#starting || this.#playback) return;
     this.#starting = true;
@@ -301,15 +339,19 @@ export class ToneGeneratorController {
   }
 
   #setFrequency(requestedHz: number): void {
+    this.#applyFrequency(requestedHz, true);
+  }
+
+  #applyFrequency(requestedHz: number, writeInput: boolean): void {
     const frequencyHz = Math.round(
       clamp(requestedHz, TONE_MIN_HZ, this.#effectiveMaxHz),
     );
     this.#frequencyHz = frequencyHz;
-    this.#frequencyNumber.value = String(frequencyHz);
+    if (writeInput) this.#frequencyNumber.value = String(frequencyHz);
     this.#frequencySlider.value = String(
       frequencyToSliderPosition(frequencyHz, TONE_MIN_HZ, this.#effectiveMaxHz),
     );
-    this.#frequencyReadout.textContent = `${frequencyHz.toLocaleString()} Hz`;
+    this.#frequencyReadoutValue.textContent = frequencyHz.toLocaleString();
     this.#playback?.setFrequency(frequencyHz);
     this.#renderVisual();
   }
