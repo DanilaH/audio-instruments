@@ -100,8 +100,13 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "signal-frequency",
     implementationPhase: "P2.1",
     accent: "lavender",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: [
+      "frequency-sweep",
+      "bass-test",
+      "noise-generator",
+      "hearing-frequency-test",
+    ],
   },
   {
     id: "frequency-sweep",
