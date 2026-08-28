@@ -4,7 +4,11 @@ import {
   AudioOutputEngine,
   scheduleSweepOnParam,
 } from "../../src/browser/audio-output/AudioOutputEngine";
-import { dbToGain, type SweepDefinition } from "../../src/utils/audio";
+import {
+  HEARING_LEVEL_PROFILE,
+  dbToGain,
+  type SweepDefinition,
+} from "../../src/utils/audio";
 
 type ParamEvent = {
   kind: "hold" | "cancel" | "set" | "linear" | "exponential";
@@ -185,6 +189,25 @@ describe("AudioOutputEngine", () => {
     expect(master?.events.at(-1)).toMatchObject({
       kind: "linear",
       value: dbToGain(-12),
+      time: 2.05,
+    });
+  });
+
+  it("enforces the hearing -36 dB default and -24 dB maximum in the shared engine", () => {
+    const context = new FakeAudioContext();
+    const engine = new AudioOutputEngine(context as unknown as AudioContext, {
+      levelProfile: HEARING_LEVEL_PROFILE,
+    });
+    const master = context.gains[0]?.gain;
+
+    expect(master?.value).toBeCloseTo(dbToGain(-36), 8);
+    expect(engine.levelProfile).toEqual(HEARING_LEVEL_PROFILE);
+
+    engine.setLevelDb(-12);
+
+    expect(master?.events.at(-1)).toMatchObject({
+      kind: "linear",
+      value: dbToGain(-24),
       time: 2.05,
     });
   });
