@@ -1,5 +1,21 @@
 # Documentation Changelog
 
+## v1.10 — 2026-08-28
+
+P0 implementation-evidence synchronization.
+
+Changes:
+
+- recorded the P0 repository bootstrap implementation as the first post-freeze evidence-driven documentation update;
+- kept pnpm 11 supply-chain protections enabled after `astro@7.2.9` was rejected by minimum-release-age verification and pinned the validated mature `astro@7.2.4` instead of weakening the policy;
+- added the narrow `pnpm-workspace.yaml` lifecycle-script allowlist for required `esbuild` installation rather than allowing arbitrary dependency build scripts;
+- added `@types/node` because the real strict Astro/TypeScript check includes Node-hosted configuration using `process.env.CI`;
+- documented the narrow Phosphor Regular side-effect module declaration required by Astro/TypeScript validation;
+- separated Vitest unit discovery from Playwright browser discovery through `vitest.config.ts`;
+- expanded registry acceptance coverage to the complete 16-tool set with unique ids/routes;
+- expanded browser smoke coverage so every planned tool route must remain `404` until implementation and `live` promotion happen together;
+- validated the scaffold with frozen install, Prettier, ESLint, `astro check`, Vitest and production build before independent review.
+
 ## v1.9 — 2026-08-28
 
 Final pre-code repository hardening pass.
@@ -179,7 +195,6 @@ Changes:
 - added exact tool/job overlap matrix;
 - added Tool → Service dependency matrix;
 - added strict import boundaries;
-- added shared component inventory;
 - corrected generated-signal `dBFS` wording;
 - documented dB → GainNode conversion;
 - added normalization/headroom/clipping policy;
