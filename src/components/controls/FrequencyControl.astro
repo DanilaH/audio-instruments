@@ -73,32 +73,45 @@ const sliderPosition =
     const slider = root.querySelector<HTMLInputElement>(
       "[data-frequency-slider]",
     );
-    const minHz = Number(root.dataset.minHz);
-    const maxHz = Number(root.dataset.maxHz);
-    if (
-      !numeric ||
-      !slider ||
-      !Number.isFinite(minHz) ||
-      !Number.isFinite(maxHz)
-    ) {
-      continue;
-    }
+    if (!numeric || !slider) continue;
 
+    const readBounds = () => {
+      const minHz = Number(root.dataset.minHz);
+      const maxHz = Number(root.dataset.maxHz);
+      if (
+        !Number.isFinite(minHz) ||
+        !Number.isFinite(maxHz) ||
+        minHz <= 0 ||
+        maxHz <= minHz
+      ) {
+        return null;
+      }
+      return { minHz, maxHz };
+    };
+
+    if (!readBounds()) continue;
     root.dataset.bound = "true";
 
     numeric.addEventListener("input", () => {
+      const bounds = readBounds();
       const frequencyHz = Number(numeric.value);
-      if (!Number.isFinite(frequencyHz)) return;
+      if (!bounds || !Number.isFinite(frequencyHz)) return;
       slider.value = String(
-        frequencyToSliderPosition(frequencyHz, minHz, maxHz),
+        frequencyToSliderPosition(
+          frequencyHz,
+          bounds.minHz,
+          bounds.maxHz,
+        ),
       );
     });
 
     slider.addEventListener("input", () => {
+      const bounds = readBounds();
+      if (!bounds) return;
       const frequencyHz = sliderPositionToFrequency(
         Number(slider.value),
-        minHz,
-        maxHz,
+        bounds.minHz,
+        bounds.maxHz,
       );
       numeric.value = String(Math.round(frequencyHz));
       numeric.dispatchEvent(new Event("input", { bubbles: true }));
