@@ -114,6 +114,9 @@ test("homepage applies the Tone visual system without turning the directory into
 
   const heroAction = page.getByRole("link", { name: "Open Tone Generator" });
   await expect(heroAction).toHaveAttribute("href", toneGenerator.route);
+  await expect(page.locator(".hero__action-note")).toContainText(
+    "20 Hz–20 kHz nominal range, capped to browser audio limits",
+  );
   await expect(
     page.getByRole("img", {
       name: "Stylized 440 hertz sine-wave reference signal",
