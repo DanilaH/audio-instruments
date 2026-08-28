@@ -39,6 +39,7 @@ export interface OscillatorStartOptions {
   readonly waveform?: OscillatorType;
   readonly channelMode?: StereoChannelMode;
   readonly startTime?: number;
+  readonly durationSeconds?: number;
   readonly sourceCoefficient?: number;
 }
 
@@ -59,6 +60,21 @@ function validateSourceCoefficient(value: number): number {
   if (!Number.isFinite(value) || value <= 0 || value > 1) {
     throw new RangeError("sourceCoefficient must be in the range (0, 1]");
   }
+  return value;
+}
+
+function validateDurationSeconds(value: number | undefined): number | null {
+  if (value === undefined) return null;
+
+  if (
+    !Number.isFinite(value) ||
+    value < DEFAULT_RAMP_SECONDS * 2
+  ) {
+    throw new RangeError(
+      `durationSeconds must be finite and at least ${DEFAULT_RAMP_SECONDS * 2} seconds`,
+    );
+  }
+
   return value;
 }
 
@@ -89,13 +105,20 @@ function rampParam(
   param.linearRampToValueAtTime(target, time + durationSeconds);
 }
 
-function scheduleSourceFadeIn(
+function scheduleSourceEnvelope(
   param: AudioParam,
   coefficient: number,
   startTime: number,
+  durationSeconds: number | null = null,
 ): void {
   param.setValueAtTime(0, startTime);
   param.linearRampToValueAtTime(coefficient, startTime + DEFAULT_RAMP_SECONDS);
+
+  if (durationSeconds === null) return;
+
+  const endTime = startTime + durationSeconds;
+  param.setValueAtTime(coefficient, endTime - DEFAULT_RAMP_SECONDS);
+  param.linearRampToValueAtTime(0, endTime);
 }
 
 class StereoChannelRouter {
@@ -223,6 +246,7 @@ export class AudioOutputEngine implements SessionResource {
       throw new RangeError("frequencyHz must be a positive finite number");
     }
 
+    const durationSeconds = validateDurationSeconds(options.durationSeconds);
     const oscillator = this.#context.createOscillator();
     const sourceGain = this.#context.createGain();
     const coefficient = validateSourceCoefficient(
@@ -238,7 +262,12 @@ export class AudioOutputEngine implements SessionResource {
 
     oscillator.type = options.waveform ?? "sine";
     oscillator.frequency.setValueAtTime(options.frequencyHz, startTime);
-    scheduleSourceFadeIn(sourceGain.gain, coefficient, startTime);
+    scheduleSourceEnvelope(
+      sourceGain.gain,
+      coefficient,
+      startTime,
+      durationSeconds,
+    );
     oscillator.connect(sourceGain);
 
     let stopped = false;
@@ -291,6 +320,9 @@ export class AudioOutputEngine implements SessionResource {
     oscillator.addEventListener("ended", cleanup, { once: true });
     this.#active.add(playback);
     oscillator.start(startTime);
+    if (durationSeconds !== null) {
+      oscillator.stop(startTime + durationSeconds);
+    }
     return playback;
   }
 
@@ -309,7 +341,7 @@ export class AudioOutputEngine implements SessionResource {
     const sourceGain = this.#context.createGain();
     const panner = this.#context.createStereoPanner();
     oscillator.frequency.setValueAtTime(frequencyHz, startTime);
-    scheduleSourceFadeIn(sourceGain.gain, 1, startTime);
+    scheduleSourceEnvelope(sourceGain.gain, 1, startTime);
     panner.pan.setValueAtTime(safePan, startTime);
     oscillator.connect(sourceGain);
     sourceGain.connect(panner);
@@ -381,7 +413,7 @@ export class AudioOutputEngine implements SessionResource {
 
     source.buffer = buffer;
     source.loop = options.loop ?? false;
-    scheduleSourceFadeIn(sourceGain.gain, coefficient, startTime);
+    scheduleSourceEnvelope(sourceGain.gain, coefficient, startTime);
     source.connect(sourceGain);
 
     let stopped = false;
