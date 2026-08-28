@@ -112,18 +112,23 @@ describe("AudioOutputEngine finite oscillator bursts", () => {
     const rightGain = context.gains[3]?.gain;
 
     expect(oscillator?.starts).toEqual([3]);
-    expect(oscillator?.stops).toEqual([3.7]);
+    expect(oscillator?.stops[0]).toBeCloseTo(3.7, 10);
     expect(oscillator?.frequency.events).toContainEqual({
       kind: "set",
       value: 500,
       time: 3,
     });
-    expect(sourceGain?.events).toEqual([
-      { kind: "set", value: 0, time: 3 },
-      { kind: "linear", value: 1, time: 3.05 },
-      { kind: "set", value: 1, time: 3.65 },
-      { kind: "linear", value: 0, time: 3.7 },
-    ]);
+
+    expect(sourceGain?.events).toHaveLength(4);
+    expect(sourceGain?.events[0]).toMatchObject({ kind: "set", value: 0 });
+    expect(sourceGain?.events[0]?.time).toBeCloseTo(3, 10);
+    expect(sourceGain?.events[1]).toMatchObject({ kind: "linear", value: 1 });
+    expect(sourceGain?.events[1]?.time).toBeCloseTo(3.05, 10);
+    expect(sourceGain?.events[2]).toMatchObject({ kind: "set", value: 1 });
+    expect(sourceGain?.events[2]?.time).toBeCloseTo(3.65, 10);
+    expect(sourceGain?.events[3]).toMatchObject({ kind: "linear", value: 0 });
+    expect(sourceGain?.events[3]?.time).toBeCloseTo(3.7, 10);
+
     expect(leftGain?.value).toBe(1);
     expect(rightGain?.value).toBe(0);
   });
