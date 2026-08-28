@@ -7,109 +7,143 @@ const plannedRelatedRoutes = [
   "/hearing-frequency-test",
 ] as const;
 
-async function installDeterministicAudioContext(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    class FakeAudioParam {
-      value = 1;
+async function installDeterministicAudioContext(
+  page: Page,
+  sampleRate = 48_000,
+): Promise<void> {
+  await page.addInitScript(
+    ({ configuredSampleRate }) => {
+      const incrementWindowCounter = (key: string) => {
+        const current = Number(Reflect.get(window, key) ?? 0);
+        Reflect.set(window, key, current + 1);
+      };
 
-      cancelAndHoldAtTime(time: number) {
-        void time;
-        return this;
+      class FakeAudioParam {
+        value = 1;
+        readonly onSet: ((value: number) => void) | undefined;
+
+        constructor(onSet?: (value: number) => void) {
+          this.onSet = onSet;
+        }
+
+        cancelAndHoldAtTime(time: number) {
+          void time;
+          return this;
+        }
+
+        cancelScheduledValues(time: number) {
+          void time;
+          return this;
+        }
+
+        setValueAtTime(value: number, time: number) {
+          void time;
+          this.value = value;
+          this.onSet?.(value);
+          return this;
+        }
+
+        linearRampToValueAtTime(value: number, time: number) {
+          void time;
+          this.value = value;
+          this.onSet?.(value);
+          return this;
+        }
       }
 
-      cancelScheduledValues(time: number) {
-        void time;
-        return this;
+      class FakeAudioNode {
+        connect(destination: unknown, output = 0, input = 0) {
+          void output;
+          void input;
+          return destination;
+        }
+
+        disconnect() {
+          // The deterministic browser double owns no native resources.
+        }
       }
 
-      setValueAtTime(value: number, time: number) {
-        void time;
-        this.value = value;
-        return this;
+      class FakeGainNode extends FakeAudioNode {
+        gain = new FakeAudioParam();
       }
 
-      linearRampToValueAtTime(value: number, time: number) {
-        void time;
-        this.value = value;
-        return this;
-      }
-    }
+      class FakeOscillatorNode extends FakeAudioNode {
+        frequency = new FakeAudioParam((value) => {
+          Reflect.set(window, "__toneLastOscillatorFrequency", value);
+        });
+        type = "sine";
 
-    class FakeAudioNode {
-      connect(destination: unknown, output = 0, input = 0) {
-        void output;
-        void input;
-        return destination;
-      }
+        start(time = 0) {
+          void time;
+        }
 
-      disconnect() {}
-    }
+        stop(time = 0) {
+          void time;
+        }
 
-    class FakeGainNode extends FakeAudioNode {
-      gain = new FakeAudioParam();
-    }
-
-    class FakeOscillatorNode extends FakeAudioNode {
-      frequency = new FakeAudioParam();
-      type = "sine";
-
-      start(time = 0) {
-        void time;
+        addEventListener(
+          type: string,
+          listener: EventListenerOrEventListenerObject,
+          options?: boolean | AddEventListenerOptions,
+        ) {
+          void type;
+          void listener;
+          void options;
+        }
       }
 
-      stop(time = 0) {
-        void time;
+      class FakeAudioContext {
+        currentTime = 0;
+        sampleRate = configuredSampleRate;
+        state = "suspended";
+        destination = new FakeAudioNode();
+
+        constructor() {
+          incrementWindowCounter("__toneAudioContextCount");
+        }
+
+        async resume() {
+          this.state = "running";
+        }
+
+        async close() {
+          this.state = "closed";
+          incrementWindowCounter("__toneClosedAudioContextCount");
+        }
+
+        createGain() {
+          return new FakeGainNode();
+        }
+
+        createOscillator() {
+          return new FakeOscillatorNode();
+        }
+
+        createChannelMerger(numberOfInputs = 2) {
+          void numberOfInputs;
+          return new FakeAudioNode();
+        }
       }
 
-      addEventListener(
-        type: string,
-        listener: EventListenerOrEventListenerObject,
-        options?: boolean | AddEventListenerOptions,
-      ) {
-        void type;
-        void listener;
-        void options;
-      }
-    }
-
-    class FakeAudioContext {
-      currentTime = 0;
-      sampleRate = 48_000;
-      state = "suspended";
-      destination = new FakeAudioNode();
-
-      async resume() {
-        this.state = "running";
-      }
-
-      async close() {
-        this.state = "closed";
-      }
-
-      createGain() {
-        return new FakeGainNode();
-      }
-
-      createOscillator() {
-        return new FakeOscillatorNode();
-      }
-
-      createChannelMerger(numberOfInputs = 2) {
-        void numberOfInputs;
-        return new FakeAudioNode();
-      }
-    }
-
-    Object.defineProperty(window, "AudioContext", {
-      configurable: true,
-      writable: true,
-      value: FakeAudioContext,
-    });
-  });
+      Object.defineProperty(window, "AudioContext", {
+        configurable: true,
+        writable: true,
+        value: FakeAudioContext,
+      });
+    },
+    { configuredSampleRate: sampleRate },
+  );
 }
 
 async function openTone(page: Page): Promise<void> {
   await page.goto("/tone-generator");
+}
+
+async function readWindowNumber(page: Page, key: string): Promise<number> {
+  return page.evaluate(
+    (property) => Number(Reflect.get(window, property) ?? 0),
+    key,
+  );
 }
 
 test("Tone Generator exposes the safe idle baseline", async ({ page }) => {
@@ -167,6 +201,72 @@ test("Tone Generator wires live controls and explicit Stop across browsers", asy
   await expect(page.locator("#tone-status")).toContainText("Idle");
   await expect(playStop).toContainText("Play");
   expect(pageErrors).toEqual([]);
+});
+
+test("Tone Generator caps UI and oscillator scheduling to the runtime Nyquist limit", async ({
+  page,
+}) => {
+  await installDeterministicAudioContext(page, 32_000);
+  await openTone(page);
+
+  const frequency = page.locator("#tone-frequency-number");
+  await frequency.fill("20000");
+  await page.locator("#tone-play-stop").click();
+
+  await expect(page.locator("#tone-status")).toContainText("Playing");
+  await expect(frequency).toHaveAttribute("max", "15200");
+  await expect(frequency).toHaveValue("15200");
+  await expect(page.locator("[data-frequency-control]")).toHaveAttribute(
+    "data-max-hz",
+    "15200",
+  );
+  await expect(page.locator("#tone-frequency-cap")).toBeVisible();
+  await expect(page.locator("#tone-frequency-cap")).toContainText("15,200 Hz");
+  expect(await readWindowNumber(page, "__toneLastOscillatorFrequency")).toBe(
+    15_200,
+  );
+});
+
+test("Tone Generator restores a fresh idle BFCache lifecycle without losing control state", async ({
+  page,
+}) => {
+  await installDeterministicAudioContext(page);
+  await openTone(page);
+
+  const frequency = page.locator("#tone-frequency-number");
+  const playStop = page.locator("#tone-play-stop");
+  await frequency.fill("1000");
+  await page.locator("label.mode-pill").filter({ hasText: "Square" }).click();
+  await page.locator("label.mode-pill").filter({ hasText: "Left" }).click();
+  await playStop.click();
+  await expect(page.locator("#tone-status")).toContainText("Playing");
+  expect(await readWindowNumber(page, "__toneAudioContextCount")).toBe(1);
+
+  await page.evaluate(() => {
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
+  });
+  await expect
+    .poll(() => readWindowNumber(page, "__toneClosedAudioContextCount"))
+    .toBe(1);
+
+  await page.evaluate(() => {
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
+  });
+
+  await expect(page.locator("#tone-status")).toContainText("Idle");
+  await expect(playStop).toContainText("Play");
+  await expect(frequency).toHaveValue("1000");
+  await expect(page.getByLabel("Square")).toBeChecked();
+  await expect(page.getByLabel("Left")).toBeChecked();
+  expect(await readWindowNumber(page, "__toneAudioContextCount")).toBe(1);
+
+  await playStop.click();
+  await expect(page.locator("#tone-status")).toContainText("Playing");
+  expect(await readWindowNumber(page, "__toneAudioContextCount")).toBe(2);
 });
 
 test("Tone Generator unlocks a real AudioContext in Chromium", async ({
