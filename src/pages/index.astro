@@ -7,12 +7,13 @@ import {
 } from "../registry/tools";
 
 const publicTools = getPublicTools();
+const toneGenerator = publicTools.find((tool) => tool.id === "tone-generator");
 const featuredTargetIds = [
   "tone-generator",
   "speaker-test",
   "microphone-test",
   "headphone-test",
-];
+] as const;
 const featuredTools = featuredTargetIds
   .map((id) => publicTools.find((tool) => tool.id === id))
   .filter((tool) => tool !== undefined);
@@ -32,7 +33,7 @@ const categories: readonly { id: NavigationCategory; label: string }[] = [
 >
   <section class="hero">
     <div class="shell hero__grid">
-      <div>
+      <div class="hero__copy">
         <p class="eyebrow">Browser-based audio tools</p>
         <h1>Understand what your audio setup is doing.</h1>
         <p class="lede">
@@ -40,22 +41,60 @@ const categories: readonly { id: NavigationCategory; label: string }[] = [
           analysis — designed to show what the browser actually knows without
           pretending it can measure what it cannot.
         </p>
+        {
+          toneGenerator && (
+            <div class="hero__actions">
+              <a class="hero__primary-action" href={toneGenerator.route}>
+                <span>Open Tone Generator</span>
+                <i class="ph ph-arrow-right" aria-hidden="true" />
+              </a>
+              <span class="hero__action-note">
+                20 Hz–20 kHz reference tones in Web Audio
+              </span>
+            </div>
+          )
+        }
       </div>
-      <div class="hero-visual">
+
+      <div
+        class="hero-visual"
+        role="img"
+        aria-label="Stylized 440 hertz sine-wave reference signal"
+      >
+        <div class="hero-visual__top" aria-hidden="true">
+          <span class="signal-badge">
+            <i class="ph ph-wave-sine"></i>
+            Reference signal
+          </span>
+          <strong>
+            440 <small>Hz</small>
+          </strong>
+        </div>
+
         <svg
-          class="waveform"
-          viewBox="0 0 620 180"
-          role="img"
-          aria-label="Audio waveform"
+          class="hero-waveform"
+          viewBox="0 0 620 220"
+          aria-hidden="true"
         >
           <path
-            d="M5 91 C42 91 49 26 82 26 S123 150 157 150 196 58 230 58 268 119 303 119 341 18 378 18 417 159 455 159 493 73 528 73 566 105 615 91"
-            fill="none"
-            stroke="currentColor"
-            stroke-width="8"
-            stroke-linecap="round"></path>
+            class="hero-waveform__trail hero-waveform__trail--far"
+            d="M0 110 C38 110 48 42 82 42 S126 178 164 178 208 42 246 42 290 178 328 178 372 42 410 42 454 178 492 178 536 42 574 42 607 110 620 110"
+          ></path>
+          <path
+            class="hero-waveform__trail"
+            d="M0 110 C38 110 48 42 82 42 S126 178 164 178 208 42 246 42 290 178 328 178 372 42 410 42 454 178 492 178 536 42 574 42 607 110 620 110"
+          ></path>
+          <path
+            class="hero-waveform__signal"
+            d="M0 110 C38 110 48 42 82 42 S126 178 164 178 208 42 246 42 290 178 328 178 372 42 410 42 454 178 492 178 536 42 574 42 607 110 620 110"
+          ></path>
         </svg>
-        <p class="visual-label">Signal first. Claims second.</p>
+
+        <div class="hero-visual__footer" aria-hidden="true">
+          <span>Sine</span>
+          <span>Both channels</span>
+          <span>−24 dB level</span>
+        </div>
       </div>
     </div>
   </section>
@@ -69,21 +108,60 @@ const categories: readonly { id: NavigationCategory; label: string }[] = [
         <p class="eyebrow">Featured tools</p>
         <h2 id="featured-tools-title">Start with a focused check.</h2>
         <div class="tool-grid tool-grid--featured">
-          {featuredTools.map((tool) => (
-            <a
-              class="tool-card"
-              href={tool.route}
-              data-tool-status={tool.status}
-            >
-              <span
-                class="tool-card__accent"
+          {featuredTools.map((tool) =>
+            tool.id === "tone-generator" ? (
+              <a
+                class="featured-card featured-card--tone"
+                href={tool.route}
+                data-tool-status={tool.status}
                 data-accent={tool.accent}
-                aria-hidden="true"
-              />
-              <strong>{tool.title}</strong>
-              <span>Open tool</span>
-            </a>
-          ))}
+              >
+                <span class="featured-card__copy">
+                  <span class="featured-card__kicker">
+                    <i class="ph ph-wave-sine" aria-hidden="true" />
+                    Signal &amp; frequency
+                  </span>
+                  <strong class="featured-card__title">{tool.title}</strong>
+                  <span class="featured-card__description">
+                    Generate a controlled reference tone, change waveform and
+                    route it left, right or to both channels.
+                  </span>
+                  <span class="featured-card__action">
+                    Open tool
+                    <i class="ph ph-arrow-up-right" aria-hidden="true" />
+                  </span>
+                </span>
+
+                <span class="featured-card__visual" aria-hidden="true">
+                  <span class="featured-card__metric">
+                    <strong>440</strong>
+                    <small>Hz</small>
+                  </span>
+                  <svg viewBox="0 0 300 120">
+                    <path
+                      d="M0 60 C22 60 28 20 48 20 S74 100 96 100 122 20 144 20 170 100 192 100 218 20 240 20 267 100 288 100 296 60 300 60"
+                    ></path>
+                  </svg>
+                  <span class="featured-card__visual-meta">Sine · Both</span>
+                </span>
+              </a>
+            ) : (
+              <a
+                class="featured-card"
+                href={tool.route}
+                data-tool-status={tool.status}
+                data-accent={tool.accent}
+              >
+                <span class="featured-card__copy">
+                  <strong class="featured-card__title">{tool.title}</strong>
+                  <span class="featured-card__action">
+                    Open tool
+                    <i class="ph ph-arrow-up-right" aria-hidden="true" />
+                  </span>
+                </span>
+              </a>
+            ),
+          )}
         </div>
       </section>
     )
@@ -93,7 +171,7 @@ const categories: readonly { id: NavigationCategory; label: string }[] = [
     publicTools.length > 0 && (
       <section
         id="tools"
-        class="shell tools-section"
+        class="shell tools-section tools-section--directory"
         aria-labelledby="all-tools-title"
       >
         <p class="eyebrow">All live tools</p>
@@ -106,20 +184,22 @@ const categories: readonly { id: NavigationCategory; label: string }[] = [
             return (
               <section class="tool-category" aria-labelledby={`category-${id}`}>
                 <h3 id={`category-${id}`}>{label}</h3>
-                <div class="tool-grid">
+                <div class="tool-list">
                   {tools.map((tool) => (
                     <a
-                      class="tool-card"
+                      class="tool-link"
                       href={tool.route}
                       data-tool-status={tool.status}
+                      data-accent={tool.accent}
                     >
-                      <span
-                        class="tool-card__accent"
-                        data-accent={tool.accent}
-                        aria-hidden="true"
-                      />
-                      <strong>{tool.title}</strong>
-                      <span>Open tool</span>
+                      <span class="tool-link__identity">
+                        <span class="tool-link__accent" aria-hidden="true" />
+                        <strong>{tool.title}</strong>
+                      </span>
+                      <span class="tool-link__action">
+                        Open
+                        <i class="ph ph-arrow-right" aria-hidden="true" />
+                      </span>
                     </a>
                   ))}
                 </div>
