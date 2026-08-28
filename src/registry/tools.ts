@@ -1,6 +1,9 @@
 export type ToolStatus = "planned" | "live";
 export type NavigationCategory =
-  "output" | "signal-frequency" | "input-analysis" | "timing-specialist";
+  | "output"
+  | "signal-frequency"
+  | "input-analysis"
+  | "timing-specialist";
 export type ToolAccent =
   | "lavender"
   | "blue"
@@ -30,8 +33,8 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "output",
     implementationPhase: "P3.1",
     accent: "peach",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: ["speaker-test", "headphone-test", "stereo-test"],
   },
   {
     id: "speaker-test",
