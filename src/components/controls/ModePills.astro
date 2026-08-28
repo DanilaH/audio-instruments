@@ -1,0 +1,101 @@
+---
+interface Option {
+  value: string;
+  label: string;
+}
+
+interface Props {
+  legend: string;
+  name: string;
+  options: readonly Option[];
+  value: string;
+  disabled?: boolean;
+}
+
+const { legend, name, options, value, disabled = false } = Astro.props;
+---
+
+<fieldset class="mode-pills" disabled={disabled}>
+  <legend>{legend}</legend>
+  <div class="mode-pills__options">
+    {
+      options.map((option) => (
+        <label class="mode-pill">
+          <input
+            type="radio"
+            name={name}
+            value={option.value}
+            checked={option.value === value}
+          />
+          <span>{option.label}</span>
+        </label>
+      ))
+    }
+  </div>
+</fieldset>
+
+<style>
+  .mode-pills {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .mode-pills legend {
+    margin-bottom: 9px;
+    font-size: 0.88rem;
+    font-weight: 750;
+  }
+
+  .mode-pills__options {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+
+  .mode-pill {
+    position: relative;
+    cursor: pointer;
+  }
+
+  .mode-pill input {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    clip-path: inset(50%);
+    white-space: nowrap;
+  }
+
+  .mode-pill span {
+    display: inline-flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: center;
+    padding: 0 15px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    font-weight: 700;
+  }
+
+  .mode-pill input:checked + span {
+    border-color: var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .mode-pill input:focus-visible + span {
+    outline: 3px solid var(--color-focus);
+    outline-offset: 3px;
+  }
+
+  .mode-pills:disabled .mode-pill {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+</style>
