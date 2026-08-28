@@ -6,23 +6,26 @@ import {
   type ToolDefinition,
 } from "../../src/registry/tools";
 
-const plannedRoutes = toolRegistry
-  .filter((tool) => tool.status === "planned")
-  .map((tool) => tool.route);
-const publicRoutes = getPublicTools().map((tool) => tool.route);
+const plannedTools = toolRegistry.filter((tool) => tool.status === "planned");
+const plannedRoutes = plannedTools.map((tool) => tool.route);
+const publicTools = getPublicTools();
+const publicRoutes = publicTools.map((tool) => tool.route);
+const toneGenerator = publicTools.find((tool) => tool.id === "tone-generator");
 const featuredTargetIds = [
   "tone-generator",
   "speaker-test",
   "microphone-test",
   "headphone-test",
 ] as const;
-const featuredRoutes = featuredTargetIds
+const featuredTools = featuredTargetIds
   .map((id) => toolRegistry.find((tool) => tool.id === id))
-  .filter(
-    (tool): tool is ToolDefinition =>
-      tool !== undefined && tool.status === "live",
-  )
+  .filter((tool): tool is ToolDefinition => tool !== undefined);
+const featuredRoutes = featuredTools
+  .filter((tool) => tool.status === "live")
   .map((tool) => tool.route);
+const plannedFeaturedTools = featuredTools.filter(
+  (tool) => tool.status === "planned",
+);
 
 const targetViewports = [
   { width: 1440, height: 900 },
@@ -88,10 +91,71 @@ test("homepage exposes live tools while keeping planned tools invisible", async 
     ).toHaveCount(0);
   }
 
+  for (const tool of plannedFeaturedTools) {
+    await expect(
+      page.locator(".tool-grid--featured").getByText(tool.title, {
+        exact: true,
+      }),
+    ).toHaveCount(0);
+  }
+
   for (const route of plannedRoutes) {
     await expect(page.locator(`a[href="${route}"]`)).toHaveCount(0);
   }
 });
+
+test("homepage applies the Tone visual system without turning the directory into duplicate cards", async ({
+  page,
+}) => {
+  test.skip(!toneGenerator, "Tone Generator is not live yet");
+  if (!toneGenerator) return;
+
+  await page.goto("/");
+
+  const heroAction = page.getByRole("link", { name: "Open Tone Generator" });
+  await expect(heroAction).toHaveAttribute("href", toneGenerator.route);
+  await expect(
+    page.getByRole("img", {
+      name: "Stylized 440 hertz sine-wave reference signal",
+    }),
+  ).toBeVisible();
+
+  const featuredTone = page.locator(
+    `.featured-card--tone[href="${toneGenerator.route}"]`,
+  );
+  await expect(featuredTone).toHaveCount(1);
+  await expect(featuredTone).toContainText("440");
+  await expect(featuredTone).toContainText("Sine · Both");
+
+  await expect(
+    page.locator(`#tools .tool-link[href="${toneGenerator.route}"]`),
+  ).toHaveCount(1);
+  await expect(page.locator("#tools .featured-card--tone")).toHaveCount(0);
+});
+
+for (const viewport of [
+  { width: 1366, height: 768 },
+  { width: 390, height: 844 },
+] as const) {
+  test(`homepage Tone primary action stays in the first viewport at ${viewport.width}x${viewport.height}`, async ({
+    page,
+  }) => {
+    test.skip(!toneGenerator, "Tone Generator is not live yet");
+    if (!toneGenerator) return;
+
+    await page.setViewportSize(viewport);
+    await page.goto("/");
+
+    const heroAction = page.getByRole("link", { name: "Open Tone Generator" });
+    await expect(heroAction).toBeVisible();
+
+    const box = await heroAction.boundingBox();
+    expect(box).not.toBeNull();
+    expect((box?.y ?? viewport.height) + (box?.height ?? 0)).toBeLessThanOrEqual(
+      viewport.height,
+    );
+  });
+}
 
 test("planned tool routes are not built", async ({ page }) => {
   for (const route of plannedRoutes) {
