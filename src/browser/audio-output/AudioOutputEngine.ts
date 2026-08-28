@@ -12,6 +12,8 @@ import {
 
 export type StereoChannelMode = "left" | "both" | "right";
 
+export const PHASE_SWITCH_RAMP_SECONDS = 0.025;
+
 export interface OscillatorPlayback extends SessionResource {
   readonly oscillator: OscillatorNode;
   setChannelMode(mode: StereoChannelMode): void;
@@ -25,12 +27,24 @@ export interface PannedOscillatorPlayback extends SessionResource {
   readonly oscillator: OscillatorNode;
   setFrequency(frequencyHz: number): void;
   setPan(value: number): void;
+  schedulePanSweep(
+    fromPan: number,
+    toPan: number,
+    durationSeconds: number,
+    startTime?: number,
+  ): void;
   stop(): void;
 }
 
 export interface BufferPlayback extends SessionResource {
   readonly source: AudioBufferSourceNode;
   setChannelMode(mode: StereoChannelMode): void;
+  stop(): void;
+}
+
+export interface PhaseBufferPlayback extends SessionResource {
+  readonly source: AudioBufferSourceNode;
+  setInverted(inverted: boolean): void;
   stop(): void;
 }
 
@@ -66,15 +80,19 @@ function validateSourceCoefficient(value: number): number {
 function validateDurationSeconds(value: number | undefined): number | null {
   if (value === undefined) return null;
 
-  if (
-    !Number.isFinite(value) ||
-    value < DEFAULT_RAMP_SECONDS * 2
-  ) {
+  if (!Number.isFinite(value) || value < DEFAULT_RAMP_SECONDS * 2) {
     throw new RangeError(
       `durationSeconds must be finite and at least ${DEFAULT_RAMP_SECONDS * 2} seconds`,
     );
   }
 
+  return value;
+}
+
+function validateAutomationDuration(value: number): number {
+  if (!Number.isFinite(value) || value <= 0) {
+    throw new RangeError("Automation duration must be a positive finite number");
+  }
   return value;
 }
 
@@ -163,6 +181,60 @@ class StereoChannelRouter {
 
     this.#leftGain.gain.setValueAtTime(left, now);
     this.#rightGain.gain.setValueAtTime(right, now);
+  }
+
+  dispose(): void {
+    if (this.#disposed) return;
+    this.#disposed = true;
+    this.#leftGain.disconnect();
+    this.#rightGain.disconnect();
+    this.#merger.disconnect();
+  }
+}
+
+class PhaseChannelRouter {
+  readonly #context: AudioContext;
+  readonly #leftGain: GainNode;
+  readonly #rightGain: GainNode;
+  readonly #merger: ChannelMergerNode;
+  #disposed = false;
+  #inverted = false;
+
+  constructor(
+    context: AudioContext,
+    source: AudioNode,
+    destination: AudioNode,
+    inverted: boolean,
+  ) {
+    this.#context = context;
+    this.#leftGain = context.createGain();
+    this.#rightGain = context.createGain();
+    this.#merger = context.createChannelMerger(2);
+
+    source.connect(this.#leftGain);
+    source.connect(this.#rightGain);
+    this.#leftGain.connect(this.#merger, 0, 0);
+    this.#rightGain.connect(this.#merger, 0, 1);
+    this.#merger.connect(destination);
+
+    this.#leftGain.gain.setValueAtTime(1, context.currentTime);
+    this.#rightGain.gain.setValueAtTime(inverted ? -1 : 1, context.currentTime);
+    this.#inverted = inverted;
+  }
+
+  setInverted(inverted: boolean): void {
+    if (this.#disposed || inverted === this.#inverted) return;
+
+    const now = this.#context.currentTime;
+    const midpoint = now + PHASE_SWITCH_RAMP_SECONDS;
+    const endTime = midpoint + PHASE_SWITCH_RAMP_SECONDS;
+    const target = inverted ? -1 : 1;
+
+    holdParamAtTime(this.#rightGain.gain, now);
+    this.#rightGain.gain.linearRampToValueAtTime(0, midpoint);
+    this.#rightGain.gain.setValueAtTime(0, midpoint);
+    this.#rightGain.gain.linearRampToValueAtTime(target, endTime);
+    this.#inverted = inverted;
   }
 
   dispose(): void {
@@ -330,18 +402,20 @@ export class AudioOutputEngine implements SessionResource {
     frequencyHz: number,
     pan = 0,
     startTime = this.#context.currentTime,
+    durationSeconds?: number,
   ): PannedOscillatorPlayback {
     this.#assertUsable();
     if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) {
       throw new RangeError("frequencyHz must be a positive finite number");
     }
     const safePan = normalizePan(pan);
+    const safeDuration = validateDurationSeconds(durationSeconds);
 
     const oscillator = this.#context.createOscillator();
     const sourceGain = this.#context.createGain();
     const panner = this.#context.createStereoPanner();
     oscillator.frequency.setValueAtTime(frequencyHz, startTime);
-    scheduleSourceEnvelope(sourceGain.gain, 1, startTime);
+    scheduleSourceEnvelope(sourceGain.gain, 1, startTime, safeDuration);
     panner.pan.setValueAtTime(safePan, startTime);
     oscillator.connect(sourceGain);
     sourceGain.connect(panner);
@@ -377,11 +451,26 @@ export class AudioOutputEngine implements SessionResource {
           rampParam(panner.pan, normalizePan(value), this.#context.currentTime);
         }
       },
+      schedulePanSweep: (
+        fromPan,
+        toPan,
+        sweepDurationSeconds,
+        sweepStartTime = this.#context.currentTime,
+      ) => {
+        if (stopped) return;
+        const from = normalizePan(fromPan);
+        const to = normalizePan(toPan);
+        const duration = validateAutomationDuration(sweepDurationSeconds);
+        panner.pan.cancelScheduledValues(sweepStartTime);
+        panner.pan.setValueAtTime(from, sweepStartTime);
+        panner.pan.linearRampToValueAtTime(to, sweepStartTime + duration);
+      },
       stop: () => {
         if (stopped) return;
         stopped = true;
         const now = this.#context.currentTime;
         rampParam(sourceGain.gain, 0, now);
+        panner.pan.cancelScheduledValues(now);
         oscillator.stop(now + DEFAULT_RAMP_SECONDS);
       },
       dispose: () => playback.stop(),
@@ -390,6 +479,9 @@ export class AudioOutputEngine implements SessionResource {
     oscillator.addEventListener("ended", cleanup, { once: true });
     this.#active.add(playback);
     oscillator.start(startTime);
+    if (safeDuration !== null) {
+      oscillator.stop(startTime + safeDuration);
+    }
     return playback;
   }
 
@@ -444,6 +536,59 @@ export class AudioOutputEngine implements SessionResource {
     source.addEventListener("ended", cleanup, { once: true });
     this.#active.add(playback);
     source.start(startTime, options.offsetSeconds ?? 0);
+    return playback;
+  }
+
+  startPhaseBuffer(
+    buffer: AudioBuffer,
+    inverted = false,
+    startTime = this.#context.currentTime,
+  ): PhaseBufferPlayback {
+    this.#assertUsable();
+    const source = this.#context.createBufferSource();
+    const sourceGain = this.#context.createGain();
+    const router = new PhaseChannelRouter(
+      this.#context,
+      sourceGain,
+      this.#masterGain,
+      inverted,
+    );
+
+    source.buffer = buffer;
+    source.loop = true;
+    scheduleSourceEnvelope(sourceGain.gain, 1, startTime);
+    source.connect(sourceGain);
+
+    let stopped = false;
+    let cleaned = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      stopped = true;
+      source.disconnect();
+      sourceGain.disconnect();
+      router.dispose();
+      this.#active.delete(playback);
+    };
+
+    const playback: PhaseBufferPlayback = {
+      source,
+      setInverted: (nextInverted) => {
+        if (!stopped) router.setInverted(nextInverted);
+      },
+      stop: () => {
+        if (stopped) return;
+        stopped = true;
+        const now = this.#context.currentTime;
+        rampParam(sourceGain.gain, 0, now);
+        source.stop(now + DEFAULT_RAMP_SECONDS);
+      },
+      dispose: () => playback.stop(),
+    };
+
+    source.addEventListener("ended", cleanup, { once: true });
+    this.#active.add(playback);
+    source.start(startTime);
     return playback;
   }
 
