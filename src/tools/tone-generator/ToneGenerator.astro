@@ -1,5 +1,6 @@
 ---
 import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
+import MetricReadout from "../../components/feedback/MetricReadout.astro";
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
 import FrequencyControl from "../../components/controls/FrequencyControl.astro";
 import LevelControl from "../../components/controls/LevelControl.astro";
@@ -32,9 +33,13 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
       <section class="tone-visual" aria-label="Generated waveform preview">
         <div class="tone-visual__header">
           <ToolStatus id="tone-status" label="Idle" state="idle" />
-          <strong class="tone-frequency-readout" data-tone-frequency-readout
-            >440 Hz</strong
-          >
+          <MetricReadout
+            id="tone-frequency-readout"
+            value="440"
+            unit="Hz"
+            label="Requested frequency"
+            size="large"
+          />
         </div>
         <div class="tone-canvas-wrap" aria-hidden="true">
           <canvas data-tone-waveform></canvas>
@@ -149,12 +154,6 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
     align-items: center;
     justify-content: space-between;
     gap: 16px;
-  }
-
-  .tone-frequency-readout {
-    font-size: clamp(1.35rem, 2.5vw, 2.2rem);
-    font-variant-numeric: tabular-nums;
-    letter-spacing: -0.035em;
   }
 
   .tone-canvas-wrap {
