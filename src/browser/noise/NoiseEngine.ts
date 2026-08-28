@@ -143,7 +143,7 @@ function writeMonoBuffer(
     samples.length,
     REFERENCE_NOISE_SAMPLE_RATE,
   );
-  buffer.copyToChannel(samples, 0);
+  buffer.getChannelData(0).set(samples);
   return buffer;
 }
 
