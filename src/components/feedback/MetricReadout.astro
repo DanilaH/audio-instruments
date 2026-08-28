@@ -1,0 +1,38 @@
+---
+interface Props {
+  id: string;
+  value: string | number;
+  unit?: string;
+  label: string;
+  size?: "default" | "large";
+}
+
+const { id, value, unit = "", label, size = "default" } = Astro.props;
+---
+
+<output
+  id={id}
+  class="metric-readout"
+  data-metric-readout
+  data-size={size}
+  aria-label={label}
+>
+  <span data-metric-value>{value}</span>
+  {unit && <span data-metric-unit>{unit}</span>}
+</output>
+
+<style>
+  .metric-readout {
+    display: inline-flex;
+    align-items: baseline;
+    gap: 0.22em;
+    font-weight: 800;
+    font-variant-numeric: tabular-nums;
+    letter-spacing: -0.02em;
+  }
+
+  .metric-readout[data-size="large"] {
+    font-size: clamp(1.35rem, 2.5vw, 2.2rem);
+    letter-spacing: -0.035em;
+  }
+</style>
