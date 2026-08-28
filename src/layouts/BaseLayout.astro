@@ -5,9 +5,10 @@ import "../styles/global.css";
 interface Props {
   title: string;
   description: string;
+  hasLiveTools?: boolean;
 }
 
-const { title, description } = Astro.props;
+const { title, description, hasLiveTools = false } = Astro.props;
 const year = new Date().getFullYear();
 ---
 
@@ -31,6 +32,7 @@ const year = new Date().getFullYear();
           <span>Browser Audio Lab</span>
         </a>
         <nav class="site-nav" aria-label="Primary">
+          {hasLiveTools && <a href="/#tools">Tools</a>}
           <a href="/privacy">Privacy</a>
         </nav>
       </div>
