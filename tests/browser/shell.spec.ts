@@ -157,6 +157,23 @@ for (const viewport of [
   });
 }
 
+test("homepage hero typography stays continuous around the 520px viewport boundary", async ({
+  page,
+}) => {
+  const readHeadingFontSize = async (width: number) => {
+    await page.setViewportSize({ width, height: 900 });
+    await page.goto("/");
+    return page.locator(".hero h1").evaluate((heading) =>
+      Number.parseFloat(window.getComputedStyle(heading).fontSize),
+    );
+  };
+
+  const fontSizeAt520 = await readHeadingFontSize(520);
+  const fontSizeAt521 = await readHeadingFontSize(521);
+
+  expect(Math.abs(fontSizeAt520 - fontSizeAt521)).toBeLessThanOrEqual(2);
+});
+
 test("planned tool routes are not built", async ({ page }) => {
   for (const route of plannedRoutes) {
     const response = await page.goto(route);
