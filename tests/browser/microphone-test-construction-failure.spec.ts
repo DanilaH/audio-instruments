@@ -11,6 +11,15 @@ test("partial service construction is disposed before a clean retry", async ({ p
       failNextAnalyser: true,
     };
 
+    class FakeAudioParam {
+      value = 1;
+
+      setValueAtTime(value: number, _time: number) {
+        this.value = value;
+        return this;
+      }
+    }
+
     class FakeNode {
       readonly connections: unknown[] = [];
 
@@ -29,6 +38,10 @@ test("partial service construction is disposed before a clean retry", async ({ p
         const index = this.connections.indexOf(destination);
         if (index >= 0) this.connections.splice(index, 1);
       }
+    }
+
+    class FakeGainNode extends FakeNode {
+      readonly gain = new FakeAudioParam();
     }
 
     class FakeAnalyserNode extends FakeNode {
@@ -153,6 +166,12 @@ test("partial service construction is disposed before a clean retry", async ({ p
       async close() {
         if (this.state !== "closed") state.closedContextCount += 1;
         this.state = "closed";
+      }
+
+      createGain() {
+        return new FakeGainNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as GainNode;
       }
 
       createAnalyser() {
