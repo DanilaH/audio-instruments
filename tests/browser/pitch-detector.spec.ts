@@ -274,7 +274,7 @@ test("stays idle until Start, then produces a stabilized YIN A4 estimate at boun
   await expect(page.locator("[data-pitch-stop]")).toBeDisabled();
   await expect(page.getByRole("link", { name: "Microphone Test" })).toHaveCount(1);
   await expect(page.getByRole("link", { name: "Spectrum Analyzer" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Decibel Meter" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Decibel Meter" })).toHaveCount(1);
 
   await page.locator("[data-pitch-start]").click();
   await expect(page.locator("#pitch-detector-status [data-status-label]")).toHaveText(
