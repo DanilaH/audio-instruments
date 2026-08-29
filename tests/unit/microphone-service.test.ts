@@ -8,8 +8,15 @@ import {
 class FakeAudioNode {
   readonly connections: AudioNode[] = [];
   disconnected = false;
+  rejectIncomingConnections = false;
+
+  constructor(readonly context: BaseAudioContext) {}
 
   connect(destination: AudioNode) {
+    const fakeDestination = destination as unknown as FakeAudioNode;
+    if (fakeDestination.rejectIncomingConnections) {
+      throw new DOMException("connection rejected", "InvalidStateError");
+    }
     this.connections.push(destination);
     return destination;
   }
@@ -56,11 +63,15 @@ class FakeStream {
 
 class FakeAudioContext {
   readonly sources: FakeAudioNode[] = [];
-  readonly destination = new FakeAudioNode();
+  readonly destination: FakeAudioNode;
+
+  constructor() {
+    this.destination = new FakeAudioNode(this as unknown as BaseAudioContext);
+  }
 
   createMediaStreamSource(stream: MediaStream): MediaStreamAudioSourceNode {
     void stream;
-    const source = new FakeAudioNode();
+    const source = new FakeAudioNode(this as unknown as BaseAudioContext);
     this.sources.push(source);
     return source as unknown as MediaStreamAudioSourceNode;
   }
@@ -127,6 +138,10 @@ function createService(mediaDevices = new FakeMediaDevices()) {
   return { context, mediaDevices, service };
 }
 
+function analysisTarget(context: FakeAudioContext): FakeAudioNode {
+  return new FakeAudioNode(context as unknown as BaseAudioContext);
+}
+
 describe("MicrophoneService", () => {
   it("requests only recognized raw-ish processing constraints and exact selected device semantics", () => {
     expect(
@@ -159,6 +174,27 @@ describe("MicrophoneService", () => {
     );
   });
 
+  it("rejects foreign-context analysis targets without poisoning a later Start", async () => {
+    const { context, mediaDevices, service } = createService();
+    const foreignContext = new FakeAudioContext();
+
+    expect(() =>
+      service.connectAnalysisTarget(
+        analysisTarget(foreignContext) as unknown as AudioNode,
+      ),
+    ).toThrow("Microphone analysis targets must belong to the same AudioContext");
+
+    const validTarget = analysisTarget(context);
+    service.connectAnalysisTarget(validTarget as unknown as AudioNode);
+    const track = new FakeTrack({ deviceId: "mic-1" });
+    const stream = new FakeStream(track) as unknown as MediaStream;
+    mediaDevices.queue.push(stream);
+
+    await expect(service.startDefault()).resolves.toMatchObject({ stream });
+    expect(context.sources[0]?.connections).toEqual([validTarget]);
+    expect(track.stopCount).toBe(0);
+  });
+
   it("enumerates audio inputs without assuming labels are available", async () => {
     const { mediaDevices, service } = createService();
     mediaDevices.devices = [
@@ -189,8 +225,8 @@ describe("MicrophoneService", () => {
     });
     const stream = new FakeStream(track) as unknown as MediaStream;
     mediaDevices.queue.push(stream);
-    const target = new FakeAudioNode() as unknown as AudioNode;
-    service.connectAnalysisTarget(target);
+    const target = analysisTarget(context);
+    service.connectAnalysisTarget(target as unknown as AudioNode);
 
     const [first, repeated] = await Promise.all([
       service.startDefault(),
@@ -227,8 +263,8 @@ describe("MicrophoneService", () => {
     mediaDevices.queue.push(new FakeStream(oldTrack) as unknown as MediaStream);
     await service.startDefault();
 
-    const target = new FakeAudioNode() as unknown as AudioNode;
-    service.connectAnalysisTarget(target);
+    const target = analysisTarget(context);
+    service.connectAnalysisTarget(target as unknown as AudioNode);
     expect(context.sources[0]?.connections).toEqual([target]);
 
     mediaDevices.queue.push(() => {
@@ -274,6 +310,32 @@ describe("MicrophoneService", () => {
     expect(oldTrack.stopCount).toBe(0);
     expect(context.sources[0]?.disconnected).toBe(false);
     expect(context.sources).toHaveLength(1);
+  });
+
+  it("preserves the old live stream when the replacement analysis graph cannot connect", async () => {
+    const { context, mediaDevices, service } = createService();
+    const oldTrack = new FakeTrack({ deviceId: "mic-old" });
+    const oldStream = new FakeStream(oldTrack) as unknown as MediaStream;
+    mediaDevices.queue.push(oldStream);
+    await service.startDefault();
+
+    const target = analysisTarget(context);
+    service.connectAnalysisTarget(target as unknown as AudioNode);
+    target.rejectIncomingConnections = true;
+
+    const newTrack = new FakeTrack({ deviceId: "mic-new" });
+    mediaDevices.queue.push(new FakeStream(newTrack) as unknown as MediaStream);
+
+    await expect(service.switchToExactDevice("mic-new")).rejects.toMatchObject({
+      name: "InvalidStateError",
+    });
+
+    expect(service.activeStream).toBe(oldStream);
+    expect(service.activeSettings()?.deviceId).toBe("mic-old");
+    expect(oldTrack.stopCount).toBe(0);
+    expect(context.sources[0]?.disconnected).toBe(false);
+    expect(newTrack.stopCount).toBe(1);
+    expect(context.sources[1]?.disconnected).toBe(true);
   });
 
   it("clears active capture on track end and refreshes device metadata without silent switching", async () => {
