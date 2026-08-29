@@ -55,6 +55,7 @@ describe("tool registry", () => {
       { id: "pitch-detector", route: "/pitch-detector" },
       { id: "decibel-meter", route: "/decibel-meter" },
       { id: "audio-latency-test", route: "/audio-latency-test" },
+      { id: "hearing-frequency-test", route: "/hearing-frequency-test" },
     ]);
   });
 

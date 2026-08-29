@@ -1,0 +1,108 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import HearingFrequency from "../tools/hearing-frequency/HearingFrequency.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const hearingTool = toolRegistry.find((tool) => tool.id === "hearing-frequency-test");
+if (!hearingTool) throw new Error("Hearing Frequency Test registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = hearingTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Hearing Frequency Test — Browser Audio Lab"
+  description="Explore high-frequency tones with a fixed-level guided sequence or separate manual mode. Session observations are non-clinical and limited by your audio context and playback hardware."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Signal & frequency"
+    title="Hearing Frequency Test"
+    description="Explore which high-frequency tones you report hearing in this browser session. Guided mode keeps the app Level fixed after a low-volume setup reference; Manual mode stays separate from the Guided result."
+    accent="yellow"
+  >
+    <HearingFrequency />
+
+    <section class="hearing-content" aria-labelledby="hearing-about-title">
+      <div>
+        <p class="eyebrow">Session observation</p>
+        <h2 id="hearing-about-title">This is not a calibrated audiogram</h2>
+      </div>
+      <div class="hearing-content__copy">
+        <p>
+          The Guided result records only the highest frequency you explicitly said
+          you heard during this session. It does not determine hearing age,
+          normality, diagnosis, a clinical threshold or a complete hearing range.
+        </p>
+        <p>
+          What you hear depends on headphones or speakers, system volume, browser
+          processing, environment and individual perception. Keep the system/device
+          volume fixed after the Guided setup reference so the app does not turn a
+          volume change into a false frequency comparison.
+        </p>
+      </div>
+    </section>
+
+    <section class="hearing-help" aria-labelledby="hearing-limit-title">
+      <h2 id="hearing-limit-title">Unavailable frequencies are not hearing results</h2>
+      <div class="hearing-help__grid">
+        <p>
+          Generated frequencies are capped below the current AudioContext Nyquist
+          limit. If a nominal Guided step is above that safe cap, the browser removes
+          it from the session rather than marking it as unheard.
+        </p>
+        <p>
+          Manual mode is exploratory. Its adjustable digital Level and manual tone
+          choices never update the fixed-level Guided result.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .hearing-content,
+  .hearing-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .hearing-content h2,
+  .hearing-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .hearing-content__copy,
+  .hearing-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .hearing-content p,
+  .hearing-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .hearing-content,
+    .hearing-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
