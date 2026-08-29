@@ -1,0 +1,538 @@
+---
+import ToolStatus from "../../components/feedback/ToolStatus.astro";
+import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+---
+
+<div
+  data-pitch-detector
+  data-pitch-state="idle"
+  data-pitch-result-state="idle"
+>
+  <InstrumentSurface label="Pitch Detector monophonic tuner" accent="mint">
+    <div class="pitch-instrument">
+      <section class="pitch-monitor" aria-label="Live monophonic pitch estimate">
+        <div class="pitch-monitor__header">
+          <ToolStatus id="pitch-detector-status" label="Ready" state="idle" />
+          <div class="pitch-input-readout">
+            <span>Input</span>
+            <strong data-pitch-active-input>No active input</strong>
+          </div>
+        </div>
+
+        <div class="pitch-result">
+          <p class="pitch-result__eyebrow">Monophonic YIN estimate</p>
+          <strong class="pitch-result__note" data-pitch-note>—</strong>
+          <span class="pitch-result__frequency" data-pitch-frequency>—</span>
+          <p class="pitch-result__message" data-pitch-message>
+            Start the microphone and provide one steady monophonic tone.
+          </p>
+        </div>
+
+        <div class="pitch-tuner" aria-label="Pitch cents deviation display">
+          <div class="pitch-tuner__labels" aria-hidden="true">
+            <span>−50</span>
+            <span>−25</span>
+            <strong>0</strong>
+            <span>+25</span>
+            <span>+50</span>
+          </div>
+          <div class="pitch-tuner__rail" aria-hidden="true">
+            <span class="pitch-tuner__zone"></span>
+            <span class="pitch-tuner__center"></span>
+            <span class="pitch-tuner__needle" data-pitch-needle></span>
+          </div>
+          <strong class="pitch-tuner__cents" data-pitch-cents>—</strong>
+        </div>
+
+        <div class="pitch-readouts">
+          <div>
+            <span>YIN confidence</span>
+            <strong data-pitch-confidence>—</strong>
+          </div>
+          <div>
+            <span>Stability</span>
+            <strong data-pitch-stability>Waiting</strong>
+          </div>
+        </div>
+      </section>
+
+      <section class="pitch-controls" aria-label="Pitch Detector controls">
+        <div class="pitch-permission">
+          <i class="ph ph-microphone" aria-hidden="true"></i>
+          <div>
+            <strong>Microphone permission is requested only after Start.</strong>
+            <p>
+              Audio is analyzed locally in the browser. The live microphone is
+              never connected to speaker output.
+            </p>
+          </div>
+        </div>
+
+        <div class="pitch-primary-actions">
+          <button type="button" class="pitch-start" data-pitch-start>
+            <i class="ph ph-wave-sine" aria-hidden="true"></i>
+            Start detector
+          </button>
+          <button type="button" class="pitch-stop" data-pitch-stop disabled>
+            <i class="ph ph-stop" aria-hidden="true"></i>
+            Stop
+          </button>
+        </div>
+
+        <label class="pitch-field" data-pitch-input-field hidden>
+          <span>Input device</span>
+          <select data-pitch-input aria-label="Pitch Detector input device"></select>
+        </label>
+        <p
+          class="pitch-selection-error"
+          data-pitch-selection-error
+          role="alert"
+          hidden
+        ></p>
+
+        <dl class="pitch-details" aria-label="Pitch analysis settings">
+          <div>
+            <dt>Target</dt>
+            <dd>50–2000 Hz</dd>
+          </div>
+          <div>
+            <dt>Confidence floor</dt>
+            <dd>80%</dd>
+          </div>
+          <div>
+            <dt>Analysis rate</dt>
+            <dd data-pitch-analysis-rate>Not active</dd>
+          </div>
+          <div>
+            <dt>Downsample</dt>
+            <dd data-pitch-downsample>—</dd>
+          </div>
+          <div class="pitch-details__wide">
+            <dt>YIN frame</dt>
+            <dd data-pitch-frame-size>—</dd>
+          </div>
+        </dl>
+
+        <div class="pitch-claim-note">
+          <i class="ph ph-info" aria-hidden="true"></i>
+          <p>
+            Pitch is an estimate from a monophonic browser microphone signal.
+            Weak, noisy, polyphonic, or unstable input may produce no accepted
+            result rather than a guessed note.
+          </p>
+        </div>
+
+        <p class="pitch-error" data-pitch-error role="alert" hidden></p>
+      </section>
+    </div>
+  </InstrumentSurface>
+</div>
+
+<script>
+  import { PitchDetectorController } from "./PitchDetectorController";
+
+  const root = document.querySelector<HTMLElement>("[data-pitch-detector]");
+  let controller: PitchDetectorController | null = null;
+
+  const mount = () => {
+    if (!root || controller) return;
+    controller = new PitchDetectorController(root);
+  };
+
+  const teardown = () => {
+    const current = controller;
+    controller = null;
+    if (current) void current.dispose();
+  };
+
+  window.addEventListener("pagehide", teardown);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) mount();
+  });
+
+  mount();
+</script>
+
+<style>
+  .pitch-instrument {
+    display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+    min-height: 500px;
+  }
+
+  .pitch-monitor,
+  .pitch-controls {
+    min-width: 0;
+    padding: clamp(20px, 2.6vw, 32px);
+  }
+
+  .pitch-monitor {
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    border-right: 1px solid var(--color-border);
+    background:
+      radial-gradient(circle at 22% 22%, rgb(102 209 178 / 0.2), transparent 34%),
+      radial-gradient(circle at 84% 78%, rgb(143 124 255 / 0.11), transparent 34%),
+      linear-gradient(145deg, rgb(252 255 253 / 0.98), rgb(241 251 247 / 0.94));
+  }
+
+  .pitch-monitor__header,
+  .pitch-primary-actions {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .pitch-monitor__header {
+    justify-content: space-between;
+  }
+
+  .pitch-input-readout {
+    display: grid;
+    justify-items: end;
+    gap: 2px;
+    text-align: right;
+  }
+
+  .pitch-input-readout span,
+  .pitch-readouts span,
+  .pitch-field > span,
+  .pitch-result__eyebrow {
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+    font-weight: 780;
+    letter-spacing: 0.055em;
+    text-transform: uppercase;
+  }
+
+  .pitch-input-readout strong {
+    max-width: 250px;
+    overflow: hidden;
+    font-size: 0.86rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .pitch-result {
+    display: grid;
+    justify-items: center;
+    min-height: 210px;
+    align-content: center;
+    padding: 22px;
+    border: 1px solid rgb(48 120 100 / 0.12);
+    border-radius: 28px;
+    background: rgb(255 255 255 / 0.66);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.6);
+    text-align: center;
+  }
+
+  .pitch-result__eyebrow {
+    margin: 0 0 8px;
+  }
+
+  .pitch-result__note {
+    min-height: 1em;
+    font-size: clamp(4.4rem, 9vw, 7.4rem);
+    font-weight: 820;
+    letter-spacing: -0.07em;
+    line-height: 0.95;
+  }
+
+  .pitch-result__frequency {
+    margin-top: 8px;
+    font-size: clamp(1.25rem, 2.7vw, 2rem);
+    font-weight: 780;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pitch-result__message {
+    max-width: 430px;
+    margin: 10px 0 0;
+    color: var(--color-ink-muted);
+    font-size: 0.8rem;
+    line-height: 1.5;
+  }
+
+  [data-pitch-result-state="stable"] .pitch-result {
+    border-color: rgb(53 139 111 / 0.28);
+    box-shadow:
+      inset 0 0 0 1px rgb(255 255 255 / 0.6),
+      0 16px 44px rgb(65 160 129 / 0.08);
+  }
+
+  .pitch-tuner {
+    display: grid;
+    gap: 8px;
+  }
+
+  .pitch-tuner__labels {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    color: var(--color-ink-muted);
+    font-size: 0.68rem;
+    font-variant-numeric: tabular-nums;
+    text-align: center;
+  }
+
+  .pitch-tuner__rail {
+    --pitch-cents: 0;
+    position: relative;
+    height: 24px;
+    border: 1px solid var(--color-border);
+    border-radius: 999px;
+    background:
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent calc(25% - 1px),
+        rgb(48 68 62 / 0.12) 25%
+      ),
+      rgb(255 255 255 / 0.72);
+    overflow: hidden;
+  }
+
+  .pitch-tuner__zone {
+    position: absolute;
+    inset: 5px 42%;
+    border-radius: 999px;
+    background: rgb(102 209 178 / 0.24);
+  }
+
+  .pitch-tuner__center {
+    position: absolute;
+    top: 2px;
+    bottom: 2px;
+    left: 50%;
+    width: 2px;
+    background: rgb(50 120 100 / 0.4);
+  }
+
+  .pitch-tuner__needle {
+    position: absolute;
+    top: 3px;
+    bottom: 3px;
+    left: 50%;
+    width: 4px;
+    border-radius: 999px;
+    background: var(--color-ink);
+    transform: translateX(calc(var(--pitch-cents, 0) * 1%));
+    transition: transform 90ms linear;
+  }
+
+  .pitch-tuner__cents {
+    justify-self: center;
+    font-size: 0.9rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pitch-readouts {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .pitch-readouts > div {
+    display: grid;
+    gap: 3px;
+    padding: 10px 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: rgb(255 255 255 / 0.66);
+  }
+
+  .pitch-readouts strong {
+    font-size: 1rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pitch-controls {
+    display: grid;
+    align-content: start;
+    gap: 14px;
+  }
+
+  .pitch-permission,
+  .pitch-claim-note {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 12px;
+    border-radius: var(--radius-control);
+    background: rgb(102 209 178 / 0.11);
+  }
+
+  .pitch-permission strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.82rem;
+  }
+
+  .pitch-permission p,
+  .pitch-claim-note p,
+  .pitch-selection-error,
+  .pitch-error {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 0.74rem;
+    line-height: 1.45;
+  }
+
+  .pitch-primary-actions {
+    justify-content: flex-start;
+  }
+
+  .pitch-start,
+  .pitch-stop {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: var(--radius-button);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .pitch-start {
+    border: 1px solid var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .pitch-stop {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  button:disabled,
+  select:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .pitch-field {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+  }
+
+  .pitch-field[hidden],
+  .pitch-selection-error[hidden],
+  .pitch-error[hidden] {
+    display: none;
+  }
+
+  .pitch-field select {
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 34px 0 11px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font: inherit;
+  }
+
+  .pitch-details {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    overflow: hidden;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-border);
+  }
+
+  .pitch-details > div {
+    display: grid;
+    gap: 3px;
+    padding: 9px 10px;
+    background: var(--color-surface);
+  }
+
+  .pitch-details__wide {
+    grid-column: 1 / -1;
+  }
+
+  .pitch-details dt {
+    color: var(--color-ink-muted);
+    font-size: 0.68rem;
+  }
+
+  .pitch-details dd {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 760;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .pitch-selection-error,
+  .pitch-error {
+    color: var(--color-danger, #9a3434);
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .pitch-tuner__needle {
+      transition: none;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .pitch-instrument {
+      grid-template-columns: 1fr;
+    }
+
+    .pitch-controls {
+      order: -1;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .pitch-monitor {
+      border-right: 0;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .pitch-monitor,
+    .pitch-controls {
+      padding: 16px;
+    }
+
+    .pitch-primary-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .pitch-start,
+    .pitch-stop {
+      width: 100%;
+      padding-inline: 8px;
+    }
+
+    .pitch-result {
+      min-height: 170px;
+      padding: 18px 14px;
+      border-radius: 22px;
+    }
+
+    .pitch-result__note {
+      font-size: clamp(4rem, 22vw, 6rem);
+    }
+
+    .pitch-readouts {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .pitch-field {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+</style>
