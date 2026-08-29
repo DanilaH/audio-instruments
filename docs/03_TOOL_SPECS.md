@@ -792,6 +792,19 @@ slow sweep
 preset sequence
 ```
 
+Single tone:
+
+```text
+sine wave
+initial frequency: 60 Hz
+continuous until explicit Stop
+frequency and preset edits apply live while playing
+```
+
+The single-tone frequency control uses the nominal 20–200 Hz Bass range and the shared runtime frequency cap.
+
+All Bass Test generated tones and sweeps use a sine source.
+
 Default sweep:
 
 ```text

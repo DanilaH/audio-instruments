@@ -359,10 +359,16 @@ test("Headphone mode switching stops active playback and pagehide closes its Aud
 
 test("Headphone related tools are live-only and claims avoid burn-in/quality scoring", async ({ page }) => {
   await page.goto("/headphone-test");
-  for (const route of ["/speaker-test", "/sound-test", "/stereo-test", "/phase-test"]) {
+  for (const route of [
+    "/speaker-test",
+    "/sound-test",
+    "/stereo-test",
+    "/phase-test",
+    "/surround-sound-test",
+    "/bass-test",
+  ]) {
     await expect(page.locator(`a[href="${route}"]`)).toHaveCount(1);
   }
-  await expect(page.locator('a[href="/bass-test"]')).toHaveCount(0);
   await expect(page.getByText(/burn-in/i)).toBeVisible();
   await expect(page.getByText(/quality scoring/i)).toBeVisible();
 });

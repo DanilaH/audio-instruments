@@ -449,9 +449,14 @@ test("Speaker mode switching stops active playback and pagehide closes the sessi
 
 test("Speaker related tools include only currently live routes", async ({ page }) => {
   await page.goto("/speaker-test");
-  await expect(page.locator('a[href="/sound-test"]')).toHaveCount(1);
-  await expect(page.locator('a[href="/stereo-test"]')).toHaveCount(1);
-  await expect(page.locator('a[href="/phase-test"]')).toHaveCount(1);
-  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(0);
-  await expect(page.locator('a[href="/bass-test"]')).toHaveCount(0);
+  for (const route of [
+    "/sound-test",
+    "/stereo-test",
+    "/phase-test",
+    "/headphone-test",
+    "/surround-sound-test",
+    "/bass-test",
+  ]) {
+    await expect(page.locator(`a[href="${route}"]`)).toHaveCount(1);
+  }
 });
