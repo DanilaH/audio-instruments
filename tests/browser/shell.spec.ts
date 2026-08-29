@@ -179,6 +179,28 @@ test("homepage hero typography stays continuous around the 520px viewport bounda
   expect(Math.abs(fontSizeAt520 - fontSizeAt521)).toBeLessThanOrEqual(2);
 });
 
+test("mobile shell navigation keeps touch targets at least 44px in both dimensions", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 390, height: 844 });
+  await page.goto("/");
+
+  const targetBoxes = await page
+    .locator(".brand, .site-nav a, .site-footer a")
+    .evaluateAll((elements) =>
+      elements.map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { width: rect.width, height: rect.height };
+      }),
+    );
+
+  expect(targetBoxes.length).toBeGreaterThan(0);
+  for (const box of targetBoxes) {
+    expect(box.width).toBeGreaterThanOrEqual(44);
+    expect(box.height).toBeGreaterThanOrEqual(44);
+  }
+});
+
 test("planned tool routes are not built", async ({ page }) => {
   for (const route of plannedRoutes) {
     const response = await page.goto(route);
