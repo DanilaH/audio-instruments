@@ -113,6 +113,11 @@ export class MicrophoneService implements SessionResource {
 
   connectAnalysisTarget(target: AudioNode): () => void {
     this.#assertUsable();
+    if (target.context !== this.#context) {
+      throw new Error(
+        "Microphone analysis targets must belong to the same AudioContext",
+      );
+    }
     if (target === this.#context.destination) {
       throw new Error(
         "Live microphone monitoring to AudioContext.destination is prohibited",
@@ -120,8 +125,8 @@ export class MicrophoneService implements SessionResource {
     }
 
     if (!this.#analysisTargets.has(target)) {
-      this.#analysisTargets.add(target);
       this.#source?.connect(target);
+      this.#analysisTargets.add(target);
     }
 
     let connected = true;
