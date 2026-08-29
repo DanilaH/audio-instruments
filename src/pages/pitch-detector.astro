@@ -52,8 +52,9 @@ const relatedTools = pitchTool.relatedToolIds.flatMap((id) => {
       <div class="pitch-help__grid">
         <p>
           YIN analysis runs at no more than 20 times per second. Estimates below
-          the confidence threshold are rejected, and a rejected frame clears the
-          current stabilization run so stale notes are not presented as current.
+          the confidence threshold are rejected and no note is displayed for that
+          frame. A rejection breaks the consecutive-stability streak; stability
+          must be earned again from accepted frames.
         </p>
         <p>
           Pitch is still an estimate. Noise, chords, multiple simultaneous
