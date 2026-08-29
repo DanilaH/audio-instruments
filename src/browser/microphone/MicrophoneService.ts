@@ -113,6 +113,11 @@ export class MicrophoneService implements SessionResource {
 
   connectAnalysisTarget(target: AudioNode): () => void {
     this.#assertUsable();
+    if (target === this.#context.destination) {
+      throw new Error(
+        "Live microphone monitoring to AudioContext.destination is prohibited",
+      );
+    }
 
     if (!this.#analysisTargets.has(target)) {
       this.#analysisTargets.add(target);
