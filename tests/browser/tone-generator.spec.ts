@@ -1,9 +1,6 @@
 import { expect, test, type Page } from "@playwright/test";
 
-const plannedRelatedRoutes = [
-  "/noise-generator",
-  "/hearing-frequency-test",
-] as const;
+const plannedRelatedRoutes = ["/hearing-frequency-test"] as const;
 
 async function installDeterministicAudioContext(
   page: Page,
@@ -187,6 +184,7 @@ test("Tone Generator exposes the safe idle baseline", async ({ page }) => {
   await expect(page.locator("#tone-frequency-readout")).toHaveText("440 Hz");
   await expect(page.locator('a[href="/bass-test"]')).toHaveCount(1);
   await expect(page.locator('a[href="/frequency-sweep"]')).toHaveCount(1);
+  await expect(page.locator('a[href="/noise-generator"]')).toHaveCount(1);
 
   for (const route of plannedRelatedRoutes) {
     await expect(page.locator(`a[href="${route}"]`)).toHaveCount(0);

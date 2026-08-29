@@ -649,8 +649,13 @@ export class AudioOutputEngine implements SessionResource {
 
     source.addEventListener("ended", cleanup, { once: true });
     this.#active.add(playback);
-    source.start(startTime, options.offsetSeconds ?? 0);
-    return playback;
+    try {
+      source.start(startTime, options.offsetSeconds ?? 0);
+      return playback;
+    } catch (error) {
+      cleanup();
+      throw error;
+    }
   }
 
   startPhaseBuffer(
