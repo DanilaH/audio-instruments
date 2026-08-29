@@ -216,12 +216,24 @@ async function playSetupReference(page: Page): Promise<void> {
   ).toHaveText("Setup reference complete", { timeout: 2_000 });
 }
 
-async function startGuided(page: Page): Promise<void> {
+async function confirmListeningSetup(page: Page): Promise<void> {
   await page.locator("[data-hearing-setup-confirm]").check();
+}
+
+async function startGuided(page: Page): Promise<void> {
+  await confirmListeningSetup(page);
   await page.locator("[data-hearing-guided-start]").click();
 }
 
-test("stays lazy until the setup reference and plays the canonical 1 kHz / -36 dB reference", async ({
+async function setManualLevel(page: Page, levelDb: number): Promise<void> {
+  await page.locator("#hearing-manual-level").evaluate((element, value) => {
+    const input = element as HTMLInputElement;
+    input.value = String(value);
+    input.dispatchEvent(new Event("input", { bubbles: true }));
+  }, levelDb);
+}
+
+test("keeps high-frequency playback locked behind a fresh 1 kHz / -36 dB listening setup", async ({
   page,
 }) => {
   await installHearingHarness(page);
@@ -233,6 +245,11 @@ test("stays lazy until the setup reference and plays the canonical 1 kHz / -36 d
   await expect(page.locator("[data-hearing-stop]")).toBeDisabled();
   await expect(page.getByRole("link", { name: "Tone Generator" })).toHaveCount(1);
   await expect(page.getByRole("link", { name: "Headphone Test" })).toHaveCount(1);
+
+  await selectMode(page, "manual");
+  await expect(page.locator("[data-hearing-manual-play]")).toBeDisabled();
+  expect((await harnessState(page)).audioContextCount).toBe(0);
+  await selectMode(page, "guided");
 
   await playSetupReference(page);
 
@@ -250,6 +267,24 @@ test("stays lazy until the setup reference and plays the canonical 1 kHz / -36 d
     state.masterGainValues.some((value) => Math.abs(value - guidedGain) < 1e-6),
   ).toBe(true);
   await expect(page.locator("[data-hearing-setup-confirm]")).toBeEnabled();
+
+  await confirmListeningSetup(page);
+  await expect(page.locator("[data-hearing-guided-start]")).toBeEnabled();
+
+  await page.locator("[data-hearing-reference]").click();
+  await expect(page.locator("[data-hearing-setup-confirm]")).not.toBeChecked();
+  await expect(page.locator("[data-hearing-setup-confirm]")).toBeDisabled();
+  await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
+  await expect(page.locator("[data-hearing-setup-status]")).toContainText(
+    "while the 1-second reference is audible",
+  );
+
+  await expect(
+    page.locator("#hearing-frequency-status [data-status-label]"),
+  ).toHaveText("Setup reference complete", { timeout: 2_000 });
+  await expect(page.locator("[data-hearing-setup-confirm]")).toBeEnabled();
+  await expect(page.locator("[data-hearing-setup-confirm]")).not.toBeChecked();
+  await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
 });
 
 test("Guided mode records only explicit heard answers and continues after a not-heard answer", async ({
@@ -303,6 +338,7 @@ test("capability filtering removes unavailable Guided and Manual frequencies wit
   await expect(page.locator("[data-hearing-result]")).toHaveText("—");
 
   await selectMode(page, "manual");
+  await expect(page.locator("[data-hearing-manual-play]")).toBeDisabled();
   const unavailableOptions = page.locator(
     "[data-hearing-manual-frequency] option:disabled",
   );
@@ -310,6 +346,9 @@ test("capability filtering removes unavailable Guided and Manual frequencies wit
   await expect(unavailableOptions.nth(0)).toHaveValue("16000");
   await expect(unavailableOptions.nth(1)).toHaveValue("18000");
   await expect(unavailableOptions.nth(2)).toHaveValue("20000");
+
+  await confirmListeningSetup(page);
+  await expect(page.locator("[data-hearing-manual-play]")).toBeEnabled();
 });
 
 test("does not schedule a tone when even the 1 kHz setup reference is above the session capability", async ({
@@ -326,6 +365,9 @@ test("does not schedule a tone when even the 1 kHz setup reference is above the 
   await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
   await expect(page.locator("[data-hearing-result]")).toHaveText("—");
   expect((await harnessState(page)).oscillators).toHaveLength(0);
+
+  await selectMode(page, "manual");
+  await expect(page.locator("[data-hearing-manual-play]")).toBeDisabled();
 });
 
 test("Manual mode uses finite 800 ms tones and never changes the Guided session result", async ({
@@ -346,7 +388,7 @@ test("Manual mode uses finite 800 ms tones and never changes the Guided session 
   await expect(page.locator("[data-hearing-result]")).toHaveText("2 kHz");
 
   await selectMode(page, "manual");
-  await page.locator("#hearing-manual-level").fill("-24");
+  await setManualLevel(page, -24);
   await page.locator("[data-hearing-manual-play]").click();
   await expect(
     page.locator("#hearing-frequency-status [data-status-label]"),
