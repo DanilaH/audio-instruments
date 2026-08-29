@@ -14,19 +14,38 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         </div>
 
         <div class="surround-stage" aria-hidden="true">
-          <span class="surround-seat"><i class="ph ph-armchair"></i></span>
-          <span class="surround-speaker surround-speaker--fl">FL</span>
-          <span class="surround-speaker surround-speaker--fr">FR</span>
-          <span class="surround-speaker surround-speaker--c">C</span>
-          <span class="surround-speaker surround-speaker--lfe">LFE</span>
-          <span class="surround-speaker surround-speaker--sl">SL</span>
-          <span class="surround-speaker surround-speaker--sr">SR</span>
           <span class="surround-ring"></span>
+          <span class="surround-seat"><i class="ph ph-armchair"></i></span>
+          <span class="surround-stage__idle">Check output capability</span>
+
+          <div class="surround-map surround-map--five-one">
+            <span class="surround-node surround-node--fl">FL</span>
+            <span class="surround-node surround-node--fr">FR</span>
+            <span class="surround-node surround-node--c">C</span>
+            <span class="surround-node surround-node--lfe">LFE</span>
+            <span class="surround-node surround-node--sl">SL</span>
+            <span class="surround-node surround-node--sr">SR</span>
+          </div>
+
+          <div class="surround-map surround-map--eight">
+            {Array.from({ length: 8 }, (_, index) => (
+              <span class={`surround-node surround-node--raw-${index + 1}`}>
+                {index + 1}
+              </span>
+            ))}
+          </div>
+
+          <div class="surround-map surround-map--stereo">
+            <span class="surround-stereo-rail"></span>
+            <span class="surround-node surround-node--left">L</span>
+            <span class="surround-node surround-node--center">C</span>
+            <span class="surround-node surround-node--right">R</span>
+          </div>
         </div>
 
         <p class="surround-visual__note">
-          Channel positions are digital routing targets. Browser capability and physical
-          speaker wiring are separate questions; only confirmed browser output modes are enabled.
+          These are requested digital routing targets. A confirmed browser graph does not
+          prove physical speaker placement or wiring.
         </p>
       </section>
 
@@ -43,7 +62,7 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         <div class="surround-check-panel">
           <div>
             <strong>Confirm browser output first</strong>
-            <span>`maxChannelCount` is only a ceiling; this check also requires exact destination readback.</span>
+            <span>maxChannelCount is only a ceiling; 5.1 still requires exact destination readback.</span>
           </div>
           <button type="button" class="surround-primary" data-surround-check>
             <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
@@ -135,6 +154,7 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
   const root = document.querySelector<HTMLElement>("[data-surround-test]");
   let controller: SurroundSoundTestController | null = null;
+
   const mount = () => {
     if (!root || controller) return;
     controller = new SurroundSoundTestController(root);
@@ -144,6 +164,7 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     controller = null;
     if (current) void current.dispose();
   };
+
   window.addEventListener("pagehide", teardown);
   window.addEventListener("pageshow", (event) => {
     if (event.persisted) mount();
@@ -154,11 +175,16 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 <style>
   .surround-instrument {
     display: grid;
-    grid-template-columns: minmax(0, 0.92fr) minmax(450px, 1.08fr);
-    min-height: 480px;
+    grid-template-columns: minmax(0, 0.9fr) minmax(430px, 1.1fr);
+    min-height: 470px;
   }
+
   .surround-visual,
-  .surround-controls { min-width: 0; padding: clamp(20px, 2.7vw, 30px); }
+  .surround-controls {
+    min-width: 0;
+    padding: clamp(20px, 2.6vw, 30px);
+  }
+
   .surround-visual {
     display: grid;
     grid-template-rows: auto 1fr auto;
@@ -167,129 +193,332 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
       radial-gradient(circle at 50% 50%, rgb(103 167 255 / 0.2), transparent 37%),
       linear-gradient(145deg, rgb(255 253 252 / 0.94), rgb(241 247 255 / 0.88));
   }
+
   .surround-visual__header {
-    display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
   }
+
   .surround-visual__mode {
-    max-width: 220px; color: var(--color-ink-muted); font-size: 0.82rem; font-weight: 750; text-align: right;
+    max-width: 220px;
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 750;
+    text-align: right;
   }
+
   .surround-stage {
     position: relative;
     width: min(100%, 470px);
-    min-height: 300px;
-    margin: 8px auto;
-  }
-  .surround-ring {
-    position: absolute; inset: 12% 10%; border: 1px dashed rgb(40 102 173 / 0.22); border-radius: 48%;
-  }
-  .surround-seat {
-    position: absolute; top: 48%; left: 50%; display: grid; width: 58px; height: 58px; place-items: center;
-    border-radius: 22px; background: rgb(103 167 255 / 0.16); color: #2866ad; font-size: 1.5rem;
-    transform: translate(-50%, -50%); z-index: 2;
-  }
-  .surround-speaker {
-    position: absolute; z-index: 2; display: grid; min-width: 48px; min-height: 42px; place-items: center;
-    padding: 0 8px; border: 1px solid var(--color-border); border-radius: 14px; background: var(--color-surface);
-    color: var(--color-ink-muted); font-size: 0.75rem; font-weight: 850;
-  }
-  .surround-speaker--fl { top: 8%; left: 11%; }
-  .surround-speaker--fr { top: 8%; right: 11%; }
-  .surround-speaker--c { top: 4%; left: 50%; transform: translateX(-50%); }
-  .surround-speaker--lfe { top: 38%; right: 3%; }
-  .surround-speaker--sl { bottom: 8%; left: 12%; }
-  .surround-speaker--sr { bottom: 8%; right: 12%; }
-  .surround-visual__note {
-    max-width: 520px; margin: 6px auto 0; color: var(--color-ink-muted); font-size: 0.78rem; line-height: 1.45; text-align: center;
+    min-height: 285px;
+    margin: 6px auto;
   }
 
-  .surround-controls { display: grid; align-content: start; gap: 10px; background: rgb(255 253 252 / 0.78); }
-  .surround-safety {
-    display: grid; grid-template-columns: auto 1fr; gap: 9px; padding: 9px 11px;
-    border-radius: var(--radius-control); background: rgb(255 215 106 / 0.18);
+  .surround-ring {
+    position: absolute;
+    inset: 12% 10%;
+    border: 1px dashed rgb(40 102 173 / 0.22);
+    border-radius: 48%;
   }
+
+  .surround-seat {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    width: 58px;
+    height: 58px;
+    place-items: center;
+    border-radius: 22px;
+    background: rgb(103 167 255 / 0.16);
+    color: #2866ad;
+    font-size: 1.5rem;
+    transform: translate(-50%, -50%);
+  }
+
+  .surround-stage__idle {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: 13%;
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    font-weight: 750;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .surround-map {
+    display: none;
+    position: absolute;
+    inset: 0;
+  }
+
+  [data-surround-mode="five-one"] .surround-map--five-one,
+  [data-surround-mode="experimental-eight"] .surround-map--eight,
+  [data-surround-mode="stereo-preview"] .surround-map--stereo {
+    display: block;
+  }
+
+  [data-surround-mode]:not([data-surround-mode="unknown"]) .surround-stage__idle {
+    display: none;
+  }
+
+  .surround-node {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    min-width: 46px;
+    min-height: 40px;
+    place-items: center;
+    padding: 0 7px;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+    font-weight: 850;
+  }
+
+  .surround-node--fl { top: 8%; left: 11%; }
+  .surround-node--fr { top: 8%; right: 11%; }
+  .surround-node--c { top: 4%; left: 50%; transform: translateX(-50%); }
+  .surround-node--lfe { top: 38%; right: 3%; }
+  .surround-node--sl { bottom: 8%; left: 12%; }
+  .surround-node--sr { bottom: 8%; right: 12%; }
+
+  .surround-node--raw-1 { top: 5%; left: 17%; }
+  .surround-node--raw-2 { top: 5%; right: 17%; }
+  .surround-node--raw-3 { top: 34%; left: 2%; }
+  .surround-node--raw-4 { top: 34%; right: 2%; }
+  .surround-node--raw-5 { bottom: 5%; left: 17%; }
+  .surround-node--raw-6 { bottom: 5%; right: 17%; }
+  .surround-node--raw-7 { bottom: 22%; left: 3%; }
+  .surround-node--raw-8 { bottom: 22%; right: 3%; }
+
+  .surround-stereo-rail {
+    position: absolute;
+    top: 50%;
+    right: 10%;
+    left: 10%;
+    height: 4px;
+    border-radius: 999px;
+    background: rgb(103 167 255 / 0.22);
+    transform: translateY(-50%);
+  }
+
+  .surround-node--left { top: 50%; left: 8%; transform: translateY(-50%); }
+  .surround-node--center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .surround-node--right { top: 50%; right: 8%; transform: translateY(-50%); }
+
+  .surround-visual__note {
+    max-width: 520px;
+    margin: 6px auto 0;
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  .surround-controls {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    background: rgb(255 253 252 / 0.78);
+  }
+
+  .surround-safety {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 9px;
+    padding: 9px 11px;
+    border-radius: var(--radius-control);
+    background: rgb(255 215 106 / 0.18);
+  }
+
   .surround-safety p,
   .surround-error,
-  .surround-capability { margin: 0; font-size: 0.78rem; line-height: 1.4; }
-  .surround-check-panel {
-    display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 14px;
-    padding: 12px; border: 1px solid var(--color-border); border-radius: var(--radius-button); background: var(--color-surface);
-  }
-  .surround-check-panel > div { display: grid; gap: 3px; }
-  .surround-check-panel span,
-  .surround-panel__heading span { color: var(--color-ink-muted); font-size: 0.76rem; line-height: 1.4; }
   .surround-capability {
-    padding: 9px 11px; border-radius: var(--radius-control); background: rgb(103 167 255 / 0.1); color: #315a89;
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
   }
-  .surround-capability[hidden] { display: none; }
+
+  .surround-check-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+  }
+
+  .surround-check-panel > div,
+  .surround-panel__heading {
+    display: grid;
+    gap: 3px;
+  }
+
+  .surround-check-panel span,
+  .surround-panel__heading span {
+    color: var(--color-ink-muted);
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  .surround-capability {
+    padding: 9px 11px;
+    border-radius: var(--radius-control);
+    background: rgb(103 167 255 / 0.1);
+    color: #315a89;
+  }
+
+  .surround-capability[hidden],
+  .surround-mode-selector[hidden],
+  .surround-panel[hidden],
+  .surround-error[hidden] {
+    display: none;
+  }
 
   .surround-mode-selector {
-    display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 6px; padding: 5px;
-    border: 1px solid var(--color-border); border-radius: var(--radius-button); background: rgb(31 36 48 / 0.035);
-  }
-  .surround-mode-selector[hidden] { display: none; }
-  .surround-mode-selector button {
-    min-height: 44px; padding: 0 8px; border: 0; border-radius: calc(var(--radius-button) - 5px);
-    background: transparent; color: var(--color-ink-muted); font-size: 0.78rem; font-weight: 800; cursor: pointer;
-  }
-  .surround-mode-selector button[aria-pressed="true"] {
-    background: var(--color-surface); color: var(--color-ink); box-shadow: 0 4px 14px rgb(31 36 48 / 0.07);
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: rgb(31 36 48 / 0.035);
   }
 
-  .surround-panel { display: grid; gap: 9px; min-height: 174px; }
-  .surround-panel[hidden] { display: none; }
-  .surround-panel__heading { display: grid; gap: 2px; }
-  .surround-channel-grid { display: grid; gap: 7px; }
+  .surround-mode-selector button {
+    min-height: 44px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: calc(var(--radius-button) - 5px);
+    background: transparent;
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .surround-mode-selector button[aria-pressed="true"] {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 4px 14px rgb(31 36 48 / 0.07);
+  }
+
+  .surround-panel {
+    display: grid;
+    gap: 9px;
+    min-height: 174px;
+  }
+
+  .surround-channel-grid {
+    display: grid;
+    gap: 7px;
+  }
+
   .surround-channel-grid--six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
   .surround-channel-grid--eight { grid-template-columns: repeat(4, minmax(0, 1fr)); }
   .surround-channel-grid--stereo { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
   .surround-channel-grid button,
   .surround-primary,
   .surround-stop {
-    min-height: 46px; border-radius: var(--radius-button); font-weight: 800; cursor: pointer;
+    min-height: 46px;
+    border-radius: var(--radius-button);
+    font-weight: 800;
+    cursor: pointer;
   }
+
   .surround-channel-grid button {
-    border: 1px solid var(--color-border); background: var(--color-surface); color: var(--color-ink); font-size: 0.8rem;
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 0.8rem;
   }
+
   .surround-primary,
-  .surround-stop { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
-  .surround-primary { border: 0; padding: 0 16px; background: var(--color-ink); color: var(--color-surface); }
+  .surround-stop {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+
+  .surround-primary {
+    border: 0;
+    padding: 0 16px;
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
 
   .surround-footer {
-    display: grid; grid-template-columns: minmax(0, 1fr) 120px; align-items: end; gap: 12px;
-    padding-top: 8px; border-top: 1px solid var(--color-border);
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px;
+    align-items: end;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
   }
-  .surround-stop { min-height: 48px; border: 1px solid var(--color-border); background: transparent; color: var(--color-ink); }
+
+  .surround-stop {
+    min-height: 48px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-ink);
+  }
+
   button:disabled,
-  input:disabled { cursor: not-allowed; opacity: 0.48; }
-  .surround-error {
-    padding: 10px 12px; border-radius: var(--radius-control); background: rgb(155 47 47 / 0.08); color: #7f2929;
+  input:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
   }
-  .surround-error[hidden] { display: none; }
+
+  .surround-error {
+    padding: 10px 12px;
+    border-radius: var(--radius-control);
+    background: rgb(155 47 47 / 0.08);
+    color: #7f2929;
+  }
 
   @media (max-width: 960px) {
     .surround-instrument { grid-template-columns: 1fr; }
-    .surround-visual { min-height: 280px; border-right: 0; border-bottom: 1px solid var(--color-border); }
+    .surround-visual {
+      min-height: 280px;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
     .surround-stage { min-height: 210px; }
   }
+
   @media (max-width: 560px) {
-    .surround-visual { min-height: 210px; padding: 14px 20px; }
+    .surround-visual { min-height: 205px; padding: 14px 20px; }
     .surround-controls { padding: 14px 20px 18px; }
-    .surround-stage { min-height: 128px; margin: 0 auto; }
+    .surround-stage { min-height: 124px; margin: 0 auto; }
     .surround-seat { width: 40px; height: 40px; border-radius: 14px; font-size: 1rem; }
-    .surround-speaker { min-width: 38px; min-height: 34px; padding: 0 5px; font-size: 0.62rem; }
+    .surround-node { min-width: 36px; min-height: 32px; padding: 0 5px; font-size: 0.62rem; }
+    .surround-stage__idle { bottom: 5%; }
     .surround-visual__note { display: none; }
     .surround-check-panel { grid-template-columns: 1fr; gap: 8px; }
     .surround-primary { min-height: 48px; }
     .surround-mode-selector { grid-template-columns: 1fr; }
     .surround-mode-selector button { min-height: 48px; }
     .surround-channel-grid--six,
-    .surround-channel-grid--eight { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .surround-channel-grid--eight,
     .surround-channel-grid--stereo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
     .surround-channel-grid button { min-height: 48px; }
     .surround-footer { grid-template-columns: 1fr; gap: 6px; }
   }
+
   @media (prefers-reduced-motion: reduce) {
-    .surround-speaker,
+    .surround-node,
     .surround-seat { transition: none; }
   }
 </style>
