@@ -178,7 +178,7 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "input-analysis",
     implementationPhase: "P5.2",
     accent: "cyan",
-    status: "planned",
+    status: "live",
     relatedToolIds: [],
   },
   {

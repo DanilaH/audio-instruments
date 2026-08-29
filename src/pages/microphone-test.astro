@@ -1,0 +1,111 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import MicrophoneTest from "../tools/microphone-test/MicrophoneTest.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const microphoneTool = toolRegistry.find((tool) => tool.id === "microphone-test");
+if (!microphoneTool) throw new Error("Microphone Test registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = microphoneTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Microphone Test — Browser Audio Lab"
+  description="Check browser microphone capture with a live waveform, RMS and peak dBFS meters, input selection, reported capture settings and an optional short local recording."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Input & analysis"
+    title="Microphone Test"
+    description="Verify that your browser can capture the selected microphone, inspect the live waveform and digital level, and make a short local recording for playback."
+    accent="cyan"
+  >
+    <MicrophoneTest />
+
+    <section class="mic-content" aria-labelledby="mic-about-title">
+      <div>
+        <p class="eyebrow">Browser capture</p>
+        <h2 id="mic-about-title">Inspect the stream the browser actually provides</h2>
+      </div>
+      <div class="mic-content__copy">
+        <p>
+          The test requests microphone capture only after you press Start. Where
+          the browser recognizes the relevant constraints, it asks for echo
+          cancellation, noise suppression and automatic gain control to be off.
+          Those requests are preferences, not proof of the final capture state.
+        </p>
+        <p>
+          Capture Details therefore reports the active track settings returned by
+          the browser. The live RMS and peak values are calculated from the Web
+          Audio processing stream in dBFS; they are digital full-scale values, not
+          calibrated acoustic sound-pressure measurements.
+        </p>
+      </div>
+    </section>
+
+    <section class="mic-help" aria-labelledby="mic-help-title">
+      <h2 id="mic-help-title">Recording and device changes</h2>
+      <div class="mic-help__grid">
+        <p>
+          When more than one microphone input is available, you can choose the
+          input explicitly. A failed device switch keeps the previous live input
+          active instead of silently falling back to a different device.
+        </p>
+        <p>
+          Recording is optional browser capability. When supported, one recording
+          of up to 15 seconds is held as a local browser Blob for playback. If
+          MediaRecorder is unavailable, live waveform and meter functions remain
+          usable.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .mic-content,
+  .mic-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .mic-content h2,
+  .mic-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .mic-content__copy,
+  .mic-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .mic-content p,
+  .mic-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .mic-content,
+    .mic-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>

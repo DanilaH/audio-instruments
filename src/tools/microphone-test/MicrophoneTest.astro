@@ -1,0 +1,502 @@
+---
+import ToolStatus from "../../components/feedback/ToolStatus.astro";
+import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+---
+
+<div data-microphone-test data-mic-state="idle">
+  <InstrumentSurface label="Microphone Test capture, meter and recording controls" accent="cyan">
+    <div class="mic-instrument">
+      <section class="mic-monitor" aria-label="Live microphone waveform and level">
+        <div class="mic-monitor__header">
+          <ToolStatus id="microphone-test-status" label="Ready" state="idle" />
+          <div class="mic-input-readout">
+            <span>Input</span>
+            <strong data-mic-active-input>No active input</strong>
+          </div>
+        </div>
+
+        <div class="mic-waveform">
+          <canvas data-mic-waveform aria-label="Live microphone waveform"></canvas>
+          <span class="mic-waveform__baseline" aria-hidden="true"></span>
+        </div>
+
+        <div class="mic-meters" aria-label="Digital microphone level meters">
+          <div class="mic-meter">
+            <span>RMS</span>
+            <strong data-mic-rms>—</strong>
+            <small>100 ms · 10 Hz update</small>
+          </div>
+          <div class="mic-meter">
+            <span>Peak hold</span>
+            <strong data-mic-peak>—</strong>
+            <small>1 s hold · 20 dB/s decay</small>
+          </div>
+        </div>
+        <p class="mic-monitor__note">
+          Values are digital dBFS from the browser audio stream, not calibrated sound-pressure level (SPL).
+        </p>
+      </section>
+
+      <section class="mic-controls" aria-label="Microphone Test settings">
+        <div class="mic-permission">
+          <i class="ph ph-microphone" aria-hidden="true"></i>
+          <div>
+            <strong>Microphone permission is requested only after Start.</strong>
+            <p>
+              The tool asks the browser to disable echo cancellation, noise suppression and automatic gain control where those constraint names are supported. Reported track settings below remain authoritative.
+            </p>
+          </div>
+        </div>
+
+        <div class="mic-primary-actions">
+          <button type="button" class="mic-start" data-mic-start>
+            <i class="ph ph-microphone" aria-hidden="true"></i>
+            Start microphone
+          </button>
+          <button type="button" class="mic-stop" data-mic-stop disabled>
+            <i class="ph ph-stop" aria-hidden="true"></i>
+            Stop
+          </button>
+        </div>
+
+        <label class="mic-input-field" data-mic-input-field hidden>
+          <span>Input device</span>
+          <select data-mic-input-select aria-label="Microphone input device"></select>
+        </label>
+        <p class="mic-selection-error" data-mic-selection-error role="alert" hidden></p>
+
+        <details class="mic-details">
+          <summary>Capture details</summary>
+          <dl>
+            <div>
+              <dt>Device ID</dt>
+              <dd data-mic-detail-device-id>Not reported</dd>
+            </div>
+            <div>
+              <dt>Web Audio processing rate</dt>
+              <dd data-mic-detail-analysis-rate>Not reported</dd>
+            </div>
+            <div>
+              <dt>Reported capture rate</dt>
+              <dd data-mic-detail-sample-rate>Not reported</dd>
+            </div>
+            <div>
+              <dt>Reported channels</dt>
+              <dd data-mic-detail-channel-count>Not reported</dd>
+            </div>
+            <div>
+              <dt>Echo cancellation</dt>
+              <dd data-mic-detail-echo-cancellation>Not reported</dd>
+            </div>
+            <div>
+              <dt>Noise suppression</dt>
+              <dd data-mic-detail-noise-suppression>Not reported</dd>
+            </div>
+            <div>
+              <dt>Automatic gain control</dt>
+              <dd data-mic-detail-auto-gain>Not reported</dd>
+            </div>
+          </dl>
+        </details>
+
+        <section class="mic-recording" aria-labelledby="mic-recording-title">
+          <div class="mic-recording__header">
+            <div>
+              <span class="mic-kicker">Local recording</span>
+              <h3 id="mic-recording-title">Record up to 15 seconds</h3>
+            </div>
+            <p data-mic-recording-status role="status" aria-live="polite">
+              No local recording yet
+            </p>
+          </div>
+
+          <div class="mic-recording__actions">
+            <button type="button" data-mic-record disabled>
+              <i class="ph ph-record" aria-hidden="true"></i>
+              Record
+            </button>
+            <button type="button" data-mic-record-stop disabled>
+              <i class="ph ph-stop-circle" aria-hidden="true"></i>
+              Stop recording
+            </button>
+          </div>
+          <p class="mic-recording__notice" data-mic-recording-notice hidden></p>
+          <audio data-mic-playback controls preload="metadata" hidden>
+            Your browser does not support audio playback controls.
+          </audio>
+        </section>
+
+        <p class="mic-error" data-mic-error role="alert" hidden></p>
+      </section>
+    </div>
+  </InstrumentSurface>
+</div>
+
+<script>
+  import { MicrophoneTestController } from "./MicrophoneTestController";
+
+  const root = document.querySelector<HTMLElement>("[data-microphone-test]");
+  let controller: MicrophoneTestController | null = null;
+
+  const mount = () => {
+    if (!root || controller) return;
+    controller = new MicrophoneTestController(root);
+  };
+
+  const teardown = () => {
+    const current = controller;
+    controller = null;
+    if (current) void current.dispose();
+  };
+
+  window.addEventListener("pagehide", teardown);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) mount();
+  });
+
+  mount();
+</script>
+
+<style>
+  .mic-instrument {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(440px, 1.08fr);
+    min-height: 470px;
+  }
+
+  .mic-monitor,
+  .mic-controls {
+    min-width: 0;
+    padding: clamp(20px, 2.5vw, 30px);
+  }
+
+  .mic-monitor {
+    display: grid;
+    grid-template-rows: auto minmax(150px, 1fr) auto auto;
+    gap: 14px;
+    border-right: 1px solid var(--color-border);
+    background:
+      radial-gradient(circle at 55% 38%, rgb(89 211 230 / 0.14), transparent 38%),
+      linear-gradient(145deg, rgb(251 254 255 / 0.98), rgb(239 249 251 / 0.88));
+  }
+
+  .mic-monitor__header,
+  .mic-recording__header,
+  .mic-primary-actions,
+  .mic-recording__actions {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .mic-input-readout {
+    display: grid;
+    justify-items: end;
+    gap: 2px;
+    text-align: right;
+  }
+
+  .mic-input-readout span,
+  .mic-kicker,
+  .mic-meter span {
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+    font-weight: 780;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .mic-input-readout strong {
+    max-width: 240px;
+    overflow: hidden;
+    font-size: 0.88rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+
+  .mic-waveform {
+    position: relative;
+    min-height: 160px;
+    overflow: hidden;
+    border: 1px solid rgb(30 83 92 / 0.1);
+    border-radius: 24px;
+    background: rgb(255 255 255 / 0.66);
+    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.5);
+    color: #177d8e;
+  }
+
+  .mic-waveform canvas {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+  }
+
+  .mic-waveform__baseline {
+    position: absolute;
+    inset: 50% 8% auto;
+    height: 1px;
+    background: rgb(31 88 97 / 0.12);
+    pointer-events: none;
+  }
+
+  .mic-meters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+  }
+
+  .mic-meter {
+    display: grid;
+    gap: 4px;
+    padding: 12px 14px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: rgb(255 255 255 / 0.66);
+  }
+
+  .mic-meter strong {
+    font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .mic-meter small,
+  .mic-monitor__note,
+  .mic-permission p,
+  .mic-recording__header p,
+  .mic-recording__notice,
+  .mic-selection-error,
+  .mic-error {
+    margin: 0;
+    color: var(--color-ink-muted);
+    font-size: 0.75rem;
+    line-height: 1.45;
+  }
+
+  .mic-monitor__note {
+    max-width: 520px;
+  }
+
+  .mic-controls {
+    display: grid;
+    align-content: start;
+    gap: 13px;
+  }
+
+  .mic-permission {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 12px;
+    border-radius: var(--radius-control);
+    background: rgb(89 211 230 / 0.12);
+  }
+
+  .mic-permission strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.82rem;
+  }
+
+  .mic-primary-actions {
+    justify-content: flex-start;
+  }
+
+  .mic-start,
+  .mic-stop,
+  .mic-recording__actions button {
+    display: inline-flex;
+    min-height: 46px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 15px;
+    border-radius: var(--radius-button);
+    font: inherit;
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .mic-start {
+    border: 1px solid var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .mic-stop,
+  .mic-recording__actions button {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  button:disabled,
+  select:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .mic-input-field {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+    font-size: 0.82rem;
+    font-weight: 760;
+  }
+
+  .mic-input-field[hidden],
+  .mic-recording__notice[hidden],
+  .mic-selection-error[hidden],
+  .mic-error[hidden],
+  audio[hidden] {
+    display: none;
+  }
+
+  .mic-input-field select {
+    min-width: 0;
+    min-height: 42px;
+    padding: 0 34px 0 11px;
+    border: 1px solid var(--color-border-strong);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font: inherit;
+  }
+
+  .mic-details {
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    padding: 9px 0;
+  }
+
+  .mic-details summary {
+    cursor: pointer;
+    font-size: 0.82rem;
+    font-weight: 780;
+  }
+
+  .mic-details dl {
+    display: grid;
+    gap: 7px;
+    margin: 10px 0 2px;
+  }
+
+  .mic-details dl > div {
+    display: grid;
+    grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.2fr);
+    gap: 12px;
+    font-size: 0.75rem;
+  }
+
+  .mic-details dt {
+    color: var(--color-ink-muted);
+  }
+
+  .mic-details dd {
+    min-width: 0;
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-weight: 700;
+  }
+
+  .mic-recording {
+    display: grid;
+    gap: 10px;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: rgb(31 36 48 / 0.025);
+  }
+
+  .mic-recording__header {
+    align-items: flex-start;
+  }
+
+  .mic-recording h3 {
+    margin: 2px 0 0;
+    font-size: 0.94rem;
+  }
+
+  .mic-recording__header p {
+    max-width: 190px;
+    text-align: right;
+  }
+
+  .mic-recording__actions {
+    justify-content: flex-start;
+  }
+
+  .mic-recording audio {
+    width: 100%;
+    height: 38px;
+  }
+
+  .mic-selection-error,
+  .mic-error {
+    color: var(--color-danger, #9a3434);
+  }
+
+  @media (max-width: 900px) {
+    .mic-instrument {
+      grid-template-columns: 1fr;
+    }
+
+    .mic-monitor {
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .mic-monitor,
+    .mic-controls {
+      padding: 16px;
+    }
+
+    .mic-monitor {
+      grid-template-rows: auto 130px auto auto;
+    }
+
+    .mic-waveform {
+      min-height: 130px;
+    }
+
+    .mic-meter {
+      padding: 9px 10px;
+    }
+
+    .mic-meter small {
+      display: none;
+    }
+
+    .mic-primary-actions,
+    .mic-recording__actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mic-start,
+    .mic-stop,
+    .mic-recording__actions button {
+      width: 100%;
+      padding-inline: 10px;
+    }
+
+    .mic-input-field {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .mic-recording__header {
+      display: grid;
+    }
+
+    .mic-recording__header p {
+      max-width: none;
+      text-align: left;
+    }
+  }
+</style>

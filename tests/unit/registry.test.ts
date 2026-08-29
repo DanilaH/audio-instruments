@@ -50,6 +50,7 @@ describe("tool registry", () => {
       { id: "tone-generator", route: "/tone-generator" },
       { id: "frequency-sweep", route: "/frequency-sweep" },
       { id: "noise-generator", route: "/noise-generator" },
+      { id: "microphone-test", route: "/microphone-test" },
     ]);
   });
 
