@@ -119,7 +119,7 @@ See `15_DEVELOPMENT_WORKFLOW.md` and `16_CI_AND_REPOSITORY_GATES.md`.
 
 The repository is private on the current free GitHub plan, so protected-branch/ruleset enforcement is unavailable and the owner has accepted manual repository-gate enforcement. This does not change the required review/validation sequence.
 
-Recent later-P5/P6 GitHub Actions attempts also exposed a separate hosted infrastructure incident: jobs failed before runner allocation with `runner_id = 0` and `steps = []`. Those runs are infrastructure/no-runner evidence, not green CI and not repository test failures. Affected merges record exact-SHA review evidence and explicit infrastructure-waiver notes; the incident does not redefine the required green `merge-gate` policy.
+Recent later-P5/P6 GitHub Actions attempts also exposed a separate hosted infrastructure incident: jobs failed before runner allocation with `runner_id = 0` and `steps = []`. Those runs are infrastructure/no-runner evidence, not green CI and not repository test failures. Affected merge history records exact-SHA review evidence and explicit infrastructure incident notes. This historical record does not authorize future merges without a green `merge-gate` and does not redefine the required CI policy.
 
 ## Site shell
 
