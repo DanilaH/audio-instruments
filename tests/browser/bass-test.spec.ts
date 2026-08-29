@@ -345,7 +345,11 @@ test("Bass runtime cap updates the shared frequency slider, clamps the sweep and
   await expect(page.locator('[data-bass-preset="80"]')).toBeDisabled();
   await expect(page.locator('[data-bass-preset="100"]')).toBeDisabled();
 
-  await page.locator("#bass-frequency-slider").fill("1");
+  const slider = page.locator("#bass-frequency-slider");
+  const expectedSliderPosition = Math.log(60 / 20) / Math.log(76 / 20);
+  expect(Number(await slider.inputValue())).toBeCloseTo(expectedSliderPosition, 3);
+
+  await slider.fill("1");
   await expect(frequency).toHaveValue("76");
 
   await page.locator('[data-bass-mode="sequence"]').click();
@@ -415,4 +419,4 @@ test("Bass BFCache teardown closes the old session and remounts fresh idle state
 
   await page.locator("[data-bass-tone-play]").click();
   expect(await readWindowNumber(page, "__bassAudioContextCount")).toBe(2);
-});
+}
