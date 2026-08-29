@@ -4,6 +4,7 @@ import {
   SPECTRUM_DISPLAY_MIN_DB,
 } from "../../browser/analysis/AudioAnalyzer";
 import {
+  SPECTROGRAM_COLUMN_CAPACITY,
   SPECTRUM_DISPLAY_MIN_HZ,
   dbToDisplayRatio,
   frequencyForFftBin,
@@ -85,7 +86,8 @@ export class SpectrumCanvas {
     context.lineWidth = 1;
 
     for (const db of DB_GRID) {
-      const ratio = (db - SPECTRUM_DISPLAY_MIN_DB) /
+      const ratio =
+        (db - SPECTRUM_DISPLAY_MIN_DB) /
         (SPECTRUM_DISPLAY_MAX_DB - SPECTRUM_DISPLAY_MIN_DB);
       const y = padding.top + (1 - ratio) * height;
       context.strokeStyle = "rgba(31, 63, 72, 0.10)";
@@ -100,7 +102,8 @@ export class SpectrumCanvas {
 
     for (const frequencyHz of FREQUENCY_GRID_HZ) {
       if (frequencyHz > maxHz) continue;
-      const x = padding.left +
+      const x =
+        padding.left +
         frequencyToLogRatio(frequencyHz, SPECTRUM_DISPLAY_MIN_HZ, maxHz) * width;
       context.strokeStyle = "rgba(31, 63, 72, 0.08)";
       context.beginPath();
@@ -130,9 +133,12 @@ export class SpectrumCanvas {
       if (frequencyHz < SPECTRUM_DISPLAY_MIN_HZ) continue;
       if (frequencyHz > maxHz) break;
 
-      const x = padding.left +
+      const x =
+        padding.left +
         frequencyToLogRatio(frequencyHz, SPECTRUM_DISPLAY_MIN_HZ, maxHz) * width;
-      const y = padding.top + (1 - dbToDisplayRatio(valuesDb[binIndex] ?? -100)) * height;
+      const y =
+        padding.top +
+        (1 - dbToDisplayRatio(valuesDb[binIndex] ?? -100)) * height;
       if (!hasPoint) {
         context.moveTo(x, y);
         hasPoint = true;
@@ -162,6 +168,7 @@ function writeSpectrogramPixel(
 export class SpectrogramCanvas {
   readonly #canvas: HTMLCanvasElement;
   readonly #context: CanvasRenderingContext2D;
+  #image: ImageData | null = null;
 
   constructor(canvas: HTMLCanvasElement) {
     const context = canvas.getContext("2d");
@@ -174,6 +181,7 @@ export class SpectrogramCanvas {
     const geometry = syncCanvas(this.#canvas);
     this.#context.setTransform(1, 0, 0, 1, 0, 0);
     this.#context.clearRect(0, 0, geometry.pixelWidth, geometry.pixelHeight);
+    this.#image?.data.fill(0);
   }
 
   draw(
@@ -186,9 +194,13 @@ export class SpectrogramCanvas {
     const context = this.#context;
     context.setTransform(1, 0, 0, 1, 0, 0);
 
-    const image = context.createImageData(geometry.pixelWidth, geometry.pixelHeight);
+    const image = this.#getImage(geometry.pixelWidth, geometry.pixelHeight);
+    image.data.fill(0);
     const maxHz = getSpectrumDisplayMaxHz(sampleRate);
-    const columnPixelWidth = Math.max(1, Math.ceil(geometry.pixelWidth / 300));
+    const columnPixelWidth = Math.max(
+      1,
+      Math.ceil(geometry.pixelWidth / SPECTROGRAM_COLUMN_CAPACITY),
+    );
 
     for (const column of columns) {
       if (column.valuesDb.length !== fftSize / 2) continue;
@@ -200,7 +212,8 @@ export class SpectrogramCanvas {
 
       for (let y = 0; y < geometry.pixelHeight; y += 1) {
         const frequencyRatio = 1 - y / Math.max(1, geometry.pixelHeight - 1);
-        const frequencyHz = SPECTRUM_DISPLAY_MIN_HZ *
+        const frequencyHz =
+          SPECTRUM_DISPLAY_MIN_HZ *
           (maxHz / SPECTRUM_DISPLAY_MIN_HZ) ** frequencyRatio;
         const binIndex = Math.min(
           column.valuesDb.length - 1,
@@ -223,5 +236,16 @@ export class SpectrogramCanvas {
     }
 
     context.putImageData(image, 0, 0);
+  }
+
+  #getImage(pixelWidth: number, pixelHeight: number): ImageData {
+    if (
+      !this.#image ||
+      this.#image.width !== pixelWidth ||
+      this.#image.height !== pixelHeight
+    ) {
+      this.#image = this.#context.createImageData(pixelWidth, pixelHeight);
+    }
+    return this.#image;
   }
 }
