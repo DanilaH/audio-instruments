@@ -255,17 +255,14 @@ export class MicrophoneTestController {
       if (!this.#isCurrent(token)) return;
 
       analyzer.resetMeter();
-      const devices = await this.#loadInputDevicesBestEffort();
-      if (!this.#isCurrent(token)) return;
-
-      this.#devices = devices;
       this.#starting = false;
-      this.#renderDevices(devices, capture.settings.deviceId);
+      this.#renderDevices(this.#devices, capture.settings.deviceId);
       this.#renderCaptureDetails();
       this.#startMeterAndWaveform();
       this.#setStatus("playing", "Microphone active");
       this.#renderControls();
       this.#renderRecordingAvailability();
+      void this.#refreshInputDevices(token, capture.settings.deviceId);
     } catch (error) {
       if (!this.#isCurrent(token)) return;
       this.#starting = false;
@@ -305,13 +302,11 @@ export class MicrophoneTestController {
       analyzer.resetMeter();
       this.#clearMeterReadouts();
       this.#renderCaptureDetails();
-
-      const devices = await this.#loadInputDevicesBestEffort();
-      if (!this.#isCurrent(token)) return;
-
-      this.#devices = devices;
-      this.#renderDevices(devices, deviceId);
+      this.#switching = false;
+      this.#renderDevices(this.#devices, deviceId);
       this.#setStatus("playing", "Microphone active");
+      this.#renderControls();
+      void this.#refreshInputDevices(token, deviceId);
     } catch (error) {
       if (!this.#isCurrent(token)) return;
       console.error("Microphone Test input switch failed", error);
@@ -503,15 +498,21 @@ export class MicrophoneTestController {
     this.#waveform?.stop();
   }
 
-  async #loadInputDevicesBestEffort(): Promise<readonly MicrophoneInputDevice[]> {
+  async #refreshInputDevices(
+    token: number,
+    selectedDeviceId: string | undefined,
+  ): Promise<void> {
     const microphone = this.#microphone;
-    if (!microphone) return this.#devices;
+    if (!microphone) return;
 
     try {
-      return await microphone.listInputs();
+      const devices = await microphone.listInputs();
+      if (!this.#isCurrent(token)) return;
+      this.#devices = devices;
+      this.#renderDevices(devices, selectedDeviceId);
     } catch (error) {
+      if (!this.#isCurrent(token)) return;
       console.warn("Microphone Test input metadata refresh failed", error);
-      return this.#devices;
     }
   }
 
