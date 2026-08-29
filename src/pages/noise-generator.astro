@@ -1,0 +1,110 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import NoiseGenerator from "../tools/noise-generator/NoiseGenerator.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const noiseTool = toolRegistry.find((tool) => tool.id === "noise-generator");
+if (!noiseTool) throw new Error("Noise Generator registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = noiseTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Noise Generator — Browser Audio Lab"
+  description="Generate deterministic white, pink or brown reference noise locally in your browser with controlled digital Level and optional playback timers."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Signal & frequency"
+    title="Noise Generator"
+    description="Play deterministic white, pink or brown reference noise locally, with a controlled digital Level and optional timer."
+    accent="neutral"
+  >
+    <NoiseGenerator />
+
+    <section class="noise-content" aria-labelledby="noise-about-title">
+      <div>
+        <p class="eyebrow">Reference signal</p>
+        <h2 id="noise-about-title">Deterministic local noise, not a spectral measurement</h2>
+      </div>
+      <div class="noise-content__copy">
+        <p>
+          Noise Generator creates reusable reference-noise PCM at the canonical
+          44,100 Hz rate. White, pink and brown modes use the repository's fixed
+          deterministic algorithms and seeds, normalize source peak to at most
+          0.8, and condition the loop boundary before playback.
+        </p>
+        <p>
+          Each generated source is an 8 second mono buffer that loops locally and
+          is duplicated identically to Left and Right through the shared output
+          engine. Web Audio may resample that reference buffer to the current
+          AudioContext rate during playback.
+        </p>
+      </div>
+    </section>
+
+    <section class="noise-help" aria-labelledby="noise-help-title">
+      <h2 id="noise-help-title">What the result means</h2>
+      <div class="noise-help__grid">
+        <p>
+          These are practical reference-noise generators, not laboratory spectral
+          standards. The page generates known digital PCM but does not measure the
+          acoustic spectrum, speaker response or room response.
+        </p>
+        <p>
+          Keep device/headphone volume comfortable throughout playback. Timed
+          modes add a visible long-playback reminder; Stop remains available while
+          the noise is active.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .noise-content,
+  .noise-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .noise-content h2,
+  .noise-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .noise-content__copy,
+  .noise-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .noise-content p,
+  .noise-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .noise-content,
+    .noise-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
