@@ -1,0 +1,105 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import SurroundSoundTest from "../tools/surround-sound-test/SurroundSoundTest.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const surroundTool = toolRegistry.find((tool) => tool.id === "surround-sound-test");
+if (!surroundTool) throw new Error("Surround Sound Test registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = surroundTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Surround Sound Test — Browser Audio Lab"
+  description="Check browser-exposed 5.1 channel routing, try an explicitly experimental raw 8-channel mode when supported, or use a truthful stereo spatial preview."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Output diagnostics"
+    title="Surround Sound Test"
+    description="Confirm browser output capability before testing standardized 5.1 routing. Experimental 8-channel output is opt-in and raw; unsupported setups fall back to an ordinary stereo spatial preview."
+    accent="blue"
+  >
+    <SurroundSoundTest />
+
+    <section class="surround-content" aria-labelledby="surround-about-title">
+      <div>
+        <p class="eyebrow">What this checks</p>
+        <h2 id="surround-about-title">Requested digital channel routing, not physical speaker correctness</h2>
+      </div>
+      <div class="surround-content__copy">
+        <p>
+          Standardized 5.1 is enabled only after the current AudioDestinationNode accepts
+          six explicit speaker channels and reads the requested configuration back exactly.
+          The channel order is Front Left, Front Right, Center, LFE, Surround Left and
+          Surround Right.
+        </p>
+        <p>
+          Experimental 8-channel is a separate raw discrete mode. It is not labeled as a
+          guaranteed 7.1 speaker layout because Web Audio does not define one universal
+          eight-channel speaker mapping.
+        </p>
+      </div>
+    </section>
+
+    <section class="surround-help" aria-labelledby="surround-help-title">
+      <h2 id="surround-help-title">If surround is unavailable or a channel sounds wrong</h2>
+      <div class="surround-help__grid">
+        <p>
+          A browser-reported maximum channel count is only a candidate ceiling. Browser,
+          operating-system and output-device routing can still reject or rewrite the requested
+          multichannel configuration, in which case this tool stays with Stereo spatial preview.
+        </p>
+        <p>
+          Even a confirmed digital route does not prove physical speaker placement or wiring.
+          Treat what you hear as troubleshooting evidence and verify the OS, receiver/interface
+          and speaker setup separately.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .surround-content,
+  .surround-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+  .surround-content h2,
+  .surround-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+  .surround-content__copy,
+  .surround-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+  .surround-content p,
+  .surround-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+  @media (max-width: 760px) {
+    .surround-content,
+    .surround-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
