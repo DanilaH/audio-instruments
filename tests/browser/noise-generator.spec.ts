@@ -382,7 +382,7 @@ test("Noise Generator timed playback shows the required reminder, clears on Stop
   expect(sources.at(-1)?.stopTimes.at(-1)).toBeCloseTo(0.05, 10);
 });
 
-test("Noise Generator cleans a failed source start and allows retry", async ({ page }) => {
+test("Noise Generator cleans a failed source creation and allows retry", async ({ page }) => {
   await installDeterministicAudioContext(page, { throwOnBufferSourceCreateNumber: 1 });
   await openNoise(page);
   await page.locator('button[data-noise-kind="white"]').click();
