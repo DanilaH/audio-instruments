@@ -1,0 +1,30 @@
+/*
+ * Accessibility guardrail for legacy tool-local controls that still encode
+ * compact min-heights below the v1 touch-target floor.
+ *
+ * Keep these selectors intentionally narrow. The project already has larger
+ * 46–48px controls that must not be normalized downward by a generic global
+ * button/input rule. !important is deliberate here because several scoped
+ * mobile rules explicitly shrink these exact targets to 34–42px.
+ */
+.tone-presets button,
+.bass-mode-selector button,
+.bass-presets button,
+[data-frequency-sweep] #frequency-sweep-duration,
+[data-frequency-sweep] [data-frequency-number],
+[data-frequency-sweep] [data-frequency-slider],
+[data-frequency-sweep] .sweep-selector button,
+.noise-selector button,
+.speaker-field input,
+.mic-input-field select,
+.mic-details summary,
+.mic-recording audio[controls],
+.spectrum-field select,
+.spectrum-view-switch button,
+.pitch-field select,
+.db-field select,
+.db-reference-input input,
+.db-calibrate,
+.db-details summary {
+  min-height: 44px !important;
+}
