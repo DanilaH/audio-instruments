@@ -198,26 +198,31 @@ function selectYinTau(
 function refineTauParabolically(
   cmndf: Float64Array,
   selectedTau: number,
-  tauMin: number,
-  tauMax: number,
+  minimumRefinedTau: number,
+  maximumRefinedTau: number,
 ): number {
-  if (selectedTau <= tauMin || selectedTau >= tauMax) return selectedTau;
+  const clampRefinedTau = (tau: number) =>
+    Math.min(maximumRefinedTau, Math.max(minimumRefinedTau, tau));
+
+  if (selectedTau <= 0 || selectedTau >= cmndf.length - 1) {
+    return clampRefinedTau(selectedTau);
+  }
 
   const left = cmndf[selectedTau - 1];
   const center = cmndf[selectedTau];
   const right = cmndf[selectedTau + 1];
   if (left === undefined || center === undefined || right === undefined) {
-    return selectedTau;
+    return clampRefinedTau(selectedTau);
   }
 
   const denominator = 2 * (2 * center - right - left);
   if (!Number.isFinite(denominator) || Math.abs(denominator) < 1e-12) {
-    return selectedTau;
+    return clampRefinedTau(selectedTau);
   }
 
   const offset = (right - left) / denominator;
-  if (!Number.isFinite(offset)) return selectedTau;
-  return Math.min(tauMax, Math.max(tauMin, selectedTau + offset));
+  if (!Number.isFinite(offset)) return clampRefinedTau(selectedTau);
+  return clampRefinedTau(selectedTau + offset);
 }
 
 export function estimatePitchYin(
@@ -261,8 +266,8 @@ export function estimatePitchYin(
   }
 
   // Standard CMNDF normalization needs cumulative difference values at lower
-  // lags. Those lower lags are normalization-only: candidate selection and
-  // refinement remain strictly bounded to tauMin..tauMax.
+  // lags. Those lower lags are normalization-only candidates: pitch candidate
+  // selection remains strictly bounded to tauMin..tauMax.
   const difference = calculateYinDifference(samples, tauMax);
   const cmndf = calculateCmndf(difference);
   const selectedTau = selectYinTau(cmndf, tauMin, tauMax, threshold);
@@ -270,11 +275,13 @@ export function estimatePitchYin(
   const confidence = Math.min(1, Math.max(0, 1 - cmndfValue));
   if (confidence < minimumConfidence) return null;
 
+  const minimumRefinedTau = analysisRate / maxHz;
+  const maximumRefinedTau = analysisRate / minHz;
   const refinedTau = refineTauParabolically(
     cmndf,
     selectedTau,
-    tauMin,
-    tauMax,
+    minimumRefinedTau,
+    maximumRefinedTau,
   );
   const frequencyHz = analysisRate / refinedTau;
   if (
