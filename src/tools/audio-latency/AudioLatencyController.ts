@@ -1,4 +1,7 @@
-import { AudioOutputEngine } from "../../browser/audio-output/AudioOutputEngine";
+import {
+  AudioOutputEngine,
+  type MonoOscillatorPlayback,
+} from "../../browser/audio-output/AudioOutputEngine";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 import {
   AV_SYNC_SCHEDULE_HORIZON_MS,
@@ -13,6 +16,11 @@ import {
 
 const AV_SYNC_CLICK_FREQUENCY_HZ = 1_000;
 const AV_SYNC_CLICK_DURATION_SECONDS = 0.1;
+
+interface ScheduledClick {
+  readonly playback: MonoOscillatorPlayback;
+  readonly targetContextSec: number;
+}
 
 function requireElement<T extends Element>(root: ParentNode, selector: string): T {
   const element = root.querySelector<T>(selector);
@@ -68,6 +76,7 @@ export class AudioLatencyController {
   #schedulerTimer: number | null = null;
   #visualArmTimeouts = new Set<number>();
   #visualRafs = new Set<number>();
+  #scheduledClicks = new Set<ScheduledClick>();
   #pulseTimeout: number | null = null;
   #nextAudioCycle = 0;
   #nextVisualCycle = 0;
@@ -249,12 +258,22 @@ export class AudioLatencyController {
 
       if (timing.audioTargetContextSec > context.currentTime) {
         try {
-          output.startMonoOscillator({
+          const playback = output.startMonoOscillator({
             frequencyHz: AV_SYNC_CLICK_FREQUENCY_HZ,
             waveform: "sine",
             startTime: timing.audioTargetContextSec,
             durationSeconds: AV_SYNC_CLICK_DURATION_SECONDS,
           });
+          const scheduledClick: ScheduledClick = {
+            playback,
+            targetContextSec: timing.audioTargetContextSec,
+          };
+          this.#scheduledClicks.add(scheduledClick);
+          playback.oscillator.addEventListener(
+            "ended",
+            () => this.#scheduledClicks.delete(scheduledClick),
+            { once: true },
+          );
         } catch (error) {
           console.error("Audio Latency click scheduling failed", error);
           this.#stop("Audio scheduling stopped");
@@ -318,6 +337,24 @@ export class AudioLatencyController {
     }, AV_SYNC_VISUAL_PULSE_MS);
   }
 
+  #cancelScheduledClicks(): void {
+    const context = this.#context;
+    const now = context?.currentTime ?? 0;
+
+    for (const scheduledClick of this.#scheduledClicks) {
+      try {
+        if (context && scheduledClick.targetContextSec > now) {
+          scheduledClick.playback.oscillator.stop(now);
+        } else {
+          scheduledClick.playback.stop();
+        }
+      } catch (error) {
+        console.warn("Audio Latency click cancellation failed", error);
+      }
+    }
+    this.#scheduledClicks.clear();
+  }
+
   #cancelSequenceScheduling(): void {
     if (this.#schedulerTimer !== null) {
       window.clearInterval(this.#schedulerTimer);
@@ -340,7 +377,7 @@ export class AudioLatencyController {
     }
     delete this.#pulse.dataset.active;
 
-    this.#output?.stop();
+    this.#cancelScheduledClicks();
     this.#anchors = null;
     this.#nextAudioCycle = 0;
     this.#nextVisualCycle = 0;
