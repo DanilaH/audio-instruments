@@ -266,7 +266,7 @@ export class FrequencySweepController {
         return;
       }
 
-      const [startHz, endHz] = getSweepEndpoints(definition);
+      const [startHz] = getSweepEndpoints(definition);
       const startTime = context.currentTime;
       const playback = engine.startOscillator({
         frequencyHz: startHz,
@@ -345,34 +345,40 @@ export class FrequencySweepController {
   }
 
   #renderReadouts(definition = this.#readDefinition()): void {
+    const durationSeconds = Number(this.#durationInput.value);
+    const durationLabel = Number.isFinite(durationSeconds)
+      ? `${durationSeconds} s`
+      : "—";
+
+    this.#durationOutput.value = durationLabel;
+    this.#durationReadout.textContent = durationLabel;
+    this.#scaleReadout.textContent =
+      this.#scale === "logarithmic" ? "Logarithmic" : "Linear";
+    this.#root.dataset.sweepScale = this.#scale;
+    this.#root.dataset.sweepDirection = this.#direction;
+
+    for (const button of this.#scaleButtons) {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.sweepScale === this.#scale),
+      );
+    }
+    for (const button of this.#directionButtons) {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.sweepDirection === this.#direction),
+      );
+    }
+
     if (!definition) {
-      this.#durationOutput.value = `${this.#durationInput.value} s`;
+      this.#fromReadout.textContent = "—";
+      this.#toReadout.textContent = "—";
       return;
     }
 
     const [startHz, endHz] = getSweepEndpoints(definition);
     this.#fromReadout.textContent = formatFrequency(startHz);
     this.#toReadout.textContent = formatFrequency(endHz);
-    this.#durationReadout.textContent = `${definition.durationSeconds} s`;
-    this.#durationOutput.value = `${definition.durationSeconds} s`;
-    this.#scaleReadout.textContent =
-      definition.scale === "logarithmic" ? "Logarithmic" : "Linear";
-
-    this.#root.dataset.sweepScale = definition.scale;
-    this.#root.dataset.sweepDirection = definition.direction;
-
-    for (const button of this.#scaleButtons) {
-      button.setAttribute(
-        "aria-pressed",
-        String(button.dataset.sweepScale === definition.scale),
-      );
-    }
-    for (const button of this.#directionButtons) {
-      button.setAttribute(
-        "aria-pressed",
-        String(button.dataset.sweepDirection === definition.direction),
-      );
-    }
   }
 
   #applyRuntimeFrequencyCap(sampleRate: number): void {
