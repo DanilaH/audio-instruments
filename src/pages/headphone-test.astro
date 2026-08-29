@@ -17,13 +17,13 @@ const relatedTools = headphoneTool.relatedToolIds.flatMap((id) => {
 
 <BaseLayout
   title="Headphone Test — Browser Audio Lab"
-  description="Check left/right headphone channels, phase-image behavior, a 20 Hz–20 kHz digital sweep and low-frequency rattles in your browser."
+  description="Check left/right headphone channels, phase-image behavior, a nominal 20 Hz–20 kHz digital sweep and low-frequency rattles in your browser."
   hasLiveTools={publicTools.length > 0}
 >
   <ToolShell
     eyebrow="Output diagnostics"
     title="Headphone Test"
-    description="Check each ear, compare phase behavior and listen through controlled frequency and bass/rattle sweeps with one consistent set of reference signals."
+    description="Check each ear, compare phase behavior and listen through a nominal 20 Hz–20 kHz sweep plus bass/rattle references; runtime audio capability may lower the generated maximum."
     accent="blue"
   >
     <HeadphoneTest />
