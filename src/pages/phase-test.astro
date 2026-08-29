@@ -1,0 +1,90 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import PhaseTest from "../tools/phase-test/PhaseTest.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const phaseTool = toolRegistry.find((tool) => tool.id === "phase-test");
+if (!phaseTool) throw new Error("Phase Test registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = phaseTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Phase / Polarity Test — Browser Audio Lab"
+  description="Compare correlated in-phase and inverted-right pink-noise playback without restarting the source."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Output diagnostics"
+    title="Phase / Polarity Test"
+    description="Compare the same correlated pink-noise source in phase and with the right channel inverted, while preserving playback position during A/B switching."
+    accent="lavender"
+  >
+    <PhaseTest />
+
+    <section class="phase-content" aria-labelledby="phase-about-title">
+      <div>
+        <p class="eyebrow">How the comparison works</p>
+        <h2 id="phase-about-title">Only the right-channel sign changes</h2>
+      </div>
+      <div class="phase-content__copy">
+        <p>
+          Both modes use the same deterministic correlated pink-noise buffer and
+          the same running source. A/B switching ramps the right channel through
+          zero before changing sign, so the comparison does not restart or
+          regenerate the noise.
+        </p>
+        <p>
+          The expected difference is perceptual stereo-image behavior. Browser
+          playback cannot determine whether physical wiring, drivers or acoustic
+          placement are correct.
+        </p>
+      </div>
+    </section>
+
+    <section class="phase-help" aria-labelledby="phase-help-title">
+      <h2 id="phase-help-title">Interpreting what you hear</h2>
+      <div class="phase-help__grid">
+        <p>
+          In-phase playback often presents a more centered image, while an
+          inverted channel can sound wider, diffuse or less centered depending on
+          the device and environment.
+        </p>
+        <p>
+          Treat that difference as a listening comparison only. This tool does
+          not automatically diagnose reversed physical polarity or wiring.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .phase-content,
+  .phase-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+  .phase-content h2,
+  .phase-help h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.08; }
+  .phase-content__copy,
+  .phase-help__grid { display: grid; gap: 14px; }
+  .phase-content p,
+  .phase-help p { margin: 0; color: var(--color-ink-muted); line-height: 1.72; }
+  @media (max-width: 760px) {
+    .phase-content,
+    .phase-help { grid-template-columns: 1fr; margin-top: 48px; padding-top: 34px; }
+  }
+</style>

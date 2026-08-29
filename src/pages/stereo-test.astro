@@ -1,0 +1,88 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import StereoTest from "../tools/stereo-test/StereoTest.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const stereoTool = toolRegistry.find((tool) => tool.id === "stereo-test");
+if (!stereoTool) throw new Error("Stereo Test registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = stereoTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Stereo Test — Browser Audio Lab"
+  description="Check browser stereo separation, center routing and a controlled four-second left-to-right or right-to-left pan."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Output diagnostics"
+    title="Stereo Test"
+    description="Check left/right separation, a shared digital center target and smooth stereo movement with one controlled reference signal."
+    accent="lavender"
+  >
+    <StereoTest />
+
+    <section class="stereo-content" aria-labelledby="stereo-about-title">
+      <div>
+        <p class="eyebrow">What this checks</p>
+        <h2 id="stereo-about-title">Separation, center and movement</h2>
+      </div>
+      <div class="stereo-content__copy">
+        <p>
+          Left and Right use explicit hard channel routing. Center uses the same
+          source amplitude on both output channels; it is not a StereoPannerNode
+          center position or a loudness-normalized comparison.
+        </p>
+        <p>
+          L → R and R → L use a four-second linear StereoPannerNode sweep. The
+          browser controls only the digital stereo target, so physical speaker or
+          headphone behavior remains your listening observation.
+        </p>
+      </div>
+    </section>
+
+    <section class="stereo-help" aria-labelledby="stereo-help-title">
+      <h2 id="stereo-help-title">If the image is swapped or does not move</h2>
+      <div class="stereo-help__grid">
+        <p>
+          Confirm your selected output device and any OS or hardware channel
+          routing before repeating the test at a comfortable level.
+        </p>
+        <p>
+          An unexpected result is a troubleshooting signal, not an automatic
+          speaker, headphone or wiring diagnosis.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .stereo-content,
+  .stereo-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+  .stereo-content h2,
+  .stereo-help h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.08; }
+  .stereo-content__copy,
+  .stereo-help__grid { display: grid; gap: 14px; }
+  .stereo-content p,
+  .stereo-help p { margin: 0; color: var(--color-ink-muted); line-height: 1.72; }
+  @media (max-width: 760px) {
+    .stereo-content,
+    .stereo-help { grid-template-columns: 1fr; margin-top: 48px; padding-top: 34px; }
+  }
+</style>
