@@ -147,19 +147,49 @@ export class DecibelMeterController {
     this.#estimatePanel = requireElement(root, "[data-db-estimate-panel]");
     this.#estimateValue = requireElement(root, "[data-db-estimate]");
     this.#estimateBadge = requireElement(root, "[data-db-estimate-badge]");
-    this.#calibrationEligibility = requireElement(root, "[data-db-calibration-eligibility]");
+    this.#calibrationEligibility = requireElement(
+      root,
+      "[data-db-calibration-eligibility]",
+    );
     this.#referenceInput = requireElement(root, "[data-db-reference]");
-    this.#weightingConfirm = requireElement(root, "[data-db-weighting-confirm]");
+    this.#weightingConfirm = requireElement(
+      root,
+      "[data-db-weighting-confirm]",
+    );
     this.#calibrateButton = requireElement(root, "[data-db-calibrate]");
-    this.#calibrationStatus = requireElement(root, "[data-db-calibration-status]");
-    this.#calibrationLiveStatus = requireElement(root, "[data-db-calibration-live-status]");
+    this.#calibrationStatus = requireElement(
+      root,
+      "[data-db-calibration-status]",
+    );
+    this.#calibrationLiveStatus = requireElement(
+      root,
+      "[data-db-calibration-live-status]",
+    );
     this.#detailsDeviceId = requireElement(root, "[data-db-detail-device-id]");
-    this.#detailsAnalysisSampleRate = requireElement(root, "[data-db-detail-analysis-rate]");
-    this.#detailsSampleRate = requireElement(root, "[data-db-detail-sample-rate]");
-    this.#detailsChannelCount = requireElement(root, "[data-db-detail-channel-count]");
-    this.#detailsEchoCancellation = requireElement(root, "[data-db-detail-echo-cancellation]");
-    this.#detailsNoiseSuppression = requireElement(root, "[data-db-detail-noise-suppression]");
-    this.#detailsAutoGainControl = requireElement(root, "[data-db-detail-auto-gain]");
+    this.#detailsAnalysisSampleRate = requireElement(
+      root,
+      "[data-db-detail-analysis-rate]",
+    );
+    this.#detailsSampleRate = requireElement(
+      root,
+      "[data-db-detail-sample-rate]",
+    );
+    this.#detailsChannelCount = requireElement(
+      root,
+      "[data-db-detail-channel-count]",
+    );
+    this.#detailsEchoCancellation = requireElement(
+      root,
+      "[data-db-detail-echo-cancellation]",
+    );
+    this.#detailsNoiseSuppression = requireElement(
+      root,
+      "[data-db-detail-noise-suppression]",
+    );
+    this.#detailsAutoGainControl = requireElement(
+      root,
+      "[data-db-detail-auto-gain]",
+    );
     this.#errorMessage = requireElement(root, "[data-db-error]");
     this.#selectionError = requireElement(root, "[data-db-selection-error]");
 
@@ -202,7 +232,9 @@ export class DecibelMeterController {
     this.#startButton.addEventListener("click", () => void this.#startMicrophone(), {
       signal,
     });
-    this.#stopButton.addEventListener("click", () => this.#stopTool(), { signal });
+    this.#stopButton.addEventListener("click", () => this.#stopTool(), {
+      signal,
+    });
     this.#inputSelect.addEventListener(
       "change",
       () => void this.#switchInput(this.#inputSelect.value),
@@ -211,12 +243,14 @@ export class DecibelMeterController {
     this.#referenceInput.addEventListener("input", () => this.#renderControls(), {
       signal,
     });
-    this.#weightingConfirm.addEventListener("change", () => this.#renderControls(), {
-      signal,
-    });
+    this.#weightingConfirm.addEventListener(
+      "change",
+      () => this.#renderControls(),
+      { signal },
+    );
     this.#calibrateButton.addEventListener(
       "click",
-      () => this.#startCalibrationCapture(),
+      () => this.#handleCalibrationAction(),
       { signal },
     );
   }
@@ -385,6 +419,44 @@ export class DecibelMeterController {
     }
   }
 
+  #handleCalibrationAction(): void {
+    if (this.#activeCalibration) {
+      this.#resetCurrentCalibration();
+      return;
+    }
+    this.#startCalibrationCapture();
+  }
+
+  #resetCurrentCalibration(): void {
+    if (
+      !this.isActive ||
+      !this.#activeCalibration ||
+      this.#calibrating ||
+      this.#switching ||
+      this.#stopping ||
+      this.#disposed
+    ) {
+      return;
+    }
+
+    const calibration = this.#activeCalibration;
+    if (calibration.scope === "device-stored") {
+      const deviceId = calibration.deviceId;
+      if (!deviceId || !this.#calibrationStore?.remove(deviceId)) {
+        this.#calibrationStatus.textContent =
+          "Saved calibration could not be removed because browser storage is unavailable.";
+        this.#calibrationLiveStatus.textContent = "Calibration reset failed";
+        this.#renderControls();
+        return;
+      }
+    }
+
+    this.#activeCalibration = null;
+    this.#calibrationLiveStatus.textContent = "Calibration reset";
+    this.#renderCalibrationState();
+    this.#renderControls();
+  }
+
   #startCalibrationCapture(): void {
     if (
       !this.isActive ||
@@ -398,7 +470,10 @@ export class DecibelMeterController {
     }
 
     const referenceDbSpl = Number(this.#referenceInput.value);
-    if (!Number.isFinite(referenceDbSpl) || this.#referenceInput.value.trim() === "") {
+    if (
+      !Number.isFinite(referenceDbSpl) ||
+      this.#referenceInput.value.trim() === ""
+    ) {
       this.#calibrationStatus.textContent =
         "Enter the external reference meter reading before calibration.";
       return;
@@ -657,9 +732,15 @@ export class DecibelMeterController {
     this.#detailsAnalysisSampleRate.textContent = `${analyzer.analysisSampleRate} Hz`;
     this.#detailsSampleRate.textContent = formatNumber(settings.sampleRate, " Hz");
     this.#detailsChannelCount.textContent = formatNumber(settings.channelCount);
-    this.#detailsEchoCancellation.textContent = formatBoolean(settings.echoCancellation);
-    this.#detailsNoiseSuppression.textContent = formatBoolean(settings.noiseSuppression);
-    this.#detailsAutoGainControl.textContent = formatBoolean(settings.autoGainControl);
+    this.#detailsEchoCancellation.textContent = formatBoolean(
+      settings.echoCancellation,
+    );
+    this.#detailsNoiseSuppression.textContent = formatBoolean(
+      settings.noiseSuppression,
+    );
+    this.#detailsAutoGainControl.textContent = formatBoolean(
+      settings.autoGainControl,
+    );
   }
 
   #clearCaptureDetails(): void {
@@ -679,6 +760,8 @@ export class DecibelMeterController {
   #renderControls(): void {
     const active = this.isActive;
     const busy = this.#starting || this.#switching || this.#stopping;
+    const eligible = this.#isCalibrationEligibleNow();
+    const hasCalibration = this.#activeCalibration !== null;
     const referenceReady =
       this.#referenceInput.value.trim() !== "" &&
       Number.isFinite(Number(this.#referenceInput.value));
@@ -686,14 +769,23 @@ export class DecibelMeterController {
     this.#startButton.disabled = active || busy || this.#disposed;
     this.#stopButton.disabled = !active || this.#stopping;
     this.#inputSelect.disabled = !active || busy || this.#calibrating;
-    this.#referenceInput.disabled = !active || !this.#isCalibrationEligibleNow() || this.#calibrating;
+    this.#referenceInput.disabled =
+      !active || !eligible || this.#calibrating || hasCalibration;
     this.#weightingConfirm.disabled =
-      !active || !this.#isCalibrationEligibleNow() || this.#calibrating;
+      !active || !eligible || this.#calibrating || hasCalibration;
+
+    if (hasCalibration) {
+      this.#calibrateButton.textContent = "Reset current-device calibration";
+      this.#calibrateButton.disabled = !active || busy || this.#calibrating;
+      return;
+    }
+
+    this.#calibrateButton.textContent = "Capture 3-second reference";
     this.#calibrateButton.disabled =
       !active ||
       busy ||
       this.#calibrating ||
-      !this.#isCalibrationEligibleNow() ||
+      !eligible ||
       !this.#weightingConfirm.checked ||
       !referenceReady;
   }
