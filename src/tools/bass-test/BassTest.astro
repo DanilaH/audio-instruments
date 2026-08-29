@@ -61,7 +61,8 @@ const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
           <div>
             <p>
               Start with your device/headphone volume low. Increase it only to a
-              comfortable listening level.
+              comfortable listening level. Do not turn the volume up to
+              compensate for a tone you cannot hear.
             </p>
             <strong>
               Keep playback volume moderate. If you cannot hear a low tone, do
@@ -527,32 +528,36 @@ const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
     }
 
     .bass-visual {
-      min-height: 260px;
+      min-height: 250px;
       border-right: 0;
       border-bottom: 1px solid var(--color-border);
     }
 
     .bass-driver {
-      width: min(170px, 46%);
+      width: min(160px, 44%);
     }
   }
 
   @media (max-width: 560px) {
     .bass-visual {
-      min-height: 180px;
-      padding: 12px 20px;
+      min-height: 130px;
+      padding: 10px 20px;
     }
 
     .bass-controls {
-      padding: 14px 20px 18px;
+      padding: 12px 20px 18px;
     }
 
     .bass-driver {
-      width: 100px;
+      width: 72px;
     }
 
     .bass-visual__note {
       display: none;
+    }
+
+    .bass-scale {
+      padding-top: 5px;
     }
 
     .bass-mode-selector {
@@ -560,17 +565,25 @@ const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
     }
 
     .bass-mode-selector button {
-      min-height: 46px;
-      padding-inline: 5px;
-      font-size: 0.72rem;
+      min-height: 44px;
+      padding-inline: 4px;
+      font-size: 0.71rem;
+    }
+
+    .bass-panel {
+      min-height: 0;
     }
 
     .bass-presets {
-      grid-template-columns: repeat(4, minmax(0, 1fr));
+      grid-template-columns: repeat(7, minmax(0, 1fr));
+      gap: 4px;
     }
 
     .bass-presets button {
+      min-width: 0;
       min-height: 44px;
+      padding-inline: 0;
+      font-size: 0.72rem;
     }
 
     .bass-panel__summary > div {
