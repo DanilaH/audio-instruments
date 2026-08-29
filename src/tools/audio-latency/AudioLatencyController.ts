@@ -22,6 +22,17 @@ function requireElement<T extends Element>(root: ParentNode, selector: string): 
   return element;
 }
 
+function requireElements<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): readonly T[] {
+  const elements = [...root.querySelectorAll<T>(selector)];
+  if (elements.length === 0) {
+    throw new Error(`Audio Latency tool is missing required elements: ${selector}`);
+  }
+  return elements;
+}
+
 function formatSignedOffset(offsetMs: number): string {
   if (offsetMs > 0) return `+${offsetMs} ms`;
   if (offsetMs < 0) return `−${Math.abs(offsetMs)} ms`;
@@ -41,7 +52,7 @@ export class AudioLatencyController {
   readonly #startButton: HTMLButtonElement;
   readonly #stopButton: HTMLButtonElement;
   readonly #offsetInput: HTMLInputElement;
-  readonly #offsetValue: HTMLElement;
+  readonly #offsetValues: readonly HTMLElement[];
   readonly #resultValue: HTMLElement;
   readonly #pulse: HTMLElement;
   readonly #baseLatency: HTMLElement;
@@ -70,7 +81,7 @@ export class AudioLatencyController {
     this.#startButton = requireElement(root, "[data-latency-start]");
     this.#stopButton = requireElement(root, "[data-latency-stop]");
     this.#offsetInput = requireElement(root, "[data-latency-offset]");
-    this.#offsetValue = requireElement(root, "[data-latency-offset-value]");
+    this.#offsetValues = requireElements(root, "[data-latency-offset-value]");
     this.#resultValue = requireElement(root, "[data-latency-result]");
     this.#pulse = requireElement(root, "[data-latency-pulse]");
     this.#baseLatency = requireElement(root, "[data-latency-base]");
@@ -126,7 +137,7 @@ export class AudioLatencyController {
     );
   }
 
-  async #ensureAudio(): Promise<{
+  async #ensureAudio(token: number): Promise<{
     context: AudioContext;
     output: AudioOutputEngine;
   }> {
@@ -137,16 +148,27 @@ export class AudioLatencyController {
     }
 
     const session = new AudioSession();
-    this.#session = session;
-    const context = await session.getContext();
-    if (this.#disposed) throw new Error("Audio Latency tool was disposed during Start");
+    try {
+      const context = await session.getContext();
+      const output = new AudioOutputEngine(context);
+      session.register(output);
 
-    const output = new AudioOutputEngine(context);
-    session.register(output);
-    this.#context = context;
-    this.#output = output;
-    this.#renderReportedLatencies(context);
-    return { context, output };
+      if (!this.#isCurrent(token)) {
+        await session.dispose();
+        throw new DOMException("Audio Latency Start was superseded", "AbortError");
+      }
+
+      this.#session = session;
+      this.#context = context;
+      this.#output = output;
+      this.#renderReportedLatencies(context);
+      return { context, output };
+    } catch (error) {
+      await session.dispose().catch((disposeError) => {
+        console.error("Audio Latency failed-session cleanup failed", disposeError);
+      });
+      throw error;
+    }
   }
 
   async #start(): Promise<void> {
@@ -158,7 +180,7 @@ export class AudioLatencyController {
     this.#renderControls();
 
     try {
-      await this.#ensureAudio();
+      await this.#ensureAudio(token);
       if (!this.#isCurrent(token)) return;
 
       this.#starting = false;
@@ -344,7 +366,9 @@ export class AudioLatencyController {
   #renderOffset(): void {
     const offsetMs = normalizeAvSyncOffsetMs(Number(this.#offsetInput.value));
     const label = formatSignedOffset(offsetMs);
-    this.#offsetValue.textContent = label;
+    for (const element of this.#offsetValues) {
+      element.textContent = label;
+    }
     this.#resultValue.textContent = `Your selected sync offset: ${label}`;
   }
 
