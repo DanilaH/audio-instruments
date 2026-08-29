@@ -138,7 +138,9 @@ async function installLatencyHarness(
       }
 
       async resume() {
-        if (this.state === "closed") throw new DOMException("closed", "InvalidStateError");
+        if (this.state === "closed") {
+          throw new DOMException("closed", "InvalidStateError");
+        }
         if (this.state !== "running") {
           this.#runningPerfMs = performance.now();
           this.state = "running";
@@ -175,13 +177,19 @@ async function installLatencyHarness(
     });
 
     Reflect.set(window, "__latencyHarness", state);
-    Reflect.set(window, "__latencyCurrentTime", () => latestContext?.currentTime ?? 0);
+    Reflect.set(
+      window,
+      "__latencyCurrentTime",
+      () => latestContext?.currentTime ?? 0,
+    );
   }, config);
 }
 
 async function harnessState(page: Page): Promise<LatencyHarnessState> {
   return page.evaluate(() =>
-    structuredClone(Reflect.get(window, "__latencyHarness") as LatencyHarnessState),
+    structuredClone(
+      Reflect.get(window, "__latencyHarness") as LatencyHarnessState,
+    ),
   );
 }
 
@@ -198,6 +206,33 @@ async function setOffset(page: Page, value: number): Promise<void> {
     input.value = String(nextValue);
     input.dispatchEvent(new Event("input", { bubbles: true }));
   }, value);
+}
+
+async function setOffsetAtContextLead(
+  page: Page,
+  targetContextSec: number,
+  leadMs: number,
+  value: number,
+): Promise<number> {
+  return page.evaluate(
+    async ({ targetContextSec: target, leadMs: lead, value: nextValue }) => {
+      const currentTime = Reflect.get(window, "__latencyCurrentTime") as () => number;
+      const threshold = target - lead / 1_000;
+      while (currentTime() < threshold) {
+        await new Promise((resolve) => window.setTimeout(resolve, 2));
+      }
+
+      const beforeChange = currentTime();
+      const input = document.querySelector<HTMLInputElement>(
+        "[data-latency-offset]",
+      );
+      if (!input) throw new Error("Latency offset input is missing");
+      input.value = String(nextValue);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      return beforeChange;
+    },
+    { targetContextSec, leadMs, value },
+  );
 }
 
 async function setDocumentHidden(page: Page, hidden: boolean): Promise<void> {
@@ -218,7 +253,10 @@ async function observeVisualPulses(page: Page): Promise<void> {
     const observer = new MutationObserver(() => {
       if (pulse.dataset.active === "true") count += 1;
     });
-    observer.observe(pulse, { attributes: true, attributeFilter: ["data-active"] });
+    observer.observe(pulse, {
+      attributes: true,
+      attributeFilter: ["data-active"],
+    });
     Reflect.set(window, "__latencyPulseCount", () => count);
   });
 }
@@ -235,20 +273,24 @@ test("stays lazy until Start, reports browser latency in ms, and schedules the 1
 
   expect((await harnessState(page)).audioContextCount).toBe(0);
   await expect(page.locator("[data-latency-base]")).toHaveText("Start to query");
-  await expect(page.locator("[data-latency-output]")).toHaveText("Start to query");
+  await expect(page.locator("[data-latency-output]")).toHaveText(
+    "Start to query",
+  );
   await expect(page.locator("[data-latency-stop]")).toBeDisabled();
   await expect(page.getByRole("link", { name: "Sound Test" })).toHaveCount(1);
   await expect(page.getByRole("link", { name: "Speaker Test" })).toHaveCount(1);
   await expect(page.getByRole("link", { name: "Headphone Test" })).toHaveCount(1);
 
   await page.locator("[data-latency-start]").click();
-  await expect(page.locator("#audio-latency-status [data-status-label]")).toHaveText(
-    "AV sync loop active",
-  );
+  await expect(
+    page.locator("#audio-latency-status [data-status-label]"),
+  ).toHaveText("AV sync loop active");
   await expect(page.locator("[data-latency-base]")).toHaveText("12.5 ms");
   await expect(page.locator("[data-latency-output]")).toHaveText("34.4 ms");
 
-  await expect.poll(async () => (await harnessState(page)).oscillators.length).toBeGreaterThanOrEqual(2);
+  await expect
+    .poll(async () => (await harnessState(page)).oscillators.length)
+    .toBeGreaterThanOrEqual(2);
   const state = await harnessState(page);
   expect(state.audioContextCount).toBe(1);
   expect(state.contextOptions[0]?.latencyHint).toBe("interactive");
@@ -275,17 +317,24 @@ test("reanchors on offset changes, preserves the sign convention, and cancels ol
   await installLatencyHarness(page);
   await page.goto("/audio-latency-test");
   await page.locator("[data-latency-start]").click();
-  await expect.poll(async () => (await harnessState(page)).oscillators.length).toBeGreaterThanOrEqual(2);
+  await expect
+    .poll(async () => (await harnessState(page)).oscillators.length)
+    .toBeGreaterThanOrEqual(2);
 
   const beforePositiveState = await harnessState(page);
   const oldCount = beforePositiveState.oscillators.length;
   const beforePositiveTime = await contextCurrentTime(page);
   await setOffset(page, 50);
-  await expect(page.locator("[data-latency-offset-value]")).toHaveText(["+50 ms", "+50 ms"]);
+  await expect(page.locator("[data-latency-offset-value]")).toHaveText([
+    "+50 ms",
+    "+50 ms",
+  ]);
   await expect(page.locator("[data-latency-result]")).toHaveText(
     "Your selected sync offset: +50 ms",
   );
-  await expect.poll(async () => (await harnessState(page)).oscillators.length).toBeGreaterThan(oldCount);
+  await expect
+    .poll(async () => (await harnessState(page)).oscillators.length)
+    .toBeGreaterThan(oldCount);
 
   const positiveState = await harnessState(page);
   const firstPositiveStart = positiveState.oscillators[oldCount]?.startTime;
@@ -303,9 +352,9 @@ test("reanchors on offset changes, preserves the sign convention, and cancels ol
     "−50 ms",
     "−50 ms",
   ]);
-  await expect.poll(async () => (await harnessState(page)).oscillators.length).toBeGreaterThan(
-    beforeNegativeCount,
-  );
+  await expect
+    .poll(async () => (await harnessState(page)).oscillators.length)
+    .toBeGreaterThan(beforeNegativeCount);
 
   const negativeState = await harnessState(page);
   const firstNegativeStart = negativeState.oscillators[beforeNegativeCount]?.startTime;
@@ -314,13 +363,40 @@ test("reanchors on offset changes, preserves the sign convention, and cancels ol
   expect((firstNegativeStart ?? 0) - beforeNegativeTime).toBeLessThan(0.55);
 });
 
+test("cancels a not-yet-started click immediately inside the shared fade window", async ({
+  page,
+}) => {
+  await installLatencyHarness(page);
+  await page.goto("/audio-latency-test");
+  await page.locator("[data-latency-start]").click();
+  await expect
+    .poll(async () => (await harnessState(page)).oscillators.length)
+    .toBeGreaterThan(0);
+
+  const before = await harnessState(page);
+  const firstStart = before.oscillators[0]?.startTime;
+  expect(firstStart).not.toBeNull();
+  if (firstStart === null || firstStart === undefined) return;
+
+  const beforeChange = await setOffsetAtContextLead(page, firstStart, 40, 50);
+  expect(firstStart - beforeChange).toBeGreaterThan(0);
+  expect(firstStart - beforeChange).toBeLessThan(0.05);
+
+  const after = await harnessState(page);
+  const cancellationStop = after.oscillators[0]?.stopTimes.at(-1);
+  expect(cancellationStop).toBeDefined();
+  expect(cancellationStop ?? Number.POSITIVE_INFINITY).toBeLessThan(firstStart);
+});
+
 test("Stop cancels timed work and a hidden tab stays idle until explicit Start", async ({
   page,
 }) => {
   await installLatencyHarness(page);
   await page.goto("/audio-latency-test");
   await page.locator("[data-latency-start]").click();
-  await expect.poll(async () => (await harnessState(page)).oscillators.length).toBeGreaterThan(0);
+  await expect
+    .poll(async () => (await harnessState(page)).oscillators.length)
+    .toBeGreaterThan(0);
 
   await page.locator("[data-latency-stop]").click();
   const stoppedCount = (await harnessState(page)).oscillators.length;
@@ -330,21 +406,21 @@ test("Stop cancels timed work and a hidden tab stays idle until explicit Start",
   await expect(page.locator("[data-latency-stop]")).toBeDisabled();
 
   await page.locator("[data-latency-start]").click();
-  await expect(page.locator("#audio-latency-status [data-status-label]")).toHaveText(
-    "AV sync loop active",
-  );
+  await expect(
+    page.locator("#audio-latency-status [data-status-label]"),
+  ).toHaveText("AV sync loop active");
   await setDocumentHidden(page, true);
-  await expect(page.locator("#audio-latency-status [data-status-label]")).toHaveText(
-    "Stopped while tab was hidden",
-  );
+  await expect(
+    page.locator("#audio-latency-status [data-status-label]"),
+  ).toHaveText("Stopped while tab was hidden");
   const hiddenCount = (await harnessState(page)).oscillators.length;
   await page.waitForTimeout(1_150);
   expect((await harnessState(page)).oscillators).toHaveLength(hiddenCount);
 
   await setDocumentHidden(page, false);
-  await expect(page.locator("#audio-latency-status [data-status-label]")).toHaveText(
-    "Stopped while tab was hidden",
-  );
+  await expect(
+    page.locator("#audio-latency-status [data-status-label]"),
+  ).toHaveText("Stopped while tab was hidden");
   await expect(page.locator("[data-latency-start]")).toBeEnabled();
 });
 
@@ -359,18 +435,22 @@ test("BFCache restoration mounts a fresh idle controller and creates a new Audio
   await page.evaluate(() => {
     window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
   });
-  await expect.poll(async () => (await harnessState(page)).closedContextCount).toBe(1);
+  await expect
+    .poll(async () => (await harnessState(page)).closedContextCount)
+    .toBe(1);
 
   await page.evaluate(() => {
     window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
   });
-  await expect(page.locator("#audio-latency-status [data-status-label]")).toHaveText(
-    "Ready",
-  );
+  await expect(
+    page.locator("#audio-latency-status [data-status-label]"),
+  ).toHaveText("Ready");
   await expect(page.locator("[data-latency-start]")).toBeEnabled();
 
   await page.locator("[data-latency-start]").click();
-  await expect.poll(async () => (await harnessState(page)).audioContextCount).toBe(2);
+  await expect
+    .poll(async () => (await harnessState(page)).audioContextCount)
+    .toBe(2);
 });
 
 test("shows an explicit fallback when outputLatency is not reported", async ({ page }) => {
@@ -391,11 +471,13 @@ test("cleans up a partially created session when audio output construction fails
   await page.goto("/audio-latency-test");
   await page.locator("[data-latency-start]").click();
 
-  await expect(page.locator("#audio-latency-status [data-status-label]")).toHaveText(
-    "Audio output unavailable",
-  );
+  await expect(
+    page.locator("#audio-latency-status [data-status-label]"),
+  ).toHaveText("Audio output unavailable");
   await expect(page.locator("[data-latency-error]")).toBeVisible();
-  await expect.poll(async () => (await harnessState(page)).closedContextCount).toBe(1);
+  await expect
+    .poll(async () => (await harnessState(page)).closedContextCount)
+    .toBe(1);
   await expect(page.locator("[data-latency-start]")).toBeEnabled();
   await expect(page.locator("[data-latency-stop]")).toBeDisabled();
 });
