@@ -14,12 +14,36 @@ export interface DestinationConfiguration {
   readonly channelInterpretation: ChannelInterpretation;
 }
 
-export interface MultichannelCapabilities {
+export interface MultichannelCandidates {
   readonly maxChannelCount: number;
-  readonly fiveOne: boolean;
-  readonly experimentalEight: boolean;
-  readonly restorationHealthy: boolean;
+  readonly fiveOneCandidate: boolean;
+  readonly experimentalEightCandidate: boolean;
 }
+
+export type MultichannelConfigurationFailureReason =
+  | "candidate_unavailable"
+  | "configuration_rejected"
+  | "readback_mismatch"
+  | "graph_build_failed";
+
+export type MultichannelConfigurationResult =
+  | {
+      readonly status: "confirmed";
+      readonly mode: MultichannelMode;
+      readonly maxChannelCount: number;
+      readonly configuration: DestinationConfiguration;
+    }
+  | {
+      readonly status: "unsupported";
+      readonly mode: MultichannelMode;
+      readonly maxChannelCount: number;
+      readonly reason: MultichannelConfigurationFailureReason;
+    }
+  | {
+      readonly status: "restore_failed";
+      readonly mode: MultichannelMode;
+      readonly maxChannelCount: number;
+    };
 
 export interface MultichannelBurstPlayback extends SessionResource {
   readonly oscillator: OscillatorNode;
@@ -66,22 +90,24 @@ function configurationsMatch(
   );
 }
 
-function applyDestinationConfiguration(
+function attemptDestinationConfiguration(
   destination: AudioDestinationNode,
   configuration: DestinationConfiguration,
-): boolean {
+): "confirmed" | "configuration_rejected" | "readback_mismatch" {
   try {
     destination.channelCountMode = configuration.channelCountMode;
     destination.channelInterpretation = configuration.channelInterpretation;
     destination.channelCount = configuration.channelCount;
   } catch {
-    return false;
+    return "configuration_rejected";
   }
 
   return configurationsMatch(
     readDestinationConfiguration(destination),
     configuration,
-  );
+  )
+    ? "confirmed"
+    : "readback_mismatch";
 }
 
 function holdParamAtTime(param: AudioParam, time: number): void {
@@ -105,8 +131,10 @@ function scheduleEnvelope(
   param.linearRampToValueAtTime(0, endTime);
 }
 
-function sleep(milliseconds: number): Promise<void> {
-  return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
+async function waitForStopRamp(): Promise<void> {
+  await new Promise<void>((resolve) => {
+    setTimeout(resolve, Math.ceil(DEFAULT_RAMP_SECONDS * 1_000) + 5);
+  });
 }
 
 export class MultichannelOutputSession implements SessionResource {
@@ -141,57 +169,75 @@ export class MultichannelOutputSession implements SessionResource {
     return { ...this.#originalConfiguration };
   }
 
-  probeCapabilities(): MultichannelCapabilities {
+  inspectCandidates(): MultichannelCandidates {
     this.#assertUsable();
-    if (this.#activeMode || this.#active.size > 0) {
-      throw new Error("Cannot probe multichannel capabilities while playback is active");
-    }
-
     const maxChannelCount = this.#destination.maxChannelCount;
-    let fiveOne = false;
-    let experimentalEight = false;
-
-    if (maxChannelCount >= 6) {
-      fiveOne = this.#probeTarget(FIVE_ONE_CONFIGURATION);
-    }
-    if (this.#restorationHealthy && maxChannelCount >= 8) {
-      experimentalEight = this.#probeTarget(EXPERIMENTAL_EIGHT_CONFIGURATION);
-    }
-
     return {
       maxChannelCount,
-      fiveOne,
-      experimentalEight,
-      restorationHealthy: this.#restorationHealthy,
+      fiveOneCandidate: maxChannelCount >= 6,
+      experimentalEightCandidate: maxChannelCount >= 8,
     };
   }
 
-  async configure(mode: MultichannelMode): Promise<boolean> {
+  async configure(mode: MultichannelMode): Promise<MultichannelConfigurationResult> {
     this.#assertUsable();
-    if (!this.#restorationHealthy) return false;
+    const maxChannelCount = this.#destination.maxChannelCount;
+    if (!this.#restorationHealthy) {
+      return { status: "restore_failed", mode, maxChannelCount };
+    }
 
     if (this.#activeMode !== null || this.#active.size > 0) {
       const restored = await this.restore();
-      if (!restored) return false;
+      if (!restored) {
+        return { status: "restore_failed", mode, maxChannelCount };
+      }
     }
 
     const target = targetFor(mode);
-    const candidate = this.#destination.maxChannelCount >= target.channelCount;
-    if (!candidate) return false;
+    if (maxChannelCount < target.channelCount) {
+      return {
+        status: "unsupported",
+        mode,
+        maxChannelCount,
+        reason: "candidate_unavailable",
+      };
+    }
 
-    if (!applyDestinationConfiguration(this.#destination, target)) {
-      this.#restoreImmediately();
-      return false;
+    const attempted = attemptDestinationConfiguration(this.#destination, target);
+    if (attempted !== "confirmed") {
+      const restored = this.#restoreImmediately();
+      if (!restored) {
+        return { status: "restore_failed", mode, maxChannelCount };
+      }
+      return {
+        status: "unsupported",
+        mode,
+        maxChannelCount,
+        reason: attempted,
+      };
     }
 
     try {
       this.#buildGraph(target.channelCount);
       this.#activeMode = mode;
-      return true;
+      return {
+        status: "confirmed",
+        mode,
+        maxChannelCount,
+        configuration: readDestinationConfiguration(this.#destination),
+      };
     } catch {
       this.#disconnectGraph();
-      this.#restoreImmediately();
-      return false;
+      const restored = this.#restoreImmediately();
+      if (!restored) {
+        return { status: "restore_failed", mode, maxChannelCount };
+      }
+      return {
+        status: "unsupported",
+        mode,
+        maxChannelCount,
+        reason: "graph_build_failed",
+      };
     }
   }
 
@@ -283,9 +329,8 @@ export class MultichannelOutputSession implements SessionResource {
     this.#assertUsable();
     const hadActivePlayback = this.#active.size > 0;
     this.stop();
-    if (hadActivePlayback) {
-      await sleep(Math.ceil(DEFAULT_RAMP_SECONDS * 1_000) + 5);
-    }
+    if (hadActivePlayback) await waitForStopRamp();
+    this.#active.clear();
     this.#disconnectGraph();
     return this.#restoreImmediately();
   }
@@ -299,17 +344,12 @@ export class MultichannelOutputSession implements SessionResource {
     this.#active.clear();
   }
 
-  #probeTarget(target: DestinationConfiguration): boolean {
-    const confirmed = applyDestinationConfiguration(this.#destination, target);
-    const restored = this.#restoreImmediately();
-    return confirmed && restored;
-  }
-
   #restoreImmediately(): boolean {
-    const restored = applyDestinationConfiguration(
-      this.#destination,
-      this.#originalConfiguration,
-    );
+    const restored =
+      attemptDestinationConfiguration(
+        this.#destination,
+        this.#originalConfiguration,
+      ) === "confirmed";
     if (!restored) this.#restorationHealthy = false;
     return restored;
   }
@@ -318,7 +358,10 @@ export class MultichannelOutputSession implements SessionResource {
     this.#disconnectGraph();
     const merger = this.#context.createChannelMerger(channelCount);
     const masterGain = this.#context.createGain();
-    masterGain.gain.setValueAtTime(dbToGain(this.#levelDb), this.#context.currentTime);
+    masterGain.gain.setValueAtTime(
+      dbToGain(this.#levelDb),
+      this.#context.currentTime,
+    );
     merger.connect(masterGain);
     masterGain.connect(this.#destination);
     this.#merger = merger;
