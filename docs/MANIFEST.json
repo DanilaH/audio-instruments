@@ -1,6 +1,6 @@
 {
-  "version": "1.10",
-  "status": "P0 implemented and in final review/full-CI gate; owner-approved manual repository enforcement is the accepted operating mode",
+  "version": "1.11",
+  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 waits for the upgraded SEO runner; P8 is phase-gated after P7 and includes real-device/browser QA plus production decisions",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
     "docs/01_RESEARCH_AND_EVIDENCE.md",
@@ -27,6 +27,18 @@
   "evidence_ledgers": [
     "docs/evidence/competitor-evidence.csv"
   ],
+  "implementation": {
+    "functional_roadmap": "P0-P6.3 implemented and merged",
+    "core_v1_live_tool_routes": 16,
+    "p6_3_main_commit": "0be4128242ddeab669cbc8374e9fc9b9b5bd23ac",
+    "p7": "blocked_waiting_for_upgraded_seo_runner",
+    "p8": "phase_gated_after_p7",
+    "p8_scope": [
+      "final_audit_and_release",
+      "real_device_browser_qa",
+      "production_decisions"
+    ]
+  },
   "workflow": "development -> checkpoint commit -> Draft PR -> cold Review #1 by project assistant -> fixes/commits -> cold Review #2 by project assistant -> add full-ci-approved -> Ready -> full-validation -> merge-gate -> fix/cold re-review/rerun if needed -> squash merge -> next branch",
   "repository_files": [
     ".gitignore",
@@ -70,6 +82,13 @@
       "reopened"
     ]
   },
+  "ci_observation": {
+    "state": "recent_hosted_runner_allocation_failure",
+    "signature": "runner_id=0; steps=[]",
+    "interpretation": "infrastructure/no-runner; not green CI and not a repository test failure",
+    "policy_effect": "does not redefine the required green merge-gate workflow",
+    "phase_effect": "P7 remains blocked pending the upgraded runner"
+  },
   "dependencies": {
     "animation": "motion",
     "icons": "@phosphor-icons/web",
@@ -95,9 +114,9 @@
     "browser_test": "@playwright/test"
   },
   "documentation_policy": {
-    "state": "implementation-evidence-synchronized",
-    "cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
-    "next_step": "complete P0 Review #2 and full CI, then begin P1",
+    "state": "post_p6_3_implementation_evidence_synchronized",
+    "original_cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
+    "next_step": "wait for the upgraded SEO runner before P7; only explicitly allowed polish/audit work may proceed meanwhile",
     "reopen_for": [
       "implementation-discovered contradiction",
       "real CI/browser failure requiring source-of-truth correction",

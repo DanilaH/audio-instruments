@@ -1,5 +1,21 @@
 # Documentation Changelog
 
+## v1.11 — 2026-08-29
+
+Post-P6.3 implementation-evidence synchronization.
+
+Changes:
+
+- recorded P0–P6.3 as implemented and merged, with all 16 core v1 tool routes live;
+- recorded P6.3 final catalog homepage composition as merged to `main` at `0be4128242ddeab669cbc8374e9fc9b9b5bd23ac`;
+- synchronized README, AGENTS, Overview, Roadmap and Manifest so they no longer describe the repository as pre-P1 or merely implementation-ready;
+- recorded that P7 remains blocked by its explicit upgraded SEO runner prerequisite and must not be substituted with ordinary source polish;
+- kept P8 phase-gated after P7, with real-device/browser QA and production decisions remaining inside P8 scope;
+- recorded the later-P5/P6 hosted GitHub Actions infrastructure signature `runner_id = 0`, `steps = []` as no-runner evidence rather than green CI or a repository test failure;
+- preserved the required green `merge-gate` workflow as normative and did not add a reusable no-runner waiver mechanism;
+- retained owner-approved manual repository-gate enforcement because protected branches/rulesets remain unavailable for the current private/free-plan setup;
+- made no product-code, tool-behavior, architecture, SEO-strategy or launch-scope changes in this documentation synchronization.
+
 ## v1.10 — 2026-08-28
 
 P0 implementation-evidence synchronization.

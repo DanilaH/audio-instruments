@@ -61,13 +61,18 @@ Motion
 Phosphor
 ```
 
-## Implementation readiness
+## Implementation status
+
+As of 2026-08-29:
 
 ```text
-P0–P6: implementation-ready; cold pre-code review passed with 0 blockers / 0 majors
-P7: waits for upgraded SEO runner
-P8: waits for real-device/browser QA + production decisions
+P0–P6.3: implemented and merged
+core v1 catalog: all 16 tool routes live
+P7: blocked by its explicit upgraded-runner prerequisite
+P8: phase-gated after P7; includes real-device/browser QA + production decisions
 ```
+
+The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units used the repository's PR + cold-review workflow and exact-SHA review evidence.
 
 ## Visual identity
 
@@ -98,16 +103,23 @@ maintenance cost
 
 The repository uses Draft PRs for early review.
 
-The full validation CI is intentionally gated until:
+The required workflow sequence remains:
 
 ```text
-independent review #1
+cold Review #1
 → fixes
-→ independent review #2
+→ cold Review #2
+→ full-ci-approved
 → PR marked Ready for review
+→ full-validation
+→ merge-gate
 ```
 
 See `15_DEVELOPMENT_WORKFLOW.md` and `16_CI_AND_REPOSITORY_GATES.md`.
+
+The repository is private on the current free GitHub plan, so protected-branch/ruleset enforcement is unavailable and the owner has accepted manual repository-gate enforcement. This does not change the required review/validation sequence.
+
+Recent later-P5/P6 GitHub Actions attempts also exposed a separate hosted infrastructure incident: jobs failed before runner allocation with `runner_id = 0` and `steps = []`. Those runs are infrastructure/no-runner evidence, not green CI and not repository test failures. Affected merge history records exact-SHA review evidence and explicit infrastructure incident notes. This historical record does not authorize future merges without a green `merge-gate` and does not redefine the required CI policy.
 
 ## Site shell
 
@@ -117,9 +129,11 @@ It is not a placeholder and is not left for the agent to invent.
 
 Its structural contract lives in `18_HOMEPAGE_AND_SITE_SHELL.md`.
 
+P6.3 finalized the live v1 catalog composition with the canonical featured four and live-only category directory.
+
 ## Mechanical merge gate
 
-Review order is enforced by CI:
+Required review/authorization order:
 
 ```text
 Review #2
