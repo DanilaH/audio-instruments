@@ -71,8 +71,12 @@ export function recordHeardFrequency(
 
 export function formatHearingFrequency(frequencyHz: number): string {
   if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) return "—";
-  if (frequencyHz >= 1_000 && frequencyHz % 1_000 === 0) {
-    return `${frequencyHz / 1_000} kHz`;
+  if (frequencyHz >= 1_000) {
+    const kilohertz = frequencyHz / 1_000;
+    const formatted = Number.isInteger(kilohertz)
+      ? String(kilohertz)
+      : kilohertz.toFixed(1).replace(/\.0$/, "");
+    return `${formatted} kHz`;
   }
   return `${Math.round(frequencyHz)} Hz`;
 }
