@@ -236,6 +236,12 @@ export class HearingFrequencyController {
   async #playReference(): Promise<void> {
     if (this.#disposed || this.#isToneBusy() || this.#guidedActive) return;
 
+    this.#referencePlayed = false;
+    this.#setupConfirm.checked = false;
+    this.#setupStatus.textContent =
+      "While the 1-second reference is audible, set system/device volume to a low comfortable level. Replay the reference if you need another adjustment pass.";
+    this.#renderControls();
+
     const played = await this.#playTone({
       frequencyHz: HEARING_REFERENCE_FREQUENCY_HZ,
       durationSeconds: HEARING_REFERENCE_DURATION_SECONDS,
@@ -245,7 +251,7 @@ export class HearingFrequencyController {
       onComplete: () => {
         this.#referencePlayed = true;
         this.#setupStatus.textContent =
-          "Reference complete. Set system/device volume to a low comfortable level, keep it unchanged, then confirm below.";
+          "Reference complete. If the volume was not low and comfortable while the tone was audible, replay it. Otherwise confirm that system/device volume will remain unchanged.";
         this.#setStatus("ready", "Setup reference complete");
       },
     });
@@ -352,7 +358,9 @@ export class HearingFrequencyController {
       this.#disposed ||
       this.#mode !== "manual" ||
       this.#isToneBusy() ||
-      this.#guidedActive
+      this.#guidedActive ||
+      !this.#referencePlayed ||
+      !this.#setupConfirm.checked
     ) {
       return;
     }
@@ -498,7 +506,7 @@ export class HearingFrequencyController {
     if (!capability.referenceAvailable) {
       this.#capabilityNotice.hidden = false;
       this.#capabilityMessage.textContent =
-        "This audio context cannot safely generate the required 1 kHz setup reference, so Guided mode is unavailable in this session.";
+        "This audio context cannot safely generate the required 1 kHz setup reference, so Guided and Manual high-frequency playback are unavailable in this session.";
     }
     this.#renderControls();
   }
@@ -514,6 +522,7 @@ export class HearingFrequencyController {
     const playing = this.#isToneBusy();
     const guidedFrequencies = this.#capability?.guidedFrequenciesHz ?? [];
     const referenceAvailable = this.#capability?.referenceAvailable !== false;
+    const setupReady = this.#referencePlayed && this.#setupConfirm.checked;
     const lockMode = playing || this.#guidedActive;
 
     for (const input of this.#modeInputs) input.disabled = lockMode;
@@ -528,8 +537,7 @@ export class HearingFrequencyController {
       this.#disposed ||
       playing ||
       this.#guidedActive ||
-      !this.#referencePlayed ||
-      !this.#setupConfirm.checked ||
+      !setupReady ||
       (this.#capability !== null && guidedFrequencies.length === 0);
     this.#heardButton.disabled = !this.#guidedActive || !this.#awaitingAnswer;
     this.#notHeardButton.disabled = !this.#guidedActive || !this.#awaitingAnswer;
@@ -541,7 +549,7 @@ export class HearingFrequencyController {
     this.#manualFrequency.disabled = manualDisabled;
     this.#manualLevel.disabled = manualDisabled;
     this.#manualPlayButton.disabled =
-      manualDisabled || this.#manualFrequency.value === "";
+      manualDisabled || !setupReady || this.#manualFrequency.value === "";
 
     this.#root.dataset.hearingMode = this.#mode;
     this.#root.dataset.hearingState = playing
