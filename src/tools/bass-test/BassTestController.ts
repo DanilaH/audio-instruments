@@ -464,9 +464,7 @@ export class BassTestController {
     if (effectiveMaxHz >= BASS_SWEEP_MIN_HZ) {
       this.#frequencyRoot.dataset.maxHz = String(effectiveMaxHz);
       this.#frequencyInput.max = String(effectiveMaxHz);
-      if (this.#toneFrequencyHz > effectiveMaxHz) {
-        this.#setToneFrequency(effectiveMaxHz);
-      }
+      this.#setToneFrequency(Math.min(this.#toneFrequencyHz, effectiveMaxHz));
     }
 
     for (const button of this.#presetButtons) {
