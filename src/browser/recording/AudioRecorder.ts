@@ -291,6 +291,13 @@ export class AudioRecorder implements SessionResource {
   #discardActive(active: ActiveRecording, error: unknown): void {
     this.#clearAutoStop(active);
     this.#detach(active);
+    if (active.recorder.state !== "inactive") {
+      try {
+        active.recorder.stop();
+      } catch {
+        // The recording is already being discarded; teardown remains best-effort.
+      }
+    }
     if (this.#active === active) this.#active = null;
     active.chunks.length = 0;
     active.reject(error);
