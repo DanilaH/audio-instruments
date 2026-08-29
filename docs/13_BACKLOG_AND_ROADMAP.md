@@ -6,6 +6,17 @@ Each implementation unit follows `15_DEVELOPMENT_WORKFLOW.md`.
 
 Do not begin the next roadmap unit before the current one is merged unless explicit parallel work is approved.
 
+## Current checkpoint — 2026-08-29
+
+```text
+P0–P6.3 implemented and merged
+all 16 core v1 tool routes live
+P7 blocked: wait for upgraded SEO runner
+P8 phase-gated after P7 + real-device/browser QA + production decisions
+```
+
+Do not rename polish/audit work as P7 while its upgraded-runner prerequisite is unavailable.
+
 ## P0 — Repository bootstrap
 
 Deliver:
@@ -140,7 +151,9 @@ Then PR/review/validation/merge.
 
 ## P7 — SEO evidence refresh
 
-Wait for upgraded runner.
+Current gate: **blocked until the upgraded runner is available**.
+
+Do not substitute manual source polish for this evidence phase.
 
 Then:
 
@@ -186,11 +199,11 @@ microinteraction tuning
 grain/texture refinement
 ```
 
-Polish does not reopen locked architecture/product decisions.
+Polish does not reopen locked architecture/product decisions and does not bypass the P7/P8 phase gates.
 
 ## P0 repository-gate setup
 
-Before the first roadmap PR can merge:
+Target repository controls:
 
 ```text
 main requires PR
@@ -201,9 +214,9 @@ Draft PR workflow verified
 Ready-for-review CI trigger verified
 ```
 
-This setup is part of P0 acceptance, not future DevOps polish.
+Repository observation: the repository is private on the current free GitHub plan and the connected GitHub API reports protected-branch/ruleset functionality unavailable. The owner has explicitly accepted **manual repository-gate enforcement** for this setup. Do not claim the gate is mechanically unbypassable unless repository visibility/plan changes and protection is actually verified.
 
-Current repository observation (2026-08-28): the repository is private and the connected GitHub API reports protected-branch/ruleset functionality unavailable on the current plan. Until visibility/plan changes or the user explicitly accepts temporary manual enforcement, P0 must not claim mechanical repository-gate completion.
+A separate later implementation incident has also been observed: some hosted GitHub Actions jobs fail before runner allocation with `runner_id = 0` and `steps = []`. Treat that signature as infrastructure/no-runner evidence, not a green validation result and not a repository test failure. The intended green `merge-gate` workflow remains the normal target.
 
 ## Deferred architecture — do not build in P0–P6
 
@@ -217,7 +230,7 @@ These require a future explicit task, not anticipatory infrastructure.
 
 ## P0 package metadata contract
 
-When `package.json` is created, it must include:
+`package.json` includes:
 
 ```json
 {
@@ -230,16 +243,15 @@ When `package.json` is created, it must include:
 
 The package version and Node major must match CI and `.nvmrc`.
 
-
 ## P0 browser-test configuration contract
 
-Create `playwright.config` with at least Chromium, Firefox and WebKit projects.
+`playwright.config` includes Chromium, Firefox and WebKit projects.
 
 Automated WebKit is regression coverage only; actual Safari/iOS QA remains P8.
 
 ## P0 validation-tooling gate
 
-P0 is not complete until:
+Implemented baseline:
 
 ```text
 astro check works with @astrojs/check + TypeScript
@@ -248,19 +260,19 @@ Prettier processes .astro
 test = vitest run
 test:browser builds before Playwright preview
 Playwright retries = 0
-merge-gate is the required branch-protection check
+merge-gate is the intended required CI check
 Dependabot monitors GitHub Actions and npm dependencies
 ```
 
+Mechanical branch-protection enforcement remains unavailable under the current private/free-plan repository mode and is tracked separately from the implemented tooling baseline.
+
 ## P0 mandatory bootstrap tests
 
-Create before P0 review:
+Implemented:
 
 ```text
 tests/unit/registry.test.ts
 tests/browser/shell.spec.ts
 ```
-
-P0 CI must have at least one real Vitest suite and one real Playwright suite.
 
 Do not make empty test suites pass by configuration.
