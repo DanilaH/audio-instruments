@@ -24,17 +24,23 @@ for (const viewport of viewports) {
     const stop = page.locator("[data-latency-stop]");
     const pulse = page.locator("[data-latency-pulse]");
     const offset = page.locator("[data-latency-offset]");
+    const level = page.locator("[data-latency-level]");
 
     await expect(start).toBeVisible();
     await expect(stop).toBeVisible();
     await expect(pulse).toBeVisible();
     await expect(offset).toBeVisible();
+    await expect(level).toHaveText("-24 dB");
 
     const startBox = await start.boundingBox();
     expect(startBox).not.toBeNull();
     expect(
       (startBox?.y ?? viewport.height) + (startBox?.height ?? 0),
     ).toBeLessThanOrEqual(viewport.height);
+
+    const offsetBox = await offset.boundingBox();
+    expect(offsetBox).not.toBeNull();
+    expect(offsetBox?.height ?? 0).toBeGreaterThanOrEqual(44);
 
     const pulseBox = await pulse.boundingBox();
     expect(pulseBox).not.toBeNull();
