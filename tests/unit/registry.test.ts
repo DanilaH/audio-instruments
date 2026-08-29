@@ -51,6 +51,7 @@ describe("tool registry", () => {
       { id: "frequency-sweep", route: "/frequency-sweep" },
       { id: "noise-generator", route: "/noise-generator" },
       { id: "microphone-test", route: "/microphone-test" },
+      { id: "spectrum-analyzer", route: "/spectrum-analyzer" },
     ]);
   });
 
