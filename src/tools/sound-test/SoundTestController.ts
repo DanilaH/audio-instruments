@@ -3,13 +3,18 @@ import {
   type OscillatorPlayback,
   type StereoChannelMode,
 } from "../../browser/audio-output/AudioOutputEngine";
+import {
+  CHANNEL_SEQUENCE_STEP_SECONDS,
+  CHANNEL_SEQUENCE_TOTAL_SECONDS,
+  CHANNEL_TEST_DURATION_SECONDS,
+  CHANNEL_TEST_FREQUENCY_HZ,
+} from "../../browser/audio-output/referenceSignals";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 
-const BURST_FREQUENCY_HZ = 500;
-const BURST_DURATION_SECONDS = 0.7;
-const SEQUENCE_GAP_SECONDS = 0.3;
-const SEQUENCE_STEP_SECONDS = BURST_DURATION_SECONDS + SEQUENCE_GAP_SECONDS;
-const SEQUENCE_TOTAL_SECONDS = BURST_DURATION_SECONDS + SEQUENCE_STEP_SECONDS * 2;
+const MILLISECONDS_PER_SECOND = 1_000;
+const BURST_DURATION_MS = CHANNEL_TEST_DURATION_SECONDS * MILLISECONDS_PER_SECOND;
+const SEQUENCE_STEP_MS = CHANNEL_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
+const SEQUENCE_TOTAL_MS = CHANNEL_SEQUENCE_TOTAL_SECONDS * MILLISECONDS_PER_SECOND;
 
 type ActiveChannel = StereoChannelMode | "none";
 
@@ -153,21 +158,17 @@ export class SoundTestController {
 
       this.#playbacks = [
         engine.startOscillator({
-          frequencyHz: BURST_FREQUENCY_HZ,
+          frequencyHz: CHANNEL_TEST_FREQUENCY_HZ,
           waveform: "sine",
           channelMode: mode,
-          durationSeconds: BURST_DURATION_SECONDS,
+          durationSeconds: CHANNEL_TEST_DURATION_SECONDS,
         }),
       ];
       this.#starting = false;
       this.#setControlsActive(true);
       this.#setActiveChannel(mode);
       this.#setStatus("playing", `Playing ${channelLabel(mode)}`);
-      this.#schedule(
-        BURST_DURATION_SECONDS * 1_000,
-        token,
-        () => this.#finishRun(),
-      );
+      this.#schedule(BURST_DURATION_MS, token, () => this.#finishRun());
     } catch (error) {
       this.#handleStartError(error, token);
     }
@@ -187,11 +188,11 @@ export class SoundTestController {
       const sequence: readonly StereoChannelMode[] = ["left", "both", "right"];
       this.#playbacks = sequence.map((mode, index) =>
         engine.startOscillator({
-          frequencyHz: BURST_FREQUENCY_HZ,
+          frequencyHz: CHANNEL_TEST_FREQUENCY_HZ,
           waveform: "sine",
           channelMode: mode,
-          startTime: startTime + index * SEQUENCE_STEP_SECONDS,
-          durationSeconds: BURST_DURATION_SECONDS,
+          startTime: startTime + index * CHANNEL_SEQUENCE_STEP_SECONDS,
+          durationSeconds: CHANNEL_TEST_DURATION_SECONDS,
         }),
       );
 
@@ -200,15 +201,15 @@ export class SoundTestController {
       this.#setStatus("playing", "Sequence running");
       this.#setActiveChannel("left");
 
-      this.#schedule(700, token, () => this.#setSequenceGap());
-      this.#schedule(1_000, token, () => this.#setSequenceChannel("both"));
-      this.#schedule(1_700, token, () => this.#setSequenceGap());
-      this.#schedule(2_000, token, () => this.#setSequenceChannel("right"));
-      this.#schedule(
-        SEQUENCE_TOTAL_SECONDS * 1_000,
-        token,
-        () => this.#finishRun(),
+      this.#schedule(BURST_DURATION_MS, token, () => this.#setSequenceGap());
+      this.#schedule(SEQUENCE_STEP_MS, token, () => this.#setSequenceChannel("both"));
+      this.#schedule(SEQUENCE_STEP_MS + BURST_DURATION_MS, token, () =>
+        this.#setSequenceGap(),
       );
+      this.#schedule(SEQUENCE_STEP_MS * 2, token, () =>
+        this.#setSequenceChannel("right"),
+      );
+      this.#schedule(SEQUENCE_TOTAL_MS, token, () => this.#finishRun());
     } catch (error) {
       this.#handleStartError(error, token);
     }
