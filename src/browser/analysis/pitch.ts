@@ -265,9 +265,9 @@ export function estimatePitchYin(
     );
   }
 
-  // Standard CMNDF normalization needs cumulative difference values at lower
-  // lags. Those lower lags are normalization-only candidates: pitch candidate
-  // selection remains strictly bounded to tauMin..tauMax.
+  // Standard CMNDF needs cumulative lower-lag difference values. Those lags
+  // support normalization and, at tauMin, the immediate interpolation neighbor;
+  // pitch candidate selection itself remains strictly bounded to tauMin..tauMax.
   const difference = calculateYinDifference(samples, tauMax);
   const cmndf = calculateCmndf(difference);
   const selectedTau = selectYinTau(cmndf, tauMin, tauMax, threshold);
