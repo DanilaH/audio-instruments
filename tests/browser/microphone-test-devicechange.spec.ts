@@ -1,10 +1,11 @@
 import { expect, test } from "@playwright/test";
 
-test("devicechange does not make another microphone look active", async ({ page }) => {
+test("device metadata refresh never makes another microphone look active", async ({ page }) => {
   await page.addInitScript(() => {
     const state = {
       getUserMediaCalls: 0,
       devices: ["mic-1", "mic-2"],
+      reportDeviceId: true,
     };
 
     class FakeAudioParam {
@@ -47,7 +48,7 @@ test("devicechange does not make another microphone look active", async ({ page 
     class FakeTrack extends EventTarget {
       getSettings(): MediaTrackSettings {
         return {
-          deviceId: "mic-1",
+          ...(state.reportDeviceId ? { deviceId: "mic-1" } : {}),
           sampleRate: 48_000,
           channelCount: 1,
           echoCancellation: false,
@@ -140,6 +141,10 @@ test("devicechange does not make another microphone look active", async ({ page 
       state.devices = ["mic-2"];
       mediaDevices.dispatchEvent(new Event("devicechange"));
     });
+    Reflect.set(window, "__prepareUnreportedMicRestart", () => {
+      state.devices = ["mic-1", "mic-2"];
+      state.reportDeviceId = false;
+    });
   });
 
   await page.goto("/microphone-test");
@@ -166,8 +171,33 @@ test("devicechange does not make another microphone look active", async ({ page 
     page.locator('[data-mic-input-select] option[value="mic-2"]'),
   ).toHaveText("USB microphone");
 
-  const state = await page.evaluate(() =>
-    structuredClone(Reflect.get(window, "__micDevicechangeState")),
-  );
-  expect(state.getUserMediaCalls).toBe(1);
+  expect(
+    await page.evaluate(() =>
+      (Reflect.get(window, "__micDevicechangeState") as { getUserMediaCalls: number })
+        .getUserMediaCalls,
+    ),
+  ).toBe(1);
+
+  await page.locator("[data-mic-stop]").click();
+  await page.evaluate(() => {
+    const prepareRestart = Reflect.get(
+      window,
+      "__prepareUnreportedMicRestart",
+    ) as () => void;
+    prepareRestart();
+  });
+  await page.locator("[data-mic-start]").click();
+
+  await expect(page.locator("[data-mic-input-select]")).toHaveValue("");
+  await expect(
+    page.locator('[data-mic-input-select] option[value=""]'),
+  ).toHaveText("Active input (device ID not reported)");
+  await expect(page.locator("[data-mic-active-input]")).toHaveText("Active input");
+  await expect(page.locator("[data-mic-input-field]")).toBeVisible();
+  expect(
+    await page.evaluate(() =>
+      (Reflect.get(window, "__micDevicechangeState") as { getUserMediaCalls: number })
+        .getUserMediaCalls,
+    ),
+  ).toBe(2);
 });
