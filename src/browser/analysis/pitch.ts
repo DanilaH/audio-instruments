@@ -334,6 +334,7 @@ function absoluteCentsBetween(leftHz: number, rightHz: number): number {
 
 export class PitchStabilizer {
   readonly #accepted: AcceptedPitch[] = [];
+  #consecutiveAccepted = 0;
 
   get size(): number {
     return this.#accepted.length;
@@ -341,10 +342,11 @@ export class PitchStabilizer {
 
   reset(): void {
     this.#accepted.length = 0;
+    this.#consecutiveAccepted = 0;
   }
 
   reject(): void {
-    this.reset();
+    this.#consecutiveAccepted = 0;
   }
 
   accept(estimate: YinPitchEstimate): StabilizedPitch {
@@ -367,11 +369,19 @@ export class PitchStabilizer {
         this.#accepted.length - PITCH_STABILIZATION_WINDOW,
       );
     }
+    this.#consecutiveAccepted = Math.min(
+      this.#consecutiveAccepted + 1,
+      this.#accepted.length,
+    );
 
     const frequencyHz = medianFrequency(this.#accepted);
     let consecutiveWithinMedian = 0;
-    for (let index = this.#accepted.length - 1; index >= 0; index -= 1) {
-      const value = this.#accepted[index];
+    const candidatesToCheck = Math.min(
+      this.#consecutiveAccepted,
+      this.#accepted.length,
+    );
+    for (let offset = 0; offset < candidatesToCheck; offset += 1) {
+      const value = this.#accepted[this.#accepted.length - 1 - offset];
       if (
         !value ||
         absoluteCentsBetween(value.frequencyHz, frequencyHz) > PITCH_STABLE_CENTS
