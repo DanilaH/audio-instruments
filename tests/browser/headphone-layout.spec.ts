@@ -31,7 +31,7 @@ for (const scenario of [
   { mode: "Phase", action: "In phase" },
   { mode: "Sweep", action: "Run headphone sweep" },
   { mode: "Bass / rattle", action: "Run bass / rattle sweep" },
-+] as const) {
+] as const) {
   test(`Headphone keeps ${scenario.mode} action and Stop inside 1366x768`, async ({ page }) => {
     await page.setViewportSize({ width: 1366, height: 768 });
     await page.goto("/headphone-test");
