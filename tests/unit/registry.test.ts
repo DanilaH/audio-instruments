@@ -49,6 +49,7 @@ describe("tool registry", () => {
       { id: "bass-test", route: "/bass-test" },
       { id: "tone-generator", route: "/tone-generator" },
       { id: "frequency-sweep", route: "/frequency-sweep" },
+      { id: "noise-generator", route: "/noise-generator" },
     ]);
   });
 
