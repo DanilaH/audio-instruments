@@ -45,6 +45,7 @@ class FakeAudioParam {
 class FakeNode {
   readonly kind: string;
   readonly connections: Connection[];
+  disconnectCalls = 0;
 
   constructor(kind: string, connections: Connection[]) {
     this.kind = kind;
@@ -61,7 +62,9 @@ class FakeNode {
     return destination as AudioNode;
   }
 
-  disconnect() {}
+  disconnect() {
+    this.disconnectCalls += 1;
+  }
 }
 
 class FakeGainNode extends FakeNode {
@@ -89,6 +92,7 @@ type DestinationOptions = {
   readonly maxChannelCount: number;
   readonly throwOnChannelCount?: number;
   readonly mismatchChannelCount?: number;
+  readonly throwOnGainCreateNumber?: number;
 };
 
 class FakeDestinationNode extends FakeNode {
@@ -153,12 +157,19 @@ class FakeAudioContext {
   readonly gains: FakeGainNode[] = [];
   readonly oscillators: FakeOscillatorNode[] = [];
   readonly mergers: FakeNode[] = [];
+  readonly #throwOnGainCreateNumber: number | undefined;
+  #gainCreateCalls = 0;
 
   constructor(options: DestinationOptions) {
     this.destination = new FakeDestinationNode(this.connections, options);
+    this.#throwOnGainCreateNumber = options.throwOnGainCreateNumber;
   }
 
   createGain() {
+    this.#gainCreateCalls += 1;
+    if (this.#gainCreateCalls === this.#throwOnGainCreateNumber) {
+      throw new Error(`gain create ${this.#gainCreateCalls} failed`);
+    }
     const node = new FakeGainNode(`gain-${this.gains.length}`, this.connections);
     this.gains.push(node);
     return node as unknown as GainNode;
@@ -261,6 +272,37 @@ describe("MultichannelOutputSession", () => {
     });
   });
 
+  it("rejects experimental 8-channel when assignment throws and restores the prior destination", async () => {
+    const context = new FakeAudioContext({
+      maxChannelCount: 8,
+      throwOnChannelCount: 8,
+    });
+    const output = new MultichannelOutputSession(context as unknown as AudioContext);
+
+    await expect(output.configure("experimental-eight")).resolves.toMatchObject({
+      status: "unsupported",
+      reason: "configuration_rejected",
+    });
+    expect(context.destination.channelCount).toBe(2);
+    expect(context.destination.channelCountMode).toBe("max");
+    expect(context.destination.channelInterpretation).toBe("speakers");
+  });
+
+  it("rejects experimental 8-channel when exact readback differs", async () => {
+    const context = new FakeAudioContext({
+      maxChannelCount: 8,
+      mismatchChannelCount: 8,
+    });
+    const output = new MultichannelOutputSession(context as unknown as AudioContext);
+
+    await expect(output.configure("experimental-eight")).resolves.toMatchObject({
+      status: "unsupported",
+      reason: "readback_mismatch",
+    });
+    expect(context.destination.channelCount).toBe(2);
+    expect(context.destination.channelCountMode).toBe("max");
+  });
+
   it("routes every 5.1 control to the exact requested ChannelMerger input", async () => {
     const context = new FakeAudioContext({ maxChannelCount: 6 });
     const output = new MultichannelOutputSession(context as unknown as AudioContext);
@@ -282,6 +324,39 @@ describe("MultichannelOutputSession", () => {
     expect(context.oscillators.map((oscillator) => oscillator.stops[0])).toEqual([
       10.7, 11.7, 12.7, 13.7, 14.7, 15.7,
     ]);
+  });
+
+  it("disconnects a partially-built multichannel graph and remains retryable", async () => {
+    const context = new FakeAudioContext({
+      maxChannelCount: 6,
+      throwOnGainCreateNumber: 1,
+    });
+    const output = new MultichannelOutputSession(context as unknown as AudioContext);
+
+    await expect(output.configure("five-one")).resolves.toMatchObject({
+      status: "unsupported",
+      reason: "graph_build_failed",
+    });
+    expect(context.mergers[0]?.disconnectCalls).toBe(1);
+    expect(context.destination.channelCount).toBe(2);
+
+    await expect(output.configure("five-one")).resolves.toMatchObject({
+      status: "confirmed",
+    });
+  });
+
+  it("disconnects a partially-created channel source and allows the next Start to retry", async () => {
+    const context = new FakeAudioContext({
+      maxChannelCount: 6,
+      throwOnGainCreateNumber: 2,
+    });
+    const output = new MultichannelOutputSession(context as unknown as AudioContext);
+    expect((await output.configure("five-one")).status).toBe("confirmed");
+
+    expect(() => output.startChannel(0, 500, 10, 0.7)).toThrow("gain create 2 failed");
+    expect(context.oscillators[0]?.disconnectCalls).toBe(1);
+
+    expect(() => output.startChannel(0, 500, 11, 0.7)).not.toThrow();
   });
 
   it("marks restoration unhealthy when the prior destination configuration cannot be restored", async () => {
