@@ -1836,7 +1836,7 @@ Provide a non-clinical user-observed high-frequency hearing exploration.
 
 #### Setup
 
-Before high-frequency playback:
+Before high-frequency steps:
 
 1. play a 1 kHz reference burst at the hearing-test default Level;
 2. ask the user to set device/system volume to a **low comfortable level**;
