@@ -4,11 +4,10 @@ import {
 } from "../../browser/audio-output/AudioOutputEngine";
 import {
   BASS_PRESET_FREQUENCIES_HZ,
-  BASS_PRESET_SEQUENCE_GAP_SECONDS,
+  BASS_PRESET_SEQUENCE_MAX_HZ,
   BASS_PRESET_SEQUENCE_STEP_SECONDS,
   BASS_PRESET_SEQUENCE_TOTAL_SECONDS,
   BASS_PRESET_TONE_DURATION_SECONDS,
-  BASS_SINGLE_TONE_DEFAULT_HZ,
   BASS_SWEEP_DEFAULT_HIGH_HZ,
   BASS_SWEEP_DEFAULT_LOW_HZ,
   BASS_SWEEP_MAX_HZ,
@@ -21,6 +20,7 @@ import { clamp, getEffectiveMaxFrequency } from "../../utils/audio";
 const GENERAL_LEVEL_MIN_DB = -60;
 const GENERAL_LEVEL_MAX_DB = -12;
 const GENERAL_LEVEL_DEFAULT_DB = -24;
+const DEFAULT_TONE_FREQUENCY_HZ = BASS_PRESET_FREQUENCIES_HZ[4];
 const MILLISECONDS_PER_SECOND = 1_000;
 
 type BassMode = "tone" | "sweep" | "sequence";
@@ -28,7 +28,9 @@ type BassVisualState = "idle" | "tone" | "sweep" | "sequence" | "gap";
 
 function requireElement<T extends Element>(root: ParentNode, selector: string): T {
   const element = root.querySelector<T>(selector);
-  if (!element) throw new Error(`Bass Test is missing required element: ${selector}`);
+  if (!element) {
+    throw new Error(`Bass Test is missing required element: ${selector}`);
+  }
   return element;
 }
 
@@ -73,6 +75,7 @@ export class BassTestController {
   readonly #statusLabel: HTMLElement;
   readonly #frequencyReadout: HTMLElement;
   readonly #visualLabel: HTMLElement;
+  readonly #sweepRangeLabel: HTMLElement;
   readonly #capabilityNotice: HTMLElement;
   readonly #capabilityMessage: HTMLElement;
   readonly #errorMessage: HTMLElement;
@@ -81,7 +84,7 @@ export class BassTestController {
   #engine: AudioOutputEngine | null = null;
   #playbacks: OscillatorPlayback[] = [];
   #mode: BassMode = "tone";
-  #toneFrequencyHz = BASS_SINGLE_TONE_DEFAULT_HZ;
+  #toneFrequencyHz = DEFAULT_TONE_FREQUENCY_HZ;
   #levelDb = GENERAL_LEVEL_DEFAULT_DB;
   #effectiveMaxHz = BASS_SWEEP_MAX_HZ;
   #starting = false;
@@ -99,6 +102,7 @@ export class BassTestController {
     this.#presetButtons = [
       ...root.querySelectorAll<HTMLButtonElement>("[data-bass-preset]"),
     ];
+
     if (
       this.#modeButtons.length !== 3 ||
       this.#panels.length !== 3 ||
@@ -112,13 +116,14 @@ export class BassTestController {
     this.#sequenceButton = requireElement(root, "[data-bass-sequence-play]");
     this.#stopButton = requireElement(root, "[data-bass-stop]");
     this.#levelInput = requireElement(root, "#bass-level");
-    this.#frequencyRoot = requireElement(root, "[data-bass-frequency-control]");
+    this.#frequencyRoot = requireElement(root, "[data-frequency-control]");
     this.#frequencyInput = requireElement(root, "#bass-frequency-number");
     this.#frequencySlider = requireElement(root, "#bass-frequency-slider");
     this.#status = requireElement(root, "#bass-status");
     this.#statusLabel = requireElement(this.#status, "[data-status-label]");
     this.#frequencyReadout = requireElement(root, "[data-bass-frequency-readout]");
     this.#visualLabel = requireElement(root, "[data-bass-visual-label]");
+    this.#sweepRangeLabel = requireElement(root, "[data-bass-sweep-range]");
     this.#capabilityNotice = requireElement(root, "#bass-frequency-cap");
     this.#capabilityMessage = requireElement(
       this.#capabilityNotice,
@@ -179,9 +184,11 @@ export class BassTestController {
       () => void this.#runPresetSequence(),
       { signal },
     );
-    this.#stopButton.addEventListener("click", () => this.#stopCurrent("Stopped"), {
-      signal,
-    });
+    this.#stopButton.addEventListener(
+      "click",
+      () => this.#stopCurrent("Stopped"),
+      { signal },
+    );
 
     this.#frequencyInput.addEventListener(
       "input",
@@ -194,11 +201,13 @@ export class BassTestController {
         ) {
           return;
         }
+
         this.#toneFrequencyHz = value;
         this.#frequencyReadout.textContent = String(Math.round(value));
         if (this.#mode === "tone" && this.#playbacks[0] && !this.#starting) {
           this.#playbacks[0].setFrequency(value);
           this.#setVisual("tone", `${Math.round(value)} Hz`);
+          this.#setStatus("playing", `Playing ${Math.round(value)} Hz`);
         }
       },
       { signal },
@@ -252,6 +261,7 @@ export class BassTestController {
       this.#engine.setLevelDb(this.#levelDb);
       this.#session.register(this.#engine);
     }
+
     this.#applyRuntimeFrequencyCap(context.sampleRate);
     return { context, engine: this.#engine };
   }
@@ -263,6 +273,7 @@ export class BassTestController {
     this.#hideError();
     this.#renderMode();
     this.#setControlsActive(false);
+    this.#restoreIdleReadout();
     this.#setVisual("idle", modeLabel(mode));
     this.#setStatus("idle", "Ready");
   }
@@ -312,6 +323,7 @@ export class BassTestController {
       ];
       this.#starting = false;
       this.#setControlsActive(true);
+      this.#frequencyReadout.textContent = String(Math.round(frequencyHz));
       this.#setVisual("tone", `${Math.round(frequencyHz)} Hz`);
       this.#setStatus("playing", `Playing ${Math.round(frequencyHz)} Hz`);
     } catch (error) {
@@ -348,6 +360,7 @@ export class BassTestController {
       this.#playbacks = [playback];
       this.#starting = false;
       this.#setControlsActive(true);
+      this.#frequencyReadout.textContent = `${definition.lowHz}–${definition.highHz}`;
       this.#setVisual("sweep", `${definition.lowHz} → ${definition.highHz} Hz`);
       this.#setStatus("playing", "Slow bass sweep running");
       this.#schedule(
@@ -371,30 +384,33 @@ export class BassTestController {
         this.#showRangeUnavailable(token);
         return;
       }
-
-      const frequencies = BASS_PRESET_FREQUENCIES_HZ.filter(
-        (frequencyHz) => frequencyHz <= this.#effectiveMaxHz,
-      );
-      if (frequencies.length === 0) {
-        this.#showRangeUnavailable(token);
+      if (this.#effectiveMaxHz < BASS_PRESET_SEQUENCE_MAX_HZ) {
+        this.#starting = false;
+        this.#setControlsActive(false);
+        this.#setVisual("idle", "Preset sequence unavailable");
+        this.#setStatus("limited_capability", "Preset sequence unavailable");
+        this.#showError(
+          `The exact preset sequence requires generated output through ${BASS_PRESET_SEQUENCE_MAX_HZ} Hz.`,
+        );
         return;
       }
 
       const startTime = context.currentTime;
-      this.#playbacks = frequencies.map((frequencyHz, index) =>
-        engine.startOscillator({
-          frequencyHz,
-          waveform: "sine",
-          channelMode: "both",
-          startTime: startTime + index * BASS_PRESET_SEQUENCE_STEP_SECONDS,
-          durationSeconds: BASS_PRESET_TONE_DURATION_SECONDS,
-        }),
+      this.#playbacks = BASS_PRESET_FREQUENCIES_HZ.map(
+        (frequencyHz, index) =>
+          engine.startOscillator({
+            frequencyHz,
+            waveform: "sine",
+            channelMode: "both",
+            startTime: startTime + index * BASS_PRESET_SEQUENCE_STEP_SECONDS,
+            durationSeconds: BASS_PRESET_TONE_DURATION_SECONDS,
+          }),
       );
       this.#starting = false;
       this.#setControlsActive(true);
       this.#setStatus("playing", "Bass preset sequence running");
 
-      frequencies.forEach((frequencyHz, index) => {
+      BASS_PRESET_FREQUENCIES_HZ.forEach((frequencyHz, index) => {
         const startMs =
           index * BASS_PRESET_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
         const gapMs =
@@ -403,18 +419,17 @@ export class BassTestController {
           this.#frequencyReadout.textContent = String(frequencyHz);
           this.#setVisual("sequence", `${frequencyHz} Hz`);
         });
-        if (index < frequencies.length - 1) {
-          this.#schedule(gapMs, token, () => this.#setVisual("gap", "300 ms gap"));
+        if (index < BASS_PRESET_FREQUENCIES_HZ.length - 1) {
+          this.#schedule(gapMs, token, () =>
+            this.#setVisual("gap", "300 ms gap"),
+          );
         }
       });
 
-      const totalSeconds =
-        frequencies.length === BASS_PRESET_FREQUENCIES_HZ.length
-          ? BASS_PRESET_SEQUENCE_TOTAL_SECONDS
-          : BASS_PRESET_TONE_DURATION_SECONDS +
-            BASS_PRESET_SEQUENCE_STEP_SECONDS * (frequencies.length - 1);
-      this.#schedule(totalSeconds * MILLISECONDS_PER_SECOND, token, () =>
-        this.#finishRun(),
+      this.#schedule(
+        BASS_PRESET_SEQUENCE_TOTAL_SECONDS * MILLISECONDS_PER_SECOND,
+        token,
+        () => this.#finishRun(),
       );
     } catch (error) {
       this.#handleStartError(error, token);
@@ -445,12 +460,13 @@ export class BassTestController {
     if (effectiveMaxHz === this.#effectiveMaxHz) return;
 
     this.#effectiveMaxHz = effectiveMaxHz;
-    const usableMaxHz = Math.max(BASS_SWEEP_MIN_HZ, effectiveMaxHz);
-    this.#frequencyRoot.dataset.maxHz = String(usableMaxHz);
-    this.#frequencyInput.max = String(usableMaxHz);
 
-    if (effectiveMaxHz >= BASS_SWEEP_MIN_HZ && this.#toneFrequencyHz > effectiveMaxHz) {
-      this.#setToneFrequency(effectiveMaxHz);
+    if (effectiveMaxHz >= BASS_SWEEP_MIN_HZ) {
+      this.#frequencyRoot.dataset.maxHz = String(effectiveMaxHz);
+      this.#frequencyInput.max = String(effectiveMaxHz);
+      if (this.#toneFrequencyHz > effectiveMaxHz) {
+        this.#setToneFrequency(effectiveMaxHz);
+      }
     }
 
     for (const button of this.#presetButtons) {
@@ -459,13 +475,25 @@ export class BassTestController {
         effectiveMaxHz < BASS_SWEEP_MIN_HZ || frequencyHz > effectiveMaxHz;
     }
 
+    const sweepHighHz = Math.min(BASS_SWEEP_DEFAULT_HIGH_HZ, effectiveMaxHz);
+    this.#sweepRangeLabel.textContent =
+      effectiveMaxHz >= BASS_SWEEP_MIN_HZ
+        ? `${BASS_SWEEP_DEFAULT_LOW_HZ} → ${sweepHighHz} Hz`
+        : "20 → 120 Hz";
+
     if (effectiveMaxHz < BASS_SWEEP_MAX_HZ) {
-      const sequenceNote = effectiveMaxHz >= BASS_SWEEP_MIN_HZ
-        ? " Presets above that limit are unavailable, and the preset sequence uses only available tones."
-        : " The 20–200 Hz Bass Test range is unavailable in this AudioContext.";
+      let limitation = "";
+      if (effectiveMaxHz < BASS_SWEEP_MIN_HZ) {
+        limitation = " The nominal 20–200 Hz Bass Test range is unavailable in this AudioContext.";
+      } else if (effectiveMaxHz < BASS_PRESET_SEQUENCE_MAX_HZ) {
+        limitation = ` The exact preset sequence is unavailable because it requires output through ${BASS_PRESET_SEQUENCE_MAX_HZ} Hz.`;
+      } else if (effectiveMaxHz < BASS_SWEEP_DEFAULT_HIGH_HZ) {
+        limitation = ` The slow sweep ends at ${effectiveMaxHz} Hz instead of the nominal ${BASS_SWEEP_DEFAULT_HIGH_HZ} Hz endpoint.`;
+      }
+
       this.#capabilityMessage.textContent =
         `This browser's audio sample rate limits generated Bass Test frequencies to ${effectiveMaxHz} Hz.` +
-        sequenceNote;
+        limitation;
       this.#capabilityNotice.hidden = false;
       this.#capabilityNotice.setAttribute("role", "status");
     }
@@ -503,10 +531,12 @@ export class BassTestController {
     } catch (stopError) {
       console.error("Bass Test cleanup after start failure failed", stopError);
     }
+
     this.#starting = false;
     this.#playbacks = [];
     this.#clearTimers();
     this.#setControlsActive(false);
+    this.#restoreIdleReadout();
     this.#setVisual("idle", modeLabel(this.#mode));
     this.#setStatus("error", "Audio unavailable");
     this.#showError(
@@ -522,7 +552,7 @@ export class BassTestController {
     for (const playback of this.#playbacks) playback.stop();
     this.#playbacks = [];
     this.#setControlsActive(false);
-    this.#frequencyReadout.textContent = String(Math.round(this.#toneFrequencyHz));
+    this.#restoreIdleReadout();
     this.#setVisual("idle", modeLabel(this.#mode));
     this.#setStatus("idle", statusLabel);
   }
@@ -532,21 +562,29 @@ export class BassTestController {
     this.#starting = false;
     this.#playbacks = [];
     this.#setControlsActive(false);
-    this.#frequencyReadout.textContent = String(Math.round(this.#toneFrequencyHz));
+    this.#restoreIdleReadout();
     this.#setVisual("idle", modeLabel(this.#mode));
     this.#setStatus("idle", "Ready for another check");
   }
 
   #setControlsActive(active: boolean): void {
-    const disableStarts = active || this.#starting || !this.#hasUsableFrequencyRange();
-    this.#toneButton.disabled = disableStarts;
-    this.#sweepButton.disabled = disableStarts;
-    this.#sequenceButton.disabled = disableStarts;
-    for (const button of this.#modeButtons) button.disabled = this.#starting;
+    const startDisabled =
+      active || this.#starting || !this.#hasUsableFrequencyRange();
+    this.#toneButton.disabled = startDisabled;
+    this.#sweepButton.disabled = startDisabled;
+    this.#sequenceButton.disabled =
+      startDisabled || this.#effectiveMaxHz < BASS_PRESET_SEQUENCE_MAX_HZ;
+
+    for (const button of this.#modeButtons) {
+      button.disabled = this.#starting;
+    }
 
     const toneEditable = this.#mode === "tone" && !this.#starting;
-    this.#frequencyInput.disabled = !toneEditable || !this.#hasUsableFrequencyRange();
-    this.#frequencySlider.disabled = !toneEditable || !this.#hasUsableFrequencyRange();
+    this.#frequencyInput.disabled =
+      !toneEditable || !this.#hasUsableFrequencyRange();
+    this.#frequencySlider.disabled =
+      !toneEditable || !this.#hasUsableFrequencyRange();
+
     for (const button of this.#presetButtons) {
       const frequencyHz = Number(button.dataset.bassPreset);
       button.disabled =
@@ -557,6 +595,10 @@ export class BassTestController {
 
     this.#levelInput.disabled = false;
     this.#stopButton.disabled = !active;
+  }
+
+  #restoreIdleReadout(): void {
+    this.#frequencyReadout.textContent = String(Math.round(this.#toneFrequencyHz));
   }
 
   #setVisual(state: BassVisualState, label: string): void {
@@ -588,20 +630,20 @@ export class BassTestController {
 
   #resetIdleUi(): void {
     this.#effectiveMaxHz = BASS_SWEEP_MAX_HZ;
-    this.#toneFrequencyHz = BASS_SINGLE_TONE_DEFAULT_HZ;
+    this.#toneFrequencyHz = DEFAULT_TONE_FREQUENCY_HZ;
     this.#frequencyRoot.dataset.maxHz = String(BASS_SWEEP_MAX_HZ);
     this.#frequencyInput.min = String(BASS_SWEEP_MIN_HZ);
     this.#frequencyInput.max = String(BASS_SWEEP_MAX_HZ);
-    this.#frequencyInput.value = String(BASS_SINGLE_TONE_DEFAULT_HZ);
+    this.#frequencyInput.value = String(DEFAULT_TONE_FREQUENCY_HZ);
     this.#frequencyInput.dispatchEvent(new Event("input", { bubbles: true }));
-    for (const button of this.#presetButtons) button.disabled = false;
+    this.#sweepRangeLabel.textContent = `${BASS_SWEEP_DEFAULT_LOW_HZ} → ${BASS_SWEEP_DEFAULT_HIGH_HZ} Hz`;
     this.#capabilityMessage.textContent = "";
     this.#capabilityNotice.hidden = true;
     this.#capabilityNotice.removeAttribute("role");
     this.#mode = "tone";
     this.#renderMode();
     this.#setControlsActive(false);
-    this.#frequencyReadout.textContent = String(BASS_SINGLE_TONE_DEFAULT_HZ);
+    this.#restoreIdleReadout();
     this.#setVisual("idle", modeLabel(this.#mode));
     this.#setStatus("idle", "Ready");
     this.#hideError();
