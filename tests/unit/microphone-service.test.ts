@@ -56,6 +56,7 @@ class FakeStream {
 
 class FakeAudioContext {
   readonly sources: FakeAudioNode[] = [];
+  readonly destination = new FakeAudioNode();
 
   createMediaStreamSource(stream: MediaStream): MediaStreamAudioSourceNode {
     void stream;
@@ -145,6 +146,16 @@ describe("MicrophoneService", () => {
 
     expect(() => createMicrophoneAudioConstraints({}, "   ")).toThrow(
       "deviceId must be a non-empty string",
+    );
+  });
+
+  it("rejects the AudioContext destination as a live microphone analysis target", () => {
+    const { context, service } = createService();
+
+    expect(() =>
+      service.connectAnalysisTarget(context.destination as unknown as AudioNode),
+    ).toThrow(
+      "Live microphone monitoring to AudioContext.destination is prohibited",
     );
   });
 
