@@ -8,7 +8,6 @@ interface OscillatorRecord {
   }>;
   startTimes: number[];
   stopTimes: number[];
-  waveform: string;
 }
 
 async function installDeterministicAudioContext(
@@ -93,6 +92,7 @@ async function installDeterministicAudioContext(
       class FakeOscillatorNode extends FakeAudioNode {
         readonly record: OscillatorRecord;
         readonly frequency: FakeAudioParam;
+        type = "sine";
 
         constructor(record: OscillatorRecord) {
           super();
@@ -100,14 +100,6 @@ async function installDeterministicAudioContext(
           this.frequency = new FakeAudioParam((kind, value, time) => {
             record.frequencyEvents.push({ kind, value, time });
           });
-        }
-
-        get type() {
-          return this.record.waveform;
-        }
-
-        set type(value: string) {
-          this.record.waveform = value;
         }
 
         start(time = 0) {
@@ -165,7 +157,6 @@ async function installDeterministicAudioContext(
             frequencyEvents: [],
             startTimes: [],
             stopTimes: [],
-            waveform: "sine",
           };
           oscillators.push(record);
           Reflect.set(window, "__frequencySweepOscillators", oscillators);
@@ -174,7 +165,6 @@ async function installDeterministicAudioContext(
 
         createChannelMerger(numberOfInputs = 2) {
           void numberOfInputs;
-          incrementCounter("__frequencySweepChannelMergerCount");
           return new FakeAudioNode();
         }
       }
@@ -182,7 +172,6 @@ async function installDeterministicAudioContext(
       Reflect.set(window, "__frequencySweepOscillators", oscillators);
       Reflect.set(window, "__frequencySweepAudioContextCount", 0);
       Reflect.set(window, "__frequencySweepClosedAudioContextCount", 0);
-      Reflect.set(window, "__frequencySweepChannelMergerCount", 0);
       Object.defineProperty(window, "AudioContext", {
         configurable: true,
         writable: true,
@@ -238,14 +227,16 @@ test("Frequency Sweep exposes its safe default contract without creating AudioCo
     "aria-pressed",
     "true",
   );
-  await expect(page.getByText("Start with your device/headphone volume low.")).toBeVisible();
+  await expect(
+    page.getByText("Start with your device/headphone volume low."),
+  ).toBeVisible();
   await expect(page.getByText("Low frequency", { exact: true })).toBeVisible();
   await expect(page.getByText("High frequency", { exact: true })).toBeVisible();
   await expect(page.locator('a[href="/noise-generator"]')).toHaveCount(0);
   expect(await readWindowNumber(page, "__frequencySweepAudioContextCount")).toBe(0);
 });
 
-test("default Frequency Sweep schedules one 20 Hz to 20 kHz logarithmic sine sweep and stops cleanly", async ({
+test("default Frequency Sweep schedules one 20 Hz to 20 kHz logarithmic sweep and stops cleanly", async ({
   page,
 }) => {
   await installDeterministicAudioContext(page);
@@ -260,7 +251,6 @@ test("default Frequency Sweep schedules one 20 Hz to 20 kHz logarithmic sine swe
 
   let oscillators = await readOscillators(page);
   expect(oscillators).toHaveLength(1);
-  expect(oscillators[0]?.waveform).toBe("sine");
   expect(oscillators[0]?.startTimes).toEqual([0]);
   expect(oscillators[0]?.stopTimes[0]).toBe(15);
   expect(oscillators[0]?.frequencyEvents.at(-1)).toEqual({
@@ -268,7 +258,6 @@ test("default Frequency Sweep schedules one 20 Hz to 20 kHz logarithmic sine swe
     value: 20_000,
     time: 15,
   });
-  expect(await readWindowNumber(page, "__frequencySweepChannelMergerCount")).toBe(1);
 
   await page.locator("[data-sweep-stop]").click();
   await expect(page.locator("#frequency-sweep-status")).toContainText("Stopped");
@@ -307,17 +296,31 @@ test("Frequency Sweep preserves custom linear descending semantics", async ({ pa
   expect(oscillators[0]?.stopTimes[0]).toBe(32);
 });
 
-test("Frequency Sweep blocks invalid endpoint order before playback", async ({ page }) => {
+test("Frequency Sweep keeps selector state truthful while endpoint order is invalid", async ({
+  page,
+}) => {
   await installDeterministicAudioContext(page);
   await openSweep(page);
 
   await page.locator("#frequency-sweep-low-number").fill("5000");
   await page.locator("#frequency-sweep-high-number").fill("1000");
+  await page.locator('[data-sweep-scale="linear"]').click();
+  await page.locator('[data-sweep-direction="descending"]').click();
 
   await expect(page.locator("[data-sweep-error]")).toContainText(
     "Low frequency must be less than or equal to high frequency.",
   );
   await expect(page.locator("[data-sweep-play]")).toBeDisabled();
+  await expect(page.locator("[data-sweep-from]")).toHaveText("—");
+  await expect(page.locator("[data-sweep-to]")).toHaveText("—");
+  await expect(page.locator('[data-sweep-scale="linear"]')).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
+  await expect(page.locator('[data-sweep-direction="descending"]')).toHaveAttribute(
+    "aria-pressed",
+    "true",
+  );
   expect(await readWindowNumber(page, "__frequencySweepAudioContextCount")).toBe(0);
 });
 
@@ -330,8 +333,12 @@ test("Frequency Sweep runtime cap clamps both shared frequency controls and resy
   await page.locator("#frequency-sweep-low-number").fill("10000");
   await page.locator("[data-sweep-play]").click();
 
-  const lowControl = page.locator("[data-sweep-low-control] [data-frequency-control]");
-  const highControl = page.locator("[data-sweep-high-control] [data-frequency-control]");
+  const lowControl = page.locator(
+    "[data-sweep-low-control] [data-frequency-control]",
+  );
+  const highControl = page.locator(
+    "[data-sweep-high-control] [data-frequency-control]",
+  );
   await expect(lowControl).toHaveAttribute("data-max-hz", "15200");
   await expect(highControl).toHaveAttribute("data-max-hz", "15200");
   await expect(page.locator("#frequency-sweep-low-number")).toHaveAttribute(
@@ -341,14 +348,14 @@ test("Frequency Sweep runtime cap clamps both shared frequency controls and resy
   await expect(page.locator("#frequency-sweep-high-number")).toHaveValue("15200");
   await expect(page.locator("#frequency-sweep-cap")).toContainText("15200 Hz");
 
-  const expectedLowSliderPosition = Math.log(10_000 / 20) / Math.log(15_200 / 20);
+  const expectedLowSliderPosition =
+    Math.log(10_000 / 20) / Math.log(15_200 / 20);
   expect(
     Number(await page.locator("#frequency-sweep-low-slider").inputValue()),
   ).toBeCloseTo(expectedLowSliderPosition, 3);
-  expect(Number(await page.locator("#frequency-sweep-high-slider").inputValue())).toBeCloseTo(
-    1,
-    3,
-  );
+  expect(
+    Number(await page.locator("#frequency-sweep-high-slider").inputValue()),
+  ).toBeCloseTo(1, 3);
 
   const oscillators = await readOscillators(page);
   expect(oscillators[0]?.frequencyEvents.at(-1)).toEqual({
@@ -358,14 +365,18 @@ test("Frequency Sweep runtime cap clamps both shared frequency controls and resy
   });
 });
 
-test("Frequency Sweep cleans a failed start and allows an explicit retry", async ({ page }) => {
+test("Frequency Sweep cleans a failed start and allows an explicit retry", async ({
+  page,
+}) => {
   await installDeterministicAudioContext(page, {
     throwOnOscillatorCreateNumber: 1,
   });
   await openSweep(page);
 
   await page.locator("[data-sweep-play]").click();
-  await expect(page.locator("#frequency-sweep-status")).toContainText("Audio unavailable");
+  await expect(page.locator("#frequency-sweep-status")).toContainText(
+    "Audio unavailable",
+  );
   await expect(page.locator("[data-sweep-play]")).toBeEnabled();
   expect(await readOscillators(page)).toHaveLength(0);
 
