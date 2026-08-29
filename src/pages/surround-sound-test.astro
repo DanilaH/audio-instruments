@@ -69,6 +69,10 @@ const relatedTools = surroundTool.relatedToolIds.flatMap((id) => {
 </BaseLayout>
 
 <style>
+  :global(.surround-check-panel:has([data-surround-check]:disabled)) {
+    display: none;
+  }
+
   .surround-content,
   .surround-help {
     display: grid;
