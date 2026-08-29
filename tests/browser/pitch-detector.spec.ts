@@ -312,7 +312,7 @@ test("stays idle until Start, then produces a stabilized YIN A4 estimate at boun
   expect(deltas.every((delta) => delta >= 40)).toBe(true);
 });
 
-test("weak input clears the accepted window and never leaves a stale/random note", async ({
+test("weak input hides the current pitch and breaks stability without a random note", async ({
   page,
 }) => {
   await page.locator("[data-pitch-start]").click();
