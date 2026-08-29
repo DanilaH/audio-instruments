@@ -182,13 +182,13 @@ export class MicrophoneService implements SessionResource {
 
   stop(): void {
     if (this.#disposed) return;
-    this.#lifecycleToken += 1;
+    this.#invalidatePendingAcquisition();
     this.#stopActiveCapture();
   }
 
   dispose(): void {
     if (this.#disposed) return;
-    this.#lifecycleToken += 1;
+    this.#invalidatePendingAcquisition();
     this.#stopActiveCapture();
     this.#disposed = true;
     this.#analysisTargets.clear();
@@ -295,6 +295,7 @@ export class MicrophoneService implements SessionResource {
   #handleTrackEnded(track: MediaStreamTrack): void {
     if (track !== this.#track) return;
 
+    this.#invalidatePendingAcquisition();
     const lastSettings = this.#settings ? { ...this.#settings } : {};
     const stream = this.#stream;
     const source = this.#source;
@@ -316,6 +317,11 @@ export class MicrophoneService implements SessionResource {
     this.#source?.disconnect();
     if (this.#stream) stopStreamTracks(this.#stream);
     this.#clearActiveReferences();
+  }
+
+  #invalidatePendingAcquisition(): void {
+    this.#lifecycleToken += 1;
+    this.#pendingAcquisition = null;
   }
 
   #clearActiveReferences(): void {
