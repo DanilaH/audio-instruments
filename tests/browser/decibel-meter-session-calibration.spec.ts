@@ -2,6 +2,9 @@ import { expect, test, type Page } from "@playwright/test";
 
 async function installNoDeviceIdHarness(page: Page): Promise<void> {
   await page.addInitScript(() => {
+    let unstableMeter = false;
+    let meterReadCount = 0;
+
     class FakeAudioParam {
       value = 1;
       setValueAtTime(value: number) {
@@ -39,6 +42,11 @@ async function installNoDeviceIdHarness(page: Page): Promise<void> {
       }
 
       getFloatTimeDomainData(target: Float32Array) {
+        meterReadCount += 1;
+        if (unstableMeter) {
+          target.fill(meterReadCount % 2 === 0 ? 0.005 : 0.02);
+          return;
+        }
         target.fill(0.01);
       }
 
@@ -139,7 +147,19 @@ async function installNoDeviceIdHarness(page: Page): Promise<void> {
       configurable: true,
       value: FakeAudioContext,
     });
+    Reflect.set(window, "__dbSetUnstableMeter", (value: boolean) => {
+      unstableMeter = value;
+    });
   });
+}
+
+async function setUnstableMeter(page: Page, value: boolean): Promise<void> {
+  await page.evaluate((unstable) => {
+    const setUnstable = Reflect.get(window, "__dbSetUnstableMeter") as (
+      nextValue: boolean,
+    ) => void;
+    setUnstable(unstable);
+  }, value);
 }
 
 test("calibration without a reported deviceId is session-only and clears on Stop", async ({
@@ -188,6 +208,33 @@ test("calibration without a reported deviceId is session-only and clears on Stop
   await expect(page.locator("[data-db-calibrate]")).toHaveText(
     "Capture 3-second reference",
   );
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem("browserAudioLab.dbCalibration.v2"),
+    ),
+  ).toBeNull();
+});
+
+test("rejects an unstable calibration window through the controller UI", async ({
+  page,
+}) => {
+  await installNoDeviceIdHarness(page);
+  await page.goto("/decibel-meter");
+
+  await page.locator("[data-db-start]").click();
+  await setUnstableMeter(page, true);
+  await page.locator("[data-db-reference]").fill("72");
+  await page.locator("[data-db-weighting-confirm]").check();
+  await page.locator("[data-db-calibrate]").click();
+
+  await expect(page.locator("[data-db-calibration-live-status]")).toHaveText(
+    "Calibration rejected",
+    { timeout: 4_500 },
+  );
+  await expect(page.locator("[data-db-calibration-status]")).toContainText(
+    "varied by more than 1.5 dB",
+  );
+  await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
   expect(
     await page.evaluate(() =>
       localStorage.getItem("browserAudioLab.dbCalibration.v2"),
