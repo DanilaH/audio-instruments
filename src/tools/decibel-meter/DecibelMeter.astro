@@ -23,9 +23,11 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
         <div class="db-meter" aria-hidden="true">
           <div class="db-meter__scale">
-            <span>−100</span><span>−75</span><span>−50</span><span>−25</span><span
-              >0 dBFS</span
-            >
+            <span>−100</span>
+            <span>−75</span>
+            <span>−50</span>
+            <span>−25</span>
+            <span>0 dBFS</span>
           </div>
           <div class="db-meter__track">
             <span class="db-meter__fill" data-db-meter-fill></span>
@@ -623,20 +625,30 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
       grid-template-columns: 1fr;
     }
 
-    .db-controls {
-      order: -1;
-      border-bottom: 1px solid var(--color-border);
-    }
-
     .db-monitor {
       border-right: 0;
+      border-bottom: 1px solid var(--color-border);
     }
   }
 
   @media (max-width: 560px) {
     .db-monitor,
     .db-controls {
-      padding: 16px;
+      padding: 14px 16px;
+    }
+
+    .db-monitor {
+      gap: 12px;
+    }
+
+    .db-primary-readout {
+      min-height: 128px;
+      padding: 14px;
+      border-radius: 20px;
+    }
+
+    .db-primary-readout strong {
+      font-size: clamp(2.5rem, 11vw, 3.5rem);
     }
 
     .db-primary-actions {
@@ -648,16 +660,6 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     .db-stop {
       width: 100%;
       padding-inline: 8px;
-    }
-
-    .db-primary-readout {
-      min-height: 170px;
-      padding: 18px 14px;
-      border-radius: 22px;
-    }
-
-    .db-primary-readout strong {
-      font-size: clamp(2.5rem, 11vw, 3.5rem);
     }
 
     .db-field {
