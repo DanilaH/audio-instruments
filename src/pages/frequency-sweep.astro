@@ -98,58 +98,12 @@ const relatedTools = sweepTool.relatedToolIds.flatMap((id) => {
     line-height: 1.72;
   }
 
-  :global([data-frequency-sweep] .sweep-legend) {
-    display: none;
-  }
-
   @media (max-width: 760px) {
     .sweep-content,
     .sweep-help {
       grid-template-columns: 1fr;
       margin-top: 48px;
       padding-top: 34px;
-    }
-  }
-
-  @media (max-width: 560px) {
-    :global([data-frequency-sweep] .sweep-visual) {
-      min-height: 112px;
-      padding: 10px 14px;
-      gap: 6px;
-    }
-
-    :global([data-frequency-sweep] .sweep-stage) {
-      min-height: 58px;
-      padding: 4px 4px 16px;
-    }
-
-    :global([data-frequency-sweep] .sweep-curve) {
-      height: 44px;
-    }
-
-    :global([data-frequency-sweep] .sweep-controls) {
-      gap: 8px;
-      padding: 10px 14px 14px;
-    }
-
-    :global([data-frequency-sweep] .sweep-safety) {
-      padding: 8px 9px;
-    }
-
-    :global([data-frequency-sweep] .sweep-range-grid) {
-      gap: 8px;
-    }
-
-    :global([data-frequency-sweep] .sweep-footer) {
-      gap: 6px;
-    }
-
-    :global([data-frequency-sweep] .level-control) {
-      gap: 5px;
-    }
-
-    :global([data-frequency-sweep] .level-control__hint) {
-      display: none;
     }
   }
 </style>
