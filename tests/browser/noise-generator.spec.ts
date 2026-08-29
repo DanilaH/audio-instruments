@@ -281,11 +281,11 @@ test("Noise Generator exposes the safe idle surface without creating AudioContex
   ).toBeVisible();
   await expect(page.locator("#noise-generator-status")).toContainText("Ready");
   await expect(page.locator("#noise-generator-level")).toHaveValue("-24");
-  await expect(page.locator('[data-noise-kind="white"]')).toHaveAttribute(
+  await expect(page.locator('button[data-noise-kind="white"]')).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await expect(page.locator('[data-noise-timer="0"]')).toHaveAttribute(
+  await expect(page.locator('button[data-noise-timer="0"]')).toHaveAttribute(
     "aria-pressed",
     "true",
   );
@@ -306,7 +306,7 @@ test("Noise Generator plays one canonical 44.1 kHz eight-second looping referenc
   await page.locator("[data-noise-play]").click();
   await expect(page.locator("#noise-generator-status")).toContainText("White noise");
   await expect(page.locator("[data-noise-stop]")).toBeEnabled();
-  await expect(page.locator('[data-noise-kind="pink"]')).toBeDisabled();
+  await expect(page.locator('button[data-noise-kind="pink"]')).toBeDisabled();
   await expect(page.locator("#noise-generator-level")).toBeEnabled();
 
   const sources = await readSources(page);
@@ -333,13 +333,13 @@ test("Noise Generator selects each documented kind before playback without dupli
   await installDeterministicAudioContext(page);
   await openNoise(page);
 
-  await page.locator('[data-noise-kind="pink"]').click();
+  await page.locator('button[data-noise-kind="pink"]').click();
   await expect(page.locator("[data-noise-kind-readout]")).toHaveText("Pink noise");
-  await expect(page.locator('[data-noise-kind="pink"]')).toHaveAttribute(
+  await expect(page.locator('button[data-noise-kind="pink"]')).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await page.locator('[data-noise-kind="brown"]').click();
+  await page.locator('button[data-noise-kind="brown"]').click();
   await expect(page.locator("[data-noise-kind-readout]")).toHaveText("Brown noise");
 
   await page.locator("[data-noise-play]").click();
@@ -356,7 +356,7 @@ test("Noise Generator timed playback shows the required reminder, clears on Stop
   await installDeterministicAudioContext(page);
   await openNoise(page);
 
-  await page.locator('[data-noise-timer="1"]').click();
+  await page.locator('button[data-noise-timer="1"]').click();
   await expect(page.locator("[data-noise-long-reminder]")).toHaveText(
     "Long playback: keep device/headphone volume at a comfortable level.",
   );
@@ -403,8 +403,8 @@ test("Noise Generator BFCache teardown closes the old session and remounts fresh
   await installDeterministicAudioContext(page);
   await openNoise(page);
 
-  await page.locator('[data-noise-kind="pink"]').click();
-  await page.locator('[data-noise-timer="5"]').click();
+  await page.locator('button[data-noise-kind="pink"]').click();
+  await page.locator('button[data-noise-timer="5"]').click();
   await page.locator("[data-noise-play]").click();
   expect(await readWindowNumber(page, "__noiseAudioContextCount")).toBe(1);
 
@@ -420,11 +420,11 @@ test("Noise Generator BFCache teardown closes the old session and remounts fresh
     window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
   });
   await expect(page.locator("#noise-generator-status")).toContainText("Ready");
-  await expect(page.locator('[data-noise-kind="white"]')).toHaveAttribute(
+  await expect(page.locator('button[data-noise-kind="white"]')).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await expect(page.locator('[data-noise-timer="0"]')).toHaveAttribute(
+  await expect(page.locator('button[data-noise-timer="0"]')).toHaveAttribute(
     "aria-pressed",
     "true",
   );
