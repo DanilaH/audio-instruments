@@ -159,7 +159,9 @@ async function installDbHarness(page: Page): Promise<void> {
         this.state = "closed";
       }
       createGain() {
-        return new FakeGainNode(this as unknown as BaseAudioContext) as unknown as GainNode;
+        return new FakeGainNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as GainNode;
       }
       createAnalyser() {
         return new FakeAnalyserNode(
@@ -335,7 +337,9 @@ test("keeps dBFS active but disables calibration when processing is reported on"
   await page.locator("[data-db-start]").click();
   await page.locator("[data-db-input]").selectOption("mic-processed");
 
-  await expect(page.locator("[data-db-active-input]")).toHaveText("Processed microphone");
+  await expect(page.locator("[data-db-active-input]")).toHaveText(
+    "Processed microphone",
+  );
   await expect(page.locator("[data-db-rms]")).toHaveText("-40.0 dBFS");
   await expect(page.locator("[data-db-detail-auto-gain]")).toHaveText("On");
   await expect(page.locator("[data-db-calibration-eligibility]")).toContainText(
@@ -363,11 +367,61 @@ test("accepts a stable 3-second Z/Flat/Linear reference and persists it by devic
   );
   await expect(page.locator("[data-db-estimate-panel]")).toBeVisible();
   await expect(page.locator("[data-db-estimate]")).toHaveText("72.0 dB");
+  await expect(page.locator("[data-db-calibrate]")).toHaveText(
+    "Reset current-device calibration",
+  );
 
   const persisted = await page.evaluate(() =>
     localStorage.getItem("browserAudioLab.dbCalibration.v2"),
   );
   expect(persisted).toContain('"mic-1"');
+});
+
+test("resets only the active device calibration", async ({ page }) => {
+  await page.evaluate(() => {
+    localStorage.setItem(
+      "browserAudioLab.dbCalibration.v2",
+      JSON.stringify({
+        byDeviceId: {
+          "mic-1": {
+            offset: 112,
+            createdAt: 1_000,
+            optionalLabel: "Built-in microphone",
+          },
+          "mic-2": {
+            offset: 104,
+            createdAt: 2_000,
+            optionalLabel: "USB microphone",
+          },
+        },
+      }),
+    );
+  });
+
+  await page.locator("[data-db-start]").click();
+  await expect(page.locator("[data-db-estimate]")).toHaveText("72.0 dB");
+  await expect(page.locator("[data-db-calibrate]")).toHaveText(
+    "Reset current-device calibration",
+  );
+
+  await page.locator("[data-db-calibrate]").click();
+  await expect(page.locator("[data-db-calibration-live-status]")).toHaveText(
+    "Calibration reset",
+  );
+  await expect(page.locator("[data-db-calibration-status]")).toHaveText(
+    "Uncalibrated",
+  );
+  await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
+  await expect(page.locator("[data-db-calibrate]")).toHaveText(
+    "Capture 3-second reference",
+  );
+
+  const persisted = await page.evaluate(() => {
+    const raw = localStorage.getItem("browserAudioLab.dbCalibration.v2");
+    return raw ? (JSON.parse(raw) as { byDeviceId: Record<string, unknown> }) : null;
+  });
+  expect(persisted?.byDeviceId["mic-1"]).toBeUndefined();
+  expect(persisted?.byDeviceId["mic-2"]).toBeDefined();
 });
 
 test("loads calibration only for the matching device and restores it when switching back", async ({
@@ -378,7 +432,11 @@ test("loads calibration only for the matching device and restores it when switch
       "browserAudioLab.dbCalibration.v2",
       JSON.stringify({
         byDeviceId: {
-          "mic-1": { offset: 112, createdAt: 1_000, optionalLabel: "Built-in microphone" },
+          "mic-1": {
+            offset: 112,
+            createdAt: 1_000,
+            optionalLabel: "Built-in microphone",
+          },
         },
       }),
     );
@@ -389,7 +447,9 @@ test("loads calibration only for the matching device and restores it when switch
 
   await page.locator("[data-db-input]").selectOption("mic-2");
   await expect(page.locator("[data-db-active-input]")).toHaveText("USB microphone");
-  await expect(page.locator("[data-db-calibration-status]")).toHaveText("Uncalibrated");
+  await expect(page.locator("[data-db-calibration-status]")).toHaveText(
+    "Uncalibrated",
+  );
   await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
 
   await page.locator("[data-db-input]").selectOption("mic-1");
@@ -438,7 +498,9 @@ test("rejects clipping during calibration and leaves the tool dBFS-only", async 
   await expect(page.locator("[data-db-calibration-status]")).toContainText("clipped");
   await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
   expect(
-    await page.evaluate(() => localStorage.getItem("browserAudioLab.dbCalibration.v2")),
+    await page.evaluate(() =>
+      localStorage.getItem("browserAudioLab.dbCalibration.v2"),
+    ),
   ).toBeNull();
 });
 
@@ -456,7 +518,9 @@ test("Stop cancels meter work and an in-flight calibration window", async ({ pag
   await page.waitForTimeout(3_100);
   expect((await harnessState(page)).meterReadTimes).toHaveLength(readsAtStop);
   expect(
-    await page.evaluate(() => localStorage.getItem("browserAudioLab.dbCalibration.v2")),
+    await page.evaluate(() =>
+      localStorage.getItem("browserAudioLab.dbCalibration.v2"),
+    ),
   ).toBeNull();
   await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
 });
