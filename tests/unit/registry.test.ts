@@ -41,6 +41,7 @@ describe("tool registry", () => {
   it("publishes only implemented routes", () => {
     expect(getPublicTools().map(({ id, route }) => ({ id, route }))).toEqual([
       { id: "sound-test", route: "/sound-test" },
+      { id: "speaker-test", route: "/speaker-test" },
       { id: "stereo-test", route: "/stereo-test" },
       { id: "phase-test", route: "/phase-test" },
       { id: "tone-generator", route: "/tone-generator" },
