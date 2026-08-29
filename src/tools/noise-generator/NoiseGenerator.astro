@@ -1,0 +1,590 @@
+---
+import LevelControl from "../../components/controls/LevelControl.astro";
+import ToolStatus from "../../components/feedback/ToolStatus.astro";
+import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import {
+  NOISE_GENERATOR_INITIAL_KIND,
+  NOISE_GENERATOR_INITIAL_TIMER_MINUTES,
+  NOISE_GENERATOR_KINDS,
+  NOISE_GENERATOR_TIMER_MINUTES,
+} from "./config";
+
+const kindLabel = (kind: string) => `${kind[0]?.toUpperCase() ?? ""}${kind.slice(1)}`;
+const timerLabel = (minutes: number) => (minutes === 0 ? "Off" : `${minutes} min`);
+---
+
+<div
+  data-noise-generator
+  data-noise-kind={NOISE_GENERATOR_INITIAL_KIND}
+  data-noise-visual="idle"
+>
+  <InstrumentSurface label="Noise Generator controls and reference-noise visualization" accent="neutral">
+    <div class="noise-instrument">
+      <section class="noise-visual" aria-label="Reference noise visualization">
+        <div class="noise-visual__header">
+          <ToolStatus id="noise-generator-status" label="Ready" state="idle" />
+          <div class="noise-readout">
+            <strong data-noise-kind-readout>White noise</strong>
+            <span data-noise-timer-readout>Timer off</span>
+          </div>
+        </div>
+
+        <div class="noise-field" aria-hidden="true">
+          <span class="noise-field__glow"></span>
+          <span class="noise-field__layer noise-field__layer--one"></span>
+          <span class="noise-field__layer noise-field__layer--two"></span>
+          <span class="noise-field__layer noise-field__layer--three"></span>
+          <span class="noise-field__line"></span>
+        </div>
+
+        <div class="noise-reference" aria-label="Reference buffer details">
+          <span>44.1 kHz reference PCM</span>
+          <span>8 s local loop</span>
+          <span>Mono source · identical L/R</span>
+        </div>
+        <p class="noise-visual__note">
+          Stylized noise visual only. It is not a spectrum, acoustic measurement or laboratory spectral analysis.
+        </p>
+      </section>
+
+      <section class="noise-controls" aria-label="Noise Generator settings">
+        <div class="noise-safety">
+          <i class="ph ph-speaker-low" aria-hidden="true"></i>
+          <p>
+            Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.
+          </p>
+        </div>
+
+        <fieldset class="noise-group">
+          <legend>Noise type</legend>
+          <div class="noise-selector noise-selector--kinds">
+            {
+              NOISE_GENERATOR_KINDS.map((kind) => (
+                <button
+                  type="button"
+                  data-noise-kind={kind}
+                  aria-pressed={String(kind === NOISE_GENERATOR_INITIAL_KIND)}
+                >
+                  <span class={`noise-dot noise-dot--${kind}`} aria-hidden="true"></span>
+                  {kindLabel(kind)}
+                </button>
+              ))
+            }
+          </div>
+        </fieldset>
+
+        <fieldset class="noise-group">
+          <legend>Timer</legend>
+          <div class="noise-selector noise-selector--timer">
+            {
+              NOISE_GENERATOR_TIMER_MINUTES.map((minutes) => (
+                <button
+                  type="button"
+                  data-noise-timer={minutes}
+                  aria-pressed={String(minutes === NOISE_GENERATOR_INITIAL_TIMER_MINUTES)}
+                >
+                  {timerLabel(minutes)}
+                </button>
+              ))
+            }
+          </div>
+          <p class="noise-long-reminder" data-noise-long-reminder hidden>
+            <i class="ph ph-timer" aria-hidden="true"></i>
+            Long playback: keep device/headphone volume at a comfortable level.
+          </p>
+        </fieldset>
+
+        <div class="noise-footer">
+          <LevelControl id="noise-generator-level" valueDb={-24} minDb={-60} maxDb={-12} />
+          <div class="noise-actions">
+            <button type="button" class="noise-play" data-noise-play>
+              <i class="ph ph-play" aria-hidden="true"></i>
+              Play noise
+            </button>
+            <button type="button" class="noise-stop" data-noise-stop disabled>
+              <i class="ph ph-stop" aria-hidden="true"></i>
+              Stop
+            </button>
+          </div>
+        </div>
+
+        <p class="noise-error" data-noise-error role="alert" hidden></p>
+      </section>
+    </div>
+  </InstrumentSurface>
+</div>
+
+<script>
+  import { NoiseGeneratorController } from "./NoiseGeneratorController";
+
+  const root = document.querySelector<HTMLElement>("[data-noise-generator]");
+  let controller: NoiseGeneratorController | null = null;
+
+  const mount = () => {
+    if (!root || controller) return;
+    controller = new NoiseGeneratorController(root);
+  };
+
+  const teardown = () => {
+    const current = controller;
+    controller = null;
+    if (current) void current.dispose();
+  };
+
+  window.addEventListener("pagehide", teardown);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) mount();
+  });
+
+  mount();
+</script>
+
+<style>
+  .noise-instrument {
+    display: grid;
+    grid-template-columns: minmax(0, 0.92fr) minmax(440px, 1.08fr);
+    min-height: 440px;
+  }
+
+  .noise-visual,
+  .noise-controls {
+    min-width: 0;
+    padding: clamp(20px, 2.6vw, 30px);
+  }
+
+  .noise-visual {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    gap: 12px;
+    border-right: 1px solid var(--color-border);
+    background:
+      radial-gradient(circle at 50% 44%, rgb(80 84 96 / 0.1), transparent 38%),
+      linear-gradient(145deg, rgb(255 253 252 / 0.96), rgb(246 246 247 / 0.92));
+  }
+
+  .noise-visual__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .noise-readout {
+    display: grid;
+    justify-items: end;
+    gap: 3px;
+    text-align: right;
+  }
+
+  .noise-readout strong {
+    font-size: clamp(1.18rem, 2vw, 1.7rem);
+  }
+
+  .noise-readout span,
+  .noise-visual__note,
+  .noise-reference {
+    color: var(--color-ink-muted);
+    font-size: 0.76rem;
+    line-height: 1.45;
+  }
+
+  .noise-field {
+    position: relative;
+    width: min(330px, 78%);
+    aspect-ratio: 1.8;
+    align-self: center;
+    justify-self: center;
+    overflow: hidden;
+    border: 1px solid rgb(49 53 63 / 0.1);
+    border-radius: 28px;
+    background: rgb(255 255 255 / 0.68);
+    box-shadow: 0 22px 50px rgb(34 38 47 / 0.08);
+  }
+
+  .noise-field__glow,
+  .noise-field__layer,
+  .noise-field__line {
+    position: absolute;
+    inset: 0;
+  }
+
+  .noise-field__glow {
+    background: radial-gradient(circle at 50% 50%, rgb(112 116 130 / 0.14), transparent 60%);
+  }
+
+  .noise-field__layer {
+    opacity: 0.5;
+    background-size: 17px 13px, 23px 19px, 31px 29px;
+  }
+
+  .noise-field__layer--one {
+    background-image:
+      radial-gradient(circle, rgb(45 49 60 / 0.36) 0 1px, transparent 1.4px),
+      radial-gradient(circle, rgb(45 49 60 / 0.22) 0 1px, transparent 1.4px),
+      radial-gradient(circle, rgb(45 49 60 / 0.14) 0 1px, transparent 1.4px);
+    background-position: 0 0, 7px 5px, 13px 11px;
+  }
+
+  .noise-field__layer--two {
+    opacity: 0.28;
+    background-image: repeating-linear-gradient(
+      173deg,
+      transparent 0 5px,
+      rgb(60 64 77 / 0.22) 6px,
+      transparent 7px 13px
+    );
+  }
+
+  .noise-field__layer--three {
+    opacity: 0.2;
+    background-image: repeating-linear-gradient(
+      7deg,
+      transparent 0 10px,
+      rgb(60 64 77 / 0.2) 11px,
+      transparent 12px 21px
+    );
+  }
+
+  .noise-field__line {
+    inset: 50% 8% auto;
+    height: 1px;
+    background: rgb(53 58 69 / 0.22);
+    box-shadow:
+      0 -18px 0 rgb(53 58 69 / 0.08),
+      0 18px 0 rgb(53 58 69 / 0.08);
+  }
+
+  [data-noise-kind="pink"] .noise-field {
+    background: linear-gradient(140deg, rgb(255 251 251 / 0.94), rgb(253 238 242 / 0.82));
+  }
+
+  [data-noise-kind="pink"] .noise-field__layer--one {
+    filter: blur(0.35px);
+    transform: scale(1.08);
+  }
+
+  [data-noise-kind="brown"] .noise-field {
+    background: linear-gradient(140deg, rgb(255 252 248 / 0.94), rgb(241 232 219 / 0.88));
+  }
+
+  [data-noise-kind="brown"] .noise-field__layer--one {
+    opacity: 0.28;
+    filter: blur(0.6px);
+    transform: scale(1.15);
+  }
+
+  [data-noise-visual="playing"] .noise-field__layer--one {
+    animation: noise-drift-one 1.8s steps(6, end) infinite;
+  }
+
+  [data-noise-visual="playing"] .noise-field__layer--two {
+    animation: noise-drift-two 2.5s linear infinite alternate;
+  }
+
+  .noise-reference {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px 12px;
+    padding-top: 9px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .noise-visual__note {
+    max-width: 500px;
+    margin: 0;
+  }
+
+  .noise-controls {
+    display: grid;
+    align-content: start;
+    gap: 15px;
+  }
+
+  .noise-safety {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 10px 12px;
+    border-radius: var(--radius-control);
+    background: rgb(255 215 106 / 0.17);
+  }
+
+  .noise-safety p,
+  .noise-long-reminder,
+  .noise-error {
+    margin: 0;
+    font-size: 0.77rem;
+    line-height: 1.42;
+  }
+
+  .noise-group {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .noise-group legend {
+    margin-bottom: 8px;
+    font-size: 0.86rem;
+    font-weight: 750;
+  }
+
+  .noise-selector {
+    display: grid;
+    gap: 6px;
+    padding: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: rgb(31 36 48 / 0.035);
+  }
+
+  .noise-selector--kinds {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .noise-selector--timer {
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+  }
+
+  .noise-selector button {
+    display: inline-flex;
+    min-height: 42px;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    padding: 0 9px;
+    border: 0;
+    border-radius: calc(var(--radius-button) - 5px);
+    background: transparent;
+    color: var(--color-ink-muted);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 760;
+    cursor: pointer;
+  }
+
+  .noise-selector button[aria-pressed="true"] {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 4px 14px rgb(31 36 48 / 0.07);
+  }
+
+  .noise-selector button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .noise-dot {
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-radius: 50%;
+    background: #686d78;
+  }
+
+  .noise-dot--pink {
+    background: #c98b99;
+  }
+
+  .noise-dot--brown {
+    background: #9a7958;
+  }
+
+  .noise-long-reminder {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    margin-top: 7px;
+    padding: 8px 10px;
+    border-radius: var(--radius-control);
+    background: rgb(255 215 106 / 0.13);
+  }
+
+  .noise-long-reminder[hidden],
+  .noise-error[hidden] {
+    display: none;
+  }
+
+  .noise-footer {
+    display: grid;
+    grid-template-columns: minmax(220px, 1fr) auto;
+    align-items: end;
+    gap: 16px;
+    padding-top: 7px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .noise-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .noise-play,
+  .noise-stop {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: var(--radius-button);
+    font: inherit;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .noise-play {
+    border: 1px solid var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .noise-stop {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .noise-play:disabled,
+  .noise-stop:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .noise-error {
+    color: var(--color-danger, #9a3434);
+  }
+
+  @keyframes noise-drift-one {
+    from {
+      transform: translate3d(-4px, -2px, 0) scale(1.03);
+    }
+    to {
+      transform: translate3d(5px, 3px, 0) scale(1.08);
+    }
+  }
+
+  @keyframes noise-drift-two {
+    from {
+      transform: translateX(-2%);
+    }
+    to {
+      transform: translateX(2%);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .noise-instrument {
+      grid-template-columns: 1fr;
+    }
+
+    .noise-visual {
+      min-height: 220px;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .noise-field {
+      width: min(260px, 62%);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .noise-visual,
+    .noise-controls {
+      padding: 11px 14px;
+    }
+
+    .noise-visual {
+      min-height: 118px;
+      grid-template-rows: auto 1fr auto;
+      gap: 6px;
+    }
+
+    .noise-field {
+      width: 132px;
+      border-radius: 18px;
+    }
+
+    .noise-visual__note {
+      display: none;
+    }
+
+    .noise-reference {
+      gap: 4px 9px;
+      padding-top: 5px;
+      font-size: 0.64rem;
+    }
+
+    .noise-controls {
+      gap: 8px;
+    }
+
+    .noise-safety {
+      padding: 8px 9px;
+    }
+
+    .noise-safety p,
+    .noise-long-reminder {
+      font-size: 0.7rem;
+      line-height: 1.35;
+    }
+
+    .noise-group legend {
+      margin-bottom: 4px;
+      font-size: 0.78rem;
+    }
+
+    .noise-selector {
+      gap: 3px;
+      padding: 3px;
+    }
+
+    .noise-selector button {
+      min-height: 38px;
+      padding-inline: 4px;
+      font-size: 0.72rem;
+    }
+
+    .noise-dot {
+      display: none;
+    }
+
+    .noise-long-reminder {
+      margin-top: 5px;
+      padding: 6px 8px;
+    }
+
+    .noise-footer {
+      grid-template-columns: 1fr;
+      gap: 6px;
+      padding-top: 5px;
+    }
+
+    .noise-footer :global(.level-control) {
+      gap: 5px;
+    }
+
+    .noise-footer :global(.level-control__hint) {
+      display: none;
+    }
+
+    .noise-actions {
+      display: grid;
+      grid-template-columns: 1fr 0.7fr;
+    }
+
+    .noise-play,
+    .noise-stop {
+      min-height: 44px;
+      padding-inline: 10px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .noise-field__layer {
+      animation: none !important;
+    }
+  }
+</style>
