@@ -37,7 +37,12 @@ describe("shared output reference signals", () => {
       direction: "ascending",
       scale: "logarithmic",
     });
-    expect(createBassSweepDefinition(BASS_SWEEP_DEFAULT_LOW_HZ, BASS_SWEEP_DEFAULT_HIGH_HZ)).toEqual({
+    expect(
+      createBassSweepDefinition(
+        BASS_SWEEP_DEFAULT_LOW_HZ,
+        BASS_SWEEP_DEFAULT_HIGH_HZ,
+      ),
+    ).toEqual({
       lowHz: 20,
       highHz: 120,
       durationSeconds: 12,
@@ -49,7 +54,9 @@ describe("shared output reference signals", () => {
   });
 
   it("keeps the exact Bass preset sequence contract", () => {
-    expect(BASS_PRESET_FREQUENCIES_HZ).toEqual([20, 30, 40, 50, 60, 80, 100]);
+    expect(BASS_PRESET_FREQUENCIES_HZ).toEqual([
+      20, 30, 40, 50, 60, 80, 100,
+    ]);
     expect(BASS_PRESET_SEQUENCE_MAX_HZ).toBe(100);
     expect(BASS_PRESET_TONE_DURATION_SECONDS).toBe(0.8);
     expect(BASS_PRESET_SEQUENCE_GAP_SECONDS).toBe(0.3);
