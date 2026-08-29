@@ -218,8 +218,8 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "timing-specialist",
     implementationPhase: "P6.1",
     accent: "yellow",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: ["sound-test", "speaker-test", "headphone-test"],
   },
   {
     id: "hearing-frequency-test",
