@@ -56,9 +56,10 @@ describe("Hearing Frequency Test guided session", () => {
     expect(recordHeardFrequency(4_000, 8_000)).toBe(8_000);
   });
 
-  it("formats session observations without diagnostic language", () => {
+  it("formats session observations and capability values without diagnostic language", () => {
     expect(formatHearingFrequency(2_000)).toBe("2 kHz");
     expect(formatHearingFrequency(12_000)).toBe("12 kHz");
+    expect(formatHearingFrequency(15_200)).toBe("15.2 kHz");
     expect(formatHearingFrequency(750)).toBe("750 Hz");
   });
 });
