@@ -463,8 +463,12 @@ test("failed destination restoration closes the uncertain session before fresh s
   expect(await readCount(page, "__surroundClosedContextCount")).toBe(1);
   expect(await readCount(page, "__surroundContextCount")).toBe(1);
 
+  const capabilityCheck = page.getByRole("button", { name: "Check surround support" });
   await page.getByRole("button", { name: "Left", exact: true }).click();
   expect(await readCount(page, "__surroundContextCount")).toBe(2);
+  await expect(capabilityCheck).toBeDisabled();
+  await page.getByRole("button", { name: "Stop" }).click();
+  await expect(capabilityCheck).toBeEnabled();
 });
 
 test("pagehide disposal and BFCache pageshow mount a fresh idle controller without stale 5.1 capability", async ({ page }) => {
