@@ -23,8 +23,8 @@ test("Frequency Sweep keeps its core interaction usable at every required viewpo
     await page.goto("/frequency-sweep");
 
     const instrument = page.locator("[data-frequency-sweep]");
-    await instrument.scrollIntoViewIfNeeded();
     await expect(instrument).toBeVisible();
+    await expect(page.locator(".sweep-safety")).toBeVisible();
     await expect(page.locator("#frequency-sweep-low-number")).toBeVisible();
     await expect(page.locator("#frequency-sweep-high-number")).toBeVisible();
     await expect(page.locator("#frequency-sweep-duration")).toBeVisible();
@@ -34,8 +34,12 @@ test("Frequency Sweep keeps its core interaction usable at every required viewpo
     await expectNoHorizontalOverflow(page);
 
     const playBox = await page.locator("[data-sweep-play]").boundingBox();
+    const safetyBox = await page.locator(".sweep-safety").boundingBox();
     expect(playBox).not.toBeNull();
-    if (playBox) {
+    expect(safetyBox).not.toBeNull();
+    if (playBox && safetyBox) {
+      expect(safetyBox.y).toBeGreaterThanOrEqual(0);
+      expect(safetyBox.y + safetyBox.height).toBeLessThanOrEqual(viewport.height);
       expect(playBox.y).toBeGreaterThanOrEqual(0);
       expect(playBox.y + playBox.height).toBeLessThanOrEqual(viewport.height);
     }
