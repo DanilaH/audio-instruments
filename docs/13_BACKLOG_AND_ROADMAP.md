@@ -216,7 +216,7 @@ Ready-for-review CI trigger verified
 
 Repository observation: the repository is private on the current free GitHub plan and the connected GitHub API reports protected-branch/ruleset functionality unavailable. The owner has explicitly accepted **manual repository-gate enforcement** for this setup. Do not claim the gate is mechanically unbypassable unless repository visibility/plan changes and protection is actually verified.
 
-A separate later implementation incident has also been observed: some hosted GitHub Actions jobs fail before runner allocation with `runner_id = 0` and `steps = []`. Treat that signature as infrastructure/no-runner evidence, not a green validation result and not a repository test failure. The intended green `merge-gate` workflow remains the normal target.
+A separate later implementation incident has also been observed: some hosted GitHub Actions jobs fail before runner allocation with `runner_id = 0` and `steps = []`. Treat that signature as infrastructure/no-runner evidence, not a green validation result and not a repository test failure. The required green `merge-gate` workflow remains normative; the incident record does not redefine it.
 
 ## Deferred architecture — do not build in P0–P6
 
@@ -251,7 +251,7 @@ Automated WebKit is regression coverage only; actual Safari/iOS QA remains P8.
 
 ## P0 validation-tooling gate
 
-Implemented baseline:
+Implemented baseline satisfies the existing contract:
 
 ```text
 astro check works with @astrojs/check + TypeScript
@@ -260,9 +260,11 @@ Prettier processes .astro
 test = vitest run
 test:browser builds before Playwright preview
 Playwright retries = 0
-merge-gate is the intended required CI check
+merge-gate is the required CI check in repository policy
 Dependabot monitors GitHub Actions and npm dependencies
 ```
+
+P0 CI must have at least one real Vitest suite and one real Playwright suite.
 
 Mechanical branch-protection enforcement remains unavailable under the current private/free-plan repository mode and is tracked separately from the implemented tooling baseline.
 
