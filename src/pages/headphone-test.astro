@@ -1,0 +1,88 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import HeadphoneTest from "../tools/headphone-test/HeadphoneTest.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const headphoneTool = toolRegistry.find((tool) => tool.id === "headphone-test");
+if (!headphoneTool) throw new Error("Headphone Test registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = headphoneTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Headphone Test — Browser Audio Lab"
+  description="Check left/right headphone channels, phase-image behavior, a nominal 20 Hz–20 kHz digital sweep and low-frequency rattles in your browser."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Output diagnostics"
+    title="Headphone Test"
+    description="Check each ear, compare phase behavior and listen through a nominal 20 Hz–20 kHz sweep plus bass/rattle references; runtime audio capability may lower the generated maximum."
+    accent="blue"
+  >
+    <HeadphoneTest />
+
+    <section class="headphone-content" aria-labelledby="headphone-about-title">
+      <div>
+        <p class="eyebrow">What to listen for</p>
+        <h2 id="headphone-about-title">Missing ear, imbalance, rattles or obvious range changes</h2>
+      </div>
+      <div class="headphone-content__copy">
+        <p>
+          Left, Right and Both use the same canonical short reference burst with explicit
+          hard channel routing. Phase mode keeps one correlated pink-noise source running
+          while only the right-channel sign changes.
+        </p>
+        <p>
+          Sweep and Bass / rattle modes generate digital reference signals for your own
+          listening comparison. They do not measure headphone frequency response, SPL,
+          driver health, imaging quality or physical polarity.
+        </p>
+      </div>
+    </section>
+
+    <section class="headphone-help" aria-labelledby="headphone-help-title">
+      <h2 id="headphone-help-title">If something sounds wrong</h2>
+      <div class="headphone-help__grid">
+        <p>
+          Check the selected output device, plug or Bluetooth route and any operating-system
+          balance setting before repeating the relevant test at a comfortable volume.
+        </p>
+        <p>
+          Treat the result as troubleshooting evidence only. This tool does not provide
+          burn-in, “8D” processing, automatic quality scoring or a medical hearing result.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .headphone-content,
+  .headphone-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+  .headphone-content h2,
+  .headphone-help h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.08; }
+  .headphone-content__copy,
+  .headphone-help__grid { display: grid; gap: 14px; }
+  .headphone-content p,
+  .headphone-help p { margin: 0; color: var(--color-ink-muted); line-height: 1.72; }
+  @media (max-width: 760px) {
+    .headphone-content,
+    .headphone-help { grid-template-columns: 1fr; margin-top: 48px; padding-top: 34px; }
+  }
+</style>
