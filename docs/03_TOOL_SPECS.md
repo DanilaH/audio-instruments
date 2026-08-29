@@ -792,6 +792,19 @@ slow sweep
 preset sequence
 ```
 
+Single tone:
+
+```text
+sine wave
+initial frequency: 60 Hz
+continuous until explicit Stop
+frequency and preset edits apply live while playing
+```
+
+The single-tone frequency control uses the nominal 20–200 Hz Bass range and the shared runtime frequency cap.
+
+All Bass Test generated tones and sweeps use a sine source.
+
 Default sweep:
 
 ```text
@@ -1823,7 +1836,7 @@ Provide a non-clinical user-observed high-frequency hearing exploration.
 
 #### Setup
 
-Before high-frequency steps:
+Before high-frequency playback:
 
 1. play a 1 kHz reference burst at the hearing-test default Level;
 2. ask the user to set device/system volume to a **low comfortable level**;
