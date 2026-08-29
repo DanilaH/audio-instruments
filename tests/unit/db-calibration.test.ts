@@ -97,10 +97,9 @@ describe("Decibel Meter calibration window", () => {
     expect(result.result.standardDeviationDb).toBeLessThan(
       DB_CALIBRATION_MAX_STDDEV_DB,
     );
-    expect(estimateReferenceCalibratedLevel(-37.5, result.result.offset)).toBeCloseTo(
-      74.5,
-      6,
-    );
+    expect(
+      estimateReferenceCalibratedLevel(-37.5, result.result.offset),
+    ).toBeCloseTo(74.5, 6);
   });
 
   it("rejects fewer than 25 valid samples", () => {
@@ -138,10 +137,13 @@ describe("Decibel Meter calibration window", () => {
   });
 
   it("rejects an unstable RMS window above 1.5 dB sample standard deviation", () => {
-    const samples = Array.from({ length: DB_CALIBRATION_TARGET_SAMPLES }, (_, index) => ({
-      rmsDbfs: index % 2 === 0 ? -36 : -44,
-      peakDbfs: -10,
-    }));
+    const samples = Array.from(
+      { length: DB_CALIBRATION_TARGET_SAMPLES },
+      (_, index) => ({
+        rmsDbfs: index % 2 === 0 ? -36 : -44,
+        peakDbfs: -10,
+      }),
+    );
     expect(evaluateCalibrationWindow(samples, 70)).toEqual({
       ok: false,
       reason: "unstable",
@@ -167,11 +169,27 @@ describe("DbCalibrationStore", () => {
     expect(storage.getItem(DB_CALIBRATION_STORAGE_KEY)).toContain('"mic-1"');
   });
 
+  it("removes only the matching current-device record", () => {
+    const storage = new FakeStorage();
+    const store = new DbCalibrationStore(storage);
+    const first: CalibrationRecord = { offset: 108.5, createdAt: 1_000 };
+    const second: CalibrationRecord = { offset: 104, createdAt: 2_000 };
+
+    expect(store.save("mic-1", first)).toBe(true);
+    expect(store.save("mic-2", second)).toBe(true);
+    expect(store.remove("mic-1")).toBe(true);
+    expect(store.load("mic-1")).toBeNull();
+    expect(store.load("mic-2")).toEqual(second);
+    expect(storage.getItem(DB_CALIBRATION_STORAGE_KEY)).not.toContain('"mic-1"');
+    expect(storage.getItem(DB_CALIBRATION_STORAGE_KEY)).toContain('"mic-2"');
+  });
+
   it("never treats an empty deviceId as persistent scope", () => {
     const storage = new FakeStorage();
     const store = new DbCalibrationStore(storage);
     expect(store.save("", { offset: 100, createdAt: 1 })).toBe(false);
     expect(store.load("")).toBeNull();
+    expect(store.remove("")).toBe(false);
     expect(storage.length).toBe(0);
   });
 
