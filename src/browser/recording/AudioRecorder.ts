@@ -173,7 +173,7 @@ export class AudioRecorder implements SessionResource {
     try {
       recorder.start();
     } catch (error) {
-      this.#failActive(active, error);
+      this.#abandonActive(active);
       throw error;
     }
 
@@ -294,6 +294,13 @@ export class AudioRecorder implements SessionResource {
     if (this.#active === active) this.#active = null;
     active.chunks.length = 0;
     active.reject(error);
+  }
+
+  #abandonActive(active: ActiveRecording): void {
+    this.#clearAutoStop(active);
+    this.#detach(active);
+    if (this.#active === active) this.#active = null;
+    active.chunks.length = 0;
   }
 
   #clearAutoStop(active: ActiveRecording): void {
