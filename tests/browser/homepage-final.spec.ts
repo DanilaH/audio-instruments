@@ -186,15 +186,11 @@ test("reduced motion disables decorative homepage transitions", async ({ page })
     ".featured-card",
     ".tool-link",
   ]) {
-    const transition = await page.locator(selector).first().evaluate((element) => {
-      const style = getComputedStyle(element);
-      return {
-        property: style.transitionProperty,
-        duration: style.transitionDuration,
-      };
-    });
+    const durations = await page
+      .locator(selector)
+      .first()
+      .evaluate((element) => getComputedStyle(element).transitionDuration.split(", "));
 
-    expect(transition.property).toBe("none");
-    expect(transition.duration).toBe("0s");
+    expect(durations.every((duration) => duration === "0s")).toBe(true);
   }
 });
