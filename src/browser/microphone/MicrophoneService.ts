@@ -248,9 +248,21 @@ export class MicrophoneService implements SessionResource {
       throw new DOMException("Microphone acquisition was cancelled", "AbortError");
     }
 
+    try {
+      this.#connectSourceToAnalysisTargets(source);
+    } catch (error) {
+      source.disconnect();
+      stopStreamTracks(stream);
+      throw error;
+    }
+
     const settings = copySettings(track.getSettings());
     this.#commitCapture(stream, source, track, settings);
     return { stream, settings: { ...settings } };
+  }
+
+  #connectSourceToAnalysisTargets(source: MediaStreamAudioSourceNode): void {
+    for (const target of this.#analysisTargets) source.connect(target);
   }
 
   #commitCapture(
@@ -278,16 +290,6 @@ export class MicrophoneService implements SessionResource {
     const endedHandler: EventListener = () => this.#handleTrackEnded(track);
     this.#trackEndedHandler = endedHandler;
     track.addEventListener("ended", endedHandler, { once: true });
-
-    try {
-      for (const target of this.#analysisTargets) source.connect(target);
-    } catch (error) {
-      track.removeEventListener("ended", endedHandler);
-      source.disconnect();
-      stopStreamTracks(stream);
-      this.#clearActiveReferences();
-      throw error;
-    }
   }
 
   #handleTrackEnded(track: MediaStreamTrack): void {
