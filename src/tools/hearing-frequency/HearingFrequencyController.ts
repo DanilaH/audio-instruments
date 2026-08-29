@@ -3,10 +3,7 @@ import {
   type MonoOscillatorPlayback,
 } from "../../browser/audio-output/AudioOutputEngine";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
-import {
-  DEFAULT_RAMP_SECONDS,
-  HEARING_LEVEL_DEFAULT_DB,
-} from "../../utils/audio";
+import { DEFAULT_RAMP_SECONDS } from "../../utils/audio";
 import {
   HEARING_GUIDED_LEVEL_DB,
   HEARING_MANUAL_LEVEL_MAX_DB,
@@ -138,6 +135,10 @@ export class HearingFrequencyController {
     if (session) await session.dispose();
   }
 
+  #isToneBusy(): boolean {
+    return this.#playback !== null || this.#toneKind !== null;
+  }
+
   #bindEvents(): void {
     const signal = this.#listeners.signal;
 
@@ -188,7 +189,7 @@ export class HearingFrequencyController {
     document.addEventListener(
       "visibilitychange",
       () => {
-        if (document.hidden && (this.#playback || this.#guidedActive)) {
+        if (document.hidden && (this.#isToneBusy() || this.#guidedActive)) {
           this.#stopActive("Stopped while tab was hidden");
         }
       },
@@ -233,7 +234,7 @@ export class HearingFrequencyController {
   }
 
   async #playReference(): Promise<void> {
-    if (this.#disposed || this.#playback || this.#guidedActive) return;
+    if (this.#disposed || this.#isToneBusy() || this.#guidedActive) return;
 
     const played = await this.#playTone({
       frequencyHz: HEARING_REFERENCE_FREQUENCY_HZ,
@@ -259,7 +260,7 @@ export class HearingFrequencyController {
     const frequencies = this.#capability?.guidedFrequenciesHz ?? [];
     if (
       this.#disposed ||
-      this.#playback ||
+      this.#isToneBusy() ||
       this.#guidedActive ||
       !this.#referencePlayed ||
       !this.#setupConfirm.checked ||
@@ -350,7 +351,7 @@ export class HearingFrequencyController {
     if (
       this.#disposed ||
       this.#mode !== "manual" ||
-      this.#playback ||
+      this.#isToneBusy() ||
       this.#guidedActive
     ) {
       return;
@@ -385,7 +386,7 @@ export class HearingFrequencyController {
     readonly playingLabel: string;
     readonly onComplete: () => void;
   }): Promise<boolean> {
-    if (this.#playback || this.#disposed) return false;
+    if (this.#isToneBusy() || this.#disposed) return false;
 
     const token = ++this.#runToken;
     this.#toneKind = options.kind;
@@ -455,7 +456,7 @@ export class HearingFrequencyController {
   }
 
   #stopActive(label: string): void {
-    if (this.#disposed || (!this.#playback && !this.#guidedActive)) return;
+    if (this.#disposed || (!this.#isToneBusy() && !this.#guidedActive)) return;
     this.#runToken += 1;
     this.#cancelTone();
     this.#guidedActive = false;
@@ -510,7 +511,7 @@ export class HearingFrequencyController {
   }
 
   #renderControls(): void {
-    const playing = this.#playback !== null || this.#toneKind !== null;
+    const playing = this.#isToneBusy();
     const guidedFrequencies = this.#capability?.guidedFrequenciesHz ?? [];
     const referenceAvailable = this.#capability?.referenceAvailable !== false;
     const lockMode = playing || this.#guidedActive;
@@ -569,5 +570,3 @@ export class HearingFrequencyController {
     return !this.#disposed && token === this.#runToken;
   }
 }
-
-export { HEARING_LEVEL_DEFAULT_DB };
