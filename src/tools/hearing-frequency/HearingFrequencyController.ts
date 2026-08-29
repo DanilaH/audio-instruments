@@ -74,6 +74,7 @@ export class HearingFrequencyController {
   #context: AudioContext | null = null;
   #capability: HearingCapability | null = null;
   #playback: MonoOscillatorPlayback | null = null;
+  #playbackStartTime: number | null = null;
   #toneTimer: number | null = null;
   #mode: HearingMode = "guided";
   #toneKind: ToneKind | null = null;
@@ -425,6 +426,7 @@ export class HearingFrequencyController {
         startTime,
         durationSeconds: options.durationSeconds,
       });
+      this.#playbackStartTime = startTime;
       this.#setStatus("playing", options.playingLabel);
       this.#renderControls();
 
@@ -434,6 +436,7 @@ export class HearingFrequencyController {
         if (!this.#isCurrent(token)) return;
         this.#toneTimer = null;
         this.#playback = null;
+        this.#playbackStartTime = null;
         this.#toneKind = null;
         options.onComplete();
         this.#renderControls();
@@ -442,6 +445,7 @@ export class HearingFrequencyController {
     } catch (error) {
       if (!this.#isCurrent(token)) return false;
       this.#playback = null;
+      this.#playbackStartTime = null;
       this.#toneKind = null;
       console.error("Hearing Frequency Test tone failed", error);
       this.#setStatus("error", "Audio output unavailable");
@@ -458,8 +462,26 @@ export class HearingFrequencyController {
       window.clearTimeout(this.#toneTimer);
       this.#toneTimer = null;
     }
-    this.#playback?.stop();
+
+    const playback = this.#playback;
+    const context = this.#context;
+    const startTime = this.#playbackStartTime;
+    if (playback) {
+      try {
+        const now = context?.currentTime ?? 0;
+        if (context && startTime !== null && startTime > now) {
+          playback.stop();
+          playback.oscillator.stop(now);
+        } else {
+          playback.stop();
+        }
+      } catch (error) {
+        console.warn("Hearing Frequency Test tone cancellation failed", error);
+      }
+    }
+
     this.#playback = null;
+    this.#playbackStartTime = null;
     this.#toneKind = null;
   }
 
