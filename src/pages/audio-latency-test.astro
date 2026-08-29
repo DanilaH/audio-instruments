@@ -1,0 +1,111 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import AudioLatency from "../tools/audio-latency/AudioLatency.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const latencyTool = toolRegistry.find((tool) => tool.id === "audio-latency-test");
+if (!latencyTool) throw new Error("Audio Latency registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = latencyTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Audio Latency / AV Sync Test — Browser Audio Lab"
+  description="Inspect browser-reported Web Audio latency metadata and manually adjust a perception-based audiovisual sync offset."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Timing & specialist"
+    title="Audio Latency / AV Sync Test"
+    description="Compare a localized visual pulse with a scheduled audio click, adjust the perceived sync offset, and inspect latency values reported by the browser."
+    accent="yellow"
+  >
+    <AudioLatency />
+
+    <section class="latency-content" aria-labelledby="latency-about-title">
+      <div>
+        <p class="eyebrow">Two evidence classes</p>
+        <h2 id="latency-about-title">Reported latency is not end-to-end latency</h2>
+      </div>
+      <div class="latency-content__copy">
+        <p>
+          Web Audio may expose baseLatency and outputLatency. The browser reports
+          those values in seconds; this page converts them to milliseconds for
+          readability. They remain browser-reported estimates rather than a physical
+          measurement of the complete device, driver, Bluetooth or headphone path.
+        </p>
+        <p>
+          The manual sync control is different: it records the offset you selected
+          while judging a visual pulse against an audio click. It is a
+          perception-based preference for this session, not an automatic latency
+          calibration.
+        </p>
+      </div>
+    </section>
+
+    <section class="latency-help" aria-labelledby="latency-help-title">
+      <h2 id="latency-help-title">How to use the manual sync loop</h2>
+      <div class="latency-help__grid">
+        <p>
+          Start with system volume low, then start the loop. Move the offset until
+          the click and pulse feel simultaneous. Positive values delay the audio
+          relative to the visual event; negative values schedule the audio earlier.
+        </p>
+        <p>
+          If the tab becomes hidden, the sequence stops instead of trying to recover
+          timing across background throttling. Return to the tab and press Start
+          again. The 5 ms slider step is control granularity, not a 5 ms accuracy
+          guarantee.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .latency-content,
+  .latency-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .latency-content h2,
+  .latency-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .latency-content__copy,
+  .latency-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .latency-content p,
+  .latency-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .latency-content,
+    .latency-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
