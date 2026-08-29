@@ -40,6 +40,25 @@ test("Stereo keeps a pan action and Stop inside the 1366x768 viewport", async ({
   await expectInsideViewport(page.getByRole("button", { name: "Stop" }), 768);
 });
 
+test("Stereo motion uses a delayed trailing echo and removes it for reduced motion", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/stereo-test");
+  await page.locator("[data-stereo-test]").evaluate((element) => {
+    element.setAttribute("data-stereo-visual", "left-to-right");
+  });
+
+  const trailOne = page.locator(".stereo-track__trail--one");
+  const trailTwo = page.locator(".stereo-track__trail--two");
+  await expect(trailOne).toHaveCSS("animation-delay", "0.08s");
+  await expect(trailTwo).toHaveCSS("animation-delay", "0.16s");
+
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(trailOne).toHaveCSS("display", "none");
+  await expect(page.locator(".stereo-track__signal")).toHaveCSS("animation-name", "none");
+});
+
 test("Phase keeps mode controls inside the 390x844 viewport", async ({ page }) => {
   await page.setViewportSize({ width: 390, height: 844 });
   await page.goto("/phase-test");
