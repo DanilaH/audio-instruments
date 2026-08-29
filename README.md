@@ -14,28 +14,30 @@ The working visual direction is **Soft Sonic Studio**: a warm, friendly, express
 
 ## Documentation status
 
-Documentation baseline: **v1.10**
+Documentation baseline: **v1.11**
 
-Implementation readiness:
+Implementation status:
 
 ```text
-P0 repository bootstrap       IMPLEMENTED
-P1–P6 specification           IMPLEMENTATION-READY
-P7 SEO evidence refresh       PHASE-GATED
-P8 Release                    PHASE-GATED
+P0–P6 functional roadmap      IMPLEMENTED
+P7 SEO evidence refresh       BLOCKED — waits for upgraded runner
+P8 final audit / release      PHASE-GATED after P7 + real-device/browser QA
 ```
 
-Cold pre-code review on 2026-08-28 closed with:
+All 16 core v1 tool routes are live, and P6.3 final catalog homepage composition is merged.
+
+The original cold pre-code review on 2026-08-28 closed with:
 
 ```text
 BLOCKER = 0
 MAJOR = 0
 ```
 
-The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The assistant still requires the documented PR/review/CI sequence and a green `merge-gate` before merging, without claiming GitHub makes it unbypassable.
+The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The documented PR/review/CI sequence remains the target process; GitHub does not mechanically make owner/admin bypass impossible.
 
-P7 depends on the upgraded research runner.  
-P8 depends on real-device/browser QA and production decisions.
+A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. The affected merges carry exact-SHA review evidence and explicit infrastructure-waiver notes. This incident does not redefine the intended green `merge-gate` policy, and P7 remains blocked pending an upgraded runner.
+
+P8 still depends on real-device/browser QA and production decisions.
 
 ## Stack
 
@@ -121,6 +123,8 @@ Each concern has one authoritative home. Do not recreate a second master specifi
 15. Noise Generator
 16. Pitch Detector
 
+All 16 are implemented as live routes in the current P0–P6 baseline.
+
 A route represents a distinct user job, not a keyword synonym.
 
 ## Development workflow
@@ -148,6 +152,8 @@ development
 ```
 
 See `docs/15_DEVELOPMENT_WORKFLOW.md`.
+
+The no-runner incident above is an infrastructure exception observed during implementation, not a replacement workflow definition.
 
 ## Visual rule
 
@@ -201,7 +207,7 @@ Exact resolved package versions are pinned by `pnpm-lock.yaml` during P0.
 
 ## CI merge-gate rule
 
-The branch-protection required check is:
+The intended branch-protection required check is:
 
 ```text
 merge-gate
@@ -222,9 +228,11 @@ full-validation runs
 → merge-gate passes only if full-validation succeeds
 ```
 
+Current private-plan/manual-gate limitations and the active no-runner incident are recorded above and in the authoritative repository/CI docs.
+
 ## Documentation freeze rule
 
-v1.10 records the first implementation-evidence synchronization during P0.
+v1.11 records the P0–P6 implementation-evidence synchronization after the full functional catalog and final homepage composition were merged.
 
 Current rule:
 
