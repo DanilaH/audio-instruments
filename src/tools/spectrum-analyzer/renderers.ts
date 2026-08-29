@@ -213,8 +213,8 @@ export class SpectrogramCanvas {
       for (let y = 0; y < geometry.pixelHeight; y += 1) {
         const frequencyRatio = 1 - y / Math.max(1, geometry.pixelHeight - 1);
         const frequencyHz =
-          SPECTRUM_DISPLAY_MIN_HZ *
-          (maxHz / SPECTRUM_DISPLAY_MIN_HZ) ** frequencyRatio;
+          SPECTRUM_DISPLAY_MIN_HZ +
+          (maxHz - SPECTRUM_DISPLAY_MIN_HZ) * frequencyRatio;
         const binIndex = Math.min(
           column.valuesDb.length - 1,
           Math.max(0, Math.round((frequencyHz / sampleRate) * fftSize)),
