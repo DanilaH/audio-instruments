@@ -69,7 +69,7 @@ As of 2026-08-29:
 P0–P6.3: implemented and merged
 core v1 catalog: all 16 tool routes live
 P7: blocked by its explicit upgraded-runner prerequisite
-P8: phase-gated after P7 and real-device/browser QA + production decisions
+P8: phase-gated after P7; includes real-device/browser QA + production decisions
 ```
 
 The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units used the repository's PR + cold-review workflow and exact-SHA review evidence.
