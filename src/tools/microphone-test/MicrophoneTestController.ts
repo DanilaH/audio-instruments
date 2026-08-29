@@ -518,10 +518,26 @@ export class MicrophoneTestController {
 
   #renderDevices(
     devices: readonly MicrophoneInputDevice[],
-    selectedDeviceId: string | undefined = this.#microphone?.activeSettings()?.deviceId,
+    selectedDeviceId: string | undefined =
+      this.#microphone?.activeSettings()?.deviceId,
   ): void {
     this.#devices = devices;
     this.#inputSelect.replaceChildren();
+
+    const hasReportedSelectedDevice = Boolean(selectedDeviceId);
+    const selectedDeviceIsListed =
+      hasReportedSelectedDevice &&
+      devices.some((device) => device.deviceId === selectedDeviceId);
+
+    if (this.isActive && !selectedDeviceIsListed) {
+      const activeOption = document.createElement("option");
+      activeOption.value = selectedDeviceId ?? "";
+      activeOption.textContent = hasReportedSelectedDevice
+        ? "Active input (not currently listed)"
+        : "Active input (device ID not reported)";
+      activeOption.selected = true;
+      this.#inputSelect.append(activeOption);
+    }
 
     devices.forEach((device, index) => {
       const option = document.createElement("option");
@@ -530,11 +546,15 @@ export class MicrophoneTestController {
       this.#inputSelect.append(option);
     });
 
-    if (selectedDeviceId && devices.some((device) => device.deviceId === selectedDeviceId)) {
+    if (selectedDeviceId && selectedDeviceIsListed) {
       this.#inputSelect.value = selectedDeviceId;
     }
 
-    this.#inputField.hidden = devices.length <= 1;
+    const hasAlternativeInput = devices.some(
+      (device) => !selectedDeviceId || device.deviceId !== selectedDeviceId,
+    );
+    this.#inputField.hidden = !this.isActive || !hasAlternativeInput;
+
     if (this.isActive) {
       this.#activeInputLabel.textContent = deviceLabel(devices, selectedDeviceId);
     }
