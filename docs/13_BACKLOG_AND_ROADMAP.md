@@ -12,7 +12,7 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
 P7 blocked: wait for upgraded SEO runner
-P8 phase-gated after P7 + real-device/browser QA + production decisions
+P8 phase-gated after P7; includes real-device/browser QA + production decisions
 ```
 
 Do not rename polish/audit work as P7 while its upgraded-runner prerequisite is unavailable.
