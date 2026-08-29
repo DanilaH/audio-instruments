@@ -92,11 +92,10 @@ describe("Pitch downsampling", () => {
 
   it("preserves samples for factor one", () => {
     const source = new Float32Array([0.1, -0.2, 0.3]);
-    expect([...downsampleAveraged(source, 1)]).toEqual([
-      expect.closeTo(0.1, 6),
-      expect.closeTo(-0.2, 6),
-      expect.closeTo(0.3, 6),
-    ]);
+    const output = downsampleAveraged(source, 1);
+    expect(output[0]).toBeCloseTo(0.1, 6);
+    expect(output[1]).toBeCloseTo(-0.2, 6);
+    expect(output[2]).toBeCloseTo(0.3, 6);
   });
 });
 
@@ -111,7 +110,9 @@ describe("bounded YIN", () => {
     const result = estimateAtContextRate(frequency, rate);
 
     expect(result).not.toBeNull();
-    expect(result?.frequencyHz).toBeCloseTo(frequency, 0);
+    expect(Math.abs((result?.frequencyHz ?? 0) - frequency)).toBeLessThan(
+      frequency * 0.001,
+    );
     expect(result?.confidence).toBeGreaterThanOrEqual(PITCH_MIN_CONFIDENCE);
   });
 
@@ -174,15 +175,17 @@ describe("PitchStabilizer", () => {
     expect(stabilizer.accept(estimate(439.5)).stable).toBe(true);
   });
 
-  it("clears stale pitch history after a rejected/weak frame", () => {
+  it("keeps the last accepted window but breaks the stability streak after rejection", () => {
     const stabilizer = new PitchStabilizer();
     stabilizer.accept(estimate(440));
     stabilizer.accept(estimate(440.5));
-    stabilizer.accept(estimate(439.5));
+    expect(stabilizer.accept(estimate(439.5)).stable).toBe(true);
     expect(stabilizer.size).toBe(3);
 
     stabilizer.reject();
-    expect(stabilizer.size).toBe(0);
+    expect(stabilizer.size).toBe(3);
     expect(stabilizer.accept(estimate(660)).stable).toBe(false);
+    expect(stabilizer.accept(estimate(660.5)).stable).toBe(false);
+    expect(stabilizer.accept(estimate(659.5)).stable).toBe(true);
   });
 });
