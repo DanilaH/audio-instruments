@@ -105,3 +105,19 @@ test("tool-local controls keep a 44px touch target", async ({ page }) => {
     }
   }
 });
+
+test("native microphone playback keeps a 44px outer height", async ({ page }) => {
+  for (const viewport of targetViewports) {
+    await page.setViewportSize(viewport);
+    await page.goto("/microphone-test");
+
+    const player = page.locator(".mic-recording audio[controls]");
+    await player.evaluate((element) => element.removeAttribute("hidden"));
+
+    const box = await player.boundingBox();
+    expect(box).not.toBeNull();
+    if (box) {
+      expect(box.height).toBeGreaterThanOrEqual(44);
+    }
+  }
+});
