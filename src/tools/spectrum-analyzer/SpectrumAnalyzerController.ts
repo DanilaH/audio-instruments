@@ -489,14 +489,17 @@ export class SpectrumAnalyzerController {
     this.#devices = devices;
     this.#inputSelect.replaceChildren();
 
+    const hasReportedSelectedDevice = Boolean(selectedDeviceId);
     const selectedDeviceIsListed =
-      selectedDeviceId !== undefined &&
+      hasReportedSelectedDevice &&
       devices.some((device) => device.deviceId === selectedDeviceId);
 
-    if (selectedDeviceId && !selectedDeviceIsListed && this.isActive) {
+    if (this.isActive && !selectedDeviceIsListed) {
       const activeOption = document.createElement("option");
-      activeOption.value = selectedDeviceId;
-      activeOption.textContent = "Active input (not currently listed)";
+      activeOption.value = selectedDeviceId ?? "";
+      activeOption.textContent = hasReportedSelectedDevice
+        ? "Active input (not currently listed)"
+        : "Active input (device ID not reported)";
       activeOption.selected = true;
       this.#inputSelect.append(activeOption);
     }
@@ -513,7 +516,7 @@ export class SpectrumAnalyzerController {
     }
 
     const hasAlternativeInput = devices.some(
-      (device) => device.deviceId !== selectedDeviceId,
+      (device) => !selectedDeviceId || device.deviceId !== selectedDeviceId,
     );
     this.#inputField.hidden = !this.isActive || !hasAlternativeInput;
 
