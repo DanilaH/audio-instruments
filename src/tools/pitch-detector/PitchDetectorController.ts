@@ -399,7 +399,7 @@ export class PitchDetectorController {
       ? "Pitch estimate stabilized across recent accepted frames."
       : "Listening for a consistent monophonic tone…";
     const boundedCents = Math.min(50, Math.max(-50, cents));
-    this.#needle.style.setProperty("--pitch-cents", String(boundedCents));
+    this.#needle.style.setProperty("--pitch-offset", `${boundedCents}%`);
   }
 
   #renderListening(): void {
@@ -410,7 +410,7 @@ export class PitchDetectorController {
     this.#confidenceValue.textContent = "—";
     this.#stabilityValue.textContent = "Unstable";
     this.#resultMessage.textContent = "Signal too weak or unstable";
-    this.#needle.style.setProperty("--pitch-cents", "0");
+    this.#needle.style.setProperty("--pitch-offset", "0%");
   }
 
   #clearPitchState(): void {
@@ -423,7 +423,7 @@ export class PitchDetectorController {
     this.#stabilityValue.textContent = "Waiting";
     this.#resultMessage.textContent =
       "Start the microphone and provide one steady monophonic tone.";
-    this.#needle.style.setProperty("--pitch-cents", "0");
+    this.#needle.style.setProperty("--pitch-offset", "0%");
   }
 
   async #refreshInputDevices(
