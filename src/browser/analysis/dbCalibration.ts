@@ -40,6 +40,11 @@ interface StoredCalibrationEnvelope {
   readonly byDeviceId: Record<string, CalibrationRecord>;
 }
 
+interface EnvelopeReadResult {
+  readonly ok: boolean;
+  readonly envelope: StoredCalibrationEnvelope;
+}
+
 export function isReferenceCalibrationEligible(
   settings: CalibrationEligibilitySettings,
 ): boolean {
@@ -141,23 +146,40 @@ function isCalibrationRecord(value: unknown): value is CalibrationRecord {
   );
 }
 
-function readEnvelope(storage: Storage): StoredCalibrationEnvelope {
-  try {
-    const raw = storage.getItem(DB_CALIBRATION_STORAGE_KEY);
-    if (!raw) return { byDeviceId: {} };
-    const parsed = JSON.parse(raw) as unknown;
-    if (!parsed || typeof parsed !== "object") return { byDeviceId: {} };
-    const candidate = (parsed as { byDeviceId?: unknown }).byDeviceId;
-    if (!candidate || typeof candidate !== "object") return { byDeviceId: {} };
+function emptyEnvelope(): StoredCalibrationEnvelope {
+  return { byDeviceId: {} };
+}
 
-    const byDeviceId: Record<string, CalibrationRecord> = {};
-    for (const [deviceId, value] of Object.entries(candidate)) {
-      if (deviceId && isCalibrationRecord(value)) byDeviceId[deviceId] = value;
-    }
-    return { byDeviceId };
+function readEnvelope(storage: Storage): EnvelopeReadResult {
+  let raw: string | null;
+  try {
+    raw = storage.getItem(DB_CALIBRATION_STORAGE_KEY);
   } catch {
-    return { byDeviceId: {} };
+    return { ok: false, envelope: emptyEnvelope() };
   }
+
+  if (!raw) return { ok: true, envelope: emptyEnvelope() };
+
+  let parsed: unknown;
+  try {
+    parsed = JSON.parse(raw) as unknown;
+  } catch {
+    return { ok: true, envelope: emptyEnvelope() };
+  }
+
+  if (!parsed || typeof parsed !== "object") {
+    return { ok: true, envelope: emptyEnvelope() };
+  }
+  const candidate = (parsed as { byDeviceId?: unknown }).byDeviceId;
+  if (!candidate || typeof candidate !== "object") {
+    return { ok: true, envelope: emptyEnvelope() };
+  }
+
+  const byDeviceId: Record<string, CalibrationRecord> = {};
+  for (const [deviceId, value] of Object.entries(candidate)) {
+    if (deviceId && isCalibrationRecord(value)) byDeviceId[deviceId] = value;
+  }
+  return { ok: true, envelope: { byDeviceId } };
 }
 
 export class DbCalibrationStore {
@@ -169,15 +191,21 @@ export class DbCalibrationStore {
 
   load(deviceId: string): CalibrationRecord | null {
     if (!deviceId) return null;
-    return readEnvelope(this.#storage).byDeviceId[deviceId] ?? null;
+    const read = readEnvelope(this.#storage);
+    if (!read.ok) return null;
+    return read.envelope.byDeviceId[deviceId] ?? null;
   }
 
   save(deviceId: string, record: CalibrationRecord): boolean {
     if (!deviceId) return false;
-    const envelope = readEnvelope(this.#storage);
-    envelope.byDeviceId[deviceId] = record;
+    const read = readEnvelope(this.#storage);
+    if (!read.ok) return false;
+    read.envelope.byDeviceId[deviceId] = record;
     try {
-      this.#storage.setItem(DB_CALIBRATION_STORAGE_KEY, JSON.stringify(envelope));
+      this.#storage.setItem(
+        DB_CALIBRATION_STORAGE_KEY,
+        JSON.stringify(read.envelope),
+      );
       return true;
     } catch {
       return false;
@@ -186,11 +214,15 @@ export class DbCalibrationStore {
 
   remove(deviceId: string): boolean {
     if (!deviceId) return false;
-    const envelope = readEnvelope(this.#storage);
-    if (!(deviceId in envelope.byDeviceId)) return true;
-    delete envelope.byDeviceId[deviceId];
+    const read = readEnvelope(this.#storage);
+    if (!read.ok) return false;
+    if (!(deviceId in read.envelope.byDeviceId)) return true;
+    delete read.envelope.byDeviceId[deviceId];
     try {
-      this.#storage.setItem(DB_CALIBRATION_STORAGE_KEY, JSON.stringify(envelope));
+      this.#storage.setItem(
+        DB_CALIBRATION_STORAGE_KEY,
+        JSON.stringify(read.envelope),
+      );
       return true;
     } catch {
       return false;
