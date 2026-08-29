@@ -19,7 +19,7 @@ Documentation baseline: **v1.11**
 Implementation status:
 
 ```text
-P0–P6 functional roadmap      IMPLEMENTED
+P0–P6.3 functional roadmap    IMPLEMENTED
 P7 SEO evidence refresh       BLOCKED — waits for upgraded runner
 P8 final audit / release      PHASE-GATED after P7 + real-device/browser QA
 ```
@@ -33,9 +33,9 @@ BLOCKER = 0
 MAJOR = 0
 ```
 
-The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The documented PR/review/CI sequence remains the target process; GitHub does not mechanically make owner/admin bypass impossible.
+The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The documented PR/review/CI sequence still requires a green `merge-gate` before merge; GitHub simply does not mechanically make owner/admin bypass impossible.
 
-A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. The affected merges carry exact-SHA review evidence and explicit infrastructure-waiver notes. This incident does not redefine the intended green `merge-gate` policy, and P7 remains blocked pending an upgraded runner.
+A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. The affected merges carry exact-SHA review evidence and explicit infrastructure-waiver notes. Those incident-specific waivers do not redefine the required green `merge-gate` policy, and P7 remains blocked pending an upgraded runner.
 
 P8 still depends on real-device/browser QA and production decisions.
 
@@ -123,7 +123,7 @@ Each concern has one authoritative home. Do not recreate a second master specifi
 15. Noise Generator
 16. Pitch Detector
 
-All 16 are implemented as live routes in the current P0–P6 baseline.
+All 16 are implemented as live routes in the current P0–P6.3 baseline.
 
 A route represents a distinct user job, not a keyword synonym.
 
@@ -207,7 +207,7 @@ Exact resolved package versions are pinned by `pnpm-lock.yaml` during P0.
 
 ## CI merge-gate rule
 
-The intended branch-protection required check is:
+The required CI check defined by repository policy is:
 
 ```text
 merge-gate
@@ -228,7 +228,7 @@ full-validation runs
 → merge-gate passes only if full-validation succeeds
 ```
 
-Current private-plan/manual-gate limitations and the active no-runner incident are recorded above and in the authoritative repository/CI docs.
+Current private-plan/manual-gate limitations and the active no-runner incident are recorded above and in the authoritative repository/CI docs; neither changes the normative CI contract.
 
 ## Documentation freeze rule
 
