@@ -183,4 +183,17 @@ export class DbCalibrationStore {
       return false;
     }
   }
+
+  remove(deviceId: string): boolean {
+    if (!deviceId) return false;
+    const envelope = readEnvelope(this.#storage);
+    if (!(deviceId in envelope.byDeviceId)) return true;
+    delete envelope.byDeviceId[deviceId];
+    try {
+      this.#storage.setItem(DB_CALIBRATION_STORAGE_KEY, JSON.stringify(envelope));
+      return true;
+    } catch {
+      return false;
+    }
+  }
 }
