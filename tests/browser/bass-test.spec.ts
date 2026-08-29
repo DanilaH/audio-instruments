@@ -419,4 +419,4 @@ test("Bass BFCache teardown closes the old session and remounts fresh idle state
 
   await page.locator("[data-bass-tone-play]").click();
   expect(await readWindowNumber(page, "__bassAudioContextCount")).toBe(2);
-}
+});
