@@ -390,25 +390,20 @@ export class SurroundSoundTestController {
   }
 
   async #switchMode(mode: SurroundMode): Promise<void> {
+    const capabilities = this.#capabilities;
     if (
       this.#disposed ||
       this.#starting ||
-      !this.#capabilities ||
+      !capabilities ||
       mode === "unknown" ||
       mode === this.#mode
     ) {
       return;
     }
-
-    if (
-      mode === "five-one" &&
-      this.#capabilities.fiveOne !== "confirmed"
-    ) {
-      return;
-    }
+    if (mode === "five-one" && capabilities.fiveOne !== "confirmed") return;
     if (
       mode === "experimental-eight" &&
-      !isSelectableCapability(this.#capabilities.experimentalEight)
+      !isSelectableCapability(capabilities.experimentalEight)
     ) {
       return;
     }
@@ -417,12 +412,12 @@ export class SurroundSoundTestController {
     const token = this.#beginStart("Switching output mode…");
 
     try {
+      this.#clearTimers();
       if (this.#stereoPlayback) {
         this.#stereoPlayback.stop();
         this.#stereoPlayback = null;
         await sleep(TRANSITION_WAIT_MS);
       }
-      this.#clearTimers();
       this.#multichannelPlaybacks = [];
 
       if (mode === "stereo-preview") {
@@ -460,25 +455,23 @@ export class SurroundSoundTestController {
 
         if (result.status === "confirmed") {
           this.#mode = mode;
-          if (mode === "experimental-eight") {
-            this.#capabilities.experimentalEight = "confirmed";
-          } else {
-            this.#capabilities.fiveOne = "confirmed";
-          }
+          if (mode === "five-one") capabilities.fiveOne = "confirmed";
+          else capabilities.experimentalEight = "confirmed";
         } else {
-          if (mode === "experimental-eight") {
-            this.#capabilities.experimentalEight = "unsupported";
-          } else {
-            this.#capabilities.fiveOne = "unsupported";
-          }
-          await this.#restorePreviousMode(previousMode, token);
-          if (!this.#isCurrentRun(token)) return;
+          if (mode === "five-one") capabilities.fiveOne = "unsupported";
+          else capabilities.experimentalEight = "unsupported";
+
+          const restoredPrevious = await this.#restorePreviousMode(
+            previousMode,
+            token,
+          );
+          if (!restoredPrevious || !this.#isCurrentRun(token)) return;
         }
       }
 
       if (!this.#isCurrentRun(token)) return;
       this.#starting = false;
-      this.#setCapabilitySummary(this.#capabilityMessage(this.#capabilities));
+      this.#setCapabilitySummary(this.#capabilityMessage(capabilities));
       this.#renderModes();
       this.#setControlsActive(false);
       this.#setStatus("idle", modeReadyLabel(this.#mode));
@@ -490,17 +483,17 @@ export class SurroundSoundTestController {
   async #restorePreviousMode(
     previousMode: SurroundMode,
     token: number,
-  ): Promise<void> {
+  ): Promise<boolean> {
     if (previousMode === "stereo-preview" || previousMode === "unknown") {
       this.#mode = "stereo-preview";
-      return;
+      return true;
     }
 
     const capabilities = this.#capabilities;
     const multichannel = this.#multichannel;
     if (!capabilities || !multichannel) {
       this.#mode = "stereo-preview";
-      return;
+      return true;
     }
 
     const previouslyConfirmed =
@@ -509,26 +502,27 @@ export class SurroundSoundTestController {
         : capabilities.experimentalEight === "confirmed";
     if (!previouslyConfirmed) {
       this.#mode = "stereo-preview";
-      return;
+      return true;
     }
 
     const result = await multichannel.configure(previousMode);
-    if (!this.#isCurrentRun(token)) return;
+    if (!this.#isCurrentRun(token)) return false;
     if (result.status === "restore_failed") {
       await this.#fallbackAfterRestoreFailure(
         token,
         "The previous multichannel mode could not be restored safely. That AudioContext was closed and Stereo spatial preview is now using a fresh session.",
       );
-      return;
+      return false;
     }
     if (result.status === "confirmed") {
       this.#mode = previousMode;
-      return;
+      return true;
     }
 
     if (previousMode === "five-one") capabilities.fiveOne = "unsupported";
     else capabilities.experimentalEight = "unsupported";
     this.#mode = "stereo-preview";
+    return true;
   }
 
   async #runFiveOneChannel(index: number): Promise<void> {
@@ -596,7 +590,10 @@ export class SurroundSoundTestController {
     channels: readonly ChannelDefinition[],
   ): Promise<void> {
     const multichannel = this.#multichannel;
-    const expectedMode = channels.length === 6 ? "five-one" : "experimental-eight";
+    const expectedMode: MultichannelMode =
+      channels.length === FIVE_ONE_CHANNELS.length
+        ? "five-one"
+        : "experimental-eight";
     if (
       !multichannel ||
       this.#mode !== expectedMode ||
