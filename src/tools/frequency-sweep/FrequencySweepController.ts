@@ -90,8 +90,14 @@ export class FrequencySweepController {
 
   constructor(root: HTMLElement) {
     this.#root = root;
-    this.#lowRoot = requireElement(root, "[data-sweep-low-control]");
-    this.#highRoot = requireElement(root, "[data-sweep-high-control]");
+    this.#lowRoot = requireElement(
+      root,
+      "[data-sweep-low-control] [data-frequency-control]",
+    );
+    this.#highRoot = requireElement(
+      root,
+      "[data-sweep-high-control] [data-frequency-control]",
+    );
     this.#lowInput = requireElement(root, "#frequency-sweep-low-number");
     this.#highInput = requireElement(root, "#frequency-sweep-high-number");
     this.#lowSlider = requireElement(root, "#frequency-sweep-low-slider");
