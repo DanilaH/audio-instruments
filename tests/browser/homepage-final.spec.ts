@@ -42,7 +42,9 @@ test("final homepage exposes the canonical featured four in order with distinct 
 
   const visuals = await featured.evaluateAll((cards) =>
     cards.map((card) =>
-      card.querySelector("[data-featured-visual]")?.getAttribute("data-featured-visual"),
+      card
+        .querySelector("[data-featured-visual]")
+        ?.getAttribute("data-featured-visual"),
     ),
   );
   expect(visuals).toEqual([
@@ -67,7 +69,9 @@ test("final directory renders every live route once in the canonical registry ca
     links.map((link) => link.getAttribute("data-tool-id")),
   );
   expect(renderedIds).toHaveLength(new Set(renderedIds).size);
-  expect(new Set(renderedIds)).toEqual(new Set(publicTools.map((tool) => tool.id)));
+  expect(new Set(renderedIds)).toEqual(
+    new Set(publicTools.map((tool) => tool.id)),
+  );
 
   const categories = page.locator("[data-tool-category]");
   await expect(categories).toHaveCount(4);
@@ -83,9 +87,11 @@ test("final directory renders every live route once in the canonical registry ca
       String(expectedTools.length),
     );
 
-    const actualIds = await category.locator("[data-tool-id]").evaluateAll((links) =>
-      links.map((link) => link.getAttribute("data-tool-id")),
-    );
+    const actualIds = await category
+      .locator("[data-tool-id]")
+      .evaluateAll((links) =>
+        links.map((link) => link.getAttribute("data-tool-id")),
+      );
     expect(actualIds).toEqual(expectedTools.map((tool) => tool.id));
   }
 });
@@ -106,12 +112,16 @@ for (const viewport of targetViewports) {
     await expect(page.locator("[data-featured-tool]")).toHaveCount(4);
     await expect(page.locator("[data-tool-category]")).toHaveCount(4);
 
-    const featuredColumns = await page.locator(".tool-grid--featured").evaluate(
-      (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
-    );
-    const categoryColumns = await page.locator(".tool-categories").evaluate(
-      (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
-    );
+    const featuredColumns = await page
+      .locator(".tool-grid--featured")
+      .evaluate(
+        (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
+      );
+    const categoryColumns = await page
+      .locator(".tool-categories")
+      .evaluate(
+        (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
+      );
 
     if (viewport.width <= 820) {
       expect(featuredColumns).toBe(1);
@@ -124,6 +134,29 @@ for (const viewport of targetViewports) {
     const lastFeatured = page.locator('[data-featured-tool="headphone-test"]');
     const lastFeaturedBox = await lastFeatured.boundingBox();
     expect(lastFeaturedBox).not.toBeNull();
-    expect(lastFeaturedBox?.width ?? 0).toBeLessThanOrEqual(viewport.width);
+    expect(
+      (lastFeaturedBox?.x ?? viewport.width) + (lastFeaturedBox?.width ?? 0),
+    ).toBeLessThanOrEqual(viewport.width);
   });
 }
+
+test("desktop category composition gives dense groups more space without stretching the specialist panel", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1_366, height: 768 });
+  await page.goto("/");
+
+  const inputBox = await page
+    .locator('[data-tool-category="input-analysis"]')
+    .boundingBox();
+  const timingBox = await page
+    .locator('[data-tool-category="timing-specialist"]')
+    .boundingBox();
+
+  expect(inputBox).not.toBeNull();
+  expect(timingBox).not.toBeNull();
+  expect(inputBox?.width ?? 0).toBeGreaterThan(timingBox?.width ?? 0);
+  expect(timingBox?.height ?? Number.POSITIVE_INFINITY).toBeLessThan(
+    inputBox?.height ?? 0,
+  );
+});
