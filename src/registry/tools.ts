@@ -198,8 +198,8 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "input-analysis",
     implementationPhase: "P5.4",
     accent: "mint",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: ["microphone-test", "spectrum-analyzer", "decibel-meter"],
   },
   {
     id: "decibel-meter",
