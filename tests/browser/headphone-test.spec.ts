@@ -113,8 +113,12 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
             this.record.frequency = value;
           });
         }
-        start(time = 0) { this.record.starts.push(time); }
-        stop(time = 0) { this.record.stops.push(time); }
+        start(time = 0) {
+          this.record.starts.push(time);
+        }
+        stop(time = 0) {
+          this.record.stops.push(time);
+        }
         addEventListener() {}
       }
 
@@ -139,12 +143,16 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
           this.record.bufferLength = value?.length ?? 0;
           this.record.bufferSampleRate = value?.sampleRate ?? 0;
         }
-        get buffer() { return this.#buffer; }
+        get buffer() {
+          return this.#buffer;
+        }
         start(time = 0, offset = 0) {
           this.record.loop = this.loop;
           this.record.starts.push({ time, offset });
         }
-        stop(time = 0) { this.record.stops.push(time); }
+        stop(time = 0) {
+          this.record.stops.push(time);
+        }
         addEventListener() {}
       }
 
@@ -176,15 +184,25 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
         state = "suspended";
         destination = new FakeNode();
 
-        constructor() { increment("__headphoneContextCount"); }
-        async resume() { this.state = "running"; }
+        constructor() {
+          increment("__headphoneContextCount");
+        }
+        async resume() {
+          this.state = "running";
+        }
         async close() {
           this.state = "closed";
           increment("__headphoneClosedContextCount");
         }
-        createGain() { return new FakeGainNode(); }
-        createOscillator() { return new FakeOscillatorNode(); }
-        createBufferSource() { return new FakeBufferSourceNode(); }
+        createGain() {
+          return new FakeGainNode();
+        }
+        createOscillator() {
+          return new FakeOscillatorNode();
+        }
+        createBufferSource() {
+          return new FakeBufferSourceNode();
+        }
         createChannelMerger(numberOfInputs = 2) {
           void numberOfInputs;
           return new FakeNode();
@@ -239,10 +257,9 @@ test("Headphone Left uses the canonical hard-routed 500 Hz / 700 ms burst", asyn
   await page.getByRole("button", { name: "Left", exact: true }).click();
   await expect(page.locator("#headphone-status")).toContainText("Playing Left ear");
 
-  const oscillators = await readProbe<Array<{ frequency: number; starts: number[]; stops: number[] }>>(
-    page,
-    "__headphoneProbeOscillators",
-  );
+  const oscillators = await readProbe<
+    Array<{ frequency: number; starts: number[]; stops: number[] }>
+  >(page, "__headphoneProbeOscillators");
   const gains = await readProbe<ParamEvent[][]>(page, "__headphoneProbeGains");
   expect(oscillators).toHaveLength(1);
   expect(oscillators[0]).toMatchObject({ frequency: 500, starts: [10], stops: [10.7] });
@@ -359,10 +376,16 @@ test("Headphone mode switching stops active playback and pagehide closes its Aud
 
 test("Headphone related tools are live-only and claims avoid burn-in/quality scoring", async ({ page }) => {
   await page.goto("/headphone-test");
-  for (const route of ["/speaker-test", "/sound-test", "/stereo-test", "/phase-test"]) {
+  for (const route of [
+    "/speaker-test",
+    "/sound-test",
+    "/stereo-test",
+    "/phase-test",
+    "/surround-sound-test",
+    "/bass-test",
+  ]) {
     await expect(page.locator(`a[href="${route}"]`)).toHaveCount(1);
   }
-  await expect(page.locator('a[href="/bass-test"]')).toHaveCount(0);
   await expect(page.getByText(/burn-in/i)).toBeVisible();
   await expect(page.getByText(/quality scoring/i)).toBeVisible();
 });
