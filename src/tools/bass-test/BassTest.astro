@@ -4,18 +4,31 @@ import LevelControl from "../../components/controls/LevelControl.astro";
 import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
 import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import {
+  BASS_PRESET_FREQUENCIES_HZ,
+  BASS_SWEEP_DEFAULT_HIGH_HZ,
+  BASS_SWEEP_DEFAULT_LOW_HZ,
+  BASS_SWEEP_MAX_HZ,
+  BASS_SWEEP_MIN_HZ,
+} from "../../browser/audio-output/referenceSignals";
 
-const presets = [20, 30, 40, 50, 60, 80, 100] as const;
+const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
 ---
 
 <div data-bass-test data-bass-mode="tone" data-bass-visual="idle">
-  <InstrumentSurface label="Bass Test controls and low-frequency visualization" accent="mint">
+  <InstrumentSurface
+    label="Bass Test controls and low-frequency visualization"
+    accent="mint"
+  >
     <div class="bass-instrument">
       <section class="bass-visual" aria-label="Bass playback visualization">
         <div class="bass-visual__header">
           <ToolStatus id="bass-status" label="Ready" state="idle" />
           <div class="bass-readout">
-            <strong><span data-bass-frequency-readout>60</span> Hz</strong>
+            <strong
+              ><span data-bass-frequency-readout>{defaultFrequencyHz}</span>
+              Hz</strong
+            >
             <span data-bass-visual-label>Single tone</span>
           </div>
         </div>
@@ -37,7 +50,8 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
           <span>200 Hz</span>
         </div>
         <p class="bass-visual__note">
-          Generated digital frequency only. Listen for rattles or resonances; this does not measure subwoofer response.
+          Generated digital frequency only. Listen for rattles or resonances;
+          this does not measure subwoofer response.
         </p>
       </section>
 
@@ -46,27 +60,38 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
           <i class="ph ph-speaker-low" aria-hidden="true"></i>
           <div>
             <p>
-              Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.
+              Start with your device/headphone volume low. Increase it only to a
+              comfortable listening level.
             </p>
             <strong>
-              Keep playback volume moderate. If you cannot hear a low tone, do not turn the system volume up to compensate.
+              Keep playback volume moderate. If you cannot hear a low tone, do
+              not turn the system volume up to compensate.
             </strong>
           </div>
         </div>
 
         <div class="bass-mode-selector" aria-label="Bass Test mode">
-          <button type="button" data-bass-mode="tone" aria-pressed="true">Single tone</button>
-          <button type="button" data-bass-mode="sweep" aria-pressed="false">Slow sweep</button>
-          <button type="button" data-bass-mode="sequence" aria-pressed="false">Preset sequence</button>
+          <button type="button" data-bass-mode="tone" aria-pressed="true"
+            >Single tone</button
+          >
+          <button type="button" data-bass-mode="sweep" aria-pressed="false"
+            >Slow sweep</button
+          >
+          <button type="button" data-bass-mode="sequence" aria-pressed="false"
+            >Preset sequence</button
+          >
         </div>
 
         <div class="bass-panel" data-bass-panel="tone">
-          <div data-bass-frequency-control>
-            <FrequencyControl id="bass-frequency" valueHz={60} minHz={20} maxHz={200} />
-          </div>
+          <FrequencyControl
+            id="bass-frequency"
+            valueHz={defaultFrequencyHz}
+            minHz={BASS_SWEEP_MIN_HZ}
+            maxHz={BASS_SWEEP_MAX_HZ}
+          />
           <div class="bass-presets" aria-label="Bass frequency presets">
             {
-              presets.map((frequency) => (
+              BASS_PRESET_FREQUENCIES_HZ.map((frequency) => (
                 <button type="button" data-bass-preset={frequency}>
                   {frequency}<span class="sr-only"> Hz</span>
                 </button>
@@ -82,10 +107,15 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
         <div class="bass-panel" data-bass-panel="sweep" hidden>
           <div class="bass-panel__summary">
             <div>
-              <strong>20 → 120 Hz</strong>
+              <strong data-bass-sweep-range
+                >{BASS_SWEEP_DEFAULT_LOW_HZ} → {BASS_SWEEP_DEFAULT_HIGH_HZ} Hz</strong
+              >
               <span>12 seconds · logarithmic</span>
             </div>
-            <p>Slowly move through the core low-frequency range to listen for rattles or resonant spots.</p>
+            <p>
+              Slowly move through the core low-frequency range to listen for
+              rattles or resonant spots.
+            </p>
           </div>
           <button type="button" class="bass-primary" data-bass-sweep-play>
             <i class="ph ph-wave-sine" aria-hidden="true"></i>
@@ -96,10 +126,13 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
         <div class="bass-panel" data-bass-panel="sequence" hidden>
           <div class="bass-panel__summary">
             <div>
-              <strong>20 · 30 · 40 · 50 · 60 · 80 · 100 Hz</strong>
+              <strong>{BASS_PRESET_FREQUENCIES_HZ.join(" · ")} Hz</strong>
               <span>800 ms each · 300 ms gaps</span>
             </div>
-            <p>Step through the exact reference presets with silence between tones.</p>
+            <p>
+              Step through the exact reference presets with silence between
+              tones.
+            </p>
           </div>
           <button type="button" class="bass-primary" data-bass-sequence-play>
             <i class="ph ph-list-numbers" aria-hidden="true"></i>
@@ -143,6 +176,7 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
   window.addEventListener("pageshow", (event) => {
     if (event.persisted) mount();
   });
+
   mount();
 </script>
 
@@ -164,7 +198,11 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
     grid-template-rows: auto 1fr auto auto;
     border-right: 1px solid var(--color-border);
     background:
-      radial-gradient(circle at 50% 48%, rgb(119 199 164 / 0.22), transparent 35%),
+      radial-gradient(
+        circle at 50% 48%,
+        rgb(119 199 164 / 0.22),
+        transparent 35%
+      ),
       linear-gradient(145deg, rgb(255 253 252 / 0.94), rgb(240 250 246 / 0.9));
   }
 
@@ -216,7 +254,9 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
     inset: 5%;
     border: 12px solid rgb(39 73 61 / 0.11);
     background: rgb(255 255 255 / 0.72);
-    box-shadow: inset 0 0 0 1px rgb(39 73 61 / 0.08), 0 18px 44px rgb(39 73 61 / 0.08);
+    box-shadow:
+      inset 0 0 0 1px rgb(39 73 61 / 0.08),
+      0 18px 44px rgb(39 73 61 / 0.08);
   }
 
   .bass-driver__cone {
@@ -252,22 +292,41 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
     animation: bass-wave 1.5s ease-out infinite;
   }
 
-  .bass-driver__wave--two { animation-delay: 0.35s !important; }
-  .bass-driver__wave--three { animation-delay: 0.7s !important; }
+  .bass-driver__wave--two {
+    animation-delay: 0.35s !important;
+  }
+
+  .bass-driver__wave--three {
+    animation-delay: 0.7s !important;
+  }
 
   @keyframes bass-pulse {
-    from { transform: scale(0.97); }
-    to { transform: scale(1.035); }
+    from {
+      transform: scale(0.97);
+    }
+    to {
+      transform: scale(1.035);
+    }
   }
 
   @keyframes bass-sweep-pulse {
-    from { transform: scale(0.95); }
-    to { transform: scale(1.05); }
+    from {
+      transform: scale(0.95);
+    }
+    to {
+      transform: scale(1.05);
+    }
   }
 
   @keyframes bass-wave {
-    0% { opacity: 0.36; transform: scale(0.72); }
-    100% { opacity: 0; transform: scale(1.12); }
+    0% {
+      opacity: 0.36;
+      transform: scale(0.72);
+    }
+    100% {
+      opacity: 0;
+      transform: scale(1.12);
+    }
   }
 
   .bass-scale {
@@ -281,8 +340,13 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
     font-size: 0.68rem;
   }
 
-  .bass-scale span:last-child { text-align: right; }
-  .bass-scale span:not(:first-child):not(:last-child) { text-align: center; }
+  .bass-scale span:last-child {
+    text-align: right;
+  }
+
+  .bass-scale span:not(:first-child):not(:last-child) {
+    text-align: center;
+  }
 
   .bass-visual__note {
     max-width: 480px;
@@ -458,26 +522,67 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
   }
 
   @media (max-width: 930px) {
-    .bass-instrument { grid-template-columns: 1fr; }
+    .bass-instrument {
+      grid-template-columns: 1fr;
+    }
+
     .bass-visual {
-      min-height: 280px;
+      min-height: 260px;
       border-right: 0;
       border-bottom: 1px solid var(--color-border);
     }
-    .bass-driver { width: min(180px, 48%); }
+
+    .bass-driver {
+      width: min(170px, 46%);
+    }
   }
 
   @media (max-width: 560px) {
-    .bass-visual { min-height: 220px; padding: 14px 20px; }
-    .bass-controls { padding: 14px 20px 18px; }
-    .bass-driver { width: 126px; }
-    .bass-visual__note { display: none; }
-    .bass-mode-selector { grid-template-columns: 1fr; }
-    .bass-mode-selector button { min-height: 46px; }
-    .bass-presets { grid-template-columns: repeat(4, minmax(0, 1fr)); }
-    .bass-presets button { min-height: 44px; }
-    .bass-panel__summary > div { align-items: flex-start; flex-direction: column; gap: 2px; }
-    .bass-footer { grid-template-columns: 1fr; gap: 6px; }
+    .bass-visual {
+      min-height: 180px;
+      padding: 12px 20px;
+    }
+
+    .bass-controls {
+      padding: 14px 20px 18px;
+    }
+
+    .bass-driver {
+      width: 100px;
+    }
+
+    .bass-visual__note {
+      display: none;
+    }
+
+    .bass-mode-selector {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .bass-mode-selector button {
+      min-height: 46px;
+      padding-inline: 5px;
+      font-size: 0.72rem;
+    }
+
+    .bass-presets {
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+    }
+
+    .bass-presets button {
+      min-height: 44px;
+    }
+
+    .bass-panel__summary > div {
+      align-items: flex-start;
+      flex-direction: column;
+      gap: 2px;
+    }
+
+    .bass-footer {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
   }
 
   @media (prefers-reduced-motion: reduce) {
@@ -485,6 +590,9 @@ const presets = [20, 30, 40, 50, 60, 80, 100] as const;
     .bass-driver__wave {
       animation: none !important;
     }
-    .bass-driver__wave { display: none; }
+
+    .bass-driver__wave {
+      display: none;
+    }
   }
 </style>
