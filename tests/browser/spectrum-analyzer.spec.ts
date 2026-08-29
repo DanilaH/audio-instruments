@@ -274,7 +274,7 @@ test("stays idle until Start, then applies documented FFT defaults and raw-ish c
   await expect(page.locator("[data-spectrum-dominant]")).toHaveText("—");
   await expect(page.locator("[data-spectrum-stop]")).toBeDisabled();
   await expect(page.getByRole("link", { name: "Microphone Test" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Pitch Detector" })).toHaveCount(0);
+  await expect(page.getByRole("link", { name: "Pitch Detector" })).toHaveCount(1);
 
   await page.locator("[data-spectrum-start]").click();
   await expect(
