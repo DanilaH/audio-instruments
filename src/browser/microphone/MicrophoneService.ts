@@ -195,11 +195,12 @@ export class MicrophoneService implements SessionResource {
     const operation = this.#acquireAndCommit(token, exactDeviceId);
     this.#pendingAcquisition = operation;
 
-    void operation.finally(() => {
+    const clearPending = () => {
       if (this.#pendingAcquisition === operation) {
         this.#pendingAcquisition = null;
       }
-    });
+    };
+    void operation.then(clearPending, clearPending);
 
     return operation;
   }
