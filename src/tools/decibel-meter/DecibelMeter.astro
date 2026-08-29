@@ -23,7 +23,9 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
         <div class="db-meter" aria-hidden="true">
           <div class="db-meter__scale">
-            <span>−100</span><span>−75</span><span>−50</span><span>−25</span><span>0 dBFS</span>
+            <span>−100</span><span>−75</span><span>−50</span><span>−25</span><span
+              >0 dBFS</span
+            >
           </div>
           <div class="db-meter__track">
             <span class="db-meter__fill" data-db-meter-fill></span>
@@ -40,7 +42,7 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
             <span>Reference-calibrated level estimate</span>
             <strong data-db-estimate>—</strong>
           </div>
-          <span class="db-estimate__badge" data-db-estimate-badge>User-calibrated</span>
+          <span class="db-estimate__badge">User-calibrated</span>
         </div>
       </section>
 
@@ -112,8 +114,15 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
             Capture 3-second reference
           </button>
 
-          <p class="db-calibration__status" data-db-calibration-status>Uncalibrated</p>
-          <p class="sr-only" data-db-calibration-live-status role="status" aria-live="polite"></p>
+          <p class="db-calibration__status" data-db-calibration-status>
+            Uncalibrated
+          </p>
+          <p
+            class="sr-only"
+            data-db-calibration-live-status
+            role="status"
+            aria-live="polite"
+          ></p>
 
           <div class="db-calibration__limit">
             <i class="ph ph-info" aria-hidden="true"></i>
@@ -129,13 +138,34 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         <details class="db-details">
           <summary>Capture details</summary>
           <dl>
-            <div><dt>Device ID</dt><dd data-db-detail-device-id>Not reported</dd></div>
-            <div><dt>Web Audio processing rate</dt><dd data-db-detail-analysis-rate>Not reported</dd></div>
-            <div><dt>Track-reported sample rate</dt><dd data-db-detail-sample-rate>Not reported</dd></div>
-            <div><dt>Channel count</dt><dd data-db-detail-channel-count>Not reported</dd></div>
-            <div><dt>Echo cancellation</dt><dd data-db-detail-echo-cancellation>Not reported</dd></div>
-            <div><dt>Noise suppression</dt><dd data-db-detail-noise-suppression>Not reported</dd></div>
-            <div><dt>Auto gain control</dt><dd data-db-detail-auto-gain>Not reported</dd></div>
+            <div>
+              <dt>Device ID</dt>
+              <dd data-db-detail-device-id>Not reported</dd>
+            </div>
+            <div>
+              <dt>Web Audio processing rate</dt>
+              <dd data-db-detail-analysis-rate>Not reported</dd>
+            </div>
+            <div>
+              <dt>Track-reported sample rate</dt>
+              <dd data-db-detail-sample-rate>Not reported</dd>
+            </div>
+            <div>
+              <dt>Channel count</dt>
+              <dd data-db-detail-channel-count>Not reported</dd>
+            </div>
+            <div>
+              <dt>Echo cancellation</dt>
+              <dd data-db-detail-echo-cancellation>Not reported</dd>
+            </div>
+            <div>
+              <dt>Noise suppression</dt>
+              <dd data-db-detail-noise-suppression>Not reported</dd>
+            </div>
+            <div>
+              <dt>Auto gain control</dt>
+              <dd data-db-detail-auto-gain>Not reported</dd>
+            </div>
           </dl>
         </details>
 
@@ -250,11 +280,12 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
   .db-primary-readout strong {
     margin: 8px 0 6px;
-    font-size: clamp(3.2rem, 7vw, 6.3rem);
+    font-size: clamp(2.8rem, 5.4vw, 4.9rem);
     font-weight: 820;
     letter-spacing: -0.055em;
     line-height: 0.95;
     font-variant-numeric: tabular-nums;
+    white-space: nowrap;
   }
 
   .db-meter {
@@ -270,8 +301,13 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     font-variant-numeric: tabular-nums;
   }
 
-  .db-meter__scale span:not(:first-child):not(:last-child) { text-align: center; }
-  .db-meter__scale span:last-child { text-align: right; }
+  .db-meter__scale span:not(:first-child):not(:last-child) {
+    text-align: center;
+  }
+
+  .db-meter__scale span:last-child {
+    text-align: right;
+  }
 
   .db-meter__track {
     height: 18px;
@@ -279,7 +315,12 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     border: 1px solid var(--color-border);
     border-radius: 999px;
     background:
-      repeating-linear-gradient(90deg, transparent 0, transparent calc(25% - 1px), rgb(34 62 70 / 0.11) 25%),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent calc(25% - 1px),
+        rgb(34 62 70 / 0.11) 25%
+      ),
       rgb(255 255 255 / 0.8);
   }
 
@@ -320,10 +361,25 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     background: rgb(102 209 178 / 0.11);
   }
 
-  .db-estimate[hidden] { display: none; }
-  .db-estimate > div { display: grid; gap: 4px; }
-  .db-estimate > div > span { color: var(--color-ink-muted); font-size: 0.72rem; }
-  .db-estimate strong { font-size: 1.5rem; font-variant-numeric: tabular-nums; }
+  .db-estimate[hidden] {
+    display: none;
+  }
+
+  .db-estimate > div {
+    display: grid;
+    gap: 4px;
+  }
+
+  .db-estimate > div > span {
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+  }
+
+  .db-estimate strong {
+    font-size: 1.5rem;
+    font-variant-numeric: tabular-nums;
+  }
+
   .db-estimate__badge,
   .db-calibration__heading > span {
     flex: 0 0 auto;
@@ -350,7 +406,12 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     background: rgb(99 197 222 / 0.1);
   }
 
-  .db-permission strong { display: block; margin-bottom: 3px; font-size: 0.82rem; }
+  .db-permission strong {
+    display: block;
+    margin-bottom: 3px;
+    font-size: 0.82rem;
+  }
+
   .db-permission p,
   .db-calibration__limit p,
   .db-calibration__eligibility,
@@ -362,7 +423,9 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     line-height: 1.45;
   }
 
-  .db-primary-actions { justify-content: flex-start; }
+  .db-primary-actions {
+    justify-content: flex-start;
+  }
 
   .db-start,
   .db-stop,
@@ -395,11 +458,27 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
   button:disabled,
   select:disabled,
-  input:disabled { cursor: not-allowed; opacity: 0.52; }
+  input:disabled {
+    cursor: not-allowed;
+    opacity: 0.52;
+  }
 
-  .db-field { display: grid; grid-template-columns: auto minmax(0, 1fr); align-items: center; gap: 12px; }
-  .db-field--stacked { grid-template-columns: 1fr; gap: 6px; }
-  .db-field[hidden], .db-error[hidden] { display: none; }
+  .db-field {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 12px;
+  }
+
+  .db-field--stacked {
+    grid-template-columns: 1fr;
+    gap: 6px;
+  }
+
+  .db-field[hidden],
+  .db-error[hidden] {
+    display: none;
+  }
 
   .db-field select,
   .db-reference-input input {
@@ -412,10 +491,25 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     font: inherit;
   }
 
-  .db-field select { padding: 0 34px 0 11px; }
-  .db-reference-input { display: grid; grid-template-columns: minmax(0, 1fr) auto; align-items: center; gap: 8px; }
-  .db-reference-input input { padding: 0 11px; }
-  .db-reference-input span { color: var(--color-ink-muted); font-size: 0.72rem; }
+  .db-field select {
+    padding: 0 34px 0 11px;
+  }
+
+  .db-reference-input {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .db-reference-input input {
+    padding: 0 11px;
+  }
+
+  .db-reference-input span {
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+  }
 
   .db-calibration {
     display: grid;
@@ -426,8 +520,14 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     background: rgb(255 255 255 / 0.55);
   }
 
-  .db-calibration h3 { margin: 1px 0 0; font-size: 1rem; }
-  .db-eyebrow { margin: 0; }
+  .db-calibration h3 {
+    margin: 1px 0 0;
+    font-size: 1rem;
+  }
+
+  .db-eyebrow {
+    margin: 0;
+  }
 
   .db-weighting-confirm {
     display: grid;
@@ -439,9 +539,21 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     line-height: 1.45;
   }
 
-  .db-weighting-confirm input { width: 18px; height: 18px; margin: 1px 0 0; }
-  .db-calibrate { justify-self: start; min-height: 42px; }
-  .db-calibration__status { font-weight: 720; color: var(--color-ink); }
+  .db-weighting-confirm input {
+    width: 18px;
+    height: 18px;
+    margin: 1px 0 0;
+  }
+
+  .db-calibrate {
+    justify-self: start;
+    min-height: 42px;
+  }
+
+  .db-calibration__status {
+    color: var(--color-ink);
+    font-weight: 720;
+  }
 
   .db-details {
     border: 1px solid var(--color-border);
@@ -449,12 +561,44 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     background: var(--color-surface);
   }
 
-  .db-details summary { padding: 11px 12px; font-size: 0.78rem; font-weight: 760; cursor: pointer; }
-  .db-details dl { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1px; margin: 0; background: var(--color-border); border-top: 1px solid var(--color-border); }
-  .db-details dl > div { display: grid; gap: 3px; padding: 9px 10px; background: var(--color-surface); }
-  .db-details dt { color: var(--color-ink-muted); font-size: 0.67rem; }
-  .db-details dd { margin: 0; overflow-wrap: anywhere; font-size: 0.76rem; font-weight: 720; }
-  .db-error { color: var(--color-danger, #9a3434); }
+  .db-details summary {
+    padding: 11px 12px;
+    font-size: 0.78rem;
+    font-weight: 760;
+    cursor: pointer;
+  }
+
+  .db-details dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 1px;
+    margin: 0;
+    border-top: 1px solid var(--color-border);
+    background: var(--color-border);
+  }
+
+  .db-details dl > div {
+    display: grid;
+    gap: 3px;
+    padding: 9px 10px;
+    background: var(--color-surface);
+  }
+
+  .db-details dt {
+    color: var(--color-ink-muted);
+    font-size: 0.67rem;
+  }
+
+  .db-details dd {
+    margin: 0;
+    overflow-wrap: anywhere;
+    font-size: 0.76rem;
+    font-weight: 720;
+  }
+
+  .db-error {
+    color: var(--color-danger, #9a3434);
+  }
 
   .sr-only {
     position: absolute;
@@ -463,31 +607,71 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     padding: 0;
     margin: -1px;
     overflow: hidden;
+    border: 0;
     clip: rect(0, 0, 0, 0);
     white-space: nowrap;
-    border: 0;
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .db-meter__fill { transition: none; }
+    .db-meter__fill {
+      transition: none;
+    }
   }
 
   @media (max-width: 900px) {
-    .db-instrument { grid-template-columns: 1fr; }
-    .db-controls { order: -1; border-bottom: 1px solid var(--color-border); }
-    .db-monitor { border-right: 0; }
+    .db-instrument {
+      grid-template-columns: 1fr;
+    }
+
+    .db-controls {
+      order: -1;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .db-monitor {
+      border-right: 0;
+    }
   }
 
   @media (max-width: 560px) {
     .db-monitor,
-    .db-controls { padding: 16px; }
-    .db-primary-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .db-controls {
+      padding: 16px;
+    }
+
+    .db-primary-actions {
+      display: grid;
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
     .db-start,
-    .db-stop { width: 100%; padding-inline: 8px; }
-    .db-primary-readout { min-height: 170px; padding: 18px 14px; border-radius: 22px; }
-    .db-primary-readout strong { font-size: clamp(3rem, 17vw, 4.8rem); }
-    .db-field { grid-template-columns: 1fr; gap: 6px; }
-    .db-reference-input { grid-template-columns: 1fr; gap: 5px; }
-    .db-details dl { grid-template-columns: 1fr; }
+    .db-stop {
+      width: 100%;
+      padding-inline: 8px;
+    }
+
+    .db-primary-readout {
+      min-height: 170px;
+      padding: 18px 14px;
+      border-radius: 22px;
+    }
+
+    .db-primary-readout strong {
+      font-size: clamp(2.5rem, 11vw, 3.5rem);
+    }
+
+    .db-field {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .db-reference-input {
+      grid-template-columns: 1fr;
+      gap: 5px;
+    }
+
+    .db-details dl {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
