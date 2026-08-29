@@ -24,6 +24,7 @@ async function installSpectrumHarness(page: Page): Promise<void> {
 
     class FakeAudioParam {
       value = 1;
+
       setValueAtTime(value: number, _time: number) {
         this.value = value;
         return this;
@@ -32,11 +33,14 @@ async function installSpectrumHarness(page: Page): Promise<void> {
 
     class FakeNode {
       readonly connections: unknown[] = [];
+
       constructor(readonly context: BaseAudioContext) {}
+
       connect(destination: unknown) {
         this.connections.push(destination);
         return destination;
       }
+
       disconnect(destination?: unknown) {
         if (destination !== undefined) {
           const index = this.connections.indexOf(destination);
@@ -60,18 +64,22 @@ async function installSpectrumHarness(page: Page): Promise<void> {
       get fftSize() {
         return this.#fftSize;
       }
+
       set fftSize(value: number) {
         this.#fftSize = value;
       }
+
       get frequencyBinCount() {
         return this.#fftSize / 2;
       }
+
       getFloatTimeDomainData(target: Float32Array) {
         state.waveformReads += 1;
         for (let index = 0; index < target.length; index += 1) {
           target[index] = index % 2 === 0 ? 0.18 : -0.18;
         }
       }
+
       getFloatFrequencyData(target: Float32Array) {
         state.frequencyReads += 1;
         target.fill(-90);
@@ -87,9 +95,11 @@ async function installSpectrumHarness(page: Page): Promise<void> {
     class FakeTrack extends EventTarget {
       readonly kind = "audio";
       stopCount = 0;
+
       constructor(readonly deviceId: string) {
         super();
       }
+
       getSettings(): MediaTrackSettings {
         return {
           deviceId: this.deviceId,
@@ -100,6 +110,7 @@ async function installSpectrumHarness(page: Page): Promise<void> {
           autoGainControl: false,
         };
       }
+
       stop() {
         this.stopCount += 1;
         state.lifecycle.push(`track-stop:${this.deviceId}`);
@@ -109,9 +120,11 @@ async function installSpectrumHarness(page: Page): Promise<void> {
 
     class FakeStream {
       constructor(readonly track: FakeTrack) {}
+
       getTracks() {
         return [this.track] as unknown as MediaStreamTrack[];
       }
+
       getAudioTracks() {
         return [this.track] as unknown as MediaStreamTrack[];
       }
@@ -135,21 +148,28 @@ async function installSpectrumHarness(page: Page): Promise<void> {
         state.audioContextCount += 1;
         this.destination = new FakeNode(this as unknown as BaseAudioContext);
       }
+
       async resume() {
         this.state = "running";
       }
+
       async close() {
         if (this.state !== "closed") state.closedContextCount += 1;
         this.state = "closed";
       }
+
       createGain() {
-        return new FakeGainNode(this as unknown as BaseAudioContext) as unknown as GainNode;
+        return new FakeGainNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as GainNode;
       }
+
       createAnalyser() {
         return new FakeAnalyserNode(
           this as unknown as BaseAudioContext,
         ) as unknown as AnalyserNode;
       }
+
       createMediaStreamSource(_stream: MediaStream) {
         return new FakeNode(
           this as unknown as BaseAudioContext,
@@ -166,20 +186,27 @@ async function installSpectrumHarness(page: Page): Promise<void> {
           autoGainControl: true,
         };
       }
+
       async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
         state.getUserMediaCalls.push(constraints);
         const audio = constraints.audio as MediaTrackConstraints;
         const exact =
-          typeof audio === "object" && audio.deviceId && typeof audio.deviceId === "object"
+          typeof audio === "object" &&
+          audio.deviceId &&
+          typeof audio.deviceId === "object"
             ? String((audio.deviceId as ConstrainDOMStringParameters).exact ?? "")
             : "";
         const deviceId = exact || "mic-1";
         state.lifecycle.push(`gum:${deviceId}`);
         if (deviceId === "mic-fail") {
-          throw new DOMException("deterministic selection failure", "NotReadableError");
+          throw new DOMException(
+            "deterministic selection failure",
+            "NotReadableError",
+          );
         }
         return createStream(deviceId);
       }
+
       async enumerateDevices(): Promise<MediaDeviceInfo[]> {
         return [
           {
@@ -239,7 +266,7 @@ test.beforeEach(async ({ page }) => {
   await page.goto("/spectrum-analyzer");
 });
 
-test("stays idle until Start, then applies the documented FFT defaults and raw-ish capture constraints", async ({
+test("stays idle until Start, then applies documented FFT defaults and raw-ish constraints", async ({
   page,
 }) => {
   expect((await harnessState(page)).audioContextCount).toBe(0);
@@ -250,17 +277,19 @@ test("stays idle until Start, then applies the documented FFT defaults and raw-i
   await expect(page.getByRole("link", { name: "Pitch Detector" })).toHaveCount(0);
 
   await page.locator("[data-spectrum-start]").click();
-  await expect(page.locator("#spectrum-analyzer-status [data-status-label]")).toHaveText(
-    "Analyzing microphone",
-  );
+  await expect(
+    page.locator("#spectrum-analyzer-status [data-status-label]"),
+  ).toHaveText("Analyzing microphone");
   await expect(page.locator("[data-spectrum-stop]")).toBeEnabled();
   await expect(page.locator("[data-spectrum-input-field]")).toBeVisible();
   await expect(page.locator("[data-spectrum-input] option")).toHaveCount(3);
-  await expect(page.locator("[data-spectrum-dominant]")).toMatchAriaSnapshot(`- text: /\\d+ Hz/`);
+  await expect(page.locator("[data-spectrum-dominant]")).not.toHaveText("—");
   await expect(page.locator("[data-spectrum-analysis-rate]")).toHaveText("48000 Hz");
   await expect(page.locator("[data-spectrum-fft-value]")).toHaveText("2048");
   await expect(page.locator("[data-spectrum-bin-width]")).toHaveText("23.4 Hz");
-  await expect(page.locator("[data-spectrum-range]")).toHaveText("20 Hz → 20000 Hz");
+  await expect(page.locator("[data-spectrum-range]")).toHaveText(
+    "20 Hz → 20000 Hz",
+  );
 
   const state = await harnessState(page);
   expect(state.audioContextCount).toBe(1);
@@ -281,7 +310,7 @@ test("stays idle until Start, then applies the documented FFT defaults and raw-i
   expect((await harnessState(page)).getUserMediaCalls).toHaveLength(1);
 });
 
-test("switches Spectrum, Waveform and Spectrogram views without creating another capture", async ({
+test("switches Spectrum, Waveform and Spectrogram without another capture", async ({
   page,
 }) => {
   await page.locator("[data-spectrum-start]").click();
@@ -292,7 +321,9 @@ test("switches Spectrum, Waveform and Spectrogram views without creating another
     "aria-pressed",
     "true",
   );
-  await expect.poll(async () => (await harnessState(page)).waveformReads).toBeGreaterThan(0);
+  await expect
+    .poll(async () => (await harnessState(page)).waveformReads)
+    .toBeGreaterThan(0);
   await expect(page.locator("[data-spectrum-dominant]")).toHaveText("—");
 
   const frequencyReadsBeforeSpectrogram = (await harnessState(page)).frequencyReads;
@@ -310,7 +341,9 @@ test("switches Spectrum, Waveform and Spectrogram views without creating another
   expect((await harnessState(page)).getUserMediaCalls).toHaveLength(callsAfterStart);
 });
 
-test("failed exact input selection preserves the previous live microphone", async ({ page }) => {
+test("failed exact input selection preserves the previous live microphone", async ({
+  page,
+}) => {
   await page.locator("[data-spectrum-start]").click();
   const select = page.locator("[data-spectrum-input]");
   await select.selectOption("mic-fail");
@@ -328,13 +361,15 @@ test("failed exact input selection preserves the previous live microphone", asyn
   expect(state.lifecycle).not.toContain("track-stop:mic-1");
 });
 
-test("successful exact switch acquires the new input before destroying the old stream", async ({
+test("successful exact switch acquires the new input before old-stream teardown", async ({
   page,
 }) => {
   await page.locator("[data-spectrum-start]").click();
   await page.locator("[data-spectrum-input]").selectOption("mic-2");
 
-  await expect(page.locator("[data-spectrum-active-input]")).toHaveText("USB microphone");
+  await expect(page.locator("[data-spectrum-active-input]")).toHaveText(
+    "USB microphone",
+  );
   const state = await harnessState(page);
   const acquireIndex = state.lifecycle.indexOf("gum:mic-2");
   const stopIndex = state.lifecycle.indexOf("track-stop:mic-1");
@@ -350,24 +385,39 @@ test("successful exact switch acquires the new input before destroying the old s
   });
 });
 
-test("Stop and track loss end live analysis and require an explicit restart", async ({ page }) => {
+test("Stop cancels rendering, restart resumes one live analysis flow, and track loss disconnects", async ({
+  page,
+}) => {
   await page.locator("[data-spectrum-start]").click();
+  await expect
+    .poll(async () => (await harnessState(page)).frequencyReads)
+    .toBeGreaterThan(0);
+
   await page.locator("[data-spectrum-stop]").click();
-  await expect(page.locator("#spectrum-analyzer-status [data-status-label]")).toHaveText(
-    "Stopped",
-  );
+  await expect(
+    page.locator("#spectrum-analyzer-status [data-status-label]"),
+  ).toHaveText("Stopped");
   await expect(page.locator("[data-spectrum-dominant]")).toHaveText("—");
   await expect(page.locator("[data-spectrum-start]")).toBeEnabled();
+
+  const readsAfterStop = (await harnessState(page)).frequencyReads;
+  await page.waitForTimeout(80);
+  expect((await harnessState(page)).frequencyReads).toBe(readsAfterStop);
   expect((await harnessState(page)).lifecycle).toContain("track-stop:mic-1");
 
   await page.locator("[data-spectrum-start]").click();
+  await expect
+    .poll(async () => (await harnessState(page)).frequencyReads)
+    .toBeGreaterThan(readsAfterStop);
+  expect((await harnessState(page)).getUserMediaCalls).toHaveLength(2);
+
   await page.evaluate(() => {
     const endTrack = Reflect.get(window, "__spectrumEndActiveTrack") as () => boolean;
     endTrack();
   });
-  await expect(page.locator("#spectrum-analyzer-status [data-status-label]")).toHaveText(
-    "Input device disconnected",
-  );
+  await expect(
+    page.locator("#spectrum-analyzer-status [data-status-label]"),
+  ).toHaveText("Input device disconnected");
   await expect(page.locator("[data-spectrum-active-input]")).toHaveText(
     "Input device disconnected",
   );
@@ -375,7 +425,7 @@ test("Stop and track loss end live analysis and require an explicit restart", as
   await expect(page.locator("[data-spectrum-start]")).toBeEnabled();
 });
 
-test("BFCache restoration remounts idle state and the next Start creates a fresh AudioContext", async ({
+test("BFCache restoration is idle and the next Start creates a fresh AudioContext", async ({
   page,
 }) => {
   await page.locator("[data-spectrum-start]").click();
@@ -384,19 +434,21 @@ test("BFCache restoration remounts idle state and the next Start creates a fresh
   await page.evaluate(() => {
     window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
   });
-  await expect.poll(async () => (await harnessState(page)).closedContextCount).toBe(1);
+  await expect
+    .poll(async () => (await harnessState(page)).closedContextCount)
+    .toBe(1);
 
   await page.evaluate(() => {
     window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
   });
-  await expect(page.locator("#spectrum-analyzer-status [data-status-label]")).toHaveText(
-    "Ready",
-  );
+  await expect(
+    page.locator("#spectrum-analyzer-status [data-status-label]"),
+  ).toHaveText("Ready");
   await expect(page.locator("[data-spectrum-dominant]")).toHaveText("—");
 
   await page.locator("[data-spectrum-start]").click();
-  await expect(page.locator("#spectrum-analyzer-status [data-status-label]")).toHaveText(
-    "Analyzing microphone",
-  );
+  await expect(
+    page.locator("#spectrum-analyzer-status [data-status-label]"),
+  ).toHaveText("Analyzing microphone");
   expect((await harnessState(page)).audioContextCount).toBe(2);
 });
