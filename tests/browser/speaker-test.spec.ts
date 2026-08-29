@@ -295,9 +295,10 @@ test("Speaker channel sequence uses three exact hard-routed reference bursts", a
   const oscillators = await readProbe<
     Array<{ frequency: number; starts: number[]; stops: number[] }>
   >(page, "__speakerProbeOscillators");
-  const gains = await readProbe<
-    Array<Array<{ kind: string; value?: number; time: number }>>
-  >(page, "__speakerProbeGains");
+  const gains = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
+    page,
+    "__speakerProbeGains",
+  );
 
   expect(oscillators).toHaveLength(3);
   expect(oscillators.map((item) => item.frequency)).toEqual([500, 500, 500]);
@@ -342,9 +343,10 @@ test("Speaker Phase mode keeps one correlated source across In phase, Inverted a
     bufferSampleRate: 44_100,
   });
 
-  const gains = await readProbe<
-    Array<Array<{ kind: string; value?: number; time: number }>>
-  >(page, "__speakerProbeGains");
+  const gains = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
+    page,
+    "__speakerProbeGains",
+  );
   const rightEvents = gains[3] ?? [];
   expect(rightEvents).toContainEqual({ kind: "linear", value: 0, time: 10.025 });
   expect(rightEvents).toContainEqual({ kind: "linear", value: -1, time: 10.05 });
@@ -368,11 +370,7 @@ test("Speaker Sweep uses the shared ten-second logarithmic scheduler", async ({ 
     }>
   >(page, "__speakerProbeOscillators");
   expect(oscillators).toHaveLength(1);
-  expect(oscillators[0]).toMatchObject({
-    frequency: 100,
-    starts: [10],
-    stops: [20],
-  });
+  expect(oscillators[0]).toMatchObject({ frequency: 100, starts: [10], stops: [20] });
   expect(oscillators[0]?.frequencyEvents).toContainEqual({
     kind: "exponential",
     value: 10_000,
@@ -391,9 +389,7 @@ test("Speaker Sweep caps its nominal high frequency to the runtime sample-rate c
   await expect(page.locator("#speaker-frequency-cap")).toBeVisible();
   await expect(page.locator("#speaker-sweep-high")).toHaveValue("7600");
   const oscillators = await readProbe<
-    Array<{
-      frequencyEvents: Array<{ kind: string; value?: number; time: number }>;
-    }>
+    Array<{ frequencyEvents: Array<{ kind: string; value?: number; time: number }> }>
   >(page, "__speakerProbeOscillators");
   expect(oscillators[0]?.frequencyEvents).toContainEqual({
     kind: "exponential",
@@ -410,9 +406,7 @@ test("Speaker Bass/rattle reuses the 40 to 120 Hz twelve-second logarithmic prim
 
   await page.getByRole("button", { name: "Bass / rattle", exact: true }).click();
   await page.getByRole("button", { name: "Run bass / rattle sweep" }).click();
-  await expect(page.locator("#speaker-status")).toContainText(
-    "Bass / rattle sweep running",
-  );
+  await expect(page.locator("#speaker-status")).toContainText("Bass / rattle sweep running");
 
   const oscillators = await readProbe<
     Array<{
