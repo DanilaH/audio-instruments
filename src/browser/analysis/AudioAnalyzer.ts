@@ -212,6 +212,22 @@ export class AudioAnalyzer implements SessionResource {
     return { ...reading, heldPeakDbfs };
   }
 
+  readRecentTimeDomain(target: Float32Array): Float32Array {
+    this.#assertUsable();
+    if (target.length <= 0) {
+      throw new RangeError("Recent time-domain target must not be empty");
+    }
+    if (target.length > this.#meterSamples.length) {
+      throw new RangeError(
+        `Recent time-domain target cannot exceed meter buffer length ${this.#meterSamples.length}`,
+      );
+    }
+
+    this.#meterAnalyser.getFloatTimeDomainData(this.#meterSamples);
+    target.set(this.#meterSamples.subarray(this.#meterSamples.length - target.length));
+    return target;
+  }
+
   readWaveform(target?: Float32Array): Float32Array {
     this.#assertUsable();
     const output = target ?? new Float32Array(this.#spectrumAnalyser.fftSize);

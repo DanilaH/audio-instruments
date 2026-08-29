@@ -120,6 +120,8 @@ MEAS-03 User-observed physical behavior is never converted into fake automatic d
 MEAS-04 Mic meter uses exact 100 ms PCM RMS/peak math with -100 dBFS display floor.
 MEAS-05 Spectrum canonical frequency data path uses getFloatFrequencyData().
 MEAS-06 Pitch Detector v1 uses bounded YIN from Tool Specs.
+MEAS-06A Standard YIN CMNDF may calculate lower-lag difference terms required for cumulative normalization. Pitch candidate selection remains restricted to tauMin..tauMax. Parabolic refinement may read the already-calculated immediate lower neighbor when selectedTau = tauMin, but no lag above tauMax is calculated or used.
+MEAS-06B Integer pitch candidates use the documented floor/ceil tau search, while refinedTau is clamped to the continuous target-period interval analysisRate/2000 through analysisRate/50 before frequency conversion so valid 50–2000 Hz edge signals are not rejected solely by integer tau rounding.
 MEAS-07 dB/Sound Meter default output is RMS/Peak dBFS.
 MEAS-08 Optional acoustic estimate is labelled "Reference-calibrated level estimate" / "One-point reference calibration".
 MEAS-09 Do not call the browser measurement chain Z-weighted/unweighted merely because the reference meter uses Z/Flat/Linear.

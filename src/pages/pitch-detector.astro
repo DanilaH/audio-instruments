@@ -1,0 +1,110 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import PitchDetector from "../tools/pitch-detector/PitchDetector.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const pitchTool = toolRegistry.find((tool) => tool.id === "pitch-detector");
+if (!pitchTool) throw new Error("Pitch Detector registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = pitchTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Pitch Detector — Browser Audio Lab"
+  description="Estimate monophonic musical pitch from microphone input with bounded YIN analysis, note mapping, cents deviation and explicit confidence/stability states."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Input & analysis"
+    title="Pitch Detector"
+    description="Estimate one steady musical pitch from your microphone with bounded YIN analysis, nearest-note mapping, cents deviation and visible confidence."
+    accent="mint"
+  >
+    <PitchDetector />
+
+    <section class="pitch-content" aria-labelledby="pitch-about-title">
+      <div>
+        <p class="eyebrow">Monophonic estimate</p>
+        <h2 id="pitch-about-title">Pitch detection, not strongest-bin guessing</h2>
+      </div>
+      <div class="pitch-content__copy">
+        <p>
+          The detector uses bounded YIN analysis on time-domain microphone samples
+          for a 50–2000 Hz target. High-rate Web Audio streams are reduced with a
+          fixed averaged decimator so the YIN workload remains bounded.
+        </p>
+        <p>
+          Accepted estimates are mapped against A4 = 440 Hz to the nearest MIDI
+          note and cents deviation. The displayed pitch is the median of recent
+          accepted estimates rather than a raw FFT-bin label.
+        </p>
+      </div>
+    </section>
+
+    <section class="pitch-help" aria-labelledby="pitch-help-title">
+      <h2 id="pitch-help-title">When no note is shown</h2>
+      <div class="pitch-help__grid">
+        <p>
+          YIN analysis runs at no more than 20 times per second. Estimates below
+          the confidence threshold are rejected and no note is displayed for that
+          frame. A rejection breaks the consecutive-stability streak; stability
+          must be earned again from accepted frames.
+        </p>
+        <p>
+          Pitch is still an estimate. Noise, chords, multiple simultaneous
+          sources, room reflections, or unstable tones can produce a Listening
+          state instead of a guessed note. The tool does not diagnose an
+          instrument, voice, microphone, or room.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .pitch-content,
+  .pitch-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .pitch-content h2,
+  .pitch-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .pitch-content__copy,
+  .pitch-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .pitch-content p,
+  .pitch-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .pitch-content,
+    .pitch-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
