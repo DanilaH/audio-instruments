@@ -1,6 +1,7 @@
 ---
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
 import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import { GENERAL_LEVEL_DEFAULT_DB } from "../../utils/audio";
 import {
   AV_SYNC_OFFSET_MAX_MS,
   AV_SYNC_OFFSET_MIN_MS,
@@ -53,15 +54,22 @@ import {
           </p>
         </div>
 
-        <div class="latency-actions">
-          <button type="button" class="latency-start" data-latency-start>
-            <i class="ph ph-play" aria-hidden="true"></i>
-            Start sync loop
-          </button>
-          <button type="button" class="latency-stop" data-latency-stop disabled>
-            <i class="ph ph-stop" aria-hidden="true"></i>
-            Stop
-          </button>
+        <div class="latency-actions-row">
+          <div class="latency-actions">
+            <button type="button" class="latency-start" data-latency-start>
+              <i class="ph ph-play" aria-hidden="true"></i>
+              Start sync loop
+            </button>
+            <button type="button" class="latency-stop" data-latency-stop disabled>
+              <i class="ph ph-stop" aria-hidden="true"></i>
+              Stop
+            </button>
+          </div>
+          <p class="latency-level">
+            <span>Click level</span>
+            <strong data-latency-level>{GENERAL_LEVEL_DEFAULT_DB} dB</strong>
+            <span>relative to unity</span>
+          </p>
         </div>
 
         <div class="latency-offset-control">
@@ -172,6 +180,7 @@ import {
   .latency-stage__header,
   .latency-field-header,
   .latency-section-heading,
+  .latency-actions-row,
   .latency-actions {
     display: flex;
     align-items: center;
@@ -286,13 +295,35 @@ import {
 
   .latency-safety p,
   .latency-reported p,
-  .latency-offset-control p {
+  .latency-offset-control p,
+  .latency-level {
     margin: 0;
   }
 
   .latency-safety p {
     font-size: 0.78rem;
     line-height: 1.45;
+  }
+
+  .latency-actions-row {
+    flex-wrap: wrap;
+  }
+
+  .latency-actions {
+    justify-content: flex-start;
+  }
+
+  .latency-level {
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+  }
+
+  .latency-level strong {
+    color: var(--color-ink);
+    font-size: 0.82rem;
   }
 
   .latency-reported,
@@ -364,6 +395,7 @@ import {
 
   .latency-offset-control input[type="range"] {
     width: 100%;
+    min-height: 44px;
     accent-color: rgb(183 132 20);
   }
 
@@ -372,10 +404,6 @@ import {
     justify-content: space-between;
     color: var(--color-ink-muted);
     font-size: 0.68rem;
-  }
-
-  .latency-actions {
-    justify-content: flex-start;
   }
 
   .latency-start,
@@ -486,8 +514,14 @@ import {
       font-size: 0.74rem;
     }
 
+    .latency-actions-row {
+      align-items: stretch;
+      gap: 8px;
+    }
+
     .latency-actions {
       display: grid;
+      flex: 1 1 100%;
       grid-template-columns: 1fr 1fr;
     }
 
@@ -495,6 +529,10 @@ import {
     .latency-stop {
       width: 100%;
       padding-inline: 10px;
+    }
+
+    .latency-level {
+      flex: 1 1 100%;
     }
 
     .latency-reported dl {
