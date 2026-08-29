@@ -90,7 +90,7 @@ P0 package/scripts/lint/format/test tooling
 
 ## 3. Implementation status
 
-P0–P6 are **implemented and merged** as of 2026-08-29, including all 16 core v1 tool routes and the P6.3 final catalog homepage composition.
+P0–P6.3 are **implemented and merged** as of 2026-08-29, including all 16 core v1 tool routes and the final catalog homepage composition.
 
 Do not reopen resolved choices because another implementation seems personally preferable.
 
@@ -488,7 +488,7 @@ repository_gate.mode = manual
 then:
 
 - branch → Draft PR → Review #1 → fixes → Review #2 → full CI → merge remains mandatory project policy;
-- `merge-gate` is intended to be green before normal merges;
+- `merge-gate` must be green before the assistant performs the merge;
 - do not direct-push roadmap implementation to `main`;
 - do not claim GitHub mechanically prevents an owner/admin bypass;
 - unavailable branch protection is **not** a P0 blocker and must not be raised again unless repository visibility/plan changes.
@@ -508,7 +508,7 @@ For that signature:
 
 - classify the run as infrastructure/no-runner, not as a repository test failure;
 - never call it green CI;
-- do not weaken or rewrite the intended merge-gate contract merely to make the failure disappear;
+- do not weaken or rewrite the required merge-gate contract merely to make the failure disappear;
 - preserve exact-SHA review/CI evidence in any owner-approved exception handling;
 - do not start P7 while its roadmap prerequisite still says `Wait for upgraded runner`.
 
