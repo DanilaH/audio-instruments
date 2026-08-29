@@ -73,10 +73,10 @@ export function formatHearingFrequency(frequencyHz: number): string {
   if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) return "—";
   if (frequencyHz >= 1_000) {
     const kilohertz = frequencyHz / 1_000;
-    const formatted = Number.isInteger(kilohertz)
-      ? String(kilohertz)
-      : kilohertz.toFixed(1).replace(/\.0$/, "");
-    return `${formatted} kHz`;
+    if (Number.isInteger(kilohertz)) return `${kilohertz} kHz`;
+
+    const truncatedTenths = Math.floor(kilohertz * 10) / 10;
+    return `${truncatedTenths.toFixed(1)} kHz`;
   }
   return `${Math.round(frequencyHz)} Hz`;
 }
