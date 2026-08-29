@@ -208,8 +208,8 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "input-analysis",
     implementationPhase: "P5.5",
     accent: "cyan",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: ["microphone-test", "spectrum-analyzer", "pitch-detector"],
   },
   {
     id: "audio-latency-test",
