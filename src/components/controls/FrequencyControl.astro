@@ -5,6 +5,7 @@ interface Props {
   minHz: number;
   maxHz: number;
   numericStep?: number;
+  label?: string;
   disabled?: boolean;
 }
 
@@ -14,6 +15,7 @@ const {
   minHz,
   maxHz,
   numericStep = 1,
+  label = "Frequency",
   disabled = false,
 } = Astro.props;
 
@@ -29,7 +31,7 @@ const sliderPosition =
   data-max-hz={maxHz}
 >
   <div class="frequency-control__header">
-    <label for={`${id}-number`}>Frequency</label>
+    <label for={`${id}-number`}>{label}</label>
     <span>Hz</span>
   </div>
   <input
@@ -52,7 +54,7 @@ const sliderPosition =
     step="0.001"
     value={sliderPosition}
     disabled={disabled}
-    aria-label="Frequency logarithmic slider"
+    aria-label={`${label} logarithmic slider`}
   />
 </div>
 
