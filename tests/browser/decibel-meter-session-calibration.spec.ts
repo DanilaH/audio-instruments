@@ -142,7 +142,7 @@ async function installNoDeviceIdHarness(page: Page): Promise<void> {
   });
 }
 
-test("calibration without a reported deviceId is session-only and never persisted", async ({
+test("calibration without a reported deviceId is session-only and clears on Stop", async ({
   page,
 }) => {
   await installNoDeviceIdHarness(page);
@@ -168,6 +168,26 @@ test("calibration without a reported deviceId is session-only and never persiste
     "session only",
   );
   await expect(page.locator("[data-db-estimate]")).toHaveText("72.0 dB");
+  expect(
+    await page.evaluate(() =>
+      localStorage.getItem("browserAudioLab.dbCalibration.v2"),
+    ),
+  ).toBeNull();
+
+  await page.locator("[data-db-stop]").click();
+  await expect(page.locator("[data-db-calibration-status]")).toHaveText(
+    "Uncalibrated",
+  );
+  await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
+
+  await page.locator("[data-db-start]").click();
+  await expect(page.locator("[data-db-calibration-status]")).toHaveText(
+    "Uncalibrated",
+  );
+  await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
+  await expect(page.locator("[data-db-calibrate]")).toHaveText(
+    "Capture 3-second reference",
+  );
   expect(
     await page.evaluate(() =>
       localStorage.getItem("browserAudioLab.dbCalibration.v2"),
