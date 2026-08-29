@@ -90,13 +90,13 @@ P0 package/scripts/lint/format/test tooling
 
 ## 3. Implementation status
 
-P0–P6 are implementation-ready after the 2026-08-28 cold pre-code review closed with 0 blockers / 0 majors.
-
-Implementation may begin.
+P0–P6 are **implemented and merged** as of 2026-08-29, including all 16 core v1 tool routes and the P6.3 final catalog homepage composition.
 
 Do not reopen resolved choices because another implementation seems personally preferable.
 
-P7–P8 remain phase-gated by external evidence/QA.
+P7 is currently blocked by its explicit roadmap prerequisite: **wait for upgraded runner**.
+
+P8 remains phase-gated after P7 and still requires real-device/browser QA plus production decisions.
 
 ## 4. Locked stack
 
@@ -475,7 +475,6 @@ Do not treat branch protection as complete if administrators/maintainers can byp
 
 P0 must verify the repository-plan/settings capability and record any limitation instead of assuming protection exists.
 
-
 ## 29. Current repository-gate mode
 
 The repository intentionally remains private on the current free GitHub plan. Protected-branch/ruleset controls are unavailable for this setup, and the project owner has explicitly accepted **manual repository-gate enforcement** as the operating mode.
@@ -489,9 +488,28 @@ repository_gate.mode = manual
 then:
 
 - branch → Draft PR → Review #1 → fixes → Review #2 → full CI → merge remains mandatory project policy;
-- `merge-gate` must be green before the assistant performs the merge;
+- `merge-gate` is intended to be green before normal merges;
 - do not direct-push roadmap implementation to `main`;
 - do not claim GitHub mechanically prevents an owner/admin bypass;
 - unavailable branch protection is **not** a P0 blocker and must not be raised again unless repository visibility/plan changes.
 
 The only direct-to-main exception remains the already-completed empty-repository baseline seed.
+
+## 30. Current hosted-CI incident
+
+As of 2026-08-29, later P5/P6 pull-request validation attempts have repeatedly failed **before runner allocation** with the observed signature:
+
+```text
+runner_id = 0
+steps = []
+```
+
+For that signature:
+
+- classify the run as infrastructure/no-runner, not as a repository test failure;
+- never call it green CI;
+- do not weaken or rewrite the intended merge-gate contract merely to make the failure disappear;
+- preserve exact-SHA review/CI evidence in any owner-approved exception handling;
+- do not start P7 while its roadmap prerequisite still says `Wait for upgraded runner`.
+
+This section records an observed infrastructure incident. It is not a permanent waiver policy and does not replace `15_DEVELOPMENT_WORKFLOW.md` or `16_CI_AND_REPOSITORY_GATES.md`.
