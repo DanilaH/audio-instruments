@@ -103,7 +103,7 @@ maintenance cost
 
 The repository uses Draft PRs for early review.
 
-The intended full-validation sequence remains:
+The required workflow sequence remains:
 
 ```text
 cold Review #1
@@ -117,9 +117,9 @@ cold Review #1
 
 See `15_DEVELOPMENT_WORKFLOW.md` and `16_CI_AND_REPOSITORY_GATES.md`.
 
-The repository is private on the current free GitHub plan, so protected-branch/ruleset enforcement is unavailable and the owner has accepted manual repository-gate enforcement. This does not change the intended review/validation sequence.
+The repository is private on the current free GitHub plan, so protected-branch/ruleset enforcement is unavailable and the owner has accepted manual repository-gate enforcement. This does not change the required review/validation sequence.
 
-Recent later-P5/P6 GitHub Actions attempts also exposed a separate hosted infrastructure incident: jobs failed before runner allocation with `runner_id = 0` and `steps = []`. Those runs are infrastructure/no-runner evidence, not green CI and not repository test failures. Affected merges record exact-SHA review evidence and explicit infrastructure-waiver notes; the incident does not redefine the normal green `merge-gate` target.
+Recent later-P5/P6 GitHub Actions attempts also exposed a separate hosted infrastructure incident: jobs failed before runner allocation with `runner_id = 0` and `steps = []`. Those runs are infrastructure/no-runner evidence, not green CI and not repository test failures. Affected merges record exact-SHA review evidence and explicit infrastructure-waiver notes; the incident does not redefine the required green `merge-gate` policy.
 
 ## Site shell
 
@@ -133,7 +133,7 @@ P6.3 finalized the live v1 catalog composition with the canonical featured four 
 
 ## Mechanical merge gate
 
-When hosted CI executes normally, review/authorization order is:
+Required review/authorization order:
 
 ```text
 Review #2
