@@ -12,7 +12,11 @@ import {
 } from "../../browser/audio-output/referenceSignals";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 import { NoiseEngine } from "../../browser/noise/NoiseEngine";
-import { clamp, getEffectiveMaxFrequency } from "../../utils/audio";
+import {
+  clamp,
+  getEffectiveMaxFrequency,
+  type SweepDefinition,
+} from "../../utils/audio";
 
 const SPEAKER_SWEEP_MIN_HZ = 20;
 const SPEAKER_SWEEP_NOMINAL_MAX_HZ = 20_000;
@@ -24,6 +28,10 @@ const SPEAKER_BASS_HIGH_HZ = 120;
 const GENERAL_LEVEL_MIN_DB = -60;
 const GENERAL_LEVEL_MAX_DB = -12;
 const GENERAL_LEVEL_DEFAULT_DB = -24;
+const MILLISECONDS_PER_SECOND = 1_000;
+const CHANNEL_BURST_MS = CHANNEL_TEST_DURATION_SECONDS * MILLISECONDS_PER_SECOND;
+const CHANNEL_STEP_MS = CHANNEL_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
+const CHANNEL_SEQUENCE_TOTAL_MS = CHANNEL_STEP_MS * 2 + CHANNEL_BURST_MS;
 
 type SpeakerMode = "channel" | "phase" | "sweep" | "bass";
 type SpeakerVisualState =
@@ -38,7 +46,9 @@ type SpeakerVisualState =
 
 function requireElement<T extends Element>(root: ParentNode, selector: string): T {
   const element = root.querySelector<T>(selector);
-  if (!element) throw new Error(`Speaker Test is missing required element: ${selector}`);
+  if (!element) {
+    throw new Error(`Speaker Test is missing required element: ${selector}`);
+  }
   return element;
 }
 
@@ -116,11 +126,16 @@ export class SpeakerTestController {
 
   constructor(root: HTMLElement) {
     this.#root = root;
-    this.#modeButtons = [...root.querySelectorAll<HTMLButtonElement>("[data-speaker-mode]")];
-    this.#panels = [...root.querySelectorAll<HTMLElement>("[data-speaker-panel]")];
+    this.#modeButtons = [
+      ...root.querySelectorAll<HTMLButtonElement>("[data-speaker-mode]"),
+    ];
+    this.#panels = [
+      ...root.querySelectorAll<HTMLElement>("[data-speaker-panel]"),
+    ];
     this.#channelButtons = [
       ...root.querySelectorAll<HTMLButtonElement>("[data-speaker-channel]"),
     ];
+
     if (this.#modeButtons.length !== 4 || this.#panels.length !== 4) {
       throw new Error("Speaker Test requires four modes and four mode panels");
     }
@@ -130,7 +145,10 @@ export class SpeakerTestController {
 
     this.#sequenceButton = requireElement(root, "[data-speaker-sequence]");
     this.#phaseInButton = requireElement(root, "[data-speaker-phase-in]");
-    this.#phaseInvertedButton = requireElement(root, "[data-speaker-phase-inverted]");
+    this.#phaseInvertedButton = requireElement(
+      root,
+      "[data-speaker-phase-inverted]",
+    );
     this.#phaseToggleButton = requireElement(root, "[data-speaker-phase-toggle]");
     this.#sweepButton = requireElement(root, "[data-speaker-sweep]");
     this.#bassButton = requireElement(root, "[data-speaker-bass]");
@@ -150,7 +168,11 @@ export class SpeakerTestController {
 
     const restoredLevel = Number(this.#levelInput.value);
     if (Number.isFinite(restoredLevel)) {
-      this.#levelDb = clamp(restoredLevel, GENERAL_LEVEL_MIN_DB, GENERAL_LEVEL_MAX_DB);
+      this.#levelDb = clamp(
+        restoredLevel,
+        GENERAL_LEVEL_MIN_DB,
+        GENERAL_LEVEL_MAX_DB,
+      );
     }
 
     this.#bindEvents();
@@ -205,12 +227,16 @@ export class SpeakerTestController {
       );
     }
 
-    this.#sequenceButton.addEventListener("click", () => void this.#runSequence(), {
-      signal,
-    });
-    this.#phaseInButton.addEventListener("click", () => void this.#runPhase(false), {
-      signal,
-    });
+    this.#sequenceButton.addEventListener(
+      "click",
+      () => void this.#runSequence(),
+      { signal },
+    );
+    this.#phaseInButton.addEventListener(
+      "click",
+      () => void this.#runPhase(false),
+      { signal },
+    );
     this.#phaseInvertedButton.addEventListener(
       "click",
       () => void this.#runPhase(true),
@@ -225,26 +251,45 @@ export class SpeakerTestController {
       },
       { signal },
     );
-    this.#sweepButton.addEventListener("click", () => void this.#runSweep(), { signal });
-    this.#bassButton.addEventListener("click", () => void this.#runBass(), { signal });
-    this.#stopButton.addEventListener("click", () => this.#stopCurrent("Stopped"), {
-      signal,
-    });
+    this.#sweepButton.addEventListener(
+      "click",
+      () => void this.#runSweep(),
+      { signal },
+    );
+    this.#bassButton.addEventListener(
+      "click",
+      () => void this.#runBass(),
+      { signal },
+    );
+    this.#stopButton.addEventListener(
+      "click",
+      () => this.#stopCurrent("Stopped"),
+      { signal },
+    );
     this.#levelInput.addEventListener(
       "input",
       () => {
         const value = Number(this.#levelInput.value);
         if (!Number.isFinite(value)) return;
-        this.#levelDb = clamp(value, GENERAL_LEVEL_MIN_DB, GENERAL_LEVEL_MAX_DB);
+        this.#levelDb = clamp(
+          value,
+          GENERAL_LEVEL_MIN_DB,
+          GENERAL_LEVEL_MAX_DB,
+        );
         this.#engine?.setLevelDb(this.#levelDb);
       },
       { signal },
     );
   }
 
-  async #getAudio(): Promise<{ context: AudioContext; engine: AudioOutputEngine }> {
+  async #getAudio(): Promise<{
+    context: AudioContext;
+    engine: AudioOutputEngine;
+  }> {
     const context = await this.#session.getContext();
-    if (this.#disposed) throw new Error("Speaker Test was disposed before audio could start");
+    if (this.#disposed) {
+      throw new Error("Speaker Test was disposed before audio could start");
+    }
 
     if (!this.#engine) {
       this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
@@ -258,7 +303,9 @@ export class SpeakerTestController {
 
   #getPhaseBuffer(context: AudioContext): AudioBuffer {
     if (!this.#noiseEngine) this.#noiseEngine = new NoiseEngine(context);
-    if (!this.#phaseBuffer) this.#phaseBuffer = this.#noiseEngine.createPhaseTestPinkBuffer();
+    if (!this.#phaseBuffer) {
+      this.#phaseBuffer = this.#noiseEngine.createPhaseTestPinkBuffer();
+    }
     return this.#phaseBuffer;
   }
 
@@ -295,6 +342,7 @@ export class SpeakerTestController {
     try {
       const { engine } = await this.#getAudio();
       if (!this.#isCurrentRun(token)) return;
+
       this.#oscillatorPlaybacks = [
         engine.startOscillator({
           frequencyHz: CHANNEL_TEST_FREQUENCY_HZ,
@@ -307,7 +355,7 @@ export class SpeakerTestController {
       this.#setControlsActive(true);
       this.#setVisual(mode, channelLabel(mode));
       this.#setStatus("playing", `Playing ${channelLabel(mode)}`);
-      this.#schedule(CHANNEL_TEST_DURATION_SECONDS * 1_000, token, () => this.#finishRun());
+      this.#schedule(CHANNEL_BURST_MS, token, () => this.#finishRun());
     } catch (error) {
       this.#handleStartError(error, token);
     }
@@ -320,6 +368,7 @@ export class SpeakerTestController {
     try {
       const { context, engine } = await this.#getAudio();
       if (!this.#isCurrentRun(token)) return;
+
       const startTime = context.currentTime;
       const sequence: readonly StereoChannelMode[] = ["left", "both", "right"];
       this.#oscillatorPlaybacks = sequence.map((mode, index) =>
@@ -331,15 +380,24 @@ export class SpeakerTestController {
           durationSeconds: CHANNEL_TEST_DURATION_SECONDS,
         }),
       );
+
       this.#starting = false;
       this.#setControlsActive(true);
       this.#setVisual("left", "Left");
       this.#setStatus("playing", "Channel sequence running");
-      this.#schedule(700, token, () => this.#setVisual("idle", "Gap"));
-      this.#schedule(1_000, token, () => this.#setVisual("both", "Both"));
-      this.#schedule(1_700, token, () => this.#setVisual("idle", "Gap"));
-      this.#schedule(2_000, token, () => this.#setVisual("right", "Right"));
-      this.#schedule(2_700, token, () => this.#finishRun());
+      this.#schedule(CHANNEL_BURST_MS, token, () =>
+        this.#setVisual("idle", "Gap"),
+      );
+      this.#schedule(CHANNEL_STEP_MS, token, () =>
+        this.#setVisual("both", "Both"),
+      );
+      this.#schedule(CHANNEL_STEP_MS + CHANNEL_BURST_MS, token, () =>
+        this.#setVisual("idle", "Gap"),
+      );
+      this.#schedule(CHANNEL_STEP_MS * 2, token, () =>
+        this.#setVisual("right", "Right"),
+      );
+      this.#schedule(CHANNEL_SEQUENCE_TOTAL_MS, token, () => this.#finishRun());
     } catch (error) {
       this.#handleStartError(error, token);
     }
@@ -356,10 +414,12 @@ export class SpeakerTestController {
     try {
       const { context, engine } = await this.#getAudio();
       if (!this.#isCurrentRun(token)) return;
+
+      const startTime = context.currentTime;
       this.#phasePlayback = engine.startPhaseBuffer(
         this.#getPhaseBuffer(context),
         inverted,
-        context.currentTime,
+        startTime,
       );
       this.#starting = false;
       this.#setControlsActive(true);
@@ -375,8 +435,14 @@ export class SpeakerTestController {
     this.#phaseInverted = inverted;
     this.#phaseInButton.setAttribute("aria-pressed", String(!inverted));
     this.#phaseInvertedButton.setAttribute("aria-pressed", String(inverted));
-    this.#setVisual(inverted ? "phase-inverted" : "phase-in", inverted ? "Inverted right" : "In phase");
-    this.#setStatus("playing", inverted ? "Playing inverted" : "Playing in phase");
+    this.#setVisual(
+      inverted ? "phase-inverted" : "phase-in",
+      inverted ? "Inverted right" : "In phase",
+    );
+    this.#setStatus(
+      "playing",
+      inverted ? "Playing inverted" : "Playing in phase",
+    );
   }
 
   async #runSweep(): Promise<void> {
@@ -386,6 +452,7 @@ export class SpeakerTestController {
     try {
       const { context, engine } = await this.#getAudio();
       if (!this.#isCurrentRun(token)) return;
+
       const definition = this.#readSweepDefinition();
       if (!definition) {
         this.#starting = false;
@@ -396,19 +463,29 @@ export class SpeakerTestController {
         );
         return;
       }
+
+      const startTime = context.currentTime;
       const playback = engine.startOscillator({
         frequencyHz: definition.lowHz,
         waveform: "sine",
         channelMode: "both",
-        durationSeconds: SPEAKER_SWEEP_DURATION_SECONDS,
+        startTime,
+        durationSeconds: definition.durationSeconds,
       });
-      playback.scheduleSweep(definition, context.currentTime);
+      playback.scheduleSweep(definition, startTime);
       this.#oscillatorPlaybacks = [playback];
       this.#starting = false;
       this.#setControlsActive(true);
-      this.#setVisual("sweep", `${definition.lowHz} → ${definition.highHz} Hz`);
+      this.#setVisual(
+        "sweep",
+        `${definition.lowHz} → ${definition.highHz} Hz`,
+      );
       this.#setStatus("playing", "Speaker sweep running");
-      this.#schedule(SPEAKER_SWEEP_DURATION_SECONDS * 1_000, token, () => this.#finishRun());
+      this.#schedule(
+        definition.durationSeconds * MILLISECONDS_PER_SECOND,
+        token,
+        () => this.#finishRun(),
+      );
     } catch (error) {
       this.#handleStartError(error, token);
     }
@@ -421,26 +498,43 @@ export class SpeakerTestController {
     try {
       const { context, engine } = await this.#getAudio();
       if (!this.#isCurrentRun(token)) return;
-      const definition = createBassSweepDefinition(SPEAKER_BASS_LOW_HZ, SPEAKER_BASS_HIGH_HZ);
+
+      const highHz = Math.min(SPEAKER_BASS_HIGH_HZ, this.#effectiveMaxHz);
+      if (highHz < SPEAKER_BASS_LOW_HZ) {
+        throw new RangeError(
+          `This browser cannot generate the Speaker bass range from ${SPEAKER_BASS_LOW_HZ} Hz.`,
+        );
+      }
+
+      const definition = createBassSweepDefinition(
+        SPEAKER_BASS_LOW_HZ,
+        highHz,
+      );
+      const startTime = context.currentTime;
       const playback = engine.startOscillator({
         frequencyHz: definition.lowHz,
         waveform: "sine",
         channelMode: "both",
+        startTime,
         durationSeconds: definition.durationSeconds,
       });
-      playback.scheduleSweep(definition, context.currentTime);
+      playback.scheduleSweep(definition, startTime);
       this.#oscillatorPlaybacks = [playback];
       this.#starting = false;
       this.#setControlsActive(true);
-      this.#setVisual("bass", "40 → 120 Hz");
+      this.#setVisual("bass", `40 → ${highHz} Hz`);
       this.#setStatus("playing", "Bass / rattle sweep running");
-      this.#schedule(definition.durationSeconds * 1_000, token, () => this.#finishRun());
+      this.#schedule(
+        definition.durationSeconds * MILLISECONDS_PER_SECOND,
+        token,
+        () => this.#finishRun(),
+      );
     } catch (error) {
       this.#handleStartError(error, token);
     }
   }
 
-  #readSweepDefinition() {
+  #readSweepDefinition(): SweepDefinition | null {
     const lowHz = Number(this.#sweepLowInput.value);
     const highHz = Number(this.#sweepHighInput.value);
     if (
@@ -457,8 +551,8 @@ export class SpeakerTestController {
       lowHz,
       highHz,
       durationSeconds: SPEAKER_SWEEP_DURATION_SECONDS,
-      direction: "ascending" as const,
-      scale: "logarithmic" as const,
+      direction: "ascending",
+      scale: "logarithmic",
     };
   }
 
@@ -468,6 +562,7 @@ export class SpeakerTestController {
       SPEAKER_SWEEP_NOMINAL_MAX_HZ,
     );
     if (effectiveMaxHz === this.#effectiveMaxHz) return;
+
     this.#effectiveMaxHz = effectiveMaxHz;
     this.#sweepLowInput.max = String(effectiveMaxHz);
     this.#sweepHighInput.max = String(effectiveMaxHz);
@@ -480,7 +575,7 @@ export class SpeakerTestController {
     }
 
     if (effectiveMaxHz < SPEAKER_SWEEP_NOMINAL_MAX_HZ) {
-      this.#capabilityMessage.textContent = `This browser's audio sample rate limits generated sweep frequencies to ${effectiveMaxHz} Hz.`;
+      this.#capabilityMessage.textContent = `This browser's audio sample rate limits generated Speaker frequencies to ${effectiveMaxHz} Hz.`;
       this.#capabilityNotice.hidden = false;
       this.#capabilityNotice.setAttribute("role", "status");
     }
@@ -503,10 +598,12 @@ export class SpeakerTestController {
     } catch (stopError) {
       console.error("Speaker Test cleanup after start failure failed", stopError);
     }
+
     this.#starting = false;
     this.#oscillatorPlaybacks = [];
     this.#phasePlayback = null;
     this.#clearTimers();
+    this.#resetPhaseSelection();
     this.#setControlsActive(false);
     this.#setVisual("idle", "Ready");
     this.#setStatus("error", "Audio unavailable");
@@ -517,6 +614,7 @@ export class SpeakerTestController {
 
   #stopCurrent(statusLabel: string): void {
     if (!this.isActive) return;
+
     this.#runToken += 1;
     this.#starting = false;
     this.#clearTimers();
@@ -524,6 +622,7 @@ export class SpeakerTestController {
     this.#oscillatorPlaybacks = [];
     this.#phasePlayback?.stop();
     this.#phasePlayback = null;
+    this.#resetPhaseSelection();
     this.#setControlsActive(false);
     this.#setVisual("idle", "Ready");
     this.#setStatus("idle", statusLabel);
@@ -553,6 +652,12 @@ export class SpeakerTestController {
     this.#phaseInvertedButton.disabled = this.#starting;
     this.#phaseToggleButton.disabled = !phaseRunning || this.#starting;
     this.#stopButton.disabled = !active;
+  }
+
+  #resetPhaseSelection(): void {
+    this.#phaseInverted = false;
+    this.#phaseInButton.setAttribute("aria-pressed", "false");
+    this.#phaseInvertedButton.setAttribute("aria-pressed", "false");
   }
 
   #setVisual(state: SpeakerVisualState, label: string): void {
@@ -587,8 +692,7 @@ export class SpeakerTestController {
     this.#capabilityNotice.removeAttribute("role");
     this.#sweepLowInput.value = String(SPEAKER_SWEEP_DEFAULT_LOW_HZ);
     this.#sweepHighInput.value = String(SPEAKER_SWEEP_DEFAULT_HIGH_HZ);
-    this.#phaseInButton.setAttribute("aria-pressed", "false");
-    this.#phaseInvertedButton.setAttribute("aria-pressed", "false");
+    this.#resetPhaseSelection();
     this.#setControlsActive(false);
     this.#setVisual("idle", "Ready");
     this.#setStatus("idle", "Ready");
