@@ -45,6 +45,7 @@ describe("tool registry", () => {
       { id: "headphone-test", route: "/headphone-test" },
       { id: "stereo-test", route: "/stereo-test" },
       { id: "phase-test", route: "/phase-test" },
+      { id: "surround-sound-test", route: "/surround-sound-test" },
       { id: "tone-generator", route: "/tone-generator" },
     ]);
   });

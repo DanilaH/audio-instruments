@@ -1,0 +1,524 @@
+---
+import LevelControl from "../../components/controls/LevelControl.astro";
+import ToolStatus from "../../components/feedback/ToolStatus.astro";
+import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+---
+
+<div data-surround-test data-surround-mode="unknown">
+  <InstrumentSurface label="Surround Sound Test controls" accent="blue">
+    <div class="surround-instrument">
+      <section class="surround-visual" aria-label="Output channel visualization">
+        <div class="surround-visual__header">
+          <ToolStatus id="surround-status" label="Capability not checked" state="idle" />
+          <span class="surround-visual__mode" data-surround-visual-label>Not checked</span>
+        </div>
+
+        <div class="surround-stage" aria-hidden="true">
+          <span class="surround-ring"></span>
+          <span class="surround-seat"><i class="ph ph-armchair"></i></span>
+          <span class="surround-stage__idle">Check output capability</span>
+
+          <div class="surround-map surround-map--five-one">
+            <span class="surround-node surround-node--fl">FL</span>
+            <span class="surround-node surround-node--fr">FR</span>
+            <span class="surround-node surround-node--c">C</span>
+            <span class="surround-node surround-node--lfe">LFE</span>
+            <span class="surround-node surround-node--sl">SL</span>
+            <span class="surround-node surround-node--sr">SR</span>
+          </div>
+
+          <div class="surround-map surround-map--eight">
+            {Array.from({ length: 8 }, (_, index) => (
+              <span class={`surround-node surround-node--raw-${index + 1}`}>
+                {index + 1}
+              </span>
+            ))}
+          </div>
+
+          <div class="surround-map surround-map--stereo">
+            <span class="surround-stereo-rail"></span>
+            <span class="surround-node surround-node--left">L</span>
+            <span class="surround-node surround-node--center">C</span>
+            <span class="surround-node surround-node--right">R</span>
+          </div>
+        </div>
+
+        <p class="surround-visual__note">
+          These are requested digital routing targets. A confirmed browser graph does not
+          prove physical speaker placement or wiring.
+        </p>
+      </section>
+
+      <section class="surround-controls" aria-label="Surround Sound Test actions">
+        <div class="surround-safety">
+          <i class="ph ph-speaker-low" aria-hidden="true"></i>
+          <p>
+            Start with your device/headphone volume low. Increase it only to a
+            comfortable listening level. Do not turn the volume up to compensate
+            for a tone you cannot hear.
+          </p>
+        </div>
+
+        <div class="surround-check-panel">
+          <div>
+            <strong>Confirm browser output first</strong>
+            <span>maxChannelCount is only a ceiling; 5.1 still requires exact destination readback.</span>
+          </div>
+          <button type="button" class="surround-primary" data-surround-check>
+            <i class="ph ph-magnifying-glass" aria-hidden="true"></i>
+            Check surround support
+          </button>
+        </div>
+
+        <p class="surround-capability" data-surround-capability role="status" hidden></p>
+
+        <div class="surround-mode-selector" data-surround-mode-selector hidden>
+          <button type="button" data-surround-mode="five-one" aria-pressed="false" hidden>5.1</button>
+          <button type="button" data-surround-mode="experimental-eight" aria-pressed="false" hidden>
+            Experimental 8-channel
+          </button>
+          <button type="button" data-surround-mode="stereo-preview" aria-pressed="false" hidden>
+            Stereo spatial preview
+          </button>
+        </div>
+
+        <div class="surround-panel" data-surround-panel="five-one" hidden>
+          <div class="surround-panel__heading">
+            <strong>Standardized 5.1</strong>
+            <span>Web Audio order: FL · FR · Center · LFE · SL · SR</span>
+          </div>
+          <div class="surround-channel-grid surround-channel-grid--six">
+            <button type="button" data-surround-51-channel="0">Front Left</button>
+            <button type="button" data-surround-51-channel="1">Front Right</button>
+            <button type="button" data-surround-51-channel="2">Center</button>
+            <button type="button" data-surround-51-channel="3">LFE · 80 Hz</button>
+            <button type="button" data-surround-51-channel="4">Surround Left</button>
+            <button type="button" data-surround-51-channel="5">Surround Right</button>
+          </div>
+          <button type="button" class="surround-primary" data-surround-51-all>
+            <i class="ph ph-play" aria-hidden="true"></i>
+            Test all 5.1 channels
+          </button>
+        </div>
+
+        <div class="surround-panel" data-surround-panel="experimental-eight" hidden>
+          <div class="surround-panel__heading">
+            <strong>Experimental 8-channel</strong>
+            <span>Raw discrete outputs only — not labeled or claimed as universal 7.1.</span>
+          </div>
+          <div class="surround-channel-grid surround-channel-grid--eight">
+            <button type="button" data-surround-8-channel="0">Channel 1</button>
+            <button type="button" data-surround-8-channel="1">Channel 2</button>
+            <button type="button" data-surround-8-channel="2">Channel 3</button>
+            <button type="button" data-surround-8-channel="3">Channel 4</button>
+            <button type="button" data-surround-8-channel="4">Channel 5</button>
+            <button type="button" data-surround-8-channel="5">Channel 6</button>
+            <button type="button" data-surround-8-channel="6">Channel 7</button>
+            <button type="button" data-surround-8-channel="7">Channel 8</button>
+          </div>
+          <button type="button" class="surround-primary" data-surround-8-all>
+            <i class="ph ph-play" aria-hidden="true"></i>
+            Test all 8 channels
+          </button>
+        </div>
+
+        <div class="surround-panel" data-surround-panel="stereo-preview" hidden>
+          <div class="surround-panel__heading">
+            <strong>Stereo spatial preview</strong>
+            <span>Ordinary stereo routing/panning only; this is not surround verification.</span>
+          </div>
+          <div class="surround-channel-grid surround-channel-grid--stereo">
+            <button type="button" data-surround-stereo="left">Left</button>
+            <button type="button" data-surround-stereo="center">Center</button>
+            <button type="button" data-surround-stereo="right">Right</button>
+            <button type="button" data-surround-stereo="left-to-right">L → R</button>
+            <button type="button" data-surround-stereo="right-to-left">R → L</button>
+          </div>
+        </div>
+
+        <div class="surround-footer">
+          <LevelControl id="surround-level" valueDb={-24} />
+          <button type="button" class="surround-stop" data-surround-stop disabled>
+            <i class="ph ph-stop" aria-hidden="true"></i>
+            Stop
+          </button>
+        </div>
+        <p class="surround-error" data-surround-error role="alert" hidden></p>
+      </section>
+    </div>
+  </InstrumentSurface>
+</div>
+
+<script>
+  import { SurroundSoundTestController } from "./SurroundSoundTestController";
+
+  const root = document.querySelector<HTMLElement>("[data-surround-test]");
+  let controller: SurroundSoundTestController | null = null;
+
+  const mount = () => {
+    if (!root || controller) return;
+    controller = new SurroundSoundTestController(root);
+  };
+  const teardown = () => {
+    const current = controller;
+    controller = null;
+    if (current) void current.dispose();
+  };
+
+  window.addEventListener("pagehide", teardown);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) mount();
+  });
+  mount();
+</script>
+
+<style>
+  .surround-instrument {
+    display: grid;
+    grid-template-columns: minmax(0, 0.9fr) minmax(430px, 1.1fr);
+    min-height: 470px;
+  }
+
+  .surround-visual,
+  .surround-controls {
+    min-width: 0;
+    padding: clamp(20px, 2.6vw, 30px);
+  }
+
+  .surround-visual {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    border-right: 1px solid var(--color-border);
+    background:
+      radial-gradient(circle at 50% 50%, rgb(103 167 255 / 0.2), transparent 37%),
+      linear-gradient(145deg, rgb(255 253 252 / 0.94), rgb(241 247 255 / 0.88));
+  }
+
+  .surround-visual__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .surround-visual__mode {
+    max-width: 220px;
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 750;
+    text-align: right;
+  }
+
+  .surround-stage {
+    position: relative;
+    width: min(100%, 470px);
+    min-height: 285px;
+    margin: 6px auto;
+  }
+
+  .surround-ring {
+    position: absolute;
+    inset: 12% 10%;
+    border: 1px dashed rgb(40 102 173 / 0.22);
+    border-radius: 48%;
+  }
+
+  .surround-seat {
+    position: absolute;
+    z-index: 3;
+    top: 50%;
+    left: 50%;
+    display: grid;
+    width: 58px;
+    height: 58px;
+    place-items: center;
+    border-radius: 22px;
+    background: rgb(103 167 255 / 0.16);
+    color: #2866ad;
+    font-size: 1.5rem;
+    transform: translate(-50%, -50%);
+  }
+
+  .surround-stage__idle {
+    position: absolute;
+    z-index: 2;
+    left: 50%;
+    bottom: 13%;
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    font-weight: 750;
+    transform: translateX(-50%);
+    white-space: nowrap;
+  }
+
+  .surround-map {
+    display: none;
+    position: absolute;
+    inset: 0;
+  }
+
+  [data-surround-mode="five-one"] .surround-map--five-one,
+  [data-surround-mode="experimental-eight"] .surround-map--eight,
+  [data-surround-mode="stereo-preview"] .surround-map--stereo {
+    display: block;
+  }
+
+  [data-surround-mode]:not([data-surround-mode="unknown"]) .surround-stage__idle {
+    display: none;
+  }
+
+  .surround-node {
+    position: absolute;
+    z-index: 2;
+    display: grid;
+    min-width: 46px;
+    min-height: 40px;
+    place-items: center;
+    padding: 0 7px;
+    border: 1px solid var(--color-border);
+    border-radius: 14px;
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    font-size: 0.72rem;
+    font-weight: 850;
+  }
+
+  .surround-node--fl { top: 8%; left: 11%; }
+  .surround-node--fr { top: 8%; right: 11%; }
+  .surround-node--c { top: 4%; left: 50%; transform: translateX(-50%); }
+  .surround-node--lfe { top: 38%; right: 3%; }
+  .surround-node--sl { bottom: 8%; left: 12%; }
+  .surround-node--sr { bottom: 8%; right: 12%; }
+
+  .surround-node--raw-1 { top: 5%; left: 17%; }
+  .surround-node--raw-2 { top: 5%; right: 17%; }
+  .surround-node--raw-3 { top: 34%; left: 2%; }
+  .surround-node--raw-4 { top: 34%; right: 2%; }
+  .surround-node--raw-5 { bottom: 5%; left: 17%; }
+  .surround-node--raw-6 { bottom: 5%; right: 17%; }
+  .surround-node--raw-7 { bottom: 22%; left: 3%; }
+  .surround-node--raw-8 { bottom: 22%; right: 3%; }
+
+  .surround-stereo-rail {
+    position: absolute;
+    top: 50%;
+    right: 10%;
+    left: 10%;
+    height: 4px;
+    border-radius: 999px;
+    background: rgb(103 167 255 / 0.22);
+    transform: translateY(-50%);
+  }
+
+  .surround-node--left { top: 50%; left: 8%; transform: translateY(-50%); }
+  .surround-node--center { top: 50%; left: 50%; transform: translate(-50%, -50%); }
+  .surround-node--right { top: 50%; right: 8%; transform: translateY(-50%); }
+
+  .surround-visual__note {
+    max-width: 520px;
+    margin: 6px auto 0;
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+    text-align: center;
+  }
+
+  .surround-controls {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    background: rgb(255 253 252 / 0.78);
+  }
+
+  .surround-safety {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 9px;
+    padding: 9px 11px;
+    border-radius: var(--radius-control);
+    background: rgb(255 215 106 / 0.18);
+  }
+
+  .surround-safety p,
+  .surround-error,
+  .surround-capability {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .surround-check-panel {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 14px;
+    padding: 12px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: var(--color-surface);
+  }
+
+  .surround-check-panel > div,
+  .surround-panel__heading {
+    display: grid;
+    gap: 3px;
+  }
+
+  .surround-check-panel span,
+  .surround-panel__heading span {
+    color: var(--color-ink-muted);
+    font-size: 0.76rem;
+    line-height: 1.4;
+  }
+
+  .surround-capability {
+    padding: 9px 11px;
+    border-radius: var(--radius-control);
+    background: rgb(103 167 255 / 0.1);
+    color: #315a89;
+  }
+
+  .surround-capability[hidden],
+  .surround-mode-selector[hidden],
+  .surround-panel[hidden],
+  .surround-error[hidden] {
+    display: none;
+  }
+
+  .surround-mode-selector {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: rgb(31 36 48 / 0.035);
+  }
+
+  .surround-mode-selector button {
+    min-height: 44px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: calc(var(--radius-button) - 5px);
+    background: transparent;
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .surround-mode-selector button[aria-pressed="true"] {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 4px 14px rgb(31 36 48 / 0.07);
+  }
+
+  .surround-panel {
+    display: grid;
+    gap: 9px;
+    min-height: 174px;
+  }
+
+  .surround-channel-grid {
+    display: grid;
+    gap: 7px;
+  }
+
+  .surround-channel-grid--six { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  .surround-channel-grid--eight { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+  .surround-channel-grid--stereo { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+
+  .surround-channel-grid button,
+  .surround-primary,
+  .surround-stop {
+    min-height: 46px;
+    border-radius: var(--radius-button);
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .surround-channel-grid button {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-ink);
+    font-size: 0.8rem;
+  }
+
+  .surround-primary,
+  .surround-stop {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+
+  .surround-primary {
+    border: 0;
+    padding: 0 16px;
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .surround-footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px;
+    align-items: end;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .surround-stop {
+    min-height: 48px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-ink);
+  }
+
+  button:disabled,
+  input:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+  }
+
+  .surround-error {
+    padding: 10px 12px;
+    border-radius: var(--radius-control);
+    background: rgb(155 47 47 / 0.08);
+    color: #7f2929;
+  }
+
+  @media (max-width: 960px) {
+    .surround-instrument { grid-template-columns: 1fr; }
+    .surround-visual {
+      min-height: 280px;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+    .surround-stage { min-height: 210px; }
+  }
+
+  @media (max-width: 560px) {
+    .surround-visual { min-height: 205px; padding: 14px 20px; }
+    .surround-controls { padding: 14px 20px 18px; }
+    .surround-stage { min-height: 124px; margin: 0 auto; }
+    .surround-seat { width: 40px; height: 40px; border-radius: 14px; font-size: 1rem; }
+    .surround-node { min-width: 36px; min-height: 32px; padding: 0 5px; font-size: 0.62rem; }
+    .surround-stage__idle { bottom: 5%; }
+    .surround-visual__note { display: none; }
+    .surround-check-panel { grid-template-columns: 1fr; gap: 8px; }
+    .surround-primary { min-height: 48px; }
+    .surround-mode-selector { grid-template-columns: 1fr; }
+    .surround-mode-selector button { min-height: 48px; }
+    .surround-channel-grid--six,
+    .surround-channel-grid--eight,
+    .surround-channel-grid--stereo { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .surround-channel-grid button { min-height: 48px; }
+    .surround-footer { grid-template-columns: 1fr; gap: 6px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .surround-node,
+    .surround-seat { transition: none; }
+  }
+</style>
