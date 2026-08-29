@@ -194,7 +194,7 @@ test("mobile shell navigation keeps touch targets at least 44px in both dimensio
       }),
     );
 
-  expect(targetBoxes.length).toBeGreaterThan(0);
+  expect(targetBoxes).toHaveLength(4);
   for (const box of targetBoxes) {
     expect(box.width).toBeGreaterThanOrEqual(44);
     expect(box.height).toBeGreaterThanOrEqual(44);
