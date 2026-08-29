@@ -155,6 +155,35 @@ describe("AudioOutputEngine stereo and phase primitives", () => {
     ]);
   });
 
+  it("holds the current pan automation when a sweep is stopped early", () => {
+    const context = new FakeAudioContext();
+    const engine = new AudioOutputEngine(context as unknown as AudioContext);
+
+    const playback = engine.startPannedOscillator(500, -1, 2, 4);
+    playback.schedulePanSweep(-1, 1, 4, 2);
+    context.currentTime = 3;
+    playback.stop();
+
+    const oscillator = context.oscillators[0];
+    const pan = context.panners[0]?.pan;
+
+    expect(pan?.events.at(-1)).toEqual({ kind: "hold", time: 3 });
+    expect(oscillator?.stops.at(-1)).toBeCloseTo(3.05, 10);
+  });
+
+  it("initializes phase channel gains at the requested source start time", () => {
+    const context = new FakeAudioContext();
+    const engine = new AudioOutputEngine(context as unknown as AudioContext);
+    const buffer = {} as AudioBuffer;
+
+    engine.startPhaseBuffer(buffer, true, 5);
+
+    const left = context.gains[2]?.gain;
+    const right = context.gains[3]?.gain;
+    expect(left?.events).toEqual([{ kind: "set", value: 1, time: 5 }]);
+    expect(right?.events).toEqual([{ kind: "set", value: -1, time: 5 }]);
+  });
+
   it("switches phase by ramping only the right channel while keeping one source", () => {
     const context = new FakeAudioContext();
     const engine = new AudioOutputEngine(context as unknown as AudioContext);
