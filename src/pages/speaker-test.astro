@@ -1,0 +1,107 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import SpeakerTest from "../tools/speaker-test/SpeakerTest.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const speakerTool = toolRegistry.find((tool) => tool.id === "speaker-test");
+if (!speakerTool) throw new Error("Speaker Test registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = speakerTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Speaker Test — Browser Audio Lab"
+  description="Check speaker channels, phase-image behavior, a controlled 100 Hz–10 kHz sweep and a 40–120 Hz bass/rattle sweep in your browser."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Output diagnostics"
+    title="Speaker Test"
+    description="Move from a quick channel check to phase, frequency-range and bass/rattle listening tests without leaving the browser."
+    accent="peach"
+  >
+    <SpeakerTest />
+
+    <section class="speaker-content" aria-labelledby="speaker-about-title">
+      <div>
+        <p class="eyebrow">What to listen for</p>
+        <h2 id="speaker-about-title">Missing output, distortion, rattle or imbalance</h2>
+      </div>
+      <div class="speaker-content__copy">
+        <p>
+          Channel mode uses the shared hard Left / Both / Right routing and the same
+          500 Hz reference burst as the basic Sound Test. Phase mode keeps one
+          correlated pink-noise source running while only the right-channel sign changes.
+        </p>
+        <p>
+          Sweep and Bass / rattle modes generate controlled digital signals for
+          listening-based troubleshooting. They do not measure acoustic frequency
+          response, speaker health, SPL or physical wiring.
+        </p>
+      </div>
+    </section>
+
+    <section class="speaker-help" aria-labelledby="speaker-help-title">
+      <h2 id="speaker-help-title">Interpreting an unexpected result</h2>
+      <div class="speaker-help__grid">
+        <p>
+          Confirm the selected output device, cable or Bluetooth route and repeat the
+          relevant mode at a comfortable level before treating the result as useful evidence.
+        </p>
+        <p>
+          Audible buzzing, a missing side, uneven loudness or a phase-image change is a
+          user-observed troubleshooting signal only. This tool never assigns an automatic
+          speaker-health verdict.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .speaker-content,
+  .speaker-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .speaker-content h2,
+  .speaker-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .speaker-content__copy,
+  .speaker-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .speaker-content p,
+  .speaker-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .speaker-content,
+    .speaker-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>

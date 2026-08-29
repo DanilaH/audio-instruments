@@ -43,8 +43,14 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "output",
     implementationPhase: "P3.3",
     accent: "peach",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: [
+      "sound-test",
+      "stereo-test",
+      "phase-test",
+      "headphone-test",
+      "bass-test",
+    ],
   },
   {
     id: "headphone-test",
