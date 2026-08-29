@@ -35,7 +35,7 @@ MAJOR = 0
 
 The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The documented PR/review/CI sequence still requires a green `merge-gate` before merge; GitHub simply does not mechanically make owner/admin bypass impossible.
 
-A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. The affected merges carry exact-SHA review evidence and explicit infrastructure-waiver notes. Those incident-specific waivers do not redefine the required green `merge-gate` policy, and P7 remains blocked pending an upgraded runner.
+A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`, and P7 remains blocked pending an upgraded runner.
 
 P8 still depends on real-device/browser QA and production decisions.
 
@@ -153,7 +153,7 @@ development
 
 See `docs/15_DEVELOPMENT_WORKFLOW.md`.
 
-The no-runner incident above is an infrastructure exception observed during implementation, not a replacement workflow definition.
+The no-runner incident above is an infrastructure incident observed during implementation, not a replacement workflow definition or merge authorization.
 
 ## Visual rule
 
@@ -232,7 +232,7 @@ Current private-plan/manual-gate limitations and the active no-runner incident a
 
 ## Documentation freeze rule
 
-v1.11 records the P0–P6 implementation-evidence synchronization after the full functional catalog and final homepage composition were merged.
+v1.11 records the P0–P6.3 implementation-evidence synchronization after the full functional catalog and final homepage composition were merged.
 
 Current rule:
 
