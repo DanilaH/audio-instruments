@@ -32,7 +32,12 @@
     "core_v1_live_tool_routes": 16,
     "p6_3_main_commit": "0be4128242ddeab669cbc8374e9fc9b9b5bd23ac",
     "p7": "blocked_waiting_for_upgraded_seo_runner",
-    "p8": "phase_gated_after_p7; includes_real_device_browser_qa_and_production_decisions"
+    "p8": "phase_gated_after_p7",
+    "p8_scope": [
+      "final_audit_and_release",
+      "real_device_browser_qa",
+      "production_decisions"
+    ]
   },
   "workflow": "development -> checkpoint commit -> Draft PR -> cold Review #1 by project assistant -> fixes/commits -> cold Review #2 by project assistant -> add full-ci-approved -> Ready -> full-validation -> merge-gate -> fix/cold re-review/rerun if needed -> squash merge -> next branch",
   "repository_files": [
@@ -109,7 +114,7 @@
     "browser_test": "@playwright/test"
   },
   "documentation_policy": {
-    "state": "post_p6_implementation_evidence_synchronized",
+    "state": "post_p6_3_implementation_evidence_synchronized",
     "original_cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
     "next_step": "wait for the upgraded SEO runner before P7; only explicitly allowed polish/audit work may proceed meanwhile",
     "reopen_for": [
