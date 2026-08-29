@@ -205,6 +205,7 @@ class PhaseChannelRouter {
     source: AudioNode,
     destination: AudioNode,
     inverted: boolean,
+    startTime: number,
   ) {
     this.#context = context;
     this.#leftGain = context.createGain();
@@ -217,8 +218,8 @@ class PhaseChannelRouter {
     this.#rightGain.connect(this.#merger, 0, 1);
     this.#merger.connect(destination);
 
-    this.#leftGain.gain.setValueAtTime(1, context.currentTime);
-    this.#rightGain.gain.setValueAtTime(inverted ? -1 : 1, context.currentTime);
+    this.#leftGain.gain.setValueAtTime(1, startTime);
+    this.#rightGain.gain.setValueAtTime(inverted ? -1 : 1, startTime);
     this.#inverted = inverted;
   }
 
@@ -470,7 +471,7 @@ export class AudioOutputEngine implements SessionResource {
         stopped = true;
         const now = this.#context.currentTime;
         rampParam(sourceGain.gain, 0, now);
-        panner.pan.cancelScheduledValues(now);
+        holdParamAtTime(panner.pan, now);
         oscillator.stop(now + DEFAULT_RAMP_SECONDS);
       },
       dispose: () => playback.stop(),
@@ -552,6 +553,7 @@ export class AudioOutputEngine implements SessionResource {
       sourceGain,
       this.#masterGain,
       inverted,
+      startTime,
     );
 
     source.buffer = buffer;
