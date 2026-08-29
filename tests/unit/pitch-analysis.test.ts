@@ -116,6 +116,23 @@ describe("bounded YIN", () => {
     expect(result?.confidence).toBeGreaterThanOrEqual(PITCH_MIN_CONFIDENCE);
   });
 
+  it.each([
+    [50, 44_100],
+    [1_990, 44_100],
+    [2_000, 44_100],
+    [50, 48_000],
+    [2_000, 48_000],
+  ])("keeps %i Hz inside the accepted target at %i Hz context rate", (frequency, rate) => {
+    const result = estimateAtContextRate(frequency, rate);
+
+    expect(result).not.toBeNull();
+    expect(result?.frequencyHz).toBeGreaterThanOrEqual(50);
+    expect(result?.frequencyHz).toBeLessThanOrEqual(2_000);
+    expect(Math.abs((result?.frequencyHz ?? 0) - frequency)).toBeLessThan(
+      Math.max(1, frequency * 0.002),
+    );
+  });
+
   it("rejects silence instead of emitting a random note", () => {
     const configuration = getPitchAnalysisConfiguration(48_000);
     const result = estimatePitchYin(
