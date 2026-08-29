@@ -790,6 +790,12 @@ h3 {
     scroll-behavior: auto;
   }
 
+  .hero__primary-action,
+  .featured-card,
+  .tool-link {
+    transition: none;
+  }
+
   .hero__primary-action:hover,
   .featured-card:hover,
   .tool-link:hover {
