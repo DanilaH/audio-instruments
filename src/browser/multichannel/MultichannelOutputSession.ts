@@ -98,16 +98,16 @@ function attemptDestinationConfiguration(
     destination.channelCountMode = configuration.channelCountMode;
     destination.channelInterpretation = configuration.channelInterpretation;
     destination.channelCount = configuration.channelCount;
+
+    return configurationsMatch(
+      readDestinationConfiguration(destination),
+      configuration,
+    )
+      ? "confirmed"
+      : "readback_mismatch";
   } catch {
     return "configuration_rejected";
   }
-
-  return configurationsMatch(
-    readDestinationConfiguration(destination),
-    configuration,
-  )
-    ? "confirmed"
-    : "readback_mismatch";
 }
 
 function holdParamAtTime(param: AudioParam, time: number): void {
@@ -129,6 +129,15 @@ function scheduleEnvelope(
   const endTime = startTime + durationSeconds;
   param.setValueAtTime(1, endTime - DEFAULT_RAMP_SECONDS);
   param.linearRampToValueAtTime(0, endTime);
+}
+
+function safeDisconnect(node: AudioNode | null): void {
+  if (!node) return;
+  try {
+    node.disconnect();
+  } catch {
+    // Cleanup is best-effort; the owning AudioContext is still disposable.
+  }
 }
 
 async function waitForStopRamp(): Promise<void> {
@@ -281,44 +290,76 @@ export class MultichannelOutputSession implements SessionResource {
       throw new RangeError("durationSeconds is too short for the shared fade envelope");
     }
 
-    const oscillator = this.#context.createOscillator();
-    const sourceGain = this.#context.createGain();
-    oscillator.type = "sine";
-    oscillator.frequency.setValueAtTime(frequencyHz, startTime);
-    scheduleEnvelope(sourceGain.gain, startTime, durationSeconds);
-    oscillator.connect(sourceGain);
-    sourceGain.connect(merger, 0, channelIndex);
+    let oscillator: OscillatorNode | null = null;
+    let sourceGain: GainNode | null = null;
+    let playback: MultichannelBurstPlayback | null = null;
+    let started = false;
 
-    let stopped = false;
-    let cleaned = false;
-    const cleanup = () => {
-      if (cleaned) return;
-      cleaned = true;
-      stopped = true;
-      oscillator.disconnect();
-      sourceGain.disconnect();
-      this.#active.delete(playback);
-    };
+    try {
+      oscillator = this.#context.createOscillator();
+      sourceGain = this.#context.createGain();
+      oscillator.type = "sine";
+      oscillator.frequency.setValueAtTime(frequencyHz, startTime);
+      scheduleEnvelope(sourceGain.gain, startTime, durationSeconds);
+      oscillator.connect(sourceGain);
+      sourceGain.connect(merger, 0, channelIndex);
 
-    const playback: MultichannelBurstPlayback = {
-      oscillator,
-      channelIndex,
-      stop: () => {
-        if (stopped) return;
+      let stopped = false;
+      let cleaned = false;
+      const cleanup = () => {
+        if (cleaned) return;
+        cleaned = true;
         stopped = true;
-        const now = this.#context.currentTime;
-        holdParamAtTime(sourceGain.gain, now);
-        sourceGain.gain.linearRampToValueAtTime(0, now + DEFAULT_RAMP_SECONDS);
-        oscillator.stop(now + DEFAULT_RAMP_SECONDS);
-      },
-      dispose: () => playback.stop(),
-    };
+        safeDisconnect(oscillator);
+        safeDisconnect(sourceGain);
+        if (playback) this.#active.delete(playback);
+      };
 
-    oscillator.addEventListener("ended", cleanup, { once: true });
-    this.#active.add(playback);
-    oscillator.start(startTime);
-    oscillator.stop(startTime + durationSeconds);
-    return playback;
+      playback = {
+        oscillator,
+        channelIndex,
+        stop: () => {
+          if (stopped) return;
+          stopped = true;
+          const now = this.#context.currentTime;
+          try {
+            holdParamAtTime(sourceGain!.gain, now);
+            sourceGain!.gain.linearRampToValueAtTime(
+              0,
+              now + DEFAULT_RAMP_SECONDS,
+            );
+            oscillator!.stop(now + DEFAULT_RAMP_SECONDS);
+          } catch {
+            try {
+              oscillator!.stop(now);
+            } catch {
+              // The source may already be terminal; cleanup below still releases the graph.
+            }
+            cleanup();
+          }
+        },
+        dispose: () => playback?.stop(),
+      };
+
+      oscillator.addEventListener("ended", cleanup, { once: true });
+      this.#active.add(playback);
+      oscillator.start(startTime);
+      started = true;
+      oscillator.stop(startTime + durationSeconds);
+      return playback;
+    } catch (error) {
+      if (playback) this.#active.delete(playback);
+      if (started && oscillator) {
+        try {
+          oscillator.stop(this.#context.currentTime);
+        } catch {
+          // Ignore terminal source state while unwinding a failed start.
+        }
+      }
+      safeDisconnect(oscillator);
+      safeDisconnect(sourceGain);
+      throw error;
+    }
   }
 
   stop(): void {
@@ -356,24 +397,29 @@ export class MultichannelOutputSession implements SessionResource {
 
   #buildGraph(channelCount: number): void {
     this.#disconnectGraph();
-    const merger = this.#context.createChannelMerger(channelCount);
-    const masterGain = this.#context.createGain();
-    masterGain.gain.setValueAtTime(
-      dbToGain(this.#levelDb),
-      this.#context.currentTime,
-    );
-    merger.connect(masterGain);
-    masterGain.connect(this.#destination);
-    this.#merger = merger;
-    this.#masterGain = masterGain;
+    try {
+      this.#merger = this.#context.createChannelMerger(channelCount);
+      this.#masterGain = this.#context.createGain();
+      this.#masterGain.gain.setValueAtTime(
+        dbToGain(this.#levelDb),
+        this.#context.currentTime,
+      );
+      this.#merger.connect(this.#masterGain);
+      this.#masterGain.connect(this.#destination);
+    } catch (error) {
+      this.#disconnectGraph();
+      throw error;
+    }
   }
 
   #disconnectGraph(): void {
-    this.#merger?.disconnect();
-    this.#masterGain?.disconnect();
+    const merger = this.#merger;
+    const masterGain = this.#masterGain;
     this.#merger = null;
     this.#masterGain = null;
     this.#activeMode = null;
+    safeDisconnect(merger);
+    safeDisconnect(masterGain);
   }
 
   #requireActiveMode(): MultichannelMode {
