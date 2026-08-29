@@ -21,7 +21,7 @@ Implementation status:
 ```text
 P0–P6.3 functional roadmap    IMPLEMENTED
 P7 SEO evidence refresh       BLOCKED — waits for upgraded runner
-P8 final audit / release      PHASE-GATED after P7 + real-device/browser QA
+P8 final audit / release      PHASE-GATED after P7; includes real-device/browser QA
 ```
 
 All 16 core v1 tool routes are live, and P6.3 final catalog homepage composition is merged.
@@ -37,7 +37,7 @@ The repository intentionally remains private on the current free GitHub plan. Pr
 
 A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`, and P7 remains blocked pending an upgraded runner.
 
-P8 still depends on real-device/browser QA and production decisions.
+P8 still includes real-device/browser QA and production decisions before release.
 
 ## Stack
 
