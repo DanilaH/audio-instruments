@@ -16,9 +16,16 @@ import {
 
 class FakeStorage implements Storage {
   readonly #values = new Map<string, string>();
+  readonly throwOnRead: boolean;
   readonly throwOnWrite: boolean;
 
-  constructor(options: { readonly throwOnWrite?: boolean } = {}) {
+  constructor(
+    options: {
+      readonly throwOnRead?: boolean;
+      readonly throwOnWrite?: boolean;
+    } = {},
+  ) {
+    this.throwOnRead = options.throwOnRead ?? false;
     this.throwOnWrite = options.throwOnWrite ?? false;
   }
 
@@ -31,6 +38,7 @@ class FakeStorage implements Storage {
   }
 
   getItem(key: string): string | null {
+    if (this.throwOnRead) throw new Error("storage read unavailable");
     return this.#values.get(key) ?? null;
   }
 
@@ -191,6 +199,13 @@ describe("DbCalibrationStore", () => {
     expect(store.load("")).toBeNull();
     expect(store.remove("")).toBe(false);
     expect(storage.length).toBe(0);
+  });
+
+  it("fails closed when persistent storage cannot be read", () => {
+    const store = new DbCalibrationStore(new FakeStorage({ throwOnRead: true }));
+    expect(store.load("mic-1")).toBeNull();
+    expect(store.save("mic-1", { offset: 100, createdAt: 1 })).toBe(false);
+    expect(store.remove("mic-1")).toBe(false);
   });
 
   it("fails closed for malformed persisted data and write failures", () => {
