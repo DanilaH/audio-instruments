@@ -312,12 +312,12 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     position: absolute;
     top: 3px;
     bottom: 3px;
-    left: 50%;
+    left: calc(50% + var(--pitch-offset, 0%));
     width: 4px;
     border-radius: 999px;
     background: var(--color-ink);
-    transform: translateX(var(--pitch-offset, 0%));
-    transition: transform 90ms linear;
+    transform: translateX(-50%);
+    transition: left 90ms linear;
   }
 
   .pitch-tuner__cents {
