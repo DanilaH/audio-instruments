@@ -81,7 +81,7 @@
     "state": "recent_hosted_runner_allocation_failure",
     "signature": "runner_id=0; steps=[]",
     "interpretation": "infrastructure/no-runner; not green CI and not a repository test failure",
-    "policy_effect": "does not redefine the intended green merge-gate workflow",
+    "policy_effect": "does not redefine the required green merge-gate workflow",
     "phase_effect": "P7 remains blocked pending the upgraded runner"
   },
   "dependencies": {
@@ -125,7 +125,7 @@
     "reason": "private repository on current free GitHub plan does not expose protected branches/rulesets",
     "policy": {
       "pull_request_required_by_process": true,
-      "latest_merge_gate_must_be_green_under_normal_ci_operation": true,
+      "latest_merge_gate_must_be_green": true,
       "direct_roadmap_push_to_main": false,
       "mechanically_unbypassable": false
     },
