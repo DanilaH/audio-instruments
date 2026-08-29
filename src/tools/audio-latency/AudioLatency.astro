@@ -53,29 +53,15 @@ import {
           </p>
         </div>
 
-        <div class="latency-reported" aria-labelledby="latency-reported-title">
-          <div class="latency-section-heading">
-            <div>
-              <p class="latency-eyebrow">Browser-reported</p>
-              <h3 id="latency-reported-title">Web Audio latency metadata</h3>
-            </div>
-            <i class="ph ph-browser" aria-hidden="true"></i>
-          </div>
-
-          <dl>
-            <div>
-              <dt>Base latency</dt>
-              <dd data-latency-base>Start to query</dd>
-            </div>
-            <div>
-              <dt>Output latency</dt>
-              <dd data-latency-output>Start to query</dd>
-            </div>
-          </dl>
-          <p>
-            Values are browser-reported estimates shown in milliseconds. They are
-            not exact end-to-end hardware latency.
-          </p>
+        <div class="latency-actions">
+          <button type="button" class="latency-start" data-latency-start>
+            <i class="ph ph-play" aria-hidden="true"></i>
+            Start sync loop
+          </button>
+          <button type="button" class="latency-stop" data-latency-stop disabled>
+            <i class="ph ph-stop" aria-hidden="true"></i>
+            Stop
+          </button>
         </div>
 
         <div class="latency-offset-control">
@@ -104,15 +90,29 @@ import {
           </p>
         </div>
 
-        <div class="latency-actions">
-          <button type="button" class="latency-start" data-latency-start>
-            <i class="ph ph-play" aria-hidden="true"></i>
-            Start sync loop
-          </button>
-          <button type="button" class="latency-stop" data-latency-stop disabled>
-            <i class="ph ph-stop" aria-hidden="true"></i>
-            Stop
-          </button>
+        <div class="latency-reported" aria-labelledby="latency-reported-title">
+          <div class="latency-section-heading">
+            <div>
+              <p class="latency-eyebrow">Browser-reported</p>
+              <h3 id="latency-reported-title">Web Audio latency metadata</h3>
+            </div>
+            <i class="ph ph-browser" aria-hidden="true"></i>
+          </div>
+
+          <dl>
+            <div>
+              <dt>Base latency</dt>
+              <dd data-latency-base>Start to query</dd>
+            </div>
+            <div>
+              <dt>Output latency</dt>
+              <dd data-latency-output>Start to query</dd>
+            </div>
+          </dl>
+          <p>
+            Values are browser-reported estimates shown in milliseconds. They are
+            not exact end-to-end hardware latency.
+          </p>
         </div>
 
         <p class="latency-error" data-latency-error role="alert" hidden></p>
@@ -227,7 +227,9 @@ import {
     background: rgb(199 151 46 / 0.36);
     box-shadow: 0 0 0 12px rgb(199 151 46 / 0.07);
     opacity: 0.55;
-    transition: opacity 70ms linear, background-color 70ms linear,
+    transition:
+      opacity 70ms linear,
+      background-color 70ms linear,
       box-shadow 70ms linear;
   }
 
@@ -430,14 +432,19 @@ import {
     }
 
     .latency-pulse-zone {
-      min-height: 220px;
+      min-height: 180px;
+      padding-block: 18px;
     }
   }
 
   @media (max-width: 520px) {
     .latency-stage,
     .latency-controls {
-      padding: 18px;
+      padding: 14px 16px;
+    }
+
+    .latency-stage {
+      gap: 12px;
     }
 
     .latency-stage__header {
@@ -445,17 +452,38 @@ import {
     }
 
     .latency-pulse-zone {
-      min-height: 190px;
-      padding: 18px 10px;
+      min-height: 132px;
+      gap: 12px;
+      padding: 8px;
     }
 
     .latency-pulse {
-      width: 118px;
-      border-radius: 26px;
+      width: 92px;
+      border-radius: 22px;
     }
 
-    .latency-reported dl {
-      grid-template-columns: 1fr;
+    .latency-pulse-copy span,
+    .latency-stage__note {
+      font-size: 0.72rem;
+    }
+
+    .latency-result {
+      padding: 10px 12px;
+      font-size: 0.82rem;
+    }
+
+    .latency-controls {
+      gap: 12px;
+    }
+
+    .latency-safety,
+    .latency-reported,
+    .latency-offset-control {
+      padding: 10px 11px;
+    }
+
+    .latency-safety p {
+      font-size: 0.74rem;
     }
 
     .latency-actions {
@@ -466,7 +494,11 @@ import {
     .latency-start,
     .latency-stop {
       width: 100%;
-      padding-inline: 12px;
+      padding-inline: 10px;
+    }
+
+    .latency-reported dl {
+      grid-template-columns: 1fr;
     }
   }
 
