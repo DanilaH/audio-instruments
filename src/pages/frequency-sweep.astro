@@ -1,0 +1,109 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import FrequencySweep from "../tools/frequency-sweep/FrequencySweep.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const sweepTool = toolRegistry.find((tool) => tool.id === "frequency-sweep");
+if (!sweepTool) throw new Error("Frequency Sweep registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = sweepTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Frequency Sweep — Browser Audio Lab"
+  description="Run a controlled 20 Hz–20 kHz linear or logarithmic frequency sweep in either direction, subject to browser audio limits."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Signal & frequency"
+    title="Frequency Sweep"
+    description="Choose the endpoints, duration, sweep scale and direction, then listen to one controlled digital sweep through the selected range."
+    accent="lavender"
+  >
+    <FrequencySweep />
+
+    <section class="sweep-content" aria-labelledby="sweep-about-title">
+      <div>
+        <p class="eyebrow">What this does</p>
+        <h2 id="sweep-about-title">One scheduled sweep, controlled by you</h2>
+      </div>
+      <div class="sweep-content__copy">
+        <p>
+          Frequency Sweep generates a sine oscillator across the requested digital
+          frequency interval. Choose a low and high endpoint, a 5–60 second
+          duration, linear or logarithmic progression, and Ascending or Descending
+          direction. The browser audio sample rate may reduce the nominal 20 Hz–20
+          kHz ceiling for the current session.
+        </p>
+        <p>
+          What you hear is a listening-based observation. The page knows the
+          digital sweep it requested and scheduled, but it does not measure the
+          acoustic response of speakers, headphones, the room or your hearing.
+        </p>
+      </div>
+    </section>
+
+    <section class="sweep-help" aria-labelledby="sweep-help-title">
+      <h2 id="sweep-help-title">How to compare a range safely</h2>
+      <div class="sweep-help__grid">
+        <p>
+          Start with system volume low and keep playback comfortable. If part of a
+          sweep is difficult to hear, do not compensate by turning system volume up.
+        </p>
+        <p>
+          Use the same endpoints, duration, scale and Level when repeating a
+          listening comparison. A difference you hear is an observation, not an
+          automatic diagnosis or calibrated frequency-response measurement.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .sweep-content,
+  .sweep-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .sweep-content h2,
+  .sweep-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .sweep-content__copy,
+  .sweep-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .sweep-content p,
+  .sweep-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .sweep-content,
+    .sweep-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
