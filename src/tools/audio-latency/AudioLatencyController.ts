@@ -344,6 +344,7 @@ export class AudioLatencyController {
     for (const scheduledClick of this.#scheduledClicks) {
       try {
         if (context && scheduledClick.targetContextSec > now) {
+          scheduledClick.playback.stop();
           scheduledClick.playback.oscillator.stop(now);
         } else {
           scheduledClick.playback.stop();
