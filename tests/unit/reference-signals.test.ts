@@ -7,6 +7,7 @@ import {
   BASS_PRESET_SEQUENCE_STEP_SECONDS,
   BASS_PRESET_SEQUENCE_TOTAL_SECONDS,
   BASS_PRESET_TONE_DURATION_SECONDS,
+  BASS_SINGLE_TONE_DEFAULT_HZ,
   BASS_SWEEP_DEFAULT_DURATION_SECONDS,
   BASS_SWEEP_DEFAULT_HIGH_HZ,
   BASS_SWEEP_DEFAULT_LOW_HZ,
@@ -53,7 +54,9 @@ describe("shared output reference signals", () => {
     expect(BASS_SWEEP_MAX_HZ).toBe(200);
   });
 
-  it("keeps the exact Bass preset sequence contract", () => {
+  it("keeps the exact Bass single-tone and preset sequence references", () => {
+    expect(BASS_SINGLE_TONE_DEFAULT_HZ).toBe(60);
+    expect(BASS_PRESET_FREQUENCIES_HZ).toContain(BASS_SINGLE_TONE_DEFAULT_HZ);
     expect(BASS_PRESET_FREQUENCIES_HZ).toEqual([
       20, 30, 40, 50, 60, 80, 100,
     ]);
