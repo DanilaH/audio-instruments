@@ -215,8 +215,8 @@ export class MultichannelOutputSession implements SessionResource {
   startChannel(
     channelIndex: number,
     frequencyHz: number,
-    startTime = this.#context.currentTime,
-    durationSeconds = 0.7,
+    startTime: number,
+    durationSeconds: number,
   ): MultichannelBurstPlayback {
     this.#assertUsable();
     const merger = this.#merger;
@@ -227,6 +227,9 @@ export class MultichannelOutputSession implements SessionResource {
     }
     if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) {
       throw new RangeError("frequencyHz must be a positive finite number");
+    }
+    if (!Number.isFinite(startTime) || startTime < 0) {
+      throw new RangeError("startTime must be a non-negative finite number");
     }
     if (!Number.isFinite(durationSeconds) || durationSeconds < DEFAULT_RAMP_SECONDS * 2) {
       throw new RangeError("durationSeconds is too short for the shared fade envelope");
