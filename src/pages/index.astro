@@ -94,6 +94,13 @@ const categories: readonly {
     icon: "ph-timer",
   },
 ];
+
+const liveCategories = categories
+  .map((category) => ({
+    ...category,
+    tools: getPublicToolsByCategory(category.id),
+  }))
+  .filter(({ tools }) => tools.length > 0);
 ---
 
 <BaseLayout
@@ -182,11 +189,15 @@ const categories: readonly {
           </a>
         </div>
 
-        <div class="tool-grid tool-grid--featured" data-featured-count={featuredTools.length}>
+        <div
+          class="tool-grid tool-grid--featured"
+          data-featured-count={featuredTools.length}
+        >
           {featuredTools.map(({ tool, presentation }, index) => (
             <a
               class={`featured-card featured-card--${presentation.variant} ${
-                presentation.variant === "tone" || presentation.variant === "headphone"
+                presentation.variant === "tone" ||
+                presentation.variant === "headphone"
                   ? "featured-card--wide"
                   : "featured-card--compact"
               }`}
@@ -308,54 +319,49 @@ const categories: readonly {
           </p>
         </div>
 
-        <div class="tool-categories" data-category-count={categories.length}>
-          {categories.map(({ id, label, description, icon }) => {
-            const tools = getPublicToolsByCategory(id);
-            if (tools.length === 0) return null;
-
-            return (
-              <section
-                class="tool-category"
-                aria-labelledby={`category-${id}`}
-                data-tool-category={id}
-                data-tool-count={tools.length}
-              >
-                <div class="tool-category__header">
-                  <span class="tool-category__icon" aria-hidden="true">
-                    <i class={`ph ${icon}`} />
-                  </span>
-                  <div>
-                    <div class="tool-category__title-row">
-                      <h3 id={`category-${id}`}>{label}</h3>
-                      <span>{tools.length}</span>
-                    </div>
-                    <p>{description}</p>
+        <div class="tool-categories" data-category-count={liveCategories.length}>
+          {liveCategories.map(({ id, label, description, icon, tools }) => (
+            <section
+              class="tool-category"
+              aria-labelledby={`category-${id}`}
+              data-tool-category={id}
+              data-tool-count={tools.length}
+            >
+              <div class="tool-category__header">
+                <span class="tool-category__icon" aria-hidden="true">
+                  <i class={`ph ${icon}`} />
+                </span>
+                <div>
+                  <div class="tool-category__title-row">
+                    <h3 id={`category-${id}`}>{label}</h3>
+                    <span aria-label={`${tools.length} tools`}>{tools.length}</span>
                   </div>
+                  <p>{description}</p>
                 </div>
+              </div>
 
-                <div class="tool-list">
-                  {tools.map((tool) => (
-                    <a
-                      class="tool-link"
-                      href={tool.route}
-                      data-tool-id={tool.id}
-                      data-tool-status={tool.status}
-                      data-accent={tool.accent}
-                    >
-                      <span class="tool-link__identity">
-                        <span class="tool-link__accent" aria-hidden="true" />
-                        <strong>{tool.title}</strong>
-                      </span>
-                      <span class="tool-link__action">
-                        Open
-                        <i class="ph ph-arrow-right" aria-hidden="true" />
-                      </span>
-                    </a>
-                  ))}
-                </div>
-              </section>
-            );
-          })}
+              <div class="tool-list">
+                {tools.map((tool) => (
+                  <a
+                    class="tool-link"
+                    href={tool.route}
+                    data-tool-id={tool.id}
+                    data-tool-status={tool.status}
+                    data-accent={tool.accent}
+                  >
+                    <span class="tool-link__identity">
+                      <span class="tool-link__accent" aria-hidden="true" />
+                      <strong>{tool.title}</strong>
+                    </span>
+                    <span class="tool-link__action">
+                      Open
+                      <i class="ph ph-arrow-right" aria-hidden="true" />
+                    </span>
+                  </a>
+                ))}
+              </div>
+            </section>
+          ))}
         </div>
       </section>
     )
@@ -461,7 +467,8 @@ const categories: readonly {
     min-height: 188px;
     place-items: center;
     align-self: stretch;
-    border: 1px solid color-mix(in srgb, var(--tool-accent) 24%, var(--color-border));
+    border: 1px solid
+      color-mix(in srgb, var(--tool-accent) 24%, var(--color-border));
     border-radius: 24px;
     background: rgb(255 253 252 / 0.64);
     overflow: hidden;
@@ -554,9 +561,11 @@ const categories: readonly {
 
   .featured-microphone__wave i {
     width: 3px;
-    height: calc(28px * var(--bar));
+    height: 28px;
     border-radius: 999px;
     background: rgb(48 116 134 / 0.58);
+    transform: scaleY(var(--bar));
+    transform-origin: center bottom;
   }
 
   .featured-headphone {
@@ -758,10 +767,13 @@ const categories: readonly {
     }
 
     .featured-card__visual,
-    .featured-card__device,
-    .featured-headphone {
+    .featured-card__device {
       min-height: 154px;
       padding: 16px;
+    }
+
+    .featured-headphone {
+      min-height: 190px;
     }
 
     .featured-speaker__ring--outer {
@@ -814,10 +826,14 @@ const categories: readonly {
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .section-jump,
     .featured-card,
     .tool-link {
-      scroll-behavior: auto;
+      transition: none;
+    }
+
+    .featured-card:hover,
+    .tool-link:hover {
+      transform: none;
     }
   }
 </style>
