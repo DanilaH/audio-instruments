@@ -159,6 +159,9 @@ export class MicrophoneTestController {
     this.#disposed = true;
     this.#listeners.abort();
     this.#runToken += 1;
+    this.#starting = false;
+    this.#switching = false;
+    this.#stopping = false;
     this.#stopMeterAndWaveform();
 
     try {
@@ -252,11 +255,12 @@ export class MicrophoneTestController {
       if (!this.#isCurrent(token)) return;
 
       analyzer.resetMeter();
-      this.#devices = await microphone.listInputs();
+      const devices = await this.#loadInputDevicesBestEffort();
       if (!this.#isCurrent(token)) return;
 
+      this.#devices = devices;
       this.#starting = false;
-      this.#renderDevices(this.#devices, capture.settings.deviceId);
+      this.#renderDevices(devices, capture.settings.deviceId);
       this.#renderCaptureDetails();
       this.#startMeterAndWaveform();
       this.#setStatus("playing", "Microphone active");
@@ -287,6 +291,7 @@ export class MicrophoneTestController {
       return;
     }
 
+    const token = ++this.#runToken;
     const previousDeviceId = microphone.activeSettings()?.deviceId ?? "";
     this.#switching = true;
     this.#selectionError.hidden = true;
@@ -295,13 +300,20 @@ export class MicrophoneTestController {
 
     try {
       await microphone.switchToExactDevice(deviceId);
+      if (!this.#isCurrent(token)) return;
+
       analyzer.resetMeter();
       this.#clearMeterReadouts();
       this.#renderCaptureDetails();
-      this.#devices = await microphone.listInputs();
-      this.#renderDevices(this.#devices, deviceId);
+
+      const devices = await this.#loadInputDevicesBestEffort();
+      if (!this.#isCurrent(token)) return;
+
+      this.#devices = devices;
+      this.#renderDevices(devices, deviceId);
       this.#setStatus("playing", "Microphone active");
     } catch (error) {
+      if (!this.#isCurrent(token)) return;
       console.error("Microphone Test input switch failed", error);
       this.#inputSelect.value = previousDeviceId;
       this.#selectionError.textContent =
@@ -309,8 +321,10 @@ export class MicrophoneTestController {
       this.#selectionError.hidden = false;
       this.#setStatus("playing", "Microphone active");
     } finally {
-      this.#switching = false;
-      this.#renderControls();
+      if (token === this.#runToken) {
+        this.#switching = false;
+        if (!this.#disposed) this.#renderControls();
+      }
     }
   }
 
@@ -339,9 +353,13 @@ export class MicrophoneTestController {
       console.error("Microphone Test recording could not start", error);
       if (error instanceof RecordingUnavailableError) {
         this.#recordingUnavailable = true;
+        this.#recordingStatus.textContent = "Recording unavailable";
         this.#recordingNotice.textContent =
           "Recording is unavailable in this browser. Live microphone waveform and meters still work.";
       } else {
+        this.#recordingStatus.textContent = recorder.latestRecording
+          ? "Recording could not start · previous recording remains available"
+          : "Recording could not start";
         this.#recordingNotice.textContent =
           "Recording could not start. Live microphone waveform and meters remain available.";
       }
@@ -394,8 +412,10 @@ export class MicrophoneTestController {
       return;
     }
 
+    const token = ++this.#runToken;
+    this.#starting = false;
+    this.#switching = false;
     this.#stopping = true;
-    ++this.#runToken;
     this.#setStatus("ready", "Stopping microphone…");
     this.#renderControls();
 
@@ -404,6 +424,8 @@ export class MicrophoneTestController {
     } catch (error) {
       console.error("Microphone Test recording teardown failed", error);
     }
+
+    if (!this.#isCurrent(token)) return;
 
     this.#stopMeterAndWaveform();
     this.#microphone?.stop();
@@ -418,8 +440,9 @@ export class MicrophoneTestController {
 
   async #handleTrackEnded(): Promise<void> {
     if (this.#disposed) return;
-    ++this.#runToken;
+    const token = ++this.#runToken;
     this.#starting = false;
+    this.#switching = false;
     this.#stopping = true;
     this.#stopMeterAndWaveform();
     this.#analyzer?.resetMeter();
@@ -435,8 +458,9 @@ export class MicrophoneTestController {
       console.error("Microphone Test recorder cleanup after disconnect failed", error);
     }
 
+    if (!this.#isCurrent(token)) return;
+
     this.#stopping = false;
-    if (this.#disposed) return;
     this.#setStatus("error", "Input device disconnected");
     this.#activeInputLabel.textContent = "Input device disconnected";
     this.#renderControls();
@@ -477,6 +501,18 @@ export class MicrophoneTestController {
       this.#meterTimer = null;
     }
     this.#waveform?.stop();
+  }
+
+  async #loadInputDevicesBestEffort(): Promise<readonly MicrophoneInputDevice[]> {
+    const microphone = this.#microphone;
+    if (!microphone) return this.#devices;
+
+    try {
+      return await microphone.listInputs();
+    } catch (error) {
+      console.warn("Microphone Test input metadata refresh failed", error);
+      return this.#devices;
+    }
   }
 
   #renderDevices(
@@ -537,6 +573,7 @@ export class MicrophoneTestController {
 
   #renderRecordingAvailability(): void {
     if (this.#recordingUnavailable) {
+      this.#recordingStatus.textContent = "Recording unavailable";
       this.#recordingNotice.textContent =
         "Recording is unavailable in this browser. Live microphone waveform and meters still work.";
       this.#recordingNotice.hidden = false;
