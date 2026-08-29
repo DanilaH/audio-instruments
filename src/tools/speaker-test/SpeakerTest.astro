@@ -1,0 +1,559 @@
+---
+import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
+import ToolStatus from "../../components/feedback/ToolStatus.astro";
+import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import LevelControl from "../../components/controls/LevelControl.astro";
+---
+
+<div data-speaker-test data-speaker-mode="channel" data-speaker-visual="idle">
+  <InstrumentSurface label="Speaker Test controls" accent="peach">
+    <div class="speaker-instrument">
+      <section class="speaker-visual" aria-label="Speaker Test visualization">
+        <div class="speaker-visual__header">
+          <ToolStatus id="speaker-status" label="Ready" state="idle" />
+          <span class="speaker-visual__mode" data-speaker-visual-label>Ready</span>
+        </div>
+
+        <div class="speaker-stage" aria-hidden="true">
+          <div class="speaker-node speaker-node--left">
+            <span class="speaker-node__ring"></span>
+            <strong>L</strong>
+          </div>
+          <div class="speaker-signal">
+            <i class="ph ph-wave-sine"></i>
+          </div>
+          <div class="speaker-node speaker-node--right">
+            <span class="speaker-node__ring"></span>
+            <strong>R</strong>
+          </div>
+        </div>
+
+        <div class="speaker-meter" aria-hidden="true">
+          <span></span><span></span><span></span><span></span><span></span>
+        </div>
+
+        <p class="speaker-visual__note">
+          Visual state follows the requested digital test signal. Confirm missing
+          output, distortion, rattle, imbalance or phase-image changes by listening.
+        </p>
+      </section>
+
+      <section class="speaker-controls" aria-label="Speaker Test actions">
+        <div class="speaker-mode-switcher" aria-label="Speaker Test mode">
+          <button type="button" data-speaker-mode="channel" aria-pressed="true">Channel</button>
+          <button type="button" data-speaker-mode="phase" aria-pressed="false">Phase</button>
+          <button type="button" data-speaker-mode="sweep" aria-pressed="false">Sweep</button>
+          <button type="button" data-speaker-mode="bass" aria-pressed="false">Bass / rattle</button>
+        </div>
+
+        <div class="speaker-safety">
+          <i class="ph ph-speaker-low" aria-hidden="true"></i>
+          <p>
+            Start with your device/headphone volume low. Increase it only to a
+            comfortable listening level. Do not turn the volume up to compensate
+            for a tone you cannot hear.
+          </p>
+        </div>
+
+        <div class="speaker-panel" data-speaker-panel="channel">
+          <div class="speaker-panel__heading">
+            <strong>Channel check</strong>
+            <span>500 Hz · 700 ms per burst</span>
+          </div>
+          <div class="speaker-actions speaker-actions--three">
+            <button type="button" data-speaker-channel="left">Left</button>
+            <button type="button" data-speaker-channel="both">Both</button>
+            <button type="button" data-speaker-channel="right">Right</button>
+          </div>
+          <button type="button" class="speaker-primary" data-speaker-sequence>
+            <i class="ph ph-play" aria-hidden="true"></i>
+            Run Left → Both → Right
+          </button>
+        </div>
+
+        <div class="speaker-panel" data-speaker-panel="phase" hidden>
+          <div class="speaker-panel__heading">
+            <strong>Phase comparison</strong>
+            <span>Same correlated pink-noise source and playback position</span>
+          </div>
+          <div class="speaker-actions speaker-actions--two">
+            <button type="button" data-speaker-phase-in aria-pressed="false">In phase</button>
+            <button type="button" data-speaker-phase-inverted aria-pressed="false">Inverted</button>
+          </div>
+          <button type="button" class="speaker-primary" data-speaker-phase-toggle disabled>
+            <i class="ph ph-arrows-left-right" aria-hidden="true"></i>
+            A/B toggle
+          </button>
+        </div>
+
+        <div class="speaker-panel" data-speaker-panel="sweep" hidden>
+          <div class="speaker-panel__heading">
+            <strong>Frequency sweep</strong>
+            <span>10 s logarithmic · default 100 → 10,000 Hz</span>
+          </div>
+          <div class="speaker-sweep-fields">
+            <label>
+              <span>Low</span>
+              <span class="speaker-field"><input id="speaker-sweep-low" type="number" min="20" max="20000" step="1" value="100" inputmode="decimal" /> Hz</span>
+            </label>
+            <label>
+              <span>High</span>
+              <span class="speaker-field"><input id="speaker-sweep-high" type="number" min="20" max="20000" step="1" value="10000" inputmode="decimal" /> Hz</span>
+            </label>
+          </div>
+          <CapabilityNotice id="speaker-frequency-cap" message="" />
+          <button type="button" class="speaker-primary" data-speaker-sweep>
+            <i class="ph ph-chart-line-up" aria-hidden="true"></i>
+            Run speaker sweep
+          </button>
+        </div>
+
+        <div class="speaker-panel" data-speaker-panel="bass" hidden>
+          <div class="speaker-panel__heading">
+            <strong>Bass / rattle</strong>
+            <span>40 → 120 Hz · 12 s logarithmic slow sweep</span>
+          </div>
+          <p class="speaker-panel__copy">
+            Listen for buzzing, rattles or resonances. Keep the system volume moderate;
+            low audibility is not a reason to turn it up aggressively.
+          </p>
+          <button type="button" class="speaker-primary" data-speaker-bass>
+            <i class="ph ph-waveform" aria-hidden="true"></i>
+            Run bass / rattle sweep
+          </button>
+        </div>
+
+        <div class="speaker-footer-controls">
+          <LevelControl id="speaker-level" valueDb={-24} />
+          <button type="button" class="speaker-stop" data-speaker-stop disabled>
+            <i class="ph ph-stop" aria-hidden="true"></i>
+            Stop
+          </button>
+        </div>
+
+        <p class="speaker-error" data-speaker-error role="alert" hidden></p>
+      </section>
+    </div>
+  </InstrumentSurface>
+</div>
+
+<script>
+  import { SpeakerTestController } from "./SpeakerTestController";
+
+  const root = document.querySelector<HTMLElement>("[data-speaker-test]");
+  let controller: SpeakerTestController | null = null;
+
+  const mount = () => {
+    if (!root || controller) return;
+    controller = new SpeakerTestController(root);
+  };
+  const teardown = () => {
+    const current = controller;
+    controller = null;
+    if (current) void current.dispose();
+  };
+
+  window.addEventListener("pagehide", teardown);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) mount();
+  });
+  mount();
+</script>
+
+<style>
+  .speaker-instrument {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(410px, 1fr);
+    min-height: 430px;
+  }
+
+  .speaker-visual,
+  .speaker-controls {
+    min-width: 0;
+    padding: clamp(20px, 2.7vw, 30px);
+  }
+
+  .speaker-visual {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    border-right: 1px solid var(--color-border);
+    background:
+      radial-gradient(circle at 50% 52%, rgb(255 181 141 / 0.2), transparent 34%),
+      linear-gradient(145deg, rgb(255 253 252 / 0.94), rgb(255 247 242 / 0.76));
+  }
+
+  .speaker-visual__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .speaker-visual__mode {
+    max-width: 220px;
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 750;
+    text-align: right;
+  }
+
+  .speaker-stage {
+    display: grid;
+    grid-template-columns: minmax(100px, 1fr) 44px minmax(100px, 1fr);
+    align-items: center;
+    gap: clamp(14px, 3vw, 34px);
+    width: min(100%, 520px);
+    margin: 12px auto 4px;
+  }
+
+  .speaker-node {
+    position: relative;
+    display: grid;
+    aspect-ratio: 1;
+    place-items: center;
+    max-width: 172px;
+    border: 1px solid var(--color-border);
+    border-radius: 36%;
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    box-shadow: 0 18px 44px rgb(31 36 48 / 0.06);
+    transition:
+      transform 160ms ease,
+      color 160ms ease,
+      border-color 160ms ease,
+      box-shadow 160ms ease;
+  }
+
+  .speaker-node strong {
+    position: relative;
+    z-index: 2;
+    font-size: clamp(1.45rem, 3.5vw, 2.5rem);
+  }
+
+  .speaker-node__ring {
+    position: absolute;
+    width: 56%;
+    aspect-ratio: 1;
+    border: 8px solid currentColor;
+    border-radius: 999px;
+    opacity: 0.12;
+  }
+
+  .speaker-signal {
+    display: grid;
+    width: 44px;
+    height: 44px;
+    place-items: center;
+    border-radius: 999px;
+    background: rgb(255 181 141 / 0.22);
+    color: #a85229;
+    font-size: 1.2rem;
+  }
+
+  [data-speaker-visual="left"] .speaker-node--left,
+  [data-speaker-visual="both"] .speaker-node,
+  [data-speaker-visual="right"] .speaker-node--right,
+  [data-speaker-visual="phase-in"] .speaker-node,
+  [data-speaker-visual="phase-inverted"] .speaker-node,
+  [data-speaker-visual="sweep"] .speaker-node,
+  [data-speaker-visual="bass"] .speaker-node {
+    transform: translateY(-3px);
+    border-color: rgb(168 82 41 / 0.34);
+    color: #98502c;
+    box-shadow: 0 18px 48px rgb(168 82 41 / 0.14);
+  }
+
+  [data-speaker-visual="phase-inverted"] .speaker-node--right {
+    transform: translateY(3px) scaleY(-1);
+  }
+
+  .speaker-meter {
+    display: flex;
+    align-items: end;
+    justify-content: center;
+    gap: 5px;
+    min-height: 28px;
+  }
+
+  .speaker-meter span {
+    width: 5px;
+    height: 8px;
+    border-radius: 999px;
+    background: rgb(168 82 41 / 0.2);
+    transition: height 160ms ease, opacity 160ms ease;
+  }
+
+  [data-speaker-visual="sweep"] .speaker-meter span:nth-child(1),
+  [data-speaker-visual="bass"] .speaker-meter span:nth-child(5) { height: 24px; }
+  [data-speaker-visual="sweep"] .speaker-meter span:nth-child(2),
+  [data-speaker-visual="bass"] .speaker-meter span:nth-child(4) { height: 18px; }
+  [data-speaker-visual="sweep"] .speaker-meter span:nth-child(3),
+  [data-speaker-visual="bass"] .speaker-meter span:nth-child(3) { height: 13px; }
+
+  .speaker-visual__note,
+  .speaker-panel__heading span,
+  .speaker-panel__copy {
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .speaker-visual__note {
+    max-width: 540px;
+    margin: 8px auto 0;
+    text-align: center;
+  }
+
+  .speaker-controls {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    background: rgb(255 253 252 / 0.78);
+  }
+
+  .speaker-mode-switcher {
+    display: grid;
+    grid-template-columns: repeat(4, minmax(0, 1fr));
+    gap: 6px;
+    padding: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: rgb(31 36 48 / 0.035);
+  }
+
+  .speaker-mode-switcher button {
+    min-height: 42px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: calc(var(--radius-button) - 5px);
+    background: transparent;
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .speaker-mode-switcher button[aria-pressed="true"] {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 4px 14px rgb(31 36 48 / 0.07);
+  }
+
+  .speaker-safety {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 9px;
+    padding: 9px 11px;
+    border-radius: var(--radius-control);
+    background: rgb(255 215 106 / 0.18);
+  }
+
+  .speaker-safety p,
+  .speaker-error {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  .speaker-panel {
+    display: grid;
+    gap: 9px;
+    min-height: 126px;
+  }
+
+  .speaker-panel[hidden] {
+    display: none;
+  }
+
+  .speaker-panel__heading {
+    display: grid;
+    gap: 2px;
+  }
+
+  .speaker-actions {
+    display: grid;
+    gap: 7px;
+  }
+
+  .speaker-actions--three {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+
+  .speaker-actions--two {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .speaker-actions button,
+  .speaker-primary,
+  .speaker-stop {
+    min-height: 46px;
+    border-radius: var(--radius-button);
+    font-weight: 800;
+    cursor: pointer;
+  }
+
+  .speaker-actions button {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .speaker-actions button[aria-pressed="true"] {
+    border-color: rgb(168 82 41 / 0.38);
+    background: #fff5ef;
+  }
+
+  .speaker-primary,
+  .speaker-stop {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+  }
+
+  .speaker-primary {
+    border: 0;
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .speaker-sweep-fields {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+
+  .speaker-sweep-fields label {
+    display: grid;
+    gap: 4px;
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+
+  .speaker-field {
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    gap: 6px;
+  }
+
+  .speaker-field input {
+    width: 100%;
+    min-height: 42px;
+    padding: 0 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .speaker-panel__copy {
+    margin: 0;
+  }
+
+  .speaker-footer-controls {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px;
+    align-items: end;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .speaker-stop {
+    min-height: 48px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-ink);
+  }
+
+  button:disabled,
+  input:disabled {
+    cursor: not-allowed;
+    opacity: 0.48;
+  }
+
+  .speaker-error {
+    padding: 10px 12px;
+    border-radius: var(--radius-control);
+    background: rgb(155 47 47 / 0.08);
+    color: #7f2929;
+  }
+
+  .speaker-error[hidden] {
+    display: none;
+  }
+
+  @media (max-width: 940px) {
+    .speaker-instrument {
+      grid-template-columns: 1fr;
+    }
+
+    .speaker-visual {
+      min-height: 260px;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .speaker-visual {
+      min-height: 190px;
+      padding: 14px 20px;
+    }
+
+    .speaker-controls {
+      padding: 14px 20px 18px;
+    }
+
+    .speaker-stage {
+      grid-template-columns: 84px 30px 84px;
+      justify-content: center;
+      gap: 8px;
+      margin: 3px auto 0;
+    }
+
+    .speaker-node {
+      width: 84px;
+    }
+
+    .speaker-signal {
+      width: 30px;
+      height: 30px;
+    }
+
+    .speaker-meter,
+    .speaker-visual__note {
+      display: none;
+    }
+
+    .speaker-mode-switcher {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .speaker-mode-switcher button {
+      min-height: 44px;
+    }
+
+    .speaker-panel {
+      min-height: 118px;
+    }
+
+    .speaker-footer-controls {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .speaker-node,
+    .speaker-meter span {
+      transition: none;
+    }
+
+    [data-speaker-visual] .speaker-node {
+      transform: none;
+    }
+  }
+</style>
