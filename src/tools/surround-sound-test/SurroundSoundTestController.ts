@@ -13,7 +13,6 @@ import { AudioSession } from "../../browser/audio-session/AudioSession";
 import {
   MultichannelOutputSession,
   type MultichannelBurstPlayback,
-  type MultichannelCapabilities,
   type MultichannelMode,
 } from "../../browser/multichannel/MultichannelOutputSession";
 import { DEFAULT_RAMP_SECONDS, clamp } from "../../utils/audio";
@@ -24,18 +23,35 @@ const GENERAL_LEVEL_MAX_DB = -12;
 const GENERAL_LEVEL_DEFAULT_DB = -24;
 const STEREO_PAN_SECONDS = 4;
 const MILLISECONDS_PER_SECOND = 1_000;
-const TRANSITION_WAIT_MS = Math.ceil(DEFAULT_RAMP_SECONDS * MILLISECONDS_PER_SECOND) + 5;
+const TRANSITION_WAIT_MS =
+  Math.ceil(DEFAULT_RAMP_SECONDS * MILLISECONDS_PER_SECOND) + 5;
 
 type SurroundMode = MultichannelMode | "stereo-preview" | "unknown";
-type StereoAction = "left" | "center" | "right" | "left-to-right" | "right-to-left";
+type StereoAction =
+  | "left"
+  | "center"
+  | "right"
+  | "left-to-right"
+  | "right-to-left";
+type CapabilityState =
+  | "unavailable"
+  | "candidate"
+  | "confirmed"
+  | "unsupported";
 
-type FiveOneChannel = {
+type SurroundCapabilities = {
+  readonly maxChannelCount: number;
+  fiveOne: CapabilityState;
+  experimentalEight: CapabilityState;
+};
+
+type ChannelDefinition = {
   readonly index: number;
   readonly label: string;
   readonly frequencyHz: number;
 };
 
-const FIVE_ONE_CHANNELS: readonly FiveOneChannel[] = [
+const FIVE_ONE_CHANNELS: readonly ChannelDefinition[] = [
   { index: 0, label: "Front Left", frequencyHz: CHANNEL_TEST_FREQUENCY_HZ },
   { index: 1, label: "Front Right", frequencyHz: CHANNEL_TEST_FREQUENCY_HZ },
   { index: 2, label: "Center", frequencyHz: CHANNEL_TEST_FREQUENCY_HZ },
@@ -43,6 +59,15 @@ const FIVE_ONE_CHANNELS: readonly FiveOneChannel[] = [
   { index: 4, label: "Surround Left", frequencyHz: CHANNEL_TEST_FREQUENCY_HZ },
   { index: 5, label: "Surround Right", frequencyHz: CHANNEL_TEST_FREQUENCY_HZ },
 ];
+
+const EIGHT_CHANNELS: readonly ChannelDefinition[] = Array.from(
+  { length: 8 },
+  (_, index) => ({
+    index,
+    label: `Channel ${index + 1}`,
+    frequencyHz: CHANNEL_TEST_FREQUENCY_HZ,
+  }),
+);
 
 function requireElement<T extends Element>(root: ParentNode, selector: string): T {
   const element = root.querySelector<T>(selector);
@@ -84,6 +109,36 @@ function stereoChannelMode(
   return action === "center" ? "both" : action;
 }
 
+function modeReadyLabel(mode: SurroundMode): string {
+  switch (mode) {
+    case "five-one":
+      return "5.1 ready";
+    case "experimental-eight":
+      return "Experimental 8-channel ready";
+    case "stereo-preview":
+      return "Stereo spatial preview ready";
+    case "unknown":
+      return "Capability not checked";
+  }
+}
+
+function modeVisualLabel(mode: SurroundMode): string {
+  switch (mode) {
+    case "five-one":
+      return "5.1";
+    case "experimental-eight":
+      return "Experimental 8-channel";
+    case "stereo-preview":
+      return "Stereo spatial preview";
+    case "unknown":
+      return "Not checked";
+  }
+}
+
+function isSelectableCapability(state: CapabilityState): boolean {
+  return state === "candidate" || state === "confirmed";
+}
+
 function sleep(milliseconds: number): Promise<void> {
   return new Promise((resolve) => window.setTimeout(resolve, milliseconds));
 }
@@ -114,7 +169,7 @@ export class SurroundSoundTestController {
   #stereoEngine: AudioOutputEngine | null = null;
   #stereoPlayback: OscillatorPlayback | PannedOscillatorPlayback | null = null;
   #multichannelPlaybacks: MultichannelBurstPlayback[] = [];
-  #capabilities: MultichannelCapabilities | null = null;
+  #capabilities: SurroundCapabilities | null = null;
   #mode: SurroundMode = "unknown";
   #levelDb = GENERAL_LEVEL_DEFAULT_DB;
   #starting = false;
@@ -225,7 +280,7 @@ export class SurroundSoundTestController {
     }
     this.#fiveOneAllButton.addEventListener(
       "click",
-      () => void this.#runFiveOneAll(),
+      () => void this.#runMultichannelSequence(FIVE_ONE_CHANNELS),
       { signal },
     );
 
@@ -241,7 +296,7 @@ export class SurroundSoundTestController {
     }
     this.#eightAllButton.addEventListener(
       "click",
-      () => void this.#runEightAll(),
+      () => void this.#runMultichannelSequence(EIGHT_CHANNELS),
       { signal },
     );
 
@@ -249,7 +304,9 @@ export class SurroundSoundTestController {
       button.addEventListener(
         "click",
         () => {
-          const action = button.dataset.surroundStereo as StereoAction | undefined;
+          const action = button.dataset.surroundStereo as
+            | StereoAction
+            | undefined;
           if (!action) return;
           if (action === "left-to-right" || action === "right-to-left") {
             void this.#runStereoPan(action);
@@ -261,9 +318,11 @@ export class SurroundSoundTestController {
       );
     }
 
-    this.#stopButton.addEventListener("click", () => this.#stopCurrent("Stopped"), {
-      signal,
-    });
+    this.#stopButton.addEventListener(
+      "click",
+      () => this.#stopCurrent("Stopped"),
+      { signal },
+    );
     this.#levelInput.addEventListener(
       "input",
       () => {
@@ -292,47 +351,39 @@ export class SurroundSoundTestController {
       const multichannel = new MultichannelOutputSession(context);
       multichannel.setLevelDb(this.#levelDb);
       this.#session.register(multichannel);
-      const capabilities = multichannel.probeCapabilities();
-
-      if (!capabilities.restorationHealthy) {
-        await this.#replaceAudioSession();
-        if (!this.#isCurrentRun(token)) return;
-        this.#capabilities = {
-          maxChannelCount: capabilities.maxChannelCount,
-          fiveOne: false,
-          experimentalEight: false,
-          restorationHealthy: false,
-        };
-        this.#starting = false;
-        this.#setCapabilitySummary(
-          "Surround configuration could not be restored safely. Using a fresh Stereo spatial preview session.",
-        );
-        this.#mode = "stereo-preview";
-        this.#renderModes();
-        this.#setControlsActive(false);
-        this.#setStatus("idle", "Stereo spatial preview ready");
-        return;
-      }
-
       this.#multichannel = multichannel;
-      this.#capabilities = capabilities;
-      this.#starting = false;
-      this.#setCapabilitySummary(
-        `Browser output ceiling: ${capabilities.maxChannelCount} channels. ` +
-          `${capabilities.fiveOne ? "5.1 confirmed." : "5.1 not confirmed."} ` +
-          `${capabilities.experimentalEight ? "Experimental 8-channel confirmed." : "Experimental 8-channel not confirmed."}`,
-      );
 
-      if (capabilities.fiveOne && (await multichannel.configure("five-one"))) {
-        this.#mode = "five-one";
-        this.#setStatus("idle", "5.1 ready");
-      } else {
-        if (!multichannel.restorationHealthy) await this.#replaceAudioSession();
-        this.#mode = "stereo-preview";
-        this.#setStatus("idle", "Stereo spatial preview ready");
+      const candidates = multichannel.inspectCandidates();
+      const capabilities: SurroundCapabilities = {
+        maxChannelCount: candidates.maxChannelCount,
+        fiveOne: candidates.fiveOneCandidate ? "candidate" : "unavailable",
+        experimentalEight: candidates.experimentalEightCandidate
+          ? "candidate"
+          : "unavailable",
+      };
+
+      if (candidates.fiveOneCandidate) {
+        const result = await multichannel.configure("five-one");
+        if (!this.#isCurrentRun(token)) return;
+        if (result.status === "restore_failed") {
+          await this.#fallbackAfterRestoreFailure(
+            token,
+            "5.1 configuration left the destination state uncertain, so that AudioContext was closed. Stereo spatial preview is available in a fresh session; run the capability check again before retrying surround.",
+          );
+          return;
+        }
+        capabilities.fiveOne =
+          result.status === "confirmed" ? "confirmed" : "unsupported";
       }
+
+      this.#capabilities = capabilities;
+      this.#mode =
+        capabilities.fiveOne === "confirmed" ? "five-one" : "stereo-preview";
+      this.#starting = false;
+      this.#setCapabilitySummary(this.#capabilityMessage(capabilities));
       this.#renderModes();
       this.#setControlsActive(false);
+      this.#setStatus("idle", modeReadyLabel(this.#mode));
     } catch (error) {
       this.#handleError(error, token);
     }
@@ -348,10 +399,23 @@ export class SurroundSoundTestController {
     ) {
       return;
     }
-    if (mode === "five-one" && !this.#capabilities.fiveOne) return;
-    if (mode === "experimental-eight" && !this.#capabilities.experimentalEight) return;
 
+    if (
+      mode === "five-one" &&
+      this.#capabilities.fiveOne !== "confirmed"
+    ) {
+      return;
+    }
+    if (
+      mode === "experimental-eight" &&
+      !isSelectableCapability(this.#capabilities.experimentalEight)
+    ) {
+      return;
+    }
+
+    const previousMode = this.#mode;
     const token = this.#beginStart("Switching output mode…");
+
     try {
       if (this.#stereoPlayback) {
         this.#stereoPlayback.stop();
@@ -364,72 +428,121 @@ export class SurroundSoundTestController {
       if (mode === "stereo-preview") {
         if (this.#multichannel?.activeMode) {
           const restored = await this.#multichannel.restore();
-          if (!restored) await this.#replaceAudioSession();
+          if (!restored) {
+            await this.#fallbackAfterRestoreFailure(
+              token,
+              "The multichannel destination could not be restored safely. That AudioContext was closed and Stereo spatial preview is now using a fresh session.",
+            );
+            return;
+          }
         }
         if (!this.#isCurrentRun(token)) return;
         this.#mode = "stereo-preview";
       } else {
         const multichannel = this.#multichannel;
         if (!multichannel) {
-          this.#mode = "stereo-preview";
-        } else {
-          const configured = await multichannel.configure(mode);
-          if (!configured) {
-            if (!multichannel.restorationHealthy) await this.#replaceAudioSession();
-            this.#mode = "stereo-preview";
+          await this.#fallbackAfterRestoreFailure(
+            token,
+            "Multichannel state is unavailable. Stereo spatial preview is using a fresh session; run the capability check again before retrying surround.",
+          );
+          return;
+        }
+
+        const result = await multichannel.configure(mode);
+        if (!this.#isCurrentRun(token)) return;
+        if (result.status === "restore_failed") {
+          await this.#fallbackAfterRestoreFailure(
+            token,
+            "The target multichannel mode could not be restored safely. That AudioContext was closed and Stereo spatial preview is now using a fresh session.",
+          );
+          return;
+        }
+
+        if (result.status === "confirmed") {
+          this.#mode = mode;
+          if (mode === "experimental-eight") {
+            this.#capabilities.experimentalEight = "confirmed";
           } else {
-            this.#mode = mode;
+            this.#capabilities.fiveOne = "confirmed";
           }
+        } else {
+          if (mode === "experimental-eight") {
+            this.#capabilities.experimentalEight = "unsupported";
+          } else {
+            this.#capabilities.fiveOne = "unsupported";
+          }
+          await this.#restorePreviousMode(previousMode, token);
+          if (!this.#isCurrentRun(token)) return;
         }
       }
 
       if (!this.#isCurrentRun(token)) return;
       this.#starting = false;
+      this.#setCapabilitySummary(this.#capabilityMessage(this.#capabilities));
       this.#renderModes();
       this.#setControlsActive(false);
-      this.#setStatus(
-        "idle",
-        this.#mode === "five-one"
-          ? "5.1 ready"
-          : this.#mode === "experimental-eight"
-            ? "Experimental 8-channel ready"
-            : "Stereo spatial preview ready",
-      );
+      this.#setStatus("idle", modeReadyLabel(this.#mode));
     } catch (error) {
       this.#handleError(error, token);
     }
+  }
+
+  async #restorePreviousMode(
+    previousMode: SurroundMode,
+    token: number,
+  ): Promise<void> {
+    if (previousMode === "stereo-preview" || previousMode === "unknown") {
+      this.#mode = "stereo-preview";
+      return;
+    }
+
+    const capabilities = this.#capabilities;
+    const multichannel = this.#multichannel;
+    if (!capabilities || !multichannel) {
+      this.#mode = "stereo-preview";
+      return;
+    }
+
+    const previouslyConfirmed =
+      previousMode === "five-one"
+        ? capabilities.fiveOne === "confirmed"
+        : capabilities.experimentalEight === "confirmed";
+    if (!previouslyConfirmed) {
+      this.#mode = "stereo-preview";
+      return;
+    }
+
+    const result = await multichannel.configure(previousMode);
+    if (!this.#isCurrentRun(token)) return;
+    if (result.status === "restore_failed") {
+      await this.#fallbackAfterRestoreFailure(
+        token,
+        "The previous multichannel mode could not be restored safely. That AudioContext was closed and Stereo spatial preview is now using a fresh session.",
+      );
+      return;
+    }
+    if (result.status === "confirmed") {
+      this.#mode = previousMode;
+      return;
+    }
+
+    if (previousMode === "five-one") capabilities.fiveOne = "unsupported";
+    else capabilities.experimentalEight = "unsupported";
+    this.#mode = "stereo-preview";
   }
 
   async #runFiveOneChannel(index: number): Promise<void> {
     if (this.#mode !== "five-one" || this.isActive || this.#disposed) return;
     const channel = FIVE_ONE_CHANNELS[index];
     if (!channel) return;
-    await this.#runMultichannelBurst(channel.index, channel.frequencyHz, channel.label);
-  }
-
-  async #runFiveOneAll(): Promise<void> {
-    if (this.#mode !== "five-one" || this.isActive || this.#disposed) return;
-    await this.#runMultichannelSequence(FIVE_ONE_CHANNELS);
-  }
-
-  async #runEightChannel(index: number): Promise<void> {
-    if (
-      this.#mode !== "experimental-eight" ||
-      this.isActive ||
-      this.#disposed ||
-      index < 0 ||
-      index >= 8
-    ) {
-      return;
-    }
     await this.#runMultichannelBurst(
-      index,
-      CHANNEL_TEST_FREQUENCY_HZ,
-      `Channel ${index + 1}`,
+      channel.index,
+      channel.frequencyHz,
+      channel.label,
     );
   }
 
-  async #runEightAll(): Promise<void> {
+  async #runEightChannel(index: number): Promise<void> {
     if (
       this.#mode !== "experimental-eight" ||
       this.isActive ||
@@ -437,12 +550,13 @@ export class SurroundSoundTestController {
     ) {
       return;
     }
-    const channels = Array.from({ length: 8 }, (_, index) => ({
-      index,
-      label: `Channel ${index + 1}`,
-      frequencyHz: CHANNEL_TEST_FREQUENCY_HZ,
-    }));
-    await this.#runMultichannelSequence(channels);
+    const channel = EIGHT_CHANNELS[index];
+    if (!channel) return;
+    await this.#runMultichannelBurst(
+      channel.index,
+      channel.frequencyHz,
+      channel.label,
+    );
   }
 
   async #runMultichannelBurst(
@@ -451,8 +565,9 @@ export class SurroundSoundTestController {
     label: string,
   ): Promise<void> {
     const multichannel = this.#multichannel;
-    if (!multichannel) return;
+    if (!multichannel || this.isActive) return;
     const token = this.#beginStart(`Starting ${label}…`);
+
     try {
       const context = await this.#session.getContext();
       if (!this.#isCurrentRun(token)) return;
@@ -478,10 +593,19 @@ export class SurroundSoundTestController {
   }
 
   async #runMultichannelSequence(
-    channels: readonly FiveOneChannel[],
+    channels: readonly ChannelDefinition[],
   ): Promise<void> {
     const multichannel = this.#multichannel;
-    if (!multichannel) return;
+    const expectedMode = channels.length === 6 ? "five-one" : "experimental-eight";
+    if (
+      !multichannel ||
+      this.#mode !== expectedMode ||
+      this.isActive ||
+      this.#disposed
+    ) {
+      return;
+    }
+
     const token = this.#beginStart("Starting channel sequence…");
     try {
       const context = await this.#session.getContext();
@@ -500,7 +624,8 @@ export class SurroundSoundTestController {
       this.#setStatus("playing", "Channel sequence running");
 
       channels.forEach((channel, index) => {
-        const startMs = index * CHANNEL_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
+        const startMs =
+          index * CHANNEL_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
         const gapMs =
           startMs + CHANNEL_TEST_DURATION_SECONDS * MILLISECONDS_PER_SECOND;
         this.#schedule(startMs, token, () => this.#setVisual(channel.label));
@@ -508,11 +633,14 @@ export class SurroundSoundTestController {
           this.#schedule(gapMs, token, () => this.#setVisual("Gap"));
         }
       });
+
       const totalSeconds =
         (channels.length - 1) * CHANNEL_SEQUENCE_STEP_SECONDS +
         CHANNEL_TEST_DURATION_SECONDS;
-      this.#schedule(totalSeconds * MILLISECONDS_PER_SECOND, token, () =>
-        this.#finishRun(),
+      this.#schedule(
+        totalSeconds * MILLISECONDS_PER_SECOND,
+        token,
+        () => this.#finishRun(),
       );
     } catch (error) {
       multichannel.stop();
@@ -520,11 +648,18 @@ export class SurroundSoundTestController {
     }
   }
 
-  async #getStereoEngine(): Promise<{ context: AudioContext; engine: AudioOutputEngine }> {
+  async #getStereoEngine(): Promise<{
+    context: AudioContext;
+    engine: AudioOutputEngine;
+  }> {
     const context = await this.#session.getContext();
-    if (this.#disposed) throw new Error("Surround Test was disposed before audio could start");
+    if (this.#disposed) {
+      throw new Error("Surround Test was disposed before audio could start");
+    }
     if (!this.#stereoEngine) {
-      this.#stereoEngine = new AudioOutputEngine(context, { levelProfile: "general" });
+      this.#stereoEngine = new AudioOutputEngine(context, {
+        levelProfile: "general",
+      });
       this.#stereoEngine.setLevelDb(this.#levelDb);
       this.#session.register(this.#stereoEngine);
     }
@@ -536,6 +671,7 @@ export class SurroundSoundTestController {
   ): Promise<void> {
     if (this.#mode !== "stereo-preview" || this.isActive || this.#disposed) return;
     const token = this.#beginStart(`Starting ${stereoActionLabel(action)}…`);
+
     try {
       const { engine } = await this.#getStereoEngine();
       if (!this.#isCurrentRun(token)) return;
@@ -564,6 +700,7 @@ export class SurroundSoundTestController {
   ): Promise<void> {
     if (this.#mode !== "stereo-preview" || this.isActive || this.#disposed) return;
     const token = this.#beginStart(`Starting ${stereoActionLabel(action)} pan…`);
+
     try {
       const { context, engine } = await this.#getStereoEngine();
       if (!this.#isCurrentRun(token)) return;
@@ -575,14 +712,21 @@ export class SurroundSoundTestController {
         startTime,
         STEREO_PAN_SECONDS,
       );
-      playback.schedulePanSweep(fromPan, -fromPan, STEREO_PAN_SECONDS, startTime);
+      playback.schedulePanSweep(
+        fromPan,
+        -fromPan,
+        STEREO_PAN_SECONDS,
+        startTime,
+      );
       this.#stereoPlayback = playback;
       this.#starting = false;
       this.#setControlsActive(true);
       this.#setVisual(stereoActionLabel(action));
       this.#setStatus("playing", `Panning ${stereoActionLabel(action)}`);
-      this.#schedule(STEREO_PAN_SECONDS * MILLISECONDS_PER_SECOND, token, () =>
-        this.#finishRun(),
+      this.#schedule(
+        STEREO_PAN_SECONDS * MILLISECONDS_PER_SECOND,
+        token,
+        () => this.#finishRun(),
       );
     } catch (error) {
       this.#handleError(error, token);
@@ -608,7 +752,7 @@ export class SurroundSoundTestController {
     this.#multichannel?.stop();
     this.#multichannelPlaybacks = [];
     this.#setControlsActive(false);
-    this.#setVisual("Ready");
+    this.#setVisual(modeVisualLabel(this.#mode));
     this.#setStatus("idle", label);
   }
 
@@ -618,7 +762,7 @@ export class SurroundSoundTestController {
     this.#stereoPlayback = null;
     this.#multichannelPlaybacks = [];
     this.#setControlsActive(false);
-    this.#setVisual("Ready");
+    this.#setVisual(modeVisualLabel(this.#mode));
     this.#setStatus("idle", "Ready for another check");
   }
 
@@ -649,31 +793,53 @@ export class SurroundSoundTestController {
   }
 
   #renderModes(): void {
-    const checked = this.#capabilities !== null;
-    this.#modeSelector.hidden = !checked;
+    const capabilities = this.#capabilities;
+    this.#modeSelector.hidden = capabilities === null;
+
     for (const button of this.#modeButtons) {
       const mode = parseMode(button.dataset.surroundMode);
       const available =
         mode === "stereo-preview" ||
-        (mode === "five-one" && Boolean(this.#capabilities?.fiveOne)) ||
+        (mode === "five-one" && capabilities?.fiveOne === "confirmed") ||
         (mode === "experimental-eight" &&
-          Boolean(this.#capabilities?.experimentalEight));
+          Boolean(
+            capabilities &&
+              isSelectableCapability(capabilities.experimentalEight),
+          ));
       button.hidden = !available;
       button.setAttribute("aria-pressed", String(mode === this.#mode));
+      if (mode === "experimental-eight") {
+        button.textContent =
+          capabilities?.experimentalEight === "candidate"
+            ? "Try Experimental 8-channel"
+            : "Experimental 8-channel";
+      }
     }
+
     for (const panel of this.#panels) {
       panel.hidden = panel.dataset.surroundPanel !== this.#mode;
     }
     this.#root.dataset.surroundMode = this.#mode;
-    this.#setVisual(
-      this.#mode === "five-one"
-        ? "5.1"
-        : this.#mode === "experimental-eight"
-          ? "Experimental 8-channel"
-          : this.#mode === "stereo-preview"
-            ? "Stereo spatial preview"
-            : "Not checked",
-    );
+    this.#setVisual(modeVisualLabel(this.#mode));
+  }
+
+  #capabilityMessage(capabilities: SurroundCapabilities): string {
+    const fiveOne =
+      capabilities.fiveOne === "confirmed"
+        ? "5.1 confirmed by exact destination readback."
+        : capabilities.fiveOne === "unsupported"
+          ? "5.1 candidate was rejected or did not read back exactly."
+          : "5.1 is not a candidate on this output.";
+    const eight =
+      capabilities.experimentalEight === "confirmed"
+        ? "Experimental 8-channel confirmed by exact discrete readback."
+        : capabilities.experimentalEight === "candidate"
+          ? "Experimental 8-channel is only a candidate until you choose it and exact readback succeeds."
+          : capabilities.experimentalEight === "unsupported"
+            ? "Experimental 8-channel was not confirmed on this output."
+            : "Experimental 8-channel is not a candidate on this output.";
+
+    return `Browser-reported output ceiling: ${capabilities.maxChannelCount} channels. ${fiveOne} ${eight}`;
   }
 
   #setCapabilitySummary(message: string): void {
@@ -691,17 +857,33 @@ export class SurroundSoundTestController {
   }
 
   async #replaceAudioSession(): Promise<void> {
-    this.#runToken += 1;
-    try {
-      await this.#session.dispose();
-    } catch (error) {
-      console.error("Surround Test failed to dispose uncertain AudioSession", error);
-    }
+    const previousSession = this.#session;
     this.#session = new AudioSession();
     this.#multichannel = null;
     this.#stereoEngine = null;
     this.#stereoPlayback = null;
     this.#multichannelPlaybacks = [];
+
+    try {
+      await previousSession.dispose();
+    } catch (error) {
+      console.error("Surround Test failed to dispose uncertain AudioSession", error);
+    }
+  }
+
+  async #fallbackAfterRestoreFailure(
+    token: number,
+    message: string,
+  ): Promise<void> {
+    await this.#replaceAudioSession();
+    if (!this.#isCurrentRun(token)) return;
+    this.#capabilities = null;
+    this.#mode = "stereo-preview";
+    this.#starting = false;
+    this.#setCapabilitySummary(message);
+    this.#renderModes();
+    this.#setControlsActive(false);
+    this.#setStatus("limited_capability", "Stereo spatial preview ready");
   }
 
   #handleError(error: unknown, token: number): void {
