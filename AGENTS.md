@@ -508,8 +508,9 @@ For that signature:
 
 - classify the run as infrastructure/no-runner, not as a repository test failure;
 - never call it green CI;
+- the no-runner signature is **not merge authorization**;
 - do not weaken or rewrite the required merge-gate contract merely to make the failure disappear;
-- preserve exact-SHA review/CI evidence in any owner-approved exception handling;
+- preserve exact-SHA review/CI evidence for incident diagnosis and historical record;
 - do not start P7 while its roadmap prerequisite still says `Wait for upgraded runner`.
 
 This section records an observed infrastructure incident. It is not a permanent waiver policy and does not replace `15_DEVELOPMENT_WORKFLOW.md` or `16_CI_AND_REPOSITORY_GATES.md`.
