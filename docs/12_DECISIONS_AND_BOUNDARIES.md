@@ -70,7 +70,7 @@ AUDIO-07 Multi-source same-channel sums preserve worst-case digital headroom.
 AUDIO-08 Do not hide incorrect headroom behind a compressor/limiter.
 AUDIO-09 Hard Left/Both/Right diagnostics use explicit channel routing.
 AUDIO-10 Both uses the same per-channel amplitude as single-channel Left/Right; it is not equal-power total-normalized.
-AUDIO-11 Continuous L↔R movement uses StereoPannerNode or equivalent.
+AUDIO-11 Continuous L↔R movement uses StereoPannerNode or equivalent continuous pan.
 AUDIO-12 Generated-frequency ceiling = min(tool nominal max, 95% of actual AudioContext Nyquist).
 AUDIO-13 Bass/Subwoofer core v1 range = 20–200 Hz.
 AUDIO-14 Canonical noise-buffer generation sample rate = 44,100 Hz; fixed pink coefficients are defined for that reference rate.
