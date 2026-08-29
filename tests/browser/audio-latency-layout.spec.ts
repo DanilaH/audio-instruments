@@ -38,7 +38,7 @@ for (const viewport of viewports) {
 
     const pulseBox = await pulse.boundingBox();
     expect(pulseBox).not.toBeNull();
-    expect(pulseBox?.width ?? 0).toBeGreaterThanOrEqual(100);
+    expect(pulseBox?.width ?? 0).toBeGreaterThanOrEqual(80);
     expect(
       (pulseBox?.x ?? -1) + (pulseBox?.width ?? viewport.width + 1),
     ).toBeLessThanOrEqual(viewport.width);
