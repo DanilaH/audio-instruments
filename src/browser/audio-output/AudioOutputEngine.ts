@@ -23,6 +23,14 @@ export interface OscillatorPlayback extends SessionResource {
   stop(): void;
 }
 
+export interface MonoOscillatorPlayback extends SessionResource {
+  readonly oscillator: OscillatorNode;
+  setFrequency(frequencyHz: number): void;
+  setWaveform(type: OscillatorType): void;
+  scheduleSweep(definition: SweepDefinition, startTime?: number): void;
+  stop(): void;
+}
+
 export interface PannedOscillatorPlayback extends SessionResource {
   readonly oscillator: OscillatorNode;
   setFrequency(frequencyHz: number): void;
@@ -52,6 +60,14 @@ export interface OscillatorStartOptions {
   readonly frequencyHz: number;
   readonly waveform?: OscillatorType;
   readonly channelMode?: StereoChannelMode;
+  readonly startTime?: number;
+  readonly durationSeconds?: number;
+  readonly sourceCoefficient?: number;
+}
+
+export interface MonoOscillatorStartOptions {
+  readonly frequencyHz: number;
+  readonly waveform?: OscillatorType;
   readonly startTime?: number;
   readonly durationSeconds?: number;
   readonly sourceCoefficient?: number;
@@ -286,9 +302,7 @@ export class AudioOutputEngine implements SessionResource {
   }
 
   get levelDb(): number {
-    return (
-      20 * Math.log10(Math.max(this.#masterGain.gain.value, Number.EPSILON))
-    );
+    return 20 * Math.log10(Math.max(this.#masterGain.gain.value, Number.EPSILON));
   }
 
   get levelProfile(): Readonly<LevelProfile> {
@@ -311,6 +325,105 @@ export class AudioOutputEngine implements SessionResource {
       dbToGain(safeDb),
       this.#context.currentTime,
     );
+  }
+
+  startMonoOscillator(options: MonoOscillatorStartOptions): MonoOscillatorPlayback {
+    this.#assertUsable();
+    if (!Number.isFinite(options.frequencyHz) || options.frequencyHz <= 0) {
+      throw new RangeError("frequencyHz must be a positive finite number");
+    }
+
+    const durationSeconds = validateDurationSeconds(options.durationSeconds);
+    const coefficient = validateSourceCoefficient(options.sourceCoefficient ?? 1);
+    const startTime = options.startTime ?? this.#context.currentTime;
+    const oscillator = this.#context.createOscillator();
+    const sourceGain = this.#context.createGain();
+
+    oscillator.type = options.waveform ?? "sine";
+    oscillator.frequency.setValueAtTime(options.frequencyHz, startTime);
+    scheduleSourceEnvelope(
+      sourceGain.gain,
+      coefficient,
+      startTime,
+      durationSeconds,
+    );
+
+    let stopped = false;
+    let cleaned = false;
+    let connected = false;
+    const cleanup = () => {
+      if (cleaned) return;
+      cleaned = true;
+      stopped = true;
+      oscillator.disconnect();
+      sourceGain.disconnect();
+      this.#active.delete(playback);
+    };
+
+    const playback: MonoOscillatorPlayback = {
+      oscillator,
+      setFrequency: (frequencyHz) => {
+        if (stopped) return;
+        if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) {
+          throw new RangeError("frequencyHz must be a positive finite number");
+        }
+        holdParamAtTime(oscillator.frequency, this.#context.currentTime);
+        oscillator.frequency.setValueAtTime(
+          frequencyHz,
+          this.#context.currentTime,
+        );
+      },
+      setWaveform: (type) => {
+        if (!stopped) oscillator.type = type;
+      },
+      scheduleSweep: (
+        definition,
+        sweepStartTime = this.#context.currentTime,
+      ) => {
+        if (stopped) return;
+        scheduleSweepOnParam(oscillator.frequency, definition, sweepStartTime);
+      },
+      stop: () => {
+        if (stopped) return;
+        stopped = true;
+        const now = this.#context.currentTime;
+        rampParam(sourceGain.gain, 0, now);
+        holdParamAtTime(oscillator.frequency, now);
+        oscillator.stop(now + DEFAULT_RAMP_SECONDS);
+      },
+      dispose: () => playback.stop(),
+    };
+
+    oscillator.addEventListener("ended", cleanup, { once: true });
+    this.#active.add(playback);
+
+    try {
+      oscillator.connect(sourceGain);
+      sourceGain.connect(this.#masterGain);
+      connected = true;
+      oscillator.start(startTime);
+      if (durationSeconds !== null) {
+        oscillator.stop(startTime + durationSeconds);
+      }
+      return playback;
+    } catch (error) {
+      this.#active.delete(playback);
+      if (connected) {
+        cleanup();
+      } else {
+        try {
+          oscillator.disconnect();
+        } catch {
+          // Best-effort cleanup for partially connected Web Audio nodes.
+        }
+        try {
+          sourceGain.disconnect();
+        } catch {
+          // Best-effort cleanup for partially connected Web Audio nodes.
+        }
+      }
+      throw error;
+    }
   }
 
   startOscillator(options: OscillatorStartOptions): OscillatorPlayback {
