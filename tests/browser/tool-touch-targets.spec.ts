@@ -14,9 +14,9 @@ const touchTargetCases = [
   {
     path: "/frequency-sweep",
     selectors: [
-      '[data-frequency-sweep] .sweep-duration input[type="range"]',
-      '[data-frequency-sweep] .sweep-range-grid .frequency-control input[type="number"]',
-      '[data-frequency-sweep] .sweep-range-grid .frequency-control input[type="range"]',
+      "#frequency-sweep-duration",
+      "[data-frequency-sweep] [data-frequency-number]",
+      "[data-frequency-sweep] [data-frequency-slider]",
       "[data-frequency-sweep] .sweep-selector button",
     ],
   },
@@ -52,7 +52,10 @@ interface TargetMetric {
   visible: boolean;
 }
 
-async function readTargetMetrics(page: Page, selector: string): Promise<TargetMetric[]> {
+async function readTargetMetrics(
+  page: Page,
+  selector: string,
+): Promise<TargetMetric[]> {
   return page.locator(selector).evaluateAll((elements) =>
     elements.map((element) => {
       const style = getComputedStyle(element);
@@ -71,7 +74,7 @@ async function readTargetMetrics(page: Page, selector: string): Promise<TargetMe
   );
 }
 
-test("known tool-local controls keep at least a 44px touch target", async ({ page }) => {
+test("tool-local controls keep a 44px touch target", async ({ page }) => {
   for (const viewport of targetViewports) {
     await page.setViewportSize(viewport);
 
@@ -80,7 +83,10 @@ test("known tool-local controls keep at least a 44px touch target", async ({ pag
 
       for (const selector of targetCase.selectors) {
         const metrics = await readTargetMetrics(page, selector);
-        expect(metrics.length, `${targetCase.path} ${selector} should exist`).toBeGreaterThan(0);
+        expect(
+          metrics.length,
+          `${targetCase.path} ${selector} should exist`,
+        ).toBeGreaterThan(0);
 
         for (const metric of metrics) {
           expect(
