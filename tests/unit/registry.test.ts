@@ -53,6 +53,7 @@ describe("tool registry", () => {
       { id: "microphone-test", route: "/microphone-test" },
       { id: "spectrum-analyzer", route: "/spectrum-analyzer" },
       { id: "pitch-detector", route: "/pitch-detector" },
+      { id: "decibel-meter", route: "/decibel-meter" },
     ]);
   });
 
