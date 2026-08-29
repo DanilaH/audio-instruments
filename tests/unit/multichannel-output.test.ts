@@ -46,9 +46,6 @@ class FakeNode {
   readonly kind: string;
   readonly connections: Connection[];
   disconnectCalls = 0;
-  channelCount = 2;
-  channelCountMode: ChannelCountMode = "max";
-  channelInterpretation: ChannelInterpretation = "speakers";
 
   constructor(kind: string, connections: Connection[]) {
     this.kind = kind;
@@ -117,11 +114,11 @@ class FakeDestinationNode extends FakeNode {
     this.#mismatchChannelCount = options.mismatchChannelCount;
   }
 
-  override get channelCount() {
+  get channelCount() {
     return this.#channelCount;
   }
 
-  override set channelCount(value: number) {
+  set channelCount(value: number) {
     this.writes.push(`count:${value}`);
     if (value === this.#throwOnChannelCount) throw new Error("channelCount rejected");
     if (this.failRestoration && this.#targetWasApplied && value === 2) {
@@ -131,11 +128,11 @@ class FakeDestinationNode extends FakeNode {
     if (value >= 6) this.#targetWasApplied = true;
   }
 
-  override get channelCountMode() {
+  get channelCountMode() {
     return this.#channelCountMode;
   }
 
-  override set channelCountMode(value: ChannelCountMode) {
+  set channelCountMode(value: ChannelCountMode) {
     this.writes.push(`mode:${value}`);
     if (this.failRestoration && this.#targetWasApplied && value === "max") {
       throw new Error("restoration rejected");
@@ -143,11 +140,11 @@ class FakeDestinationNode extends FakeNode {
     this.#channelCountMode = value;
   }
 
-  override get channelInterpretation() {
+  get channelInterpretation() {
     return this.#channelInterpretation;
   }
 
-  override set channelInterpretation(value: ChannelInterpretation) {
+  set channelInterpretation(value: ChannelInterpretation) {
     this.writes.push(`interpretation:${value}`);
     this.#channelInterpretation = value;
   }
