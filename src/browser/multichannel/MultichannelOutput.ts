@@ -1,6 +1,6 @@
 import {
   AudioOutputEngine,
-  type OscillatorPlayback,
+  type MonoOscillatorPlayback,
 } from "../audio-output/AudioOutputEngine";
 import type { SessionResource } from "../audio-session/AudioSession";
 import { DEFAULT_RAMP_SECONDS, clamp, getLevelProfile } from "../../utils/audio";
@@ -279,10 +279,9 @@ export class MultichannelOutput implements SessionResource {
       );
     }
 
-    const enginePlayback: OscillatorPlayback = engine.startOscillator({
+    const enginePlayback: MonoOscillatorPlayback = engine.startMonoOscillator({
       frequencyHz,
       waveform: "sine",
-      channelMode: "both",
       startTime,
       durationSeconds,
     });
