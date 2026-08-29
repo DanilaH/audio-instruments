@@ -176,3 +176,21 @@ test("desktop category composition gives dense groups more space without stretch
     inputBox?.height ?? 0,
   );
 });
+
+test("reduced motion disables decorative homepage transitions", async ({ page }) => {
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await page.goto("/");
+
+  for (const selector of [
+    ".hero__primary-action",
+    ".featured-card",
+    ".tool-link",
+  ]) {
+    const durations = await page
+      .locator(selector)
+      .first()
+      .evaluate((element) => getComputedStyle(element).transitionDuration.split(", "));
+
+    expect(durations.every((duration) => duration === "0s")).toBe(true);
+  }
+});
