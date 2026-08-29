@@ -1,0 +1,111 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import DecibelMeter from "../tools/decibel-meter/DecibelMeter.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const decibelTool = toolRegistry.find((tool) => tool.id === "decibel-meter");
+if (!decibelTool) throw new Error("Decibel Meter registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = decibelTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Decibel Meter — Browser Audio Lab"
+  description="Read browser microphone RMS and peak dBFS, with an optional one-point reference-calibrated level estimate when processing settings are explicitly suitable."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Input & analysis"
+    title="Decibel Meter"
+    description="Inspect digital microphone RMS and peak dBFS. Optionally apply a one-point external reference offset when the browser explicitly reports raw-enough capture settings."
+    accent="cyan"
+  >
+    <DecibelMeter />
+
+    <section class="db-content" aria-labelledby="db-about-title">
+      <div>
+        <p class="eyebrow">Digital first</p>
+        <h2 id="db-about-title">dBFS is the default measurement</h2>
+      </div>
+      <div class="db-content__copy">
+        <p>
+          RMS and peak values come from the shared 100 ms Web Audio PCM meter and
+          are expressed in dBFS. They describe the browser's digital microphone
+          signal, not physical sound pressure at the microphone position.
+        </p>
+        <p>
+          The optional reference-calibrated value applies one offset derived from
+          a stable three-second comparison with an external meter. It is an
+          estimate tied to the current input and reference conditions, not a
+          laboratory calibration or a correction of microphone frequency response.
+        </p>
+      </div>
+    </section>
+
+    <section class="db-help" aria-labelledby="db-help-title">
+      <h2 id="db-help-title">Why calibration may be unavailable</h2>
+      <div class="db-help__grid">
+        <p>
+          Calibration is disabled unless the active track explicitly reports auto
+          gain control, noise suppression and echo cancellation all Off. Missing or
+          unknown settings remain dBFS-only rather than being treated as safe for an
+          acoustic estimate.
+        </p>
+        <p>
+          The external reference must use Z, Flat or Linear weighting. A- and
+          C-weighted readings are intentionally not accepted for this v1 one-point
+          offset. Recalibrate whenever the microphone, input gain, processing,
+          position or reference conditions change.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .db-content,
+  .db-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .db-content h2,
+  .db-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .db-content__copy,
+  .db-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .db-content p,
+  .db-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .db-content,
+    .db-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
