@@ -6,6 +6,7 @@ import {
 } from "../../browser/audio-output/AudioOutputEngine";
 import {
   CHANNEL_SEQUENCE_STEP_SECONDS,
+  CHANNEL_SEQUENCE_TOTAL_SECONDS,
   CHANNEL_TEST_DURATION_SECONDS,
   CHANNEL_TEST_FREQUENCY_HZ,
   createBassSweepDefinition,
@@ -31,7 +32,8 @@ const GENERAL_LEVEL_DEFAULT_DB = -24;
 const MILLISECONDS_PER_SECOND = 1_000;
 const CHANNEL_BURST_MS = CHANNEL_TEST_DURATION_SECONDS * MILLISECONDS_PER_SECOND;
 const CHANNEL_STEP_MS = CHANNEL_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
-const CHANNEL_SEQUENCE_TOTAL_MS = CHANNEL_STEP_MS * 2 + CHANNEL_BURST_MS;
+const CHANNEL_SEQUENCE_TOTAL_MS =
+  CHANNEL_SEQUENCE_TOTAL_SECONDS * MILLISECONDS_PER_SECOND;
 
 type SpeakerMode = "channel" | "phase" | "sweep" | "bass";
 type SpeakerVisualState =
@@ -688,6 +690,10 @@ export class SpeakerTestController {
   }
 
   #resetIdleUi(): void {
+    this.#effectiveMaxHz = SPEAKER_SWEEP_NOMINAL_MAX_HZ;
+    this.#sweepLowInput.max = String(SPEAKER_SWEEP_NOMINAL_MAX_HZ);
+    this.#sweepHighInput.max = String(SPEAKER_SWEEP_NOMINAL_MAX_HZ);
+    this.#capabilityMessage.textContent = "";
     this.#capabilityNotice.hidden = true;
     this.#capabilityNotice.removeAttribute("role");
     this.#sweepLowInput.value = String(SPEAKER_SWEEP_DEFAULT_LOW_HZ);
