@@ -168,8 +168,8 @@ export const toolRegistry: readonly ToolDefinition[] = [
     navigationCategory: "signal-frequency",
     implementationPhase: "P4.3",
     accent: "neutral",
-    status: "planned",
-    relatedToolIds: [],
+    status: "live",
+    relatedToolIds: ["tone-generator", "frequency-sweep"],
   },
   {
     id: "microphone-test",
