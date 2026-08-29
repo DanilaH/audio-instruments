@@ -433,7 +433,7 @@ test("Speaker mode switching stops active playback and pagehide closes the sessi
   await page.getByRole("button", { name: "Sweep", exact: true }).click();
   await page.getByRole("button", { name: "Run speaker sweep" }).click();
   await page.getByRole("button", { name: "Channel", exact: true }).click();
-+  await expect(page.locator("#speaker-status")).toContainText("Ready");
+  await expect(page.locator("#speaker-status")).toContainText("Ready");
 
   const oscillators = await readProbe<Array<{ stops: number[] }>>(
     page,
