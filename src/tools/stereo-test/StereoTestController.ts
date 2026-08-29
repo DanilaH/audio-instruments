@@ -4,10 +4,12 @@ import {
   type PannedOscillatorPlayback,
   type StereoChannelMode,
 } from "../../browser/audio-output/AudioOutputEngine";
+import {
+  CHANNEL_TEST_DURATION_SECONDS,
+  CHANNEL_TEST_FREQUENCY_HZ,
+} from "../../browser/audio-output/referenceSignals";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 
-const TEST_FREQUENCY_HZ = 500;
-const STATIC_BURST_SECONDS = 0.7;
 const PAN_SWEEP_SECONDS = 4;
 
 type StereoAction = "left" | "center" | "right" | "left-to-right" | "right-to-left";
@@ -123,16 +125,16 @@ export class StereoTestController {
       const { engine } = await this.#getEngine();
       if (!this.#isCurrentRun(token)) return;
       this.#playback = engine.startOscillator({
-        frequencyHz: TEST_FREQUENCY_HZ,
+        frequencyHz: CHANNEL_TEST_FREQUENCY_HZ,
         waveform: "sine",
         channelMode: channelModeFor(action),
-        durationSeconds: STATIC_BURST_SECONDS,
+        durationSeconds: CHANNEL_TEST_DURATION_SECONDS,
       });
       this.#starting = false;
       this.#setControlsActive(true);
       this.#setVisual(action, actionLabel(action));
       this.#setStatus("playing", `Playing ${actionLabel(action)}`);
-      this.#scheduleFinish(STATIC_BURST_SECONDS * 1_000, token);
+      this.#scheduleFinish(CHANNEL_TEST_DURATION_SECONDS * 1_000, token);
     } catch (error) {
       this.#handleStartError(error, token);
     }
@@ -148,7 +150,7 @@ export class StereoTestController {
       const toPan = -fromPan;
       const startTime = context.currentTime;
       const playback = engine.startPannedOscillator(
-        TEST_FREQUENCY_HZ,
+        CHANNEL_TEST_FREQUENCY_HZ,
         fromPan,
         startTime,
         PAN_SWEEP_SECONDS,
