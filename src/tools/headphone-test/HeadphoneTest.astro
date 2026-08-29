@@ -1,0 +1,459 @@
+---
+import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
+import LevelControl from "../../components/controls/LevelControl.astro";
+import ToolStatus from "../../components/feedback/ToolStatus.astro";
+import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+---
+
+<div data-headphone-test data-headphone-mode="left" data-headphone-visual="idle">
+  <InstrumentSurface label="Headphone Test controls" accent="blue">
+    <div class="headphone-instrument">
+      <section class="headphone-visual" aria-label="Headphone channel visualization">
+        <div class="headphone-visual__header">
+          <ToolStatus id="headphone-status" label="Ready" state="idle" />
+          <span class="headphone-visual__mode" data-headphone-visual-label>Left ear</span>
+        </div>
+
+        <div class="headphone-stage" aria-hidden="true">
+          <div class="headphone-band"></div>
+          <div class="headphone-cup headphone-cup--left">
+            <span class="headphone-cup__driver"></span>
+            <strong>L</strong>
+          </div>
+          <div class="headphone-signal"><i class="ph ph-wave-sine"></i></div>
+          <div class="headphone-cup headphone-cup--right">
+            <span class="headphone-cup__driver"></span>
+            <strong>R</strong>
+          </div>
+        </div>
+
+        <div class="headphone-range" aria-hidden="true">
+          <span>20 Hz</span>
+          <i></i>
+          <span>20 kHz</span>
+        </div>
+        <p class="headphone-visual__note">
+          The graphic shows the requested digital ear/range target. It does not measure
+          headphone frequency response, loudness or driver quality.
+        </p>
+      </section>
+
+      <section class="headphone-controls" aria-label="Headphone Test actions">
+        <div class="headphone-modes" aria-label="Headphone Test mode">
+          <button type="button" data-headphone-mode="left" aria-pressed="true">Left</button>
+          <button type="button" data-headphone-mode="right" aria-pressed="false">Right</button>
+          <button type="button" data-headphone-mode="both" aria-pressed="false">Both</button>
+          <button type="button" data-headphone-mode="phase" aria-pressed="false">Phase</button>
+          <button type="button" data-headphone-mode="sweep" aria-pressed="false">Sweep</button>
+          <button type="button" data-headphone-mode="bass" aria-pressed="false">Bass / rattle</button>
+        </div>
+
+        <div class="headphone-safety">
+          <i class="ph ph-headphones" aria-hidden="true"></i>
+          <p>
+            Start with your device/headphone volume low. Increase it only to a
+            comfortable listening level. Do not turn the volume up to compensate
+            for a tone you cannot hear.
+          </p>
+        </div>
+
+        <CapabilityNotice id="headphone-frequency-cap" message="" />
+
+        <div class="headphone-channel-hint" data-headphone-channel-hint>
+          <strong>Ear check</strong>
+          <span>Left, Right and Both play the same 500 Hz · 700 ms reference burst.</span>
+        </div>
+
+        <div class="headphone-panel" data-headphone-panel="phase" hidden>
+          <div class="headphone-panel__heading">
+            <strong>Phase comparison</strong>
+            <span>One correlated pink-noise source; only right-channel sign changes.</span>
+          </div>
+          <div class="headphone-actions headphone-actions--two">
+            <button type="button" data-headphone-phase-in aria-pressed="false">In phase</button>
+            <button type="button" data-headphone-phase-inverted aria-pressed="false">Inverted</button>
+          </div>
+          <button type="button" class="headphone-primary" data-headphone-phase-toggle disabled>
+            <i class="ph ph-arrows-left-right" aria-hidden="true"></i>
+            A/B toggle
+          </button>
+        </div>
+
+        <div class="headphone-panel" data-headphone-panel="sweep" hidden>
+          <div class="headphone-panel__heading">
+            <strong>Frequency sweep</strong>
+            <span>15 s logarithmic · default 20 → 20,000 Hz</span>
+          </div>
+          <div class="headphone-sweep-fields">
+            <label>
+              <span>Low</span>
+              <span class="headphone-field">
+                <input id="headphone-sweep-low" type="number" min="20" max="20000" step="1" value="20" inputmode="decimal" />
+                Hz
+              </span>
+            </label>
+            <label>
+              <span>High</span>
+              <span class="headphone-field">
+                <input id="headphone-sweep-high" type="number" min="20" max="20000" step="1" value="20000" inputmode="decimal" />
+                Hz
+              </span>
+            </label>
+          </div>
+          <button type="button" class="headphone-primary" data-headphone-sweep>
+            <i class="ph ph-chart-line-up" aria-hidden="true"></i>
+            Run headphone sweep
+          </button>
+        </div>
+
+        <div class="headphone-panel" data-headphone-panel="bass" hidden>
+          <div class="headphone-panel__heading">
+            <strong>Bass / rattle</strong>
+            <span>20 → 120 Hz · 12 s logarithmic slow sweep</span>
+          </div>
+          <p class="headphone-panel__copy">
+            Listen for rattles or obvious asymmetry at moderate volume. If a low tone is
+            hard to hear, do not compensate by turning the system volume up aggressively.
+          </p>
+          <button type="button" class="headphone-primary" data-headphone-bass>
+            <i class="ph ph-waveform" aria-hidden="true"></i>
+            Run bass / rattle sweep
+          </button>
+        </div>
+
+        <div class="headphone-footer">
+          <LevelControl id="headphone-level" valueDb={-24} />
+          <button type="button" class="headphone-stop" data-headphone-stop disabled>
+            <i class="ph ph-stop" aria-hidden="true"></i>
+            Stop
+          </button>
+        </div>
+        <p class="headphone-error" data-headphone-error role="alert" hidden></p>
+      </section>
+    </div>
+  </InstrumentSurface>
+</div>
+
+<script>
+  import { HeadphoneTestController } from "./HeadphoneTestController";
+
+  const root = document.querySelector<HTMLElement>("[data-headphone-test]");
+  let controller: HeadphoneTestController | null = null;
+
+  const mount = () => {
+    if (!root || controller) return;
+    controller = new HeadphoneTestController(root);
+  };
+  const teardown = () => {
+    const current = controller;
+    controller = null;
+    if (current) void current.dispose();
+  };
+
+  window.addEventListener("pagehide", teardown);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) mount();
+  });
+  mount();
+</script>
+
+<style>
+  .headphone-instrument {
+    display: grid;
+    grid-template-columns: minmax(0, 0.96fr) minmax(420px, 1.04fr);
+    min-height: 430px;
+  }
+
+  .headphone-visual,
+  .headphone-controls {
+    min-width: 0;
+    padding: clamp(20px, 2.7vw, 30px);
+  }
+
+  .headphone-visual {
+    display: grid;
+    grid-template-rows: auto 1fr auto auto;
+    border-right: 1px solid var(--color-border);
+    background:
+      radial-gradient(circle at 50% 48%, rgb(103 167 255 / 0.21), transparent 34%),
+      linear-gradient(145deg, rgb(255 253 252 / 0.94), rgb(241 247 255 / 0.88));
+  }
+
+  .headphone-visual__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .headphone-visual__mode {
+    max-width: 220px;
+    color: var(--color-ink-muted);
+    font-size: 0.82rem;
+    font-weight: 750;
+    text-align: right;
+  }
+
+  .headphone-stage {
+    position: relative;
+    display: grid;
+    grid-template-columns: minmax(100px, 1fr) 42px minmax(100px, 1fr);
+    align-items: end;
+    gap: clamp(12px, 2.5vw, 26px);
+    width: min(100%, 490px);
+    margin: 18px auto 8px;
+    padding-top: 42px;
+  }
+
+  .headphone-band {
+    position: absolute;
+    top: 0;
+    left: 16%;
+    width: 68%;
+    height: 116px;
+    border: 15px solid rgb(103 167 255 / 0.2);
+    border-bottom: 0;
+    border-radius: 120px 120px 0 0;
+  }
+
+  .headphone-cup {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    aspect-ratio: 0.86;
+    place-items: center;
+    width: min(100%, 142px);
+    justify-self: center;
+    border: 1px solid var(--color-border);
+    border-radius: 36px;
+    background: var(--color-surface);
+    color: var(--color-ink-muted);
+    box-shadow: 0 18px 44px rgb(31 36 48 / 0.06);
+    transition: transform 160ms ease, border-color 160ms ease, color 160ms ease;
+  }
+
+  .headphone-cup__driver {
+    position: absolute;
+    width: 58%;
+    aspect-ratio: 1;
+    border: 8px solid currentColor;
+    border-radius: 999px;
+    opacity: 0.12;
+  }
+
+  .headphone-cup strong { position: relative; z-index: 2; font-size: 2rem; }
+
+  .headphone-signal {
+    z-index: 3;
+    display: grid;
+    width: 42px;
+    height: 42px;
+    place-items: center;
+    align-self: center;
+    border-radius: 999px;
+    background: rgb(103 167 255 / 0.22);
+    color: #2866ad;
+  }
+
+  [data-headphone-visual="left"] .headphone-cup--left,
+  [data-headphone-visual="right"] .headphone-cup--right,
+  [data-headphone-visual="both"] .headphone-cup,
+  [data-headphone-visual="phase-in"] .headphone-cup,
+  [data-headphone-visual="phase-inverted"] .headphone-cup,
+  [data-headphone-visual="sweep"] .headphone-cup,
+  [data-headphone-visual="bass"] .headphone-cup {
+    transform: translateY(-3px);
+    border-color: rgb(40 102 173 / 0.34);
+    color: #2866ad;
+  }
+
+  [data-headphone-visual="phase-inverted"] .headphone-cup--right {
+    transform: translateY(3px) scaleY(-1);
+  }
+
+  .headphone-range {
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    gap: 10px;
+    color: var(--color-ink-muted);
+    font-size: 0.76rem;
+    font-weight: 750;
+  }
+  .headphone-range i { height: 3px; border-radius: 999px; background: rgb(103 167 255 / 0.22); }
+
+  .headphone-visual__note,
+  .headphone-panel__heading span,
+  .headphone-panel__copy,
+  .headphone-channel-hint span {
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+  .headphone-visual__note { max-width: 520px; margin: 9px auto 0; text-align: center; }
+
+  .headphone-controls {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+    background: rgb(255 253 252 / 0.78);
+  }
+
+  .headphone-modes {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 5px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-button);
+    background: rgb(31 36 48 / 0.035);
+  }
+  .headphone-modes button {
+    min-height: 46px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: calc(var(--radius-button) - 5px);
+    background: transparent;
+    color: var(--color-ink-muted);
+    font-size: 0.8rem;
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .headphone-modes button[aria-pressed="true"] {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 4px 14px rgb(31 36 48 / 0.07);
+  }
+
+  .headphone-safety {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 9px;
+    padding: 9px 11px;
+    border-radius: var(--radius-control);
+    background: rgb(255 215 106 / 0.18);
+  }
+  .headphone-safety p,
+  .headphone-error { margin: 0; font-size: 0.78rem; line-height: 1.4; }
+
+  .headphone-channel-hint,
+  .headphone-panel { display: grid; gap: 8px; min-height: 118px; }
+  .headphone-channel-hint { align-content: center; }
+  [data-headphone-mode="phase"] .headphone-channel-hint,
+  [data-headphone-mode="sweep"] .headphone-channel-hint,
+  [data-headphone-mode="bass"] .headphone-channel-hint { display: none; }
+  .headphone-panel[hidden] { display: none; }
+  .headphone-panel__heading { display: grid; gap: 2px; }
+
+  .headphone-actions { display: grid; gap: 7px; }
+  .headphone-actions--two { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .headphone-actions button,
+  .headphone-primary,
+  .headphone-stop {
+    min-height: 48px;
+    border-radius: var(--radius-button);
+    font-weight: 800;
+    cursor: pointer;
+  }
+  .headphone-actions button {
+    border: 1px solid var(--color-border);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+  .headphone-actions button[aria-pressed="true"] {
+    border-color: rgb(40 102 173 / 0.36);
+    background: #f0f7ff;
+  }
+
+  .headphone-primary,
+  .headphone-stop { display: inline-flex; align-items: center; justify-content: center; gap: 7px; }
+  .headphone-primary { border: 0; background: var(--color-ink); color: var(--color-surface); }
+
+  .headphone-sweep-fields { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
+  .headphone-sweep-fields label {
+    display: grid;
+    gap: 4px;
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    font-weight: 700;
+  }
+  .headphone-field { display: grid; grid-template-columns: 1fr auto; align-items: center; gap: 6px; }
+  .headphone-field input {
+    width: 100%;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--color-border);
+    border-radius: var(--radius-control);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+  .headphone-panel__copy { margin: 0; }
+
+  .headphone-footer {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 120px;
+    align-items: end;
+    gap: 12px;
+    padding-top: 8px;
+    border-top: 1px solid var(--color-border);
+  }
+  .headphone-stop {
+    min-height: 48px;
+    border: 1px solid var(--color-border);
+    background: transparent;
+    color: var(--color-ink);
+  }
+
+  button:disabled,
+  input:disabled { cursor: not-allowed; opacity: 0.48; }
+  .headphone-error {
+    padding: 10px 12px;
+    border-radius: var(--radius-control);
+    background: rgb(155 47 47 / 0.08);
+    color: #7f2929;
+  }
+  .headphone-error[hidden] { display: none; }
+
+  @media (max-width: 940px) {
+    .headphone-instrument { grid-template-columns: 1fr; }
+    .headphone-visual {
+      min-height: 260px;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+  }
+
+  @media (max-width: 560px) {
+    .headphone-visual { min-height: 190px; padding: 14px 20px; }
+    .headphone-controls { padding: 14px 20px 18px; }
+    .headphone-stage {
+      grid-template-columns: 82px 28px 82px;
+      justify-content: center;
+      gap: 8px;
+      margin: 2px auto 0;
+      padding-top: 24px;
+    }
+    .headphone-band {
+      top: 0;
+      left: 21%;
+      width: 58%;
+      height: 70px;
+      border-width: 10px;
+      border-bottom: 0;
+    }
+    .headphone-cup { width: 82px; border-radius: 25px; }
+    .headphone-signal { width: 28px; height: 28px; }
+    .headphone-range,
+    .headphone-visual__note { display: none; }
+    .headphone-modes { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+    .headphone-modes button { min-height: 48px; }
+    .headphone-channel-hint,
+    .headphone-panel { min-height: 112px; }
+    .headphone-footer { grid-template-columns: 1fr; gap: 6px; }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .headphone-cup { transition: none; }
+    [data-headphone-visual] .headphone-cup { transform: none; }
+  }
+</style>
