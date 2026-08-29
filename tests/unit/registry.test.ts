@@ -52,6 +52,7 @@ describe("tool registry", () => {
       { id: "noise-generator", route: "/noise-generator" },
       { id: "microphone-test", route: "/microphone-test" },
       { id: "spectrum-analyzer", route: "/spectrum-analyzer" },
+      { id: "pitch-detector", route: "/pitch-detector" },
     ]);
   });
 
