@@ -276,7 +276,7 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
   }
 
   .pitch-tuner__rail {
-    --pitch-cents: 0;
+    --pitch-offset: 0%;
     position: relative;
     height: 24px;
     border: 1px solid var(--color-border);
@@ -316,7 +316,7 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     width: 4px;
     border-radius: 999px;
     background: var(--color-ink);
-    transform: translateX(calc(var(--pitch-cents, 0) * 1%));
+    transform: translateX(var(--pitch-offset, 0%));
     transition: transform 90ms linear;
   }
 
