@@ -4,9 +4,15 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 ---
 
 <div data-spectrum-analyzer data-spectrum-state="idle">
-  <InstrumentSurface label="Spectrum Analyzer microphone frequency visualization" accent="cyan">
+  <InstrumentSurface
+    label="Spectrum Analyzer microphone frequency visualization"
+    accent="cyan"
+  >
     <div class="spectrum-instrument">
-      <section class="spectrum-monitor" aria-label="Live microphone analysis visualization">
+      <section
+        class="spectrum-monitor"
+        aria-label="Live microphone analysis visualization"
+      >
         <div class="spectrum-monitor__header">
           <ToolStatus id="spectrum-analyzer-status" label="Ready" state="idle" />
           <div class="spectrum-input-readout">
@@ -18,11 +24,11 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         <div class="spectrum-canvas-wrap">
           <canvas
             data-spectrum-canvas
-            aria-label="Live Spectrum Analyzer visualization"
+            aria-label="Live microphone analysis visualization"
           ></canvas>
           <div class="spectrum-canvas-meta" aria-hidden="true">
-            <span>Relative analyser data</span>
-            <span>20 Hz → Nyquist / 20 kHz</span>
+            <span>Browser-stream analysis</span>
+            <span>Scale follows the selected view</span>
           </div>
         </div>
 
@@ -46,7 +52,8 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
           <div>
             <strong>Microphone permission is requested only after Start.</strong>
             <p>
-              The live input is analyzed locally in the browser. No microphone branch is connected to speaker output.
+              The live input is analyzed locally in the browser. No microphone
+              branch is connected to speaker output.
             </p>
           </div>
         </div>
@@ -56,7 +63,12 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
             <i class="ph ph-waveform" aria-hidden="true"></i>
             Start analyzer
           </button>
-          <button type="button" class="spectrum-stop" data-spectrum-stop disabled>
+          <button
+            type="button"
+            class="spectrum-stop"
+            data-spectrum-stop
+            disabled
+          >
             <i class="ph ph-stop" aria-hidden="true"></i>
             Stop
           </button>
@@ -64,14 +76,30 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
         <fieldset class="spectrum-view-fieldset">
           <legend>View</legend>
-          <div class="spectrum-view-switch" role="group" aria-label="Analyzer view">
-            <button type="button" data-spectrum-view="spectrum" aria-pressed="true">
+          <div
+            class="spectrum-view-switch"
+            role="group"
+            aria-label="Analyzer view"
+          >
+            <button
+              type="button"
+              data-spectrum-view="spectrum"
+              aria-pressed="true"
+            >
               Spectrum
             </button>
-            <button type="button" data-spectrum-view="waveform" aria-pressed="false">
+            <button
+              type="button"
+              data-spectrum-view="waveform"
+              aria-pressed="false"
+            >
               Waveform
             </button>
-            <button type="button" data-spectrum-view="spectrogram" aria-pressed="false">
+            <button
+              type="button"
+              data-spectrum-view="spectrogram"
+              aria-pressed="false"
+            >
               Spectrogram
             </button>
           </div>
@@ -89,9 +117,17 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
         <label class="spectrum-field" data-spectrum-input-field hidden>
           <span>Input device</span>
-          <select data-spectrum-input aria-label="Spectrum Analyzer input device"></select>
+          <select
+            data-spectrum-input
+            aria-label="Spectrum Analyzer input device"
+          ></select>
         </label>
-        <p class="spectrum-selection-error" data-spectrum-selection-error role="alert" hidden></p>
+        <p
+          class="spectrum-selection-error"
+          data-spectrum-selection-error
+          role="alert"
+          hidden
+        ></p>
 
         <dl class="spectrum-details" aria-label="Current analysis settings">
           <div>
@@ -115,7 +151,9 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         <div class="spectrum-claim-note">
           <i class="ph ph-info" aria-hidden="true"></i>
           <p>
-            Frequency values are relative FFT-bin data from the browser stream. This tool does not measure calibrated frequency response, acoustic SPL, or musical pitch.
+            Frequency values are relative FFT-bin data from the browser stream.
+            This tool does not measure calibrated frequency response, acoustic SPL,
+            or musical pitch.
           </p>
         </div>
 
@@ -169,9 +207,21 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     gap: 14px;
     border-right: 1px solid var(--color-border);
     background:
-      radial-gradient(circle at 28% 24%, rgb(89 211 230 / 0.16), transparent 34%),
-      radial-gradient(circle at 78% 72%, rgb(143 124 255 / 0.12), transparent 36%),
-      linear-gradient(145deg, rgb(250 254 255 / 0.98), rgb(239 248 251 / 0.9));
+      radial-gradient(
+        circle at 28% 24%,
+        rgb(89 211 230 / 0.16),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 78% 72%,
+        rgb(143 124 255 / 0.12),
+        transparent 36%
+      ),
+      linear-gradient(
+        145deg,
+        rgb(250 254 255 / 0.98),
+        rgb(239 248 251 / 0.9)
+      );
   }
 
   .spectrum-monitor__header,
