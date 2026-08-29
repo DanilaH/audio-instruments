@@ -79,6 +79,7 @@ textarea {
 
 .brand {
   display: inline-flex;
+  min-height: 44px;
   align-items: center;
   gap: 10px;
   font-weight: 800;
@@ -103,6 +104,11 @@ textarea {
 }
 
 .site-nav a {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   text-decoration: none;
 }
 
@@ -668,6 +674,11 @@ h3 {
 }
 
 .site-footer a {
+  display: inline-flex;
+  min-width: 44px;
+  min-height: 44px;
+  align-items: center;
+  justify-content: center;
   text-underline-offset: 4px;
 }
 
