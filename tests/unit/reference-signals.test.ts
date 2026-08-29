@@ -18,7 +18,17 @@ import {
   CHANNEL_SEQUENCE_TOTAL_SECONDS,
   CHANNEL_TEST_DURATION_SECONDS,
   CHANNEL_TEST_FREQUENCY_HZ,
+  FREQUENCY_SWEEP_DEFAULT_DIRECTION,
+  FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS,
+  FREQUENCY_SWEEP_DEFAULT_HIGH_HZ,
+  FREQUENCY_SWEEP_DEFAULT_LOW_HZ,
+  FREQUENCY_SWEEP_DEFAULT_SCALE,
+  FREQUENCY_SWEEP_MAX_DURATION_SECONDS,
+  FREQUENCY_SWEEP_MAX_HZ,
+  FREQUENCY_SWEEP_MIN_DURATION_SECONDS,
+  FREQUENCY_SWEEP_MIN_HZ,
   createBassSweepDefinition,
+  createFrequencySweepDefinition,
 } from "../../src/browser/audio-output/referenceSignals";
 
 describe("shared output reference signals", () => {
@@ -71,5 +81,63 @@ describe("shared output reference signals", () => {
     expect(() => createBassSweepDefinition(19, 120)).toThrow("Bass sweep");
     expect(() => createBassSweepDefinition(40, 201)).toThrow("Bass sweep");
     expect(() => createBassSweepDefinition(120, 40)).toThrow("lowHz");
+  });
+
+  it("keeps the standalone Frequency Sweep defaults and bounds", () => {
+    expect(FREQUENCY_SWEEP_MIN_HZ).toBe(20);
+    expect(FREQUENCY_SWEEP_MAX_HZ).toBe(20_000);
+    expect(FREQUENCY_SWEEP_DEFAULT_LOW_HZ).toBe(20);
+    expect(FREQUENCY_SWEEP_DEFAULT_HIGH_HZ).toBe(20_000);
+    expect(FREQUENCY_SWEEP_MIN_DURATION_SECONDS).toBe(5);
+    expect(FREQUENCY_SWEEP_MAX_DURATION_SECONDS).toBe(60);
+    expect(FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS).toBe(15);
+    expect(FREQUENCY_SWEEP_DEFAULT_SCALE).toBe("logarithmic");
+    expect(FREQUENCY_SWEEP_DEFAULT_DIRECTION).toBe("ascending");
+
+    expect(
+      createFrequencySweepDefinition(
+        FREQUENCY_SWEEP_DEFAULT_LOW_HZ,
+        FREQUENCY_SWEEP_DEFAULT_HIGH_HZ,
+        FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS,
+        FREQUENCY_SWEEP_DEFAULT_SCALE,
+        FREQUENCY_SWEEP_DEFAULT_DIRECTION,
+      ),
+    ).toEqual({
+      lowHz: 20,
+      highHz: 20_000,
+      durationSeconds: 15,
+      scale: "logarithmic",
+      direction: "ascending",
+    });
+  });
+
+  it("preserves custom Frequency Sweep scale and direction without duplicating sweep math", () => {
+    expect(
+      createFrequencySweepDefinition(100, 8_000, 32, "linear", "descending"),
+    ).toEqual({
+      lowHz: 100,
+      highHz: 8_000,
+      durationSeconds: 32,
+      scale: "linear",
+      direction: "descending",
+    });
+  });
+
+  it("rejects Frequency Sweep bounds, duration and endpoint order outside the v1 contract", () => {
+    expect(() =>
+      createFrequencySweepDefinition(19, 1_000, 15, "logarithmic", "ascending"),
+    ).toThrow("Frequency Sweep");
+    expect(() =>
+      createFrequencySweepDefinition(20, 20_001, 15, "logarithmic", "ascending"),
+    ).toThrow("Frequency Sweep");
+    expect(() =>
+      createFrequencySweepDefinition(20, 1_000, 4, "logarithmic", "ascending"),
+    ).toThrow("duration");
+    expect(() =>
+      createFrequencySweepDefinition(20, 1_000, 61, "logarithmic", "ascending"),
+    ).toThrow("duration");
+    expect(() =>
+      createFrequencySweepDefinition(2_000, 1_000, 15, "linear", "descending"),
+    ).toThrow("lowHz");
   });
 });

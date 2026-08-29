@@ -230,7 +230,7 @@ test("Bass Test exposes its safe idle contract without creating AudioContext", a
   ).toBeVisible();
   await expect(page.locator('[data-bass-preset="20"]')).toBeVisible();
   await expect(page.locator('[data-bass-preset="100"]')).toBeVisible();
-  await expect(page.locator('a[href="/frequency-sweep"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/frequency-sweep"]')).toHaveCount(1);
   expect(await readWindowNumber(page, "__bassAudioContextCount")).toBe(0);
 });
 

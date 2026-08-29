@@ -1,0 +1,654 @@
+---
+import FrequencyControl from "../../components/controls/FrequencyControl.astro";
+import LevelControl from "../../components/controls/LevelControl.astro";
+import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
+import ToolStatus from "../../components/feedback/ToolStatus.astro";
+import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import {
+  FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS,
+  FREQUENCY_SWEEP_DEFAULT_HIGH_HZ,
+  FREQUENCY_SWEEP_DEFAULT_LOW_HZ,
+  FREQUENCY_SWEEP_MAX_DURATION_SECONDS,
+  FREQUENCY_SWEEP_MAX_HZ,
+  FREQUENCY_SWEEP_MIN_DURATION_SECONDS,
+  FREQUENCY_SWEEP_MIN_HZ,
+} from "../../browser/audio-output/referenceSignals";
+---
+
+<div
+  data-frequency-sweep
+  data-sweep-visual="idle"
+  data-sweep-scale="logarithmic"
+  data-sweep-direction="ascending"
+  style={`--sweep-duration: ${FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS}s`}
+>
+  <InstrumentSurface
+    label="Frequency Sweep controls and scheduled sweep visualization"
+    accent="lavender"
+  >
+    <div class="sweep-instrument">
+      <section class="sweep-visual" aria-label="Frequency Sweep visualization">
+        <div class="sweep-visual__header">
+          <ToolStatus id="frequency-sweep-status" label="Ready" state="idle" />
+          <div class="sweep-readout" aria-label="Scheduled sweep endpoints">
+            <strong><span data-sweep-from>20 Hz</span> → <span data-sweep-to>20 kHz</span></strong>
+            <span><span data-sweep-duration-readout>15 s</span> · <span data-sweep-scale-readout>Logarithmic</span></span>
+          </div>
+        </div>
+
+        <div class="sweep-stage" aria-hidden="true">
+          <svg class="sweep-curve" viewBox="0 0 100 42" preserveAspectRatio="none">
+            <path class="sweep-curve__grid" d="M0 35 H100 M0 22 H100 M0 9 H100" />
+            <path class="sweep-curve__line sweep-curve__line--log" d="M1 36 C36 36 54 31 69 23 C82 16 91 8 99 4" />
+            <path class="sweep-curve__line sweep-curve__line--linear" d="M1 36 L99 4" />
+          </svg>
+          <div class="sweep-progress-track">
+            <span class="sweep-cursor"></span>
+          </div>
+          <div class="sweep-scale">
+            <span>20</span>
+            <span>100</span>
+            <span>1k</span>
+            <span>10k</span>
+            <span>20k Hz</span>
+          </div>
+        </div>
+
+        <p class="sweep-visual__note">
+          Stylized schedule visual. The endpoints and duration describe the requested/generated digital sweep; this page does not measure acoustic frequency response.
+        </p>
+      </section>
+
+      <section class="sweep-controls" aria-label="Frequency Sweep settings">
+        <div class="sweep-safety">
+          <i class="ph ph-shield-check" aria-hidden="true"></i>
+          <p>
+            Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.
+          </p>
+        </div>
+
+        <div class="sweep-range-grid">
+          <div data-sweep-low-control>
+            <FrequencyControl
+              id="frequency-sweep-low"
+              label="Low frequency"
+              valueHz={FREQUENCY_SWEEP_DEFAULT_LOW_HZ}
+              minHz={FREQUENCY_SWEEP_MIN_HZ}
+              maxHz={FREQUENCY_SWEEP_MAX_HZ}
+            />
+          </div>
+          <div data-sweep-high-control>
+            <FrequencyControl
+              id="frequency-sweep-high"
+              label="High frequency"
+              valueHz={FREQUENCY_SWEEP_DEFAULT_HIGH_HZ}
+              minHz={FREQUENCY_SWEEP_MIN_HZ}
+              maxHz={FREQUENCY_SWEEP_MAX_HZ}
+            />
+          </div>
+        </div>
+
+        <div class="sweep-duration">
+          <div class="sweep-field-header">
+            <label for="frequency-sweep-duration">Duration</label>
+            <output id="frequency-sweep-duration-output" for="frequency-sweep-duration">{FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS} s</output>
+          </div>
+          <input
+            id="frequency-sweep-duration"
+            type="range"
+            min={FREQUENCY_SWEEP_MIN_DURATION_SECONDS}
+            max={FREQUENCY_SWEEP_MAX_DURATION_SECONDS}
+            step="1"
+            value={FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS}
+          />
+          <div class="sweep-duration__bounds" aria-hidden="true">
+            <span>{FREQUENCY_SWEEP_MIN_DURATION_SECONDS} s</span>
+            <span>{FREQUENCY_SWEEP_MAX_DURATION_SECONDS} s</span>
+          </div>
+        </div>
+
+        <div class="sweep-options">
+          <fieldset>
+            <legend>Scale</legend>
+            <div class="sweep-selector">
+              <button type="button" data-sweep-scale="linear" aria-pressed="false">Linear</button>
+              <button type="button" data-sweep-scale="logarithmic" aria-pressed="true">Logarithmic</button>
+            </div>
+          </fieldset>
+          <fieldset>
+            <legend>Direction</legend>
+            <div class="sweep-selector">
+              <button type="button" data-sweep-direction="ascending" aria-pressed="true">
+                <i class="ph ph-arrow-up-right" aria-hidden="true"></i>
+                Ascending
+              </button>
+              <button type="button" data-sweep-direction="descending" aria-pressed="false">
+                <i class="ph ph-arrow-down-left" aria-hidden="true"></i>
+                Descending
+              </button>
+            </div>
+          </fieldset>
+        </div>
+
+        <div class="sweep-footer">
+          <LevelControl
+            id="frequency-sweep-level"
+            valueDb={-24}
+            minDb={-60}
+            maxDb={-12}
+          />
+          <div class="sweep-actions">
+            <button type="button" class="sweep-play" data-sweep-play>
+              <i class="ph ph-play" aria-hidden="true"></i>
+              Play sweep
+            </button>
+            <button type="button" class="sweep-stop" data-sweep-stop disabled>
+              <i class="ph ph-stop" aria-hidden="true"></i>
+              Stop
+            </button>
+          </div>
+        </div>
+
+        <CapabilityNotice id="frequency-sweep-cap" />
+        <p class="sweep-error" data-sweep-error role="alert" hidden></p>
+      </section>
+    </div>
+  </InstrumentSurface>
+</div>
+
+<script>
+  import { FrequencySweepController } from "./FrequencySweepController";
+
+  const root = document.querySelector<HTMLElement>("[data-frequency-sweep]");
+  let controller: FrequencySweepController | null = null;
+
+  const mount = () => {
+    if (!root || controller) return;
+    controller = new FrequencySweepController(root);
+  };
+
+  const teardown = () => {
+    const current = controller;
+    controller = null;
+    if (current) void current.dispose();
+  };
+
+  window.addEventListener("pagehide", teardown);
+  window.addEventListener("pageshow", (event) => {
+    if (event.persisted) mount();
+  });
+
+  mount();
+</script>
+
+<style>
+  .sweep-instrument {
+    display: grid;
+    grid-template-columns: minmax(0, 0.88fr) minmax(470px, 1.12fr);
+    min-height: 510px;
+  }
+
+  .sweep-visual,
+  .sweep-controls {
+    min-width: 0;
+    padding: clamp(20px, 2.5vw, 30px);
+  }
+
+  .sweep-visual {
+    display: grid;
+    grid-template-rows: auto 1fr auto;
+    gap: 16px;
+    border-right: 1px solid var(--color-border);
+    background:
+      radial-gradient(circle at 72% 24%, rgb(170 154 240 / 0.22), transparent 31%),
+      linear-gradient(150deg, rgb(255 253 252 / 0.96), rgb(246 242 255 / 0.92));
+  }
+
+  .sweep-visual__header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .sweep-readout {
+    display: grid;
+    justify-items: end;
+    gap: 3px;
+    text-align: right;
+  }
+
+  .sweep-readout strong {
+    font-size: clamp(1.15rem, 1.8vw, 1.65rem);
+    line-height: 1.1;
+  }
+
+  .sweep-readout > span,
+  .sweep-visual__note {
+    color: var(--color-ink-muted);
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .sweep-stage {
+    position: relative;
+    min-height: 250px;
+    align-self: center;
+    padding: 28px 8px 30px;
+  }
+
+  .sweep-curve {
+    width: 100%;
+    height: 190px;
+    overflow: visible;
+  }
+
+  .sweep-curve__grid,
+  .sweep-curve__line {
+    fill: none;
+    vector-effect: non-scaling-stroke;
+  }
+
+  .sweep-curve__grid {
+    stroke: rgb(60 52 86 / 0.08);
+    stroke-width: 1;
+    stroke-dasharray: 2 3;
+  }
+
+  .sweep-curve__line {
+    stroke: rgb(96 77 171 / 0.72);
+    stroke-width: 2.2;
+    stroke-linecap: round;
+    filter: drop-shadow(0 5px 8px rgb(96 77 171 / 0.15));
+  }
+
+  [data-sweep-scale="linear"] .sweep-curve__line--log,
+  [data-sweep-scale="logarithmic"] .sweep-curve__line--linear {
+    display: none;
+  }
+
+  .sweep-progress-track {
+    position: absolute;
+    right: 8px;
+    bottom: 28px;
+    left: 8px;
+    height: 4px;
+    border-radius: 999px;
+    background: rgb(96 77 171 / 0.1);
+  }
+
+  .sweep-cursor {
+    position: absolute;
+    top: 50%;
+    left: 0;
+    width: 14px;
+    height: 14px;
+    border: 3px solid rgb(255 255 255 / 0.95);
+    border-radius: 50%;
+    background: rgb(96 77 171);
+    box-shadow: 0 4px 16px rgb(96 77 171 / 0.28);
+    transform: translateY(-50%);
+  }
+
+  [data-sweep-visual="playing"] .sweep-cursor {
+    animation: sweep-progress var(--sweep-duration) linear forwards;
+  }
+
+  [data-sweep-visual="playing"][data-sweep-direction="descending"] .sweep-cursor {
+    animation-direction: reverse;
+  }
+
+  .sweep-scale {
+    position: absolute;
+    right: 8px;
+    bottom: 0;
+    left: 8px;
+    display: flex;
+    justify-content: space-between;
+    color: var(--color-ink-muted);
+    font-size: 0.68rem;
+  }
+
+  .sweep-visual__note {
+    margin: 0;
+  }
+
+  .sweep-controls {
+    display: grid;
+    align-content: start;
+    gap: 18px;
+  }
+
+  .sweep-safety {
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    padding: 11px 13px;
+    border: 1px solid rgb(96 77 171 / 0.15);
+    border-radius: 14px;
+    background: rgb(246 242 255 / 0.7);
+  }
+
+  .sweep-safety i {
+    margin-top: 2px;
+    font-size: 1.05rem;
+  }
+
+  .sweep-safety p {
+    margin: 0;
+    font-size: 0.78rem;
+    line-height: 1.45;
+  }
+
+  .sweep-range-grid {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 16px;
+  }
+
+  .sweep-range-grid > div {
+    min-width: 0;
+  }
+
+  .sweep-range-grid :global(.frequency-control) {
+    grid-template-columns: minmax(96px, 128px) minmax(100px, 1fr);
+    gap: 8px 12px;
+  }
+
+  .sweep-duration {
+    display: grid;
+    gap: 4px;
+  }
+
+  .sweep-field-header {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .sweep-field-header label,
+  .sweep-options legend {
+    font-weight: 750;
+  }
+
+  .sweep-field-header output {
+    color: var(--color-ink-muted);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .sweep-duration input {
+    width: 100%;
+    min-height: 40px;
+    accent-color: var(--color-focus);
+  }
+
+  .sweep-duration__bounds {
+    display: flex;
+    justify-content: space-between;
+    color: var(--color-ink-muted);
+    font-size: 0.7rem;
+  }
+
+  .sweep-options {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 14px;
+  }
+
+  .sweep-options fieldset {
+    min-width: 0;
+    margin: 0;
+    padding: 0;
+    border: 0;
+  }
+
+  .sweep-options legend {
+    margin-bottom: 7px;
+    font-size: 0.88rem;
+  }
+
+  .sweep-selector {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 6px;
+    padding: 4px;
+    border: 1px solid var(--color-border);
+    border-radius: 13px;
+    background: rgb(255 255 255 / 0.62);
+  }
+
+  .sweep-selector button {
+    display: inline-flex;
+    min-height: 40px;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 0 8px;
+    border: 0;
+    border-radius: 9px;
+    background: transparent;
+    color: var(--color-ink-muted);
+    font: inherit;
+    font-size: 0.8rem;
+    font-weight: 700;
+    cursor: pointer;
+  }
+
+  .sweep-selector button[aria-pressed="true"] {
+    background: var(--color-surface);
+    color: var(--color-ink);
+    box-shadow: 0 3px 12px rgb(48 42 69 / 0.08);
+  }
+
+  .sweep-selector button:disabled {
+    cursor: not-allowed;
+    opacity: 0.55;
+  }
+
+  .sweep-footer {
+    display: grid;
+    grid-template-columns: minmax(230px, 1fr) auto;
+    align-items: end;
+    gap: 18px;
+  }
+
+  .sweep-actions {
+    display: flex;
+    gap: 8px;
+  }
+
+  .sweep-play,
+  .sweep-stop {
+    display: inline-flex;
+    min-height: 48px;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 0 16px;
+    border-radius: var(--radius-button);
+    font: inherit;
+    font-weight: 750;
+    cursor: pointer;
+  }
+
+  .sweep-play {
+    border: 1px solid var(--color-ink);
+    background: var(--color-ink);
+    color: var(--color-surface);
+  }
+
+  .sweep-stop {
+    border: 1px solid var(--color-border-strong);
+    background: var(--color-surface);
+    color: var(--color-ink);
+  }
+
+  .sweep-play:disabled,
+  .sweep-stop:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  .sweep-error {
+    margin: 0;
+    color: var(--color-danger, #9a3434);
+    font-size: 0.78rem;
+    line-height: 1.4;
+  }
+
+  @keyframes sweep-progress {
+    from {
+      left: 0;
+    }
+    to {
+      left: calc(100% - 14px);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .sweep-instrument {
+      grid-template-columns: 1fr;
+    }
+
+    .sweep-visual {
+      min-height: 260px;
+      border-right: 0;
+      border-bottom: 1px solid var(--color-border);
+    }
+
+    .sweep-stage {
+      min-height: 150px;
+    }
+
+    .sweep-curve {
+      height: 110px;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .sweep-visual,
+    .sweep-controls {
+      padding: 10px 14px;
+    }
+
+    .sweep-visual {
+      min-height: 112px;
+      grid-template-rows: auto 1fr;
+      gap: 6px;
+    }
+
+    .sweep-stage {
+      min-height: 58px;
+      padding: 4px 4px 16px;
+    }
+
+    .sweep-curve {
+      height: 44px;
+    }
+
+    .sweep-progress-track,
+    .sweep-scale {
+      right: 4px;
+      left: 4px;
+    }
+
+    .sweep-progress-track {
+      bottom: 14px;
+    }
+
+    .sweep-scale {
+      font-size: 0.6rem;
+    }
+
+    .sweep-visual__note {
+      display: none;
+    }
+
+    .sweep-controls {
+      gap: 8px;
+      padding-bottom: 14px;
+    }
+
+    .sweep-safety {
+      padding: 8px 9px;
+    }
+
+    .sweep-safety p {
+      font-size: 0.7rem;
+      line-height: 1.35;
+    }
+
+    .sweep-range-grid {
+      gap: 8px;
+    }
+
+    .sweep-range-grid :global(.frequency-control) {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .sweep-range-grid :global(.frequency-control__header) {
+      grid-column: 1;
+    }
+
+    .sweep-range-grid :global(.frequency-control input[type="number"]) {
+      min-height: 40px;
+    }
+
+    .sweep-range-grid :global(.frequency-control input[type="range"]) {
+      min-height: 34px;
+    }
+
+    .sweep-options {
+      gap: 8px;
+    }
+
+    .sweep-options legend {
+      margin-bottom: 4px;
+      font-size: 0.78rem;
+    }
+
+    .sweep-selector {
+      grid-template-columns: 1fr;
+      gap: 2px;
+      padding: 3px;
+    }
+
+    .sweep-selector button {
+      min-height: 34px;
+      font-size: 0.72rem;
+    }
+
+    .sweep-footer {
+      grid-template-columns: 1fr;
+      gap: 6px;
+    }
+
+    .sweep-footer :global(.level-control) {
+      gap: 5px;
+    }
+
+    .sweep-footer :global(.level-control__hint) {
+      display: none;
+    }
+
+    .sweep-actions {
+      display: grid;
+      grid-template-columns: 1fr 0.72fr;
+    }
+
+    .sweep-play,
+    .sweep-stop {
+      min-height: 44px;
+      padding: 0 12px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    [data-sweep-visual="playing"] .sweep-cursor {
+      animation: none;
+      opacity: 0.78;
+    }
+  }
+</style>
