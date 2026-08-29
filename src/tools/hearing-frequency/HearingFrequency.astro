@@ -70,11 +70,43 @@ const modeOptions = [
         <div class="hearing-safety">
           <i class="ph ph-shield-check" aria-hidden="true"></i>
           <p>
-            Start with your device/headphone volume low. Increase it only to a low
-            comfortable listening level during the 1 kHz setup reference. Then keep
-            system/device volume unchanged. Do not turn it up to hear higher tones.
+            Start with your device/headphone volume low. While the 1 kHz setup tone
+            is audible, set system/device volume only to a low comfortable level.
+            Then keep it unchanged. Do not turn it up to hear higher tones.
           </p>
         </div>
+
+        <section class="hearing-setup" aria-labelledby="hearing-setup-title">
+          <div class="hearing-section-heading">
+            <div>
+              <p class="hearing-eyebrow">Required before high frequencies</p>
+              <h3 id="hearing-setup-title">Listening setup</h3>
+            </div>
+            <span>{HEARING_GUIDED_LEVEL_DB} dB</span>
+          </div>
+          <div>
+            <strong>Set a low comfortable system/device volume</strong>
+            <p>
+              Play the {HEARING_REFERENCE_FREQUENCY_HZ / 1_000} kHz reference. Adjust
+              system/device volume while the 1-second tone is audible. Replay it if
+              you need another adjustment pass.
+            </p>
+          </div>
+          <button type="button" class="hearing-secondary" data-hearing-reference>
+            <i class="ph ph-speaker-high" aria-hidden="true"></i>
+            Play 1 kHz setup tone
+          </button>
+          <p data-hearing-setup-status>
+            Complete this setup before any Guided or Manual high-frequency tone.
+          </p>
+          <label class="hearing-confirm">
+            <input type="checkbox" data-hearing-setup-confirm disabled />
+            <span>
+              System/device volume is low and comfortable, and I will keep it
+              unchanged for high-frequency playback.
+            </span>
+          </label>
+        </section>
 
         <div class="hearing-control-header">
           <ModePills
@@ -98,33 +130,13 @@ const modeOptions = [
             <span>{HEARING_GUIDED_LEVEL_DB} dB</span>
           </div>
 
-          <div class="hearing-setup">
-            <div>
-              <strong>1. Set a low comfortable system volume</strong>
-              <p>
-                Play the {HEARING_REFERENCE_FREQUENCY_HZ / 1_000} kHz reference at
-                the fixed low app Level. Adjust only your device/system volume, then
-                leave it unchanged for Guided mode.
-              </p>
-            </div>
-            <button type="button" class="hearing-secondary" data-hearing-reference>
-              <i class="ph ph-speaker-high" aria-hidden="true"></i>
-              Play 1 kHz setup tone
-            </button>
-            <p data-hearing-setup-status>
-              Play the setup reference before starting Guided mode.
-            </p>
-            <label class="hearing-confirm">
-              <input type="checkbox" data-hearing-setup-confirm disabled />
-              <span>
-                System/device volume is low and comfortable, and I will keep it
-                unchanged during Guided mode.
-              </span>
-            </label>
-            <button type="button" class="hearing-primary" data-hearing-guided-start disabled>
-              Start Guided mode
-            </button>
-          </div>
+          <p class="hearing-mode-note">
+            Guided mode uses the nominal 2–20 kHz sequence at one fixed app Level.
+            Steps above this session's generated-frequency capability are removed.
+          </p>
+          <button type="button" class="hearing-primary" data-hearing-guided-start disabled>
+            Start Guided mode
+          </button>
 
           <div class="hearing-answer" data-hearing-answer-panel hidden>
             <strong>Did you hear the tone?</strong>
@@ -169,11 +181,12 @@ const modeOptions = [
             maxDb={HEARING_LEVEL_MAX_DB}
           />
 
-          <button type="button" class="hearing-primary" data-hearing-manual-play>
+          <button type="button" class="hearing-primary" data-hearing-manual-play disabled>
             Play 800 ms tone
           </button>
           <p class="hearing-manual-status" data-hearing-manual-status>
-            Manual tones do not update the Guided session result.
+            Complete Listening setup above first. Manual tones never update the
+            fixed-level Guided session result.
           </p>
         </section>
 
@@ -313,7 +326,7 @@ const modeOptions = [
   .hearing-controls {
     display: grid;
     align-content: start;
-    gap: 16px;
+    gap: 14px;
   }
 
   .hearing-safety {
@@ -333,6 +346,7 @@ const modeOptions = [
   .hearing-safety p,
   .hearing-setup p,
   .hearing-answer p,
+  .hearing-mode-note,
   .hearing-manual-status {
     margin: 0;
     color: var(--color-ink-muted);
@@ -378,11 +392,12 @@ const modeOptions = [
     opacity: 0.5;
   }
 
+  .hearing-setup,
   [data-hearing-guided-panel],
   [data-hearing-manual-panel] {
     display: grid;
-    gap: 13px;
-    padding: 15px;
+    gap: 11px;
+    padding: 14px;
     border: 1px solid var(--color-border);
     border-radius: 18px;
     background: rgb(255 255 255 / 0.58);
@@ -418,12 +433,7 @@ const modeOptions = [
     text-transform: uppercase;
   }
 
-  .hearing-setup {
-    display: grid;
-    gap: 10px;
-  }
-
-  .hearing-setup > div {
+  .hearing-setup > div:not(.hearing-section-heading) {
     display: grid;
     gap: 4px;
   }
@@ -507,35 +517,36 @@ const modeOptions = [
     }
 
     .hearing-stage {
-      gap: 12px;
+      gap: 10px;
     }
 
     .hearing-frequency-display {
-      min-height: 126px;
-      padding: 14px;
+      min-height: 116px;
+      padding: 12px;
       border-radius: 22px;
     }
 
     .hearing-frequency-display strong {
-      font-size: clamp(2.7rem, 13vw, 3.7rem);
+      font-size: clamp(2.6rem, 12vw, 3.5rem);
     }
 
     .hearing-result-card {
-      padding: 11px 12px;
+      padding: 10px 11px;
     }
 
     .hearing-result-card strong {
-      font-size: 1.2rem;
+      font-size: 1.15rem;
     }
 
     .hearing-controls {
-      gap: 12px;
+      gap: 10px;
     }
 
     .hearing-safety,
+    .hearing-setup,
     [data-hearing-guided-panel],
     [data-hearing-manual-panel] {
-      padding: 10px 11px;
+      padding: 9px 10px;
     }
 
     .hearing-control-header {
