@@ -3,6 +3,8 @@ import { describe, expect, it } from "vitest";
 import {
   AudioAnalyzer,
   METER_DBFS_FLOOR,
+  METER_UPDATE_HZ,
+  METER_UPDATE_INTERVAL_MS,
   SPECTRUM_DEFAULT_FFT_SIZE,
   SPECTRUM_DEFAULT_SMOOTHING,
   calculateMeterReading,
@@ -99,7 +101,9 @@ class FakeAudioContext {
 }
 
 describe("AudioAnalyzer pure meter helpers", () => {
-  it("derives the exact documented 100 ms meter window and bounded FFT size", () => {
+  it("derives the exact documented 100 ms / 10 Hz meter contract and bounded FFT size", () => {
+    expect(METER_UPDATE_HZ).toBe(10);
+    expect(METER_UPDATE_INTERVAL_MS).toBe(100);
     expect(nextPowerOfTwo(4_800)).toBe(8_192);
     expect(getMeterConfiguration(48_000)).toEqual({
       analysisSampleRate: 48_000,
