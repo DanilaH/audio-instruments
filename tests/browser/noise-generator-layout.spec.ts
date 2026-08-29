@@ -24,11 +24,11 @@ test("Noise Generator keeps safety and its primary controls in the natural first
 
     await expect(page.locator("[data-noise-generator]")).toBeVisible();
     await expect(page.locator(".noise-safety")).toBeVisible();
-    await expect(page.locator('[data-noise-kind="white"]')).toBeVisible();
-    await expect(page.locator('[data-noise-kind="pink"]')).toBeVisible();
-    await expect(page.locator('[data-noise-kind="brown"]')).toBeVisible();
-    await expect(page.locator('[data-noise-timer="0"]')).toBeVisible();
-    await expect(page.locator('[data-noise-timer="10"]')).toBeVisible();
+    await expect(page.locator('button[data-noise-kind="white"]')).toBeVisible();
+    await expect(page.locator('button[data-noise-kind="pink"]')).toBeVisible();
+    await expect(page.locator('button[data-noise-kind="brown"]')).toBeVisible();
+    await expect(page.locator('button[data-noise-timer="0"]')).toBeVisible();
+    await expect(page.locator('button[data-noise-timer="10"]')).toBeVisible();
     await expect(page.locator("[data-noise-play]")).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
