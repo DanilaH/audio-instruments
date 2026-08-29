@@ -4,6 +4,7 @@ import {
   BASS_SWEEP_DEFAULT_DURATION_SECONDS,
   CHANNEL_SEQUENCE_GAP_SECONDS,
   CHANNEL_SEQUENCE_STEP_SECONDS,
+  CHANNEL_SEQUENCE_TOTAL_SECONDS,
   CHANNEL_TEST_DURATION_SECONDS,
   CHANNEL_TEST_FREQUENCY_HZ,
   createBassSweepDefinition,
@@ -15,6 +16,7 @@ describe("shared output reference signals", () => {
     expect(CHANNEL_TEST_DURATION_SECONDS).toBe(0.7);
     expect(CHANNEL_SEQUENCE_GAP_SECONDS).toBe(0.3);
     expect(CHANNEL_SEQUENCE_STEP_SECONDS).toBe(1);
+    expect(CHANNEL_SEQUENCE_TOTAL_SECONDS).toBe(2.7);
   });
 
   it("builds the Speaker bass/rattle sweep through the reusable Bass primitive", () => {
