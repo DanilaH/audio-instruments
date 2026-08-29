@@ -217,13 +217,15 @@ export class MicrophoneTestController {
     if (this.#disposed) throw new Error("Microphone Test was disposed during Start");
 
     const recorder = new AudioRecorder();
-    const microphone = new MicrophoneService(context);
-    const analyzer = new AudioAnalyzer(context);
-    microphone.connectAnalysisTarget(analyzer.inputNode);
-
     session.register(recorder);
+
+    const microphone = new MicrophoneService(context);
     session.register(microphone);
+
+    const analyzer = new AudioAnalyzer(context);
     session.register(analyzer);
+
+    microphone.connectAnalysisTarget(analyzer.inputNode);
 
     this.#recorder = recorder;
     this.#microphone = microphone;
