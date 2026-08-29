@@ -6,13 +6,12 @@ import ToolStatus from "../../components/feedback/ToolStatus.astro";
 import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 import {
   BASS_PRESET_FREQUENCIES_HZ,
+  BASS_SINGLE_TONE_DEFAULT_HZ,
   BASS_SWEEP_DEFAULT_HIGH_HZ,
   BASS_SWEEP_DEFAULT_LOW_HZ,
   BASS_SWEEP_MAX_HZ,
   BASS_SWEEP_MIN_HZ,
 } from "../../browser/audio-output/referenceSignals";
-
-const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
 ---
 
 <div data-bass-test data-bass-mode="tone" data-bass-visual="idle">
@@ -26,7 +25,7 @@ const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
           <ToolStatus id="bass-status" label="Ready" state="idle" />
           <div class="bass-readout">
             <strong
-              ><span data-bass-frequency-readout>{defaultFrequencyHz}</span>
+              ><span data-bass-frequency-readout>{BASS_SINGLE_TONE_DEFAULT_HZ}</span>
               Hz</strong
             >
             <span data-bass-visual-label>Single tone</span>
@@ -50,8 +49,9 @@ const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
           <span>200 Hz</span>
         </div>
         <p class="bass-visual__note">
-          Generated digital frequency only. Listen for rattles or resonances;
-          this does not measure subwoofer response.
+          Stylized playback visual. The numeric readout is the requested/generated
+          digital frequency; the animation is not measured speaker motion or
+          frequency response.
         </p>
       </section>
 
@@ -72,21 +72,15 @@ const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
         </div>
 
         <div class="bass-mode-selector" aria-label="Bass Test mode">
-          <button type="button" data-bass-mode="tone" aria-pressed="true"
-            >Single tone</button
-          >
-          <button type="button" data-bass-mode="sweep" aria-pressed="false"
-            >Slow sweep</button
-          >
-          <button type="button" data-bass-mode="sequence" aria-pressed="false"
-            >Preset sequence</button
-          >
+          <button type="button" data-bass-mode="tone" aria-pressed="true">Single tone</button>
+          <button type="button" data-bass-mode="sweep" aria-pressed="false">Slow sweep</button>
+          <button type="button" data-bass-mode="sequence" aria-pressed="false">Preset sequence</button>
         </div>
 
         <div class="bass-panel" data-bass-panel="tone">
           <FrequencyControl
             id="bass-frequency"
-            valueHz={defaultFrequencyHz}
+            valueHz={BASS_SINGLE_TONE_DEFAULT_HZ}
             minHz={BASS_SWEEP_MIN_HZ}
             maxHz={BASS_SWEEP_MAX_HZ}
           />
@@ -108,9 +102,7 @@ const defaultFrequencyHz = BASS_PRESET_FREQUENCIES_HZ[4];
         <div class="bass-panel" data-bass-panel="sweep" hidden>
           <div class="bass-panel__summary">
             <div>
-              <strong data-bass-sweep-range
-                >{BASS_SWEEP_DEFAULT_LOW_HZ} → {BASS_SWEEP_DEFAULT_HIGH_HZ} Hz</strong
-              >
+              <strong data-bass-sweep-range>{BASS_SWEEP_DEFAULT_LOW_HZ} → {BASS_SWEEP_DEFAULT_HIGH_HZ} Hz</strong>
               <span>12 seconds · logarithmic</span>
             </div>
             <p>
