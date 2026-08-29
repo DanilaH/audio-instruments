@@ -137,6 +137,22 @@ for (const viewport of targetViewports) {
     expect(
       (lastFeaturedBox?.x ?? viewport.width) + (lastFeaturedBox?.width ?? 0),
     ).toBeLessThanOrEqual(viewport.width);
+
+    if (viewport.width <= 520) {
+      const rightEarcupBox = await page
+        .locator(".featured-headphone__ear--right")
+        .boundingBox();
+      const headphoneLabelBox = await page
+        .locator(".featured-headphone small")
+        .boundingBox();
+
+      expect(rightEarcupBox).not.toBeNull();
+      expect(headphoneLabelBox).not.toBeNull();
+      expect(
+        (rightEarcupBox?.y ?? Number.POSITIVE_INFINITY) +
+          (rightEarcupBox?.height ?? 0),
+      ).toBeLessThanOrEqual(headphoneLabelBox?.y ?? 0);
+    }
   });
 }
 
