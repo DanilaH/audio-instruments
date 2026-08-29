@@ -68,4 +68,29 @@ describe("tool registry", () => {
       }
     }
   });
+
+  it("keeps related-tool ids valid, unique and non-self-referential", () => {
+    const registryIds = new Set(toolRegistry.map((tool) => tool.id));
+
+    for (const tool of toolRegistry) {
+      expect(new Set(tool.relatedToolIds).size).toBe(tool.relatedToolIds.length);
+
+      for (const relatedId of tool.relatedToolIds) {
+        expect(registryIds.has(relatedId)).toBe(true);
+        expect(relatedId).not.toBe(tool.id);
+      }
+    }
+  });
+
+  it("connects Microphone Test to the rest of the canonical input-analysis cluster", () => {
+    const microphoneTest = toolRegistry.find(
+      (tool) => tool.id === "microphone-test",
+    );
+
+    expect(microphoneTest?.relatedToolIds).toEqual([
+      "spectrum-analyzer",
+      "pitch-detector",
+      "decibel-meter",
+    ]);
+  });
 });
