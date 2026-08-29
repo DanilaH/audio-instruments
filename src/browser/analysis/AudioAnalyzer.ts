@@ -2,6 +2,8 @@ import type { SessionResource } from "../audio-session/AudioSession";
 import { clamp } from "../../utils/audio";
 
 export const METER_WINDOW_SECONDS = 0.1;
+export const METER_UPDATE_HZ = 10;
+export const METER_UPDATE_INTERVAL_MS = 1_000 / METER_UPDATE_HZ;
 export const METER_MIN_FFT_SIZE = 2_048;
 export const METER_MAX_FFT_SIZE = 32_768;
 export const METER_DBFS_FLOOR = -100;
