@@ -172,7 +172,11 @@ export class SpectrumAnalyzerController {
         "click",
         () => {
           const view = button.dataset.spectrumView;
-          if (view === "spectrum" || view === "waveform" || view === "spectrogram") {
+          if (
+            view === "spectrum" ||
+            view === "waveform" ||
+            view === "spectrogram"
+          ) {
             this.#setView(view);
           }
         },
@@ -349,7 +353,9 @@ export class SpectrumAnalyzerController {
       console.error("Spectrum Analyzer FFT change failed", error);
       this.#fftSize = previous;
       this.#fftSelect.value = String(previous);
-      this.#showError("That FFT size could not be applied in the current browser session.");
+      this.#showError(
+        "That FFT size could not be applied in the current browser session.",
+      );
     }
   }
 
@@ -439,14 +445,20 @@ export class SpectrumAnalyzerController {
   }
 
   #ensureFrequencyBuffer(analyzer: AudioAnalyzer): Float32Array {
-    if (!this.#frequencyBuffer || this.#frequencyBuffer.length !== analyzer.frequencyBinCount) {
+    if (
+      !this.#frequencyBuffer ||
+      this.#frequencyBuffer.length !== analyzer.frequencyBinCount
+    ) {
       this.#frequencyBuffer = new Float32Array(analyzer.frequencyBinCount);
     }
     return this.#frequencyBuffer;
   }
 
   #ensureWaveformBuffer(analyzer: AudioAnalyzer): Float32Array {
-    if (!this.#waveformBuffer || this.#waveformBuffer.length !== analyzer.spectrumFftSize) {
+    if (
+      !this.#waveformBuffer ||
+      this.#waveformBuffer.length !== analyzer.spectrumFftSize
+    ) {
       this.#waveformBuffer = new Float32Array(analyzer.spectrumFftSize);
     }
     return this.#waveformBuffer;
@@ -471,10 +483,23 @@ export class SpectrumAnalyzerController {
 
   #renderDevices(
     devices: readonly MicrophoneInputDevice[],
-    selectedDeviceId: string | undefined = this.#microphone?.activeSettings()?.deviceId,
+    selectedDeviceId: string | undefined =
+      this.#microphone?.activeSettings()?.deviceId,
   ): void {
     this.#devices = devices;
     this.#inputSelect.replaceChildren();
+
+    const selectedDeviceIsListed =
+      selectedDeviceId !== undefined &&
+      devices.some((device) => device.deviceId === selectedDeviceId);
+
+    if (selectedDeviceId && !selectedDeviceIsListed && this.isActive) {
+      const activeOption = document.createElement("option");
+      activeOption.value = selectedDeviceId;
+      activeOption.textContent = "Active input (not currently listed)";
+      activeOption.selected = true;
+      this.#inputSelect.append(activeOption);
+    }
 
     devices.forEach((device, index) => {
       const option = document.createElement("option");
@@ -483,11 +508,15 @@ export class SpectrumAnalyzerController {
       this.#inputSelect.append(option);
     });
 
-    if (selectedDeviceId && devices.some((device) => device.deviceId === selectedDeviceId)) {
+    if (selectedDeviceId && selectedDeviceIsListed) {
       this.#inputSelect.value = selectedDeviceId;
     }
 
-    this.#inputField.hidden = !this.isActive || devices.length <= 1;
+    const hasAlternativeInput = devices.some(
+      (device) => device.deviceId !== selectedDeviceId,
+    );
+    this.#inputField.hidden = !this.isActive || !hasAlternativeInput;
+
     if (this.isActive) {
       this.#activeInputLabel.textContent = deviceLabel(devices, selectedDeviceId);
     }
