@@ -1,0 +1,100 @@
+---
+import BaseLayout from "../layouts/BaseLayout.astro";
+import ToolShell from "../components/layout/ToolShell.astro";
+import RelatedTools from "../components/navigation/RelatedTools.astro";
+import BassTest from "../tools/bass-test/BassTest.astro";
+import { getPublicTools, toolRegistry } from "../registry/tools";
+
+const bassTool = toolRegistry.find((tool) => tool.id === "bass-test");
+if (!bassTool) throw new Error("Bass Test registry entry is missing");
+const publicTools = getPublicTools();
+const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
+const relatedTools = bassTool.relatedToolIds.flatMap((id) => {
+  const tool = publicToolsById.get(id);
+  return tool ? [{ title: tool.title, route: tool.route }] : [];
+});
+---
+
+<BaseLayout
+  title="Bass Test — Browser Audio Lab"
+  description="Explore 20–200 Hz low-frequency tones, a controlled 20–120 Hz sweep and stepped bass presets in your browser."
+  hasLiveTools={publicTools.length > 0}
+>
+  <ToolShell
+    eyebrow="Signal & frequency"
+    title="Bass Test"
+    description="Explore low-frequency playback with a selected tone, a slow logarithmic sweep and a stepped preset sequence while listening for rattles or resonances."
+    accent="mint"
+  >
+    <BassTest />
+
+    <section class="bass-content" aria-labelledby="bass-about-title">
+      <div>
+        <p class="eyebrow">What this checks</p>
+        <h2 id="bass-about-title">Low-frequency playback you can compare by ear</h2>
+      </div>
+      <div class="bass-content__copy">
+        <p>
+          Bass Test generates controlled digital sine tones from a nominal 20–200 Hz range. Use Single tone for one selected frequency, Slow sweep for the 20→120 Hz reference sweep, or Preset sequence to step through the documented low-frequency markers.
+        </p>
+        <p>
+          What you hear depends on the output device, room, placement and listening level. A rattle, resonance or inaudible tone is an observation for troubleshooting; this page does not measure acoustic frequency response or automatically diagnose a subwoofer.
+        </p>
+      </div>
+    </section>
+
+    <section class="bass-help" aria-labelledby="bass-help-title">
+      <h2 id="bass-help-title">If a low tone is weak or inaudible</h2>
+      <div class="bass-help__grid">
+        <p>
+          Do not compensate by turning system volume up. Try a higher preset at the same comfortable level and compare behavior across the range.
+        </p>
+        <p>
+          Very low output can be limited by the speaker or headphone, operating-system processing, room cancellation or the browser audio sample rate. Core v1 intentionally does not generate sub-20 Hz stress-test tones.
+        </p>
+      </div>
+    </section>
+
+    <RelatedTools relatedTools={relatedTools} />
+  </ToolShell>
+</BaseLayout>
+
+<style>
+  .bass-content,
+  .bass-help {
+    display: grid;
+    grid-template-columns: minmax(0, 0.8fr) minmax(0, 1.2fr);
+    gap: clamp(28px, 5vw, 72px);
+    margin-top: 64px;
+    padding-top: 44px;
+    border-top: 1px solid var(--color-border);
+  }
+
+  .bass-content h2,
+  .bass-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
+
+  .bass-content__copy,
+  .bass-help__grid {
+    display: grid;
+    gap: 14px;
+  }
+
+  .bass-content p,
+  .bass-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
+
+  @media (max-width: 760px) {
+    .bass-content,
+    .bass-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
+  }
+</style>
