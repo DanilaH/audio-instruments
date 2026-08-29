@@ -8,6 +8,7 @@ import {
   BASS_PRESET_SEQUENCE_STEP_SECONDS,
   BASS_PRESET_SEQUENCE_TOTAL_SECONDS,
   BASS_PRESET_TONE_DURATION_SECONDS,
+  BASS_SINGLE_TONE_DEFAULT_HZ,
   BASS_SWEEP_DEFAULT_HIGH_HZ,
   BASS_SWEEP_DEFAULT_LOW_HZ,
   BASS_SWEEP_MAX_HZ,
@@ -20,7 +21,6 @@ import { clamp, getEffectiveMaxFrequency } from "../../utils/audio";
 const GENERAL_LEVEL_MIN_DB = -60;
 const GENERAL_LEVEL_MAX_DB = -12;
 const GENERAL_LEVEL_DEFAULT_DB = -24;
-const DEFAULT_TONE_FREQUENCY_HZ = BASS_PRESET_FREQUENCIES_HZ[4];
 const MILLISECONDS_PER_SECOND = 1_000;
 
 type BassMode = "tone" | "sweep" | "sequence";
@@ -84,7 +84,7 @@ export class BassTestController {
   #engine: AudioOutputEngine | null = null;
   #playbacks: OscillatorPlayback[] = [];
   #mode: BassMode = "tone";
-  #toneFrequencyHz = DEFAULT_TONE_FREQUENCY_HZ;
+  #toneFrequencyHz = BASS_SINGLE_TONE_DEFAULT_HZ;
   #levelDb = GENERAL_LEVEL_DEFAULT_DB;
   #effectiveMaxHz = BASS_SWEEP_MAX_HZ;
   #starting = false;
@@ -630,11 +630,11 @@ export class BassTestController {
 
   #resetIdleUi(): void {
     this.#effectiveMaxHz = BASS_SWEEP_MAX_HZ;
-    this.#toneFrequencyHz = DEFAULT_TONE_FREQUENCY_HZ;
+    this.#toneFrequencyHz = BASS_SINGLE_TONE_DEFAULT_HZ;
     this.#frequencyRoot.dataset.maxHz = String(BASS_SWEEP_MAX_HZ);
     this.#frequencyInput.min = String(BASS_SWEEP_MIN_HZ);
     this.#frequencyInput.max = String(BASS_SWEEP_MAX_HZ);
-    this.#frequencyInput.value = String(DEFAULT_TONE_FREQUENCY_HZ);
+    this.#frequencyInput.value = String(BASS_SINGLE_TONE_DEFAULT_HZ);
     this.#frequencyInput.dispatchEvent(new Event("input", { bubbles: true }));
     this.#sweepRangeLabel.textContent = `${BASS_SWEEP_DEFAULT_LOW_HZ} → ${BASS_SWEEP_DEFAULT_HIGH_HZ} Hz`;
     this.#capabilityMessage.textContent = "";
