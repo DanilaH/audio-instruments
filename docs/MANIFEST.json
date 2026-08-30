@@ -1,6 +1,6 @@
 {
-  "version": "1.13",
-  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence is collected, reviewed and applied to SEO roles/metadata; P8 is the next phase and owns final device/browser QA plus production/indexing decisions",
+  "version": "1.14",
+  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence is collected, reviewed and applied; P8 is in progress with the fail-closed indexing-gate foundation implemented while sitemap, positive indexed-build validation, real-device/browser QA, analytics and production activation remain pending",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
     "docs/01_RESEARCH_AND_EVIDENCE.md",
@@ -92,12 +92,22 @@
     "core_v1_live_tool_routes": 16,
     "p6_3_main_commit": "0be4128242ddeab669cbc8374e9fc9b9b5bd23ac",
     "p7": "completed_live_evidence_reviewed_and_applied",
-    "p8": "next_final_audit_and_release",
+    "p8": "in_progress_p8_1_safe_indexing_gate_foundation",
     "p8_scope": [
       "final_audit_and_release",
       "real_device_browser_qa",
       "production_decisions"
-    ]
+    ],
+    "p8_1": {
+      "state": "safe_indexing_gate_foundation_implemented",
+      "production_indexing_artifacts_ready": false,
+      "remaining_before_positive_indexing": [
+        "lockfile-consistent @astrojs/sitemap installation and configuration",
+        "positive SITE_INDEXING + SITE_ORIGIN indexed-build/sitemap validation",
+        "real production domain",
+        "remaining release gates"
+      ]
+    }
   },
   "workflow": "development -> checkpoint commit -> Draft PR -> cold Review #1 by project assistant -> fixes/commits -> cold Review #2 by project assistant -> add full-ci-approved -> Ready -> full-validation -> merge-gate -> fix/cold re-review/rerun if needed -> squash merge -> next branch",
   "repository_files": [
@@ -124,8 +134,14 @@
     "localNvmrc": "24.16.0"
   },
   "indexing_gate": {
-    "default": "noindex",
-    "enable": "SITE_INDEXING=enabled + valid SITE_ORIGIN"
+    "default": "noindex,nofollow",
+    "preview_robots": "crawlable: User-agent * / Allow /; no Sitemap directive",
+    "production_env_requirements": "SITE_INDEXING=enabled + valid absolute HTTPS origin-only SITE_ORIGIN",
+    "production_artifacts_ready": false,
+    "readiness_guard": "PRODUCTION_INDEXING_ARTIFACTS_READY",
+    "current_effect": "SITE_INDEXING=enabled fails closed until the later sitemap + positive indexed-build P8 unit lands",
+    "canonical_default": "omitted",
+    "sitemap": "pending @astrojs/sitemap installation/configuration and positive build validation"
   },
   "ci_gate": {
     "authorization_label": "full-ci-approved",
@@ -147,12 +163,12 @@
     "signature": "runner_id=0; steps=[]",
     "interpretation": "infrastructure/no-runner; not green CI and not a repository test failure",
     "policy_effect": "does not redefine the required green merge-gate workflow",
-    "phase_effect": "none on completed local P7 evidence; P8 validation remains separate"
+    "phase_effect": "P8 implementation may progress under the established owner override, but no affected run is represented as green and final release validation remains required"
   },
   "dependencies": {
     "animation": "motion",
     "icons": "@phosphor-icons/web",
-    "release_sitemap": "@astrojs/sitemap (P8)"
+    "release_sitemap": "@astrojs/sitemap (P8; pending lockfile-consistent install)"
   },
   "tooling": {
     "astro_check": [
@@ -174,9 +190,9 @@
     "browser_test": "@playwright/test"
   },
   "documentation_policy": {
-    "state": "p7_live_evidence_synchronized",
+    "state": "p8_in_progress_safe_indexing_foundation",
     "original_cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
-    "next_step": "begin P8 final audit/release without speculative P7 scope expansion",
+    "next_step": "complete a lockfile-consistent sitemap + positive indexed-build P8 unit before lifting PRODUCTION_INDEXING_ARTIFACTS_READY; then continue remaining release QA without speculative scope expansion",
     "reopen_for": [
       "implementation-discovered contradiction",
       "real CI/browser failure requiring source-of-truth correction",
