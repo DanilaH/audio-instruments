@@ -104,9 +104,17 @@ Do not reopen resolved choices because another implementation seems personally p
 
 P8 is **in progress**. P8.1 implements the fail-closed indexing foundation: centralized `SITE_INDEXING` / `SITE_ORIGIN` validation, default `noindex,nofollow`, no default canonical, and crawlable `/robots.txt`.
 
+P8.2 completed the exact-baseline static release audit for measurement/claims wording, final static metadata, page-level H1 identity, live-only related links and current core-v1 privacy copy. The reviewed record is:
+
+```text
+docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md
+```
+
+Do not repeat P8.2 as speculative copy/metadata churn unless new material evidence or a blocking contradiction appears. P8.2 is **not** runtime accessibility, visual, browser/device, production-indexing, analytics/privacy-provider or CI certification.
+
 `PRODUCTION_INDEXING_ARTIFACTS_READY = false` is intentional. Do not flip it or make `SITE_INDEXING=enabled` produce indexable output until the official sitemap dependency/configuration and positive indexed-build validation land together in a later P8 unit. Do not invent a production domain.
 
-Remaining P8 work includes sitemap integration, final browser/device QA, accessibility/release review, analytics/privacy decisions, deployment and explicit production indexing activation.
+Remaining P8 work includes sitemap integration, Playwright release execution, runtime accessibility/visual QA, final browser/device QA, analytics/privacy decisions, deployment and explicit production indexing activation.
 
 ## 4. Locked stack
 
