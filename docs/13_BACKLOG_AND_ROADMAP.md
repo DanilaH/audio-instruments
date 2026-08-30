@@ -12,7 +12,7 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
 P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
-P8 next phase: real-device/browser QA + production decisions
+P8 in progress: P8.1 safe indexing-gate foundation implemented; release QA/activation remains pending
 ```
 
 P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
@@ -189,24 +189,53 @@ Do not reopen P7 for speculative keyword/content churn. Reopen only from new mat
 
 ## P8 — Final audit / launch
 
+Current state: **in progress**.
+
+### P8.1 — Safe indexing-gate foundation
+
+Implemented in the current P8 unit:
+
 ```text
+central SITE_INDEXING / SITE_ORIGIN policy
+strict HTTPS origin-only validation
+fail-closed production-indexing readiness guard
+default crawlable noindex,nofollow metadata
+no default production canonical
+environment-aware /robots.txt
+canonical origin-lock against route-text host escape
+unit validation of origin/canonical/robots policy
+browser regression across /, /privacy and all 16 live tool routes
+```
+
+The guard remains intentionally locked:
+
+```text
+PRODUCTION_INDEXING_ARTIFACTS_READY = false
+```
+
+Therefore `SITE_INDEXING=enabled` currently fails closed rather than emitting partially configured indexable pages.
+
+Remaining P8 work:
+
+```text
+install/configure @astrojs/sitemap with a lockfile-consistent dependency change
+configure sitemap origin from the validated production origin
+flip production-indexing readiness only with positive indexed-build/sitemap tests
+use the real production domain; do not invent one
 real-device QA
 real-browser QA matrix
 Playwright regression QA
 visual QA
 accessibility
 claims audit
-metadata
-install/configure @astrojs/sitemap (P8 only)
-environment-aware robots.txt
-explicit SITE_INDEXING/SITE_ORIGIN production gate
-positive indexed-build/sitemap tests
-analytics
+final metadata audit
+analytics/privacy-provider decision and implementation where approved
 deploy
 GSC
+explicit production indexing activation
 ```
 
-P8 must not enable indexing merely because P7 has evidence. Production indexability remains an explicit release decision.
+P8 must not enable indexing merely because P7 has evidence or because part of the release infrastructure exists. Production indexability remains an explicit release decision after the remaining gates pass.
 
 ## Polish backlog
 
