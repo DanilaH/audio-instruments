@@ -14,17 +14,19 @@ The working visual direction is **Soft Sonic Studio**: a warm, friendly, express
 
 ## Documentation status
 
-Documentation baseline: **v1.12**
+Documentation baseline: **v1.13**
 
 Implementation status:
 
 ```text
 P0–P6.3 functional roadmap    IMPLEMENTED
-P7 SEO evidence refresh       RUNNER READY — Audio-specific live evidence run pending
-P8 final audit / release      PHASE-GATED after completed P7; includes real-device/browser QA
+P7 SEO evidence refresh       COMPLETED — fresh Runner evidence reviewed and applied
+P8 final audit / release      NEXT — real-device/browser QA + production decisions
 ```
 
-All 16 core v1 tool routes are live, and P6.3 final catalog homepage composition is merged.
+All 16 core v1 tool routes are live, and P6.3 final catalog homepage composition is merged. P7 retained the full route set, assigned evidence-backed acquisition/support/completeness roles, found no justified slug migrations, and applied narrow metadata wording changes without changing tool behavior.
+
+Reviewed P7 evidence: `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
 
 The original cold pre-code review on 2026-08-28 closed with:
 
@@ -35,9 +37,9 @@ MAJOR = 0
 
 The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The documented PR/review/CI sequence still requires a green `merge-gate` before merge; GitHub simply does not mechanically make owner/admin bypass impossible.
 
-A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`. The upgraded SEO Research Runner prerequisite is now available; the separate local Audio P7 evidence run is still pending.
+A GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`.
 
-P8 still includes real-device/browser QA and production decisions before release.
+P8 includes real-device/browser QA and production/indexing decisions before release.
 
 ## Stack
 
@@ -100,8 +102,11 @@ docs/
 ├── CHANGELOG.md
 └── evidence/
     ├── competitor-evidence.csv
+    ├── MANUAL_AHREFS_2026-08-28.md
     ├── P7_AUDIO_RUNNER_SEEDS.csv
-    └── P7_RUNNER_EXECUTION.md
+    ├── P7_AUDIO_RUNNER_SEEDS_2026-08-30.csv
+    ├── P7_RUNNER_EXECUTION.md
+    └── P7_AUDIO_EVIDENCE_2026-08-30.md
 ```
 
 Each concern has one authoritative home. Do not recreate a second master specification.
@@ -125,7 +130,7 @@ Each concern has one authoritative home. Do not recreate a second master specifi
 15. Noise Generator
 16. Pitch Detector
 
-All 16 are implemented as live routes in the current P0–P6.3 baseline.
+All 16 are implemented as live routes in the current P0–P7 baseline.
 
 A route represents a distinct user job, not a keyword synonym.
 
@@ -184,6 +189,8 @@ user-observed physical behavior
 
 Never claim stronger certainty than the test method supports.
 
+P7 SEO wording does not weaken this rule. In particular, Decibel Meter remains dBFS-first and Audio Latency remains explicit about browser-reported versus perception-based evidence.
+
 ## Support claim boundary
 
 Automated Playwright regression uses Chromium, Firefox and WebKit.
@@ -230,11 +237,11 @@ full-validation runs
 → merge-gate passes only if full-validation succeeds
 ```
 
-Current private-plan/manual-gate limitations and the active no-runner incident are recorded above and in the authoritative repository/CI docs; neither changes the normative CI contract.
+Current private-plan/manual-gate limitations and the recorded no-runner incident do not change the normative CI contract.
 
 ## Documentation freeze rule
 
-v1.12 records the evidence-driven transition from “upgraded SEO Runner unavailable” to “Runner V2.1 available; fresh Audio P7 run pending”, together with the reproducible Audio P7 seed and execution contract.
+v1.13 records the completed P7 live evidence refresh, actual expanded seed provenance, reviewed route roles, explicit evidence limitations, and the narrow metadata changes justified by that evidence.
 
 Current rule:
 
@@ -249,7 +256,7 @@ Further source-of-truth edits require evidence from:
 real implementation
 real CI behavior
 real browser/device QA
-real P7 runner evidence
+new runner evidence
 or a newly discovered blocking factual error
 ```
 
