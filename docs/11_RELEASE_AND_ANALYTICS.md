@@ -19,6 +19,8 @@ measurement-claims audit
 green CI
 ```
 
+P8.3 has implemented and positively build-tested the sitemap/canonical/robots artifact path. That closes the technical artifact prerequisite only; it does not waive the remaining release gate above.
+
 ## Analytics boundary
 
 Track product interactions, not audio content.
@@ -103,7 +105,7 @@ Do not copy a generic consent banner without first knowing what the selected pro
 
 Preview/staging/non-final builds remain non-indexable by default.
 
-P8 requires:
+P8 requires before final activation:
 
 ```text
 real SITE_ORIGIN
@@ -111,40 +113,79 @@ SITE_INDEXING=enabled only in production
 real-browser QA matrix recorded
 real-device smoke QA completed
 measurement/claims audit passed
+remaining release validation accepted
 ```
 
-Do not enable indexing merely because the build runs in production mode.
+Do not enable indexing merely because the build runs in production mode or because `PRODUCTION_INDEXING_ARTIFACTS_READY = true`.
 
 ## Sitemap/robots production ownership
 
-P8 explicitly adds/configures:
+Implemented in P8.1/P8.3:
 
 ```text
-@astrojs/sitemap
+@astrojs/sitemap@3.7.3
 src/pages/robots.txt.ts
 SITE_ORIGIN validation
 SITE_INDEXING gate
+positive indexed-build verifier
 ```
 
-Public preview remains crawlable `noindex,nofollow`.
+Astro config is the single owner of activation. Runtime canonical/robots behavior derives from resolved `Astro.site`, so sitemap, canonical and robots cannot independently activate through separate environment-reading paths.
+
+Public preview remains crawlable `noindex,nofollow` with no production canonical or sitemap.
 
 Private staging requires hosting-layer access control rather than relying on robots.txt.
 
-## P8-only positive indexing validation
+## Positive indexing validation
 
-During P0–P6:
-
-```text
-only default noindex behavior is implemented/tested
-@astrojs/sitemap is not required
-```
-
-During P8:
+P8.3 added:
 
 ```text
-install @astrojs/sitemap
-enable environment-aware sitemap/robots implementation
-run positive SITE_INDEXING + SITE_ORIGIN tests
+pnpm test:indexing
 ```
 
-Do not pull release-only sitemap dependencies into earlier implementation phases merely to satisfy future tests.
+The verifier performs a real static Astro build with a synthetic HTTPS origin and checks:
+
+```text
+/, /privacy and all 16 live tool routes
+index,follow metadata
+canonical origin-lock
+sitemap-index.xml
+sitemap-0.xml
+robots.txt Sitemap directive
+canonical ↔ sitemap membership consistency
+```
+
+Supported local execution on Node `24.16.0` / pnpm `11.21.0` passed `pnpm test:indexing` and is recorded in:
+
+```text
+docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md
+```
+
+The synthetic origin is test input only. Production still requires a real domain and the remaining release gates.
+
+## Artifact readiness vs release authorization
+
+```text
+PRODUCTION_INDEXING_ARTIFACTS_READY = true
+```
+
+means only:
+
+```text
+sitemap/canonical/robots/indexing artifacts are implemented
+positive indexed-build evidence exists
+```
+
+It does not mean:
+
+```text
+production domain selected
+browser/device QA complete
+analytics/privacy gate complete
+deployment complete
+Search Console configured
+indexing activation authorized
+```
+
+Keep `SITE_INDEXING` disabled until those remaining production decisions are explicitly completed.
