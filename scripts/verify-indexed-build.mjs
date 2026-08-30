@@ -34,6 +34,7 @@ const build = spawnSync(pnpmCommand, ["exec", "astro", "build"], {
     SITE_ORIGIN: TEST_ORIGIN,
   },
   stdio: "inherit",
+  shell: process.platform === "win32",
 });
 
 if (build.error) {
@@ -85,8 +86,8 @@ for (const route of HTML_ROUTES) {
   );
 }
 
-console.log(
-  `Indexed build verified for ${HTML_ROUTES.length} HTML routes at ${TEST_ORIGIN}.`,
+process.stdout.write(
+  `Indexed build verified for ${HTML_ROUTES.length} HTML routes at ${TEST_ORIGIN}.\n`,
 );
 
 function routeOutputPath(distDir, route) {
