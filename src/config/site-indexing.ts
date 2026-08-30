@@ -82,8 +82,9 @@ export function buildCanonicalUrl(
     return null;
   }
 
-  const normalizedPathname = normalizePathname(pathname);
-  return new URL(normalizedPathname, `${config.siteOrigin}/`).href;
+  const canonical = new URL(config.siteOrigin);
+  canonical.pathname = normalizePathname(pathname);
+  return canonical.href;
 }
 
 export function buildRobotsTxt(config: SiteIndexingConfig): string {
