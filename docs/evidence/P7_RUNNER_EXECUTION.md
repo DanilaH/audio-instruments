@@ -54,7 +54,7 @@ It does not reopen product scope merely to chase keyword variants.
 The initial run is therefore **targeted**:
 
 - source: `docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv`;
-- US-English research orientation;
+- canonical Audio SEO orientation: US-English;
 - direct seeds only;
 - `--force-refresh` required;
 - **do not use `--expand` on the initial discovery run**.
@@ -62,6 +62,22 @@ The initial run is therefore **targeted**:
 Expansion is intentionally disabled because the immediate question is whether the existing distinct user jobs have target intent, accessible SERPs and useful acquisition roles. Adjacent ideas can be researched separately after launch or under a future explicit scope decision.
 
 Query-language discovery is still allowed through the V2.1 `query_suggestions` enrichment module. Those suggestions are evidence and do not enter the discovery queue automatically.
+
+## Geo/config preflight
+
+The Audio SEO architecture fixes the baseline to English-only with US-English SEO/copy orientation. Do not rely on Runner defaults or an unknown local `.env` for this evidence run.
+
+Before discovery, explicitly verify the effective Runner configuration is:
+
+```text
+RESEARCH_MARKET=US
+GOOGLE_HL=en
+GOOGLE_GL=us
+```
+
+The final discovery config snapshot must preserve the same values. If the effective configuration differs, stop and restart with the intended values rather than mixing markets inside the P7 evidence record.
+
+`GOOGLE_GL=us` does not prove the rendered SERP was physically localized to the US. Preserve the Runner's detected Google location and every geo mismatch warning separately; never rewrite a mismatch as successful US localization.
 
 ## Seed provenance
 
@@ -107,14 +123,15 @@ Do not add `--expand` to this first run.
 Record after discovery:
 
 ```text
+Audio repo commit used for the seed contract
 Runner commit SHA
 research/run id
 research directory
 terminal state
 market / hl / gl
+detected Google location + geo warnings
 processed keyword count
 completed / partial / failed counts
-geo warnings
 Ahrefs DR state
 results.zip path
 ```
