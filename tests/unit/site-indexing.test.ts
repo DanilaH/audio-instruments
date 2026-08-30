@@ -65,9 +65,9 @@ describe("site indexing gate", () => {
       siteOrigin: "https://audio.example.com",
       robotsDirective: "index,follow",
     });
-    expect(resolveSiteIndexingConfigFromSite(new URL("https://audio.example.com"))).toEqual(
-      config,
-    );
+    expect(
+      resolveSiteIndexingConfigFromSite(new URL("https://audio.example.com")),
+    ).toEqual(config);
     expect(buildCanonicalUrl(config, "tone-generator/index.html")).toBe(
       "https://audio.example.com/tone-generator/",
     );
