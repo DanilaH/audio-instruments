@@ -212,9 +212,7 @@ export class AudioAnalyzer implements SessionResource {
     return { ...reading, heldPeakDbfs };
   }
 
-  readRecentTimeDomain(
-    target: Float32Array<ArrayBuffer>,
-  ): Float32Array<ArrayBuffer> {
+  readRecentTimeDomain(target: Float32Array): Float32Array {
     this.#assertUsable();
     if (target.length <= 0) {
       throw new RangeError("Recent time-domain target must not be empty");
@@ -230,9 +228,7 @@ export class AudioAnalyzer implements SessionResource {
     return target;
   }
 
-  readWaveform(
-    target?: Float32Array<ArrayBuffer>,
-  ): Float32Array<ArrayBuffer> {
+  readWaveform(target?: Float32Array): Float32Array {
     this.#assertUsable();
     const output = target ?? new Float32Array(this.#spectrumAnalyser.fftSize);
     if (output.length !== this.#spectrumAnalyser.fftSize) {
@@ -240,13 +236,13 @@ export class AudioAnalyzer implements SessionResource {
         `Waveform buffer length must equal current fftSize ${this.#spectrumAnalyser.fftSize}`,
       );
     }
-    this.#spectrumAnalyser.getFloatTimeDomainData(output);
+    this.#spectrumAnalyser.getFloatTimeDomainData(
+      output as Float32Array<ArrayBuffer>,
+    );
     return output;
   }
 
-  readFrequencyData(
-    target?: Float32Array<ArrayBuffer>,
-  ): Float32Array<ArrayBuffer> {
+  readFrequencyData(target?: Float32Array): Float32Array {
     this.#assertUsable();
     const output =
       target ?? new Float32Array(this.#spectrumAnalyser.frequencyBinCount);
@@ -255,7 +251,9 @@ export class AudioAnalyzer implements SessionResource {
         `Frequency buffer length must equal frequencyBinCount ${this.#spectrumAnalyser.frequencyBinCount}`,
       );
     }
-    this.#spectrumAnalyser.getFloatFrequencyData(output);
+    this.#spectrumAnalyser.getFloatFrequencyData(
+      output as Float32Array<ArrayBuffer>,
+    );
     return output;
   }
 
