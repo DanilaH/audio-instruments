@@ -157,20 +157,26 @@ Product feasibility
 
 The matrix remains an evidence surface, not a single opportunity score.
 
-Separate:
+Accepted human build decisions are:
 
 ```text
-build/watch/reject
+build
+watch
+reject
+unknown
 ```
 
-from:
+Accepted SEO/product roles are:
 
 ```text
 acquisition_anchor
 strong_supporting_tool
 completeness_tool
 experimental
+not_applicable
 ```
+
+`unknown` is an explicit human decision; no recorded decision remains a separate state.
 
 Human decisions are recorded only after the current live evidence is reviewed.
 
