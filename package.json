@@ -18,6 +18,7 @@
     "format:check": "prettier --check \"src/**/*.{astro,css,js,mjs,ts}\" \"tests/**/*.{js,mjs,ts}\" \"playwright.config.ts\" \"vitest.config.ts\" \"eslint.config.mjs\" \".prettierrc.mjs\" \"astro.config.mjs\" \"pnpm-workspace.yaml\" \"package.json\" \"tsconfig.json\""
   },
   "dependencies": {
+    "@astrojs/sitemap": "3.7.3",
     "@phosphor-icons/web": "2.1.2",
     "astro": "7.2.4",
     "motion": "13.1.1"
