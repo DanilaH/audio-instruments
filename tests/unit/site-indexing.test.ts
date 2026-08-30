@@ -64,6 +64,9 @@ describe("site indexing gate", () => {
     expect(buildCanonicalUrl(config, "tone-generator/index.html")).toBe(
       "https://audio.example.com/tone-generator/",
     );
+    expect(buildCanonicalUrl(config, "//other.example/path")).toBe(
+      "https://audio.example.com//other.example/path",
+    );
     expect(buildRobotsTxt(config)).toBe(
       "User-agent: *\nAllow: /\nSitemap: https://audio.example.com/sitemap-index.xml\n",
     );
