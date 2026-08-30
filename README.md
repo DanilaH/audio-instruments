@@ -14,14 +14,14 @@ The working visual direction is **Soft Sonic Studio**: a warm, friendly, express
 
 ## Documentation status
 
-Documentation baseline: **v1.11**
+Documentation baseline: **v1.12**
 
 Implementation status:
 
 ```text
 P0–P6.3 functional roadmap    IMPLEMENTED
-P7 SEO evidence refresh       BLOCKED — waits for upgraded runner
-P8 final audit / release      PHASE-GATED after P7; includes real-device/browser QA
+P7 SEO evidence refresh       RUNNER READY — Audio-specific live evidence run pending
+P8 final audit / release      PHASE-GATED after completed P7; includes real-device/browser QA
 ```
 
 All 16 core v1 tool routes are live, and P6.3 final catalog homepage composition is merged.
@@ -35,7 +35,7 @@ MAJOR = 0
 
 The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The documented PR/review/CI sequence still requires a green `merge-gate` before merge; GitHub simply does not mechanically make owner/admin bypass impossible.
 
-A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`, and P7 remains blocked pending an upgraded runner.
+A current GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`. The upgraded SEO Research Runner prerequisite is now available; the separate local Audio P7 evidence run is still pending.
 
 P8 still includes real-device/browser QA and production decisions before release.
 
@@ -99,7 +99,9 @@ docs/
 ├── 20_P0_TOOLING_CONTRACT.md
 ├── CHANGELOG.md
 └── evidence/
-    └── competitor-evidence.csv
+    ├── competitor-evidence.csv
+    ├── P7_AUDIO_RUNNER_SEEDS.csv
+    └── P7_RUNNER_EXECUTION.md
 ```
 
 Each concern has one authoritative home. Do not recreate a second master specification.
@@ -232,13 +234,13 @@ Current private-plan/manual-gate limitations and the active no-runner incident a
 
 ## Documentation freeze rule
 
-v1.11 records the P0–P6.3 implementation-evidence synchronization after the full functional catalog and final homepage composition were merged.
+v1.12 records the evidence-driven transition from “upgraded SEO Runner unavailable” to “Runner V2.1 available; fresh Audio P7 run pending”, together with the reproducible Audio P7 seed and execution contract.
 
 Current rule:
 
 ```text
 do not run speculative documentation churn
-update source of truth only from implementation / CI / browser evidence or explicit owner decisions
+update source of truth only from implementation / CI / browser / runner evidence or explicit owner decisions
 ```
 
 Further source-of-truth edits require evidence from:
@@ -247,6 +249,7 @@ Further source-of-truth edits require evidence from:
 real implementation
 real CI behavior
 real browser/device QA
+real P7 runner evidence
 or a newly discovered blocking factual error
 ```
 
