@@ -197,7 +197,7 @@ export class DecibelMeterController {
     try {
       store = new DbCalibrationStore(window.localStorage);
     } catch {
-      store = null;
+      // Browser storage can be unavailable; calibration remains session-only.
     }
     this.#calibrationStore = store;
 
