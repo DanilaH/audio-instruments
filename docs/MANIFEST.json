@@ -1,6 +1,6 @@
 {
-  "version": "1.12",
-  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; upgraded SEO Runner V2.1 prerequisite is available and the Audio-specific live P7 evidence run is pending; P8 is phase-gated after completed P7 and includes real-device/browser QA plus production decisions",
+  "version": "1.13",
+  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence is collected, reviewed and applied to SEO roles/metadata; P8 is the next phase and owns final device/browser QA plus production/indexing decisions",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
     "docs/01_RESEARCH_AND_EVIDENCE.md",
@@ -25,22 +25,40 @@
     "docs/20_P0_TOOLING_CONTRACT.md"
   ],
   "evidence_ledgers": [
-    "docs/evidence/competitor-evidence.csv"
+    "docs/evidence/competitor-evidence.csv",
+    "docs/evidence/MANUAL_AHREFS_2026-08-28.md",
+    "docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md"
   ],
   "p7_evidence_contract": {
-    "state": "ready_for_live_audio_run",
-    "seed_input": "docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv",
+    "state": "live_audio_run_reviewed",
+    "original_seed_input": "docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv",
+    "actual_run_seed_input": "docs/evidence/P7_AUDIO_RUNNER_SEEDS_2026-08-30.csv",
     "execution_contract": "docs/evidence/P7_RUNNER_EXECUTION.md",
+    "reviewed_evidence": "docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md",
     "minimum_runner_pipeline_commit": "be892b479d89cd8299adffa9eacf489ca2a4ce2b",
+    "exact_local_runner_sha": null,
+    "runner_sha_limitation": "not persisted in output archive; GitHub main at discovery start was 3b60a0b41ee8ed8892ad3c5abd3cfeefdcc84158 but this is not proof of local HEAD",
+    "discovery_run_id": "20260830084817127_cf2b71d4-e4fd-4149-9f9b-aacd1d97f00c",
+    "enrichment_id": "20260830090605698_c45a9028-a431-460a-a0e4-08659ecc7e3f",
+    "representative_revision": 1,
+    "entrant_fingerprint": "265131504cb59b45ad96acfd4949b38883a142e9f9e93bab3510e989533190c1",
+    "history_policy": {
+      "young_domain_max_age_days": 730,
+      "recent_web_presence_max_age_days": 365,
+      "repurpose_gap_min_days": 730
+    },
+    "traffic_projection": "not_run_no_current_provider_neutral_import",
+    "traffic_velocity": "unavailable",
     "live_run_required": true,
-    "live_run_completed": false
+    "live_run_completed": true,
+    "human_review_completed": true
   },
   "implementation": {
     "functional_roadmap": "P0-P6.3 implemented and merged",
     "core_v1_live_tool_routes": 16,
     "p6_3_main_commit": "0be4128242ddeab669cbc8374e9fc9b9b5bd23ac",
-    "p7": "runner_available_live_audio_evidence_pending",
-    "p8": "phase_gated_after_completed_p7",
+    "p7": "live_evidence_reviewed_metadata_closeout",
+    "p8": "next_after_p7_closeout_merge",
     "p8_scope": [
       "final_audit_and_release",
       "real_device_browser_qa",
@@ -95,7 +113,7 @@
     "signature": "runner_id=0; steps=[]",
     "interpretation": "infrastructure/no-runner; not green CI and not a repository test failure",
     "policy_effect": "does not redefine the required green merge-gate workflow",
-    "phase_effect": "none on the SEO Runner prerequisite; the Audio P7 live evidence run is a separate local Research Chrome workflow"
+    "phase_effect": "none on completed local P7 evidence; P8 validation remains separate"
   },
   "dependencies": {
     "animation": "motion",
@@ -122,14 +140,14 @@
     "browser_test": "@playwright/test"
   },
   "documentation_policy": {
-    "state": "p7_runner_prerequisite_synchronized",
+    "state": "p7_live_evidence_synchronized",
     "original_cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
-    "next_step": "execute the fresh targeted Audio P7 Runner workflow from docs/evidence/P7_RUNNER_EXECUTION.md; do not make evidence-dependent SEO decisions before reviewing its live artifacts",
+    "next_step": "complete P7 closeout PR review/merge, then begin P8 final audit/release without speculative P7 scope expansion",
     "reopen_for": [
       "implementation-discovered contradiction",
       "real CI/browser failure requiring source-of-truth correction",
       "new blocking factual error",
-      "new P7 runner evidence"
+      "new material runner evidence"
     ]
   },
   "repository_gate": {
