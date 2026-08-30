@@ -16,7 +16,7 @@ export default defineConfig({
   webServer: {
     command: "pnpm preview",
     url: baseURL,
-    reuseExistingServer: !process.env.CI,
+    reuseExistingServer: false,
     timeout: 120_000,
   },
   projects: [
