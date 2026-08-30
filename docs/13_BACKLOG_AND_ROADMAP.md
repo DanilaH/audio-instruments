@@ -12,7 +12,7 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
 P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
-P8 in progress: P8.1 safe indexing-gate foundation implemented; P8.2 static claims/metadata release audit complete; runtime/production gates remain pending
+P8 in progress: P8.1 safe indexing foundation, P8.2 static claims/metadata release audit and P8.3 sitemap/positive-indexing build gate complete; runtime/release gates remain pending
 ```
 
 P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
@@ -195,12 +195,11 @@ Current state: **in progress**.
 
 ### P8.1 — Safe indexing-gate foundation
 
-Implemented in the current P8 unit:
+Implemented:
 
 ```text
 central SITE_INDEXING / SITE_ORIGIN policy
 strict HTTPS origin-only validation
-fail-closed production-indexing readiness guard
 default crawlable noindex,nofollow metadata
 no default production canonical
 environment-aware /robots.txt
@@ -209,13 +208,7 @@ unit validation of origin/canonical/robots policy
 browser regression across /, /privacy and all 16 live tool routes
 ```
 
-The guard remains intentionally locked:
-
-```text
-PRODUCTION_INDEXING_ARTIFACTS_READY = false
-```
-
-Therefore `SITE_INDEXING=enabled` currently fails closed rather than emitting partially configured indexable pages.
+P8.1 originally kept production indexing mechanically blocked until the sitemap/positive-build artifacts landed. P8.3 has now satisfied that artifact prerequisite. The release remains fail-closed by default because no `site` is configured unless `SITE_INDEXING=enabled` and a valid HTTPS `SITE_ORIGIN` are both supplied.
 
 ### P8.2 — Static release audit
 
@@ -239,18 +232,43 @@ docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md
 
 P8.2 is a static source audit only. It does not certify runtime accessibility, visual geometry, real browser/device behavior, Playwright execution, production indexing, analytics/privacy-provider compliance, deployment or CI.
 
+### P8.3 — Sitemap and positive indexing build gate
+
+Implemented and locally validated on supported runtime:
+
+```text
+@astrojs/sitemap 3.7.3 with pnpm-generated lockfile
+Astro config as the single SITE_INDEXING / SITE_ORIGIN activation owner
+runtime canonical/robots policy derived from resolved Astro.site
+sitemap emitted only for an explicitly enabled valid HTTPS origin
+preview/default build remains noindex,nofollow with no canonical and no sitemap
+positive indexed-build verifier across /, /privacy and all 16 live tool routes
+robots.txt + sitemap-index.xml + sitemap-0.xml + canonical/sitemap consistency checks
+positive indexing verifier added to full-validation
+```
+
+Supported local validation on Node `24.16.0` / pnpm `11.21.0` established:
+
+```text
+pnpm install --frozen-lockfile PASS
+pnpm check PASS
+pnpm test PASS (172/172)
+pnpm test:indexing PASS
+```
+
+The positive verifier built all 18 HTML routes against synthetic origin `https://indexing-test.example` and verified robots, canonical URLs, sitemap index and sitemap membership. The synthetic origin is test evidence only; it is not product configuration and is never a production-domain substitute.
+
+`PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means only that the repository contains the required sitemap/indexing artifacts. It does **not** authorize release activation by itself. Production indexing still requires the remaining P8 release gates plus an explicit real-domain `SITE_INDEXING=enabled` / `SITE_ORIGIN=https://...` deployment decision.
+
 Remaining P8 work:
 
 ```text
-install/configure @astrojs/sitemap with a lockfile-consistent dependency change
-configure sitemap origin from the validated production origin
-flip production-indexing readiness only with positive indexed-build/sitemap tests
 use the real production domain; do not invent one
-real-device QA
-real-browser QA matrix
-Playwright regression QA
-visual QA
+Playwright release execution
 runtime accessibility review
+visual QA
+real-browser QA matrix
+real-device QA
 analytics/privacy-provider decision and implementation where approved
 deploy
 GSC
@@ -258,7 +276,7 @@ explicit production indexing activation
 green CI / final validation evidence
 ```
 
-P8 must not enable indexing merely because P7 has evidence or because part of the release infrastructure/static audit exists. Production indexability remains an explicit release decision after the remaining gates pass.
+P8 must not enable production indexing merely because P7 has evidence or because P8.3 makes the positive build path technically available. Production indexability remains an explicit release decision after the remaining gates pass.
 
 ## Polish backlog
 
