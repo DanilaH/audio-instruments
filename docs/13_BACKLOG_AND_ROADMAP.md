@@ -12,10 +12,12 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
 P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
-P8 in progress: P8.1 safe indexing-gate foundation implemented; release QA/activation remains pending
+P8 in progress: P8.1 safe indexing-gate foundation implemented; P8.2 static claims/metadata release audit complete; runtime/production gates remain pending
 ```
 
 P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
+
+P8 static release-audit evidence is preserved in `docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md`.
 
 ## P0 — Repository bootstrap
 
@@ -215,6 +217,28 @@ PRODUCTION_INDEXING_ARTIFACTS_READY = false
 
 Therefore `SITE_INDEXING=enabled` currently fails closed rather than emitting partially configured indexable pages.
 
+### P8.2 — Static release audit
+
+Reviewed against main baseline `dad7ec774659123a65fa279747c403e9d0db3ac3`:
+
+```text
+measurement/claims wording across homepage, privacy and all 16 live tools
+final static page titles/descriptions against P7 intent ownership
+page-level H1 identity
+live-only related-tool link construction
+core-v1 privacy copy against current local processing/storage behavior
+```
+
+Result: **clean; no runtime/source-copy change justified**.
+
+Canonical audit record:
+
+```text
+docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md
+```
+
+P8.2 is a static source audit only. It does not certify runtime accessibility, visual geometry, real browser/device behavior, Playwright execution, production indexing, analytics/privacy-provider compliance, deployment or CI.
+
 Remaining P8 work:
 
 ```text
@@ -226,16 +250,15 @@ real-device QA
 real-browser QA matrix
 Playwright regression QA
 visual QA
-accessibility
-claims audit
-final metadata audit
+runtime accessibility review
 analytics/privacy-provider decision and implementation where approved
 deploy
 GSC
 explicit production indexing activation
+green CI / final validation evidence
 ```
 
-P8 must not enable indexing merely because P7 has evidence or because part of the release infrastructure exists. Production indexability remains an explicit release decision after the remaining gates pass.
+P8 must not enable indexing merely because P7 has evidence or because part of the release infrastructure/static audit exists. Production indexability remains an explicit release decision after the remaining gates pass.
 
 ## Polish backlog
 

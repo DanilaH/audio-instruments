@@ -1,5 +1,21 @@
 # Documentation Changelog
 
+## v1.15 — 2026-08-30
+
+P8.2 exact-baseline static release audit.
+
+Changes:
+
+- reviewed homepage, privacy and all 16 live tool routes against the measurement/claims boundaries in `08_MEASUREMENT_HONESTY_AND_SAFETY.md`;
+- found no static wording that promoted browser-reported or user-observed evidence into stronger physical certainty;
+- confirmed Decibel remains dBFS-first with only a one-point reference-calibrated level estimate, Latency remains browser-reported/perception-based, Hearing remains non-clinical, Surround remains capability-gated, and output/signal tools retain user-observed physical wording;
+- reviewed final static page titles/descriptions against the P7 route/intent ownership and found no justified synonym route, slug migration, H1 identity change or keyword-stuffed copy change;
+- confirmed the shared ToolShell owns one page-level tool H1 and related-tool links are filtered through live registry entries before rendering;
+- checked current privacy copy against local microphone processing and Decibel calibration-storage behavior;
+- added `docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md` with exact reviewed baseline `dad7ec774659123a65fa279747c403e9d0db3ac3`;
+- explicitly kept runtime accessibility, visual QA, Playwright release execution, real browser/device QA, sitemap/positive indexing, analytics/privacy-provider compliance, deployment, Search Console and green CI open;
+- made no runtime/source-copy change because the static audit found no material defect requiring one.
+
 ## v1.14 — 2026-08-30
 
 P8.1 fail-closed indexing-gate foundation.
