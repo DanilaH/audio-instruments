@@ -11,8 +11,8 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 ```text
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
-P7 live Runner evidence collected and reviewed; evidence-backed metadata/status PR in final review
-P8 phase-gated until P7 PR is merged; includes real-device/browser QA + production decisions
+P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
+P8 next phase: real-device/browser QA + production decisions
 ```
 
 P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
@@ -151,7 +151,7 @@ Then PR/review/validation/merge.
 
 ## P7 — SEO evidence refresh
 
-Current state: **live evidence collected and reviewed; closeout PR in review**.
+Current state: **complete in the current source baseline**.
 
 Completed evidence path:
 
@@ -166,7 +166,7 @@ Completed evidence path:
 → human route/intent review
 ```
 
-Current decisions:
+Final decisions:
 
 ```text
 keep all 16 live routes
@@ -176,7 +176,7 @@ no functional changes
 assign acquisition/support/completeness SEO roles
 apply narrow evidence-backed metadata wording
 preserve traffic velocity as unavailable
-preserve geo/history/provider gaps explicitly
+preserve geo/history/provider/provenance gaps explicitly
 ```
 
 Canonical reviewed record:
@@ -185,7 +185,7 @@ Canonical reviewed record:
 docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md
 ```
 
-P7 is complete after this PR passes the normal cold-review/merge workflow.
+Do not reopen P7 for speculative keyword/content churn. Reopen only from new material evidence or a blocking contradiction.
 
 ## P8 — Final audit / launch
 
