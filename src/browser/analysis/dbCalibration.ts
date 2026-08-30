@@ -8,9 +8,9 @@ export const DB_CALIBRATION_MAX_STDDEV_DB = 1.5;
 export const DB_CALIBRATION_CLIPPING_PEAK_DBFS = -1;
 
 export interface CalibrationEligibilitySettings {
-  readonly autoGainControl?: boolean | string;
-  readonly noiseSuppression?: boolean | string;
-  readonly echoCancellation?: boolean | string;
+  readonly autoGainControl?: boolean;
+  readonly noiseSuppression?: boolean;
+  readonly echoCancellation?: boolean;
 }
 
 export interface CalibrationSample {
