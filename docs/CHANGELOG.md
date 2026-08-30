@@ -1,5 +1,22 @@
 # Documentation Changelog
 
+## v1.14 — 2026-08-30
+
+P8.1 fail-closed indexing-gate foundation.
+
+Changes:
+
+- started P8 without enabling production indexing prematurely;
+- centralized `SITE_INDEXING` / `SITE_ORIGIN` policy and strict absolute HTTPS origin-only validation;
+- kept preview/public non-final builds crawlable while pages remain `noindex,nofollow` with no production canonical;
+- added an environment-aware `/robots.txt` endpoint that allows crawling and omits a Sitemap directive while indexing is disabled;
+- added canonical URL generation that is locked to the validated configured origin, including a regression against protocol-relative route text escaping to another host;
+- added unit coverage for disabled/enabled policy behavior and invalid production origins;
+- added browser regression coverage for default noindex/no-canonical behavior on `/`, `/privacy`, and all 16 live tool routes;
+- added `PRODUCTION_INDEXING_ARTIFACTS_READY = false` as an intentional fail-closed guard so `SITE_INDEXING=enabled` cannot emit partially configured indexable output before sitemap integration and positive indexed-build validation land together;
+- left `@astrojs/sitemap`, the real production domain, positive indexed-build/sitemap validation, real-device/browser QA, analytics/privacy-provider decisions, deployment, GSC and final indexing activation pending in P8;
+- synchronized README, AGENTS, Overview, Roadmap and Manifest to `P8 in progress` without claiming tests or hosted CI are green.
+
 ## v1.13 — 2026-08-30
 
 P7 live Audio evidence review and evidence-backed SEO closeout.

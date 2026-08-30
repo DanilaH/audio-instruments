@@ -2,6 +2,10 @@
 import "@phosphor-icons/web/regular";
 import "../styles/global.css";
 import "../styles/touch-targets.css";
+import {
+  buildCanonicalUrl,
+  resolveSiteIndexingConfig,
+} from "../config/site-indexing";
 
 interface Props {
   title: string;
@@ -11,6 +15,8 @@ interface Props {
 
 const { title, description, hasLiveTools = false } = Astro.props;
 const year = new Date().getFullYear();
+const indexing = resolveSiteIndexingConfig(import.meta.env);
+const canonicalUrl = buildCanonicalUrl(indexing, Astro.url.pathname);
 ---
 
 <!doctype html>
@@ -19,7 +25,8 @@ const year = new Date().getFullYear();
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width" />
     <meta name="description" content={description} />
-    <meta name="robots" content="noindex,nofollow" />
+    <meta name="robots" content={indexing.robotsDirective} />
+    {canonicalUrl && <link rel="canonical" href={canonicalUrl} />}
     <meta name="generator" content={Astro.generator} />
     <title>{title}</title>
   </head>

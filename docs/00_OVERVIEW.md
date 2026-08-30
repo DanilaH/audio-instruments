@@ -69,10 +69,12 @@ As of 2026-08-30:
 P0–P6.3: implemented and merged
 core v1 catalog: all 16 tool routes live
 P7: fresh Runner evidence collected, reviewed and applied to SEO roles/metadata
-P8: next phase — final audit, real-device/browser QA and production decisions
+P8: in progress — P8.1 safe indexing-gate foundation implemented
 ```
 
 P7 kept all 16 distinct product jobs, found no justified slug migrations, and prohibited synonym-page expansion. The reviewed evidence record lives at `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
+
+P8.1 preserves the preview safety boundary while moving release infrastructure into code: pages remain crawlable `noindex,nofollow` with no production canonical by default, and `/robots.txt` allows crawling without advertising a sitemap. `SITE_INDEXING=enabled` is intentionally blocked while `PRODUCTION_INDEXING_ARTIFACTS_READY = false`; the later sitemap/positive indexed-build unit must land before that guard may be lifted.
 
 The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units use the repository's PR + cold-review workflow and exact-SHA review evidence.
 

@@ -14,19 +14,21 @@ The working visual direction is **Soft Sonic Studio**: a warm, friendly, express
 
 ## Documentation status
 
-Documentation baseline: **v1.13**
+Documentation baseline: **v1.14**
 
 Implementation status:
 
 ```text
 P0–P6.3 functional roadmap    IMPLEMENTED
 P7 SEO evidence refresh       COMPLETED — fresh Runner evidence reviewed and applied
-P8 final audit / release      NEXT — real-device/browser QA + production decisions
+P8 final audit / release      IN PROGRESS — safe indexing-gate foundation implemented
 ```
 
 All 16 core v1 tool routes are live, and P6.3 final catalog homepage composition is merged. P7 retained the full route set, assigned evidence-backed acquisition/support/completeness roles, found no justified slug migrations, and applied narrow metadata wording changes without changing tool behavior.
 
 Reviewed P7 evidence: `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
+
+P8.1 centralizes the `SITE_INDEXING` / `SITE_ORIGIN` policy, keeps public preview pages crawlable but `noindex,nofollow`, omits production canonicals by default, and serves an environment-aware `/robots.txt`. Production indexing remains mechanically blocked by `PRODUCTION_INDEXING_ARTIFACTS_READY = false` until the official sitemap integration and positive indexed-build validation land in a later P8 unit.
 
 The original cold pre-code review on 2026-08-28 closed with:
 
@@ -39,7 +41,7 @@ The repository intentionally remains private on the current free GitHub plan. Pr
 
 A GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`.
 
-P8 includes real-device/browser QA and production/indexing decisions before release.
+Remaining P8 work includes the sitemap dependency/positive indexing build, real-device/browser QA, accessibility/release review, analytics/privacy decisions, deployment and final indexing activation on a real production domain.
 
 ## Stack
 
@@ -130,7 +132,7 @@ Each concern has one authoritative home. Do not recreate a second master specifi
 15. Noise Generator
 16. Pitch Detector
 
-All 16 are implemented as live routes in the current P0–P7 baseline.
+All 16 are implemented as live routes in the current P0–P8 baseline.
 
 A route represents a distinct user job, not a keyword synonym.
 
@@ -241,7 +243,7 @@ Current private-plan/manual-gate limitations and the recorded no-runner incident
 
 ## Documentation freeze rule
 
-v1.13 records the completed P7 live evidence refresh, actual expanded seed provenance, reviewed route roles, explicit evidence limitations, and the narrow metadata changes justified by that evidence.
+v1.14 records the start of P8 and the fail-closed indexing-gate foundation. It does not claim the sitemap dependency, a production domain, positive indexed-build validation, real-device/browser QA, analytics or release are complete.
 
 Current rule:
 

@@ -102,7 +102,11 @@ P7 keeps all 16 routes, adds no synonym routes, makes no functional changes, and
 
 Do not reopen resolved choices because another implementation seems personally preferable.
 
-P8 is the next phase and still requires final browser/device QA, accessibility/release review, analytics, and explicit production indexing decisions.
+P8 is **in progress**. P8.1 implements the fail-closed indexing foundation: centralized `SITE_INDEXING` / `SITE_ORIGIN` validation, default `noindex,nofollow`, no default canonical, and crawlable `/robots.txt`.
+
+`PRODUCTION_INDEXING_ARTIFACTS_READY = false` is intentional. Do not flip it or make `SITE_INDEXING=enabled` produce indexable output until the official sitemap dependency/configuration and positive indexed-build validation land together in a later P8 unit. Do not invent a production domain.
+
+Remaining P8 work includes sitemap integration, final browser/device QA, accessibility/release review, analytics/privacy decisions, deployment and explicit production indexing activation.
 
 ## 4. Locked stack
 
