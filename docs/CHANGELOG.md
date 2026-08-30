@@ -1,5 +1,22 @@
 # Documentation Changelog
 
+## v1.12 — 2026-08-30
+
+P7 Runner-prerequisite synchronization and reproducible Audio evidence contract.
+
+Changes:
+
+- recorded that the upgraded `super-converter-parser` V2.1 analytical evidence pipeline is now available, so P7 is no longer blocked at the Runner-capability level;
+- kept P7 incomplete until an Audio-specific live Research Chrome / Keyword Surfer run is executed and reviewed;
+- added the canonical targeted Audio seed cohort covering all 16 current v1 user jobs;
+- added the P7 Runner execution contract with explicit Runner-SHA provenance, fresh-cache bypass, no initial expansion, US/en/us config pinning, enrichment, representative-query, entrant-cohort, history, traffic and finalist-matrix stages;
+- preserved geo mismatch as separate evidence rather than treating `gl=us` as proof of physical US localization;
+- prohibited evidence-dependent role/slug/internal-link changes before live artifacts are reviewed;
+- left history and traffic interpretation thresholds unset until explicit P7 evidence review instead of inventing hidden defaults;
+- synchronized README, AGENTS, Overview, Roadmap and Manifest to the `Runner available / live Audio evidence pending` state;
+- kept P8 phase-gated after completed P7;
+- made no functional tool, architecture, measurement, safety or production-indexing changes.
+
 ## v1.11 — 2026-08-29
 
 Post-P6.3 implementation-evidence synchronization.

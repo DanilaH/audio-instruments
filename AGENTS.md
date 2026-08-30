@@ -90,13 +90,15 @@ P0 package/scripts/lint/format/test tooling
 
 ## 3. Implementation status
 
-P0–P6.3 are **implemented and merged** as of 2026-08-29, including all 16 core v1 tool routes and the final catalog homepage composition.
+P0–P6.3 are **implemented and merged** as of 2026-08-30, including all 16 core v1 tool routes and the final catalog homepage composition.
 
 Do not reopen resolved choices because another implementation seems personally preferable.
 
-P7 is currently blocked by its explicit roadmap prerequisite: **wait for upgraded runner**.
+The upgraded SEO Research Runner V2.1 prerequisite for P7 is available. The Audio-specific live P7 evidence run is still pending and must follow `docs/evidence/P7_RUNNER_EXECUTION.md` with `docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv` as the canonical initial input.
 
-P8 remains phase-gated after P7 and still requires real-device/browser QA plus production decisions.
+Do not treat the P7 execution contract itself as evidence or make evidence-dependent SEO decisions before the live artifacts are reviewed.
+
+P8 remains phase-gated after completed P7 and still requires real-device/browser QA plus production decisions.
 
 ## 4. Locked stack
 
@@ -511,6 +513,6 @@ For that signature:
 - the no-runner signature is **not merge authorization**;
 - do not weaken or rewrite the required merge-gate contract merely to make the failure disappear;
 - preserve exact-SHA review/CI evidence for incident diagnosis and historical record;
-- do not start P7 while its roadmap prerequisite still says `Wait for upgraded runner`.
+- do not confuse this hosted GitHub Actions incident with the separate local SEO Research Runner prerequisite, which is now available for P7.
 
 This section records an observed infrastructure incident. It is not a permanent waiver policy and does not replace `15_DEVELOPMENT_WORKFLOW.md` or `16_CI_AND_REPOSITORY_GATES.md`.

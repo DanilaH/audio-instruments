@@ -195,7 +195,16 @@ No canonical is emitted when indexing gate is disabled.
 
 ## P7 research refresh
 
-When upgraded runner is ready:
+The upgraded Runner V2.1 prerequisite is available. The Audio-specific live evidence run remains pending.
+
+Canonical P7 input/execution ownership:
+
+```text
+docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv
+docs/evidence/P7_RUNNER_EXECUTION.md
+```
+
+The live refresh reviews:
 
 ```text
 representative-query cohort
@@ -206,6 +215,8 @@ role update
 slug review
 internal-link emphasis review
 ```
+
+The execution contract is not evidence by itself. Do not make evidence-dependent SEO changes until the fresh Audio artifacts are reviewed.
 
 Do not rewrite functional product behavior merely because acquisition priority changes.
 

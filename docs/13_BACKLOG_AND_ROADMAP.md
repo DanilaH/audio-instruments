@@ -6,16 +6,16 @@ Each implementation unit follows `15_DEVELOPMENT_WORKFLOW.md`.
 
 Do not begin the next roadmap unit before the current one is merged unless explicit parallel work is approved.
 
-## Current checkpoint — 2026-08-29
+## Current checkpoint — 2026-08-30
 
 ```text
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
-P7 blocked: wait for upgraded SEO runner
-P8 phase-gated after P7; includes real-device/browser QA + production decisions
+P7 prerequisite available: upgraded SEO Runner V2.1 is landed; Audio-specific live evidence run is pending
+P8 phase-gated after completed P7; includes real-device/browser QA + production decisions
 ```
 
-Do not rename polish/audit work as P7 while its upgraded-runner prerequisite is unavailable.
+Do not substitute manual source polish for the P7 evidence run. The reproducible Audio input and execution contract live in `docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv` and `docs/evidence/P7_RUNNER_EXECUTION.md`.
 
 ## P0 — Repository bootstrap
 
@@ -151,11 +151,13 @@ Then PR/review/validation/merge.
 
 ## P7 — SEO evidence refresh
 
-Current gate: **blocked until the upgraded runner is available**.
+Current gate: **unblocked at the Runner-capability level; Audio-specific live evidence is still pending**.
 
-Do not substitute manual source polish for this evidence phase.
+The upgraded Runner V2.1 analytical pipeline is available. Execute P7 from the canonical Audio seed cohort and execution contract in `docs/evidence/`.
 
-Then:
+Do not substitute manual source polish, old frozen-corpus observations or warm-cache replay for the fresh Audio evidence run.
+
+Then review:
 
 ```text
 cohorts
@@ -166,6 +168,8 @@ role update
 slug review
 internal-link review
 ```
+
+P7 is not complete until the fresh artifacts are reviewed and any justified repository changes pass the normal PR + cold-review workflow.
 
 ## P8 — Final audit / launch
 

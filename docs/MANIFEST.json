@@ -1,6 +1,6 @@
 {
-  "version": "1.11",
-  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 waits for the upgraded SEO runner; P8 is phase-gated after P7 and includes real-device/browser QA plus production decisions",
+  "version": "1.12",
+  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; upgraded SEO Runner V2.1 prerequisite is available and the Audio-specific live P7 evidence run is pending; P8 is phase-gated after completed P7 and includes real-device/browser QA plus production decisions",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
     "docs/01_RESEARCH_AND_EVIDENCE.md",
@@ -27,12 +27,20 @@
   "evidence_ledgers": [
     "docs/evidence/competitor-evidence.csv"
   ],
+  "p7_evidence_contract": {
+    "state": "ready_for_live_audio_run",
+    "seed_input": "docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv",
+    "execution_contract": "docs/evidence/P7_RUNNER_EXECUTION.md",
+    "minimum_runner_pipeline_commit": "be892b479d89cd8299adffa9eacf489ca2a4ce2b",
+    "live_run_required": true,
+    "live_run_completed": false
+  },
   "implementation": {
     "functional_roadmap": "P0-P6.3 implemented and merged",
     "core_v1_live_tool_routes": 16,
     "p6_3_main_commit": "0be4128242ddeab669cbc8374e9fc9b9b5bd23ac",
-    "p7": "blocked_waiting_for_upgraded_seo_runner",
-    "p8": "phase_gated_after_p7",
+    "p7": "runner_available_live_audio_evidence_pending",
+    "p8": "phase_gated_after_completed_p7",
     "p8_scope": [
       "final_audit_and_release",
       "real_device_browser_qa",
@@ -87,7 +95,7 @@
     "signature": "runner_id=0; steps=[]",
     "interpretation": "infrastructure/no-runner; not green CI and not a repository test failure",
     "policy_effect": "does not redefine the required green merge-gate workflow",
-    "phase_effect": "P7 remains blocked pending the upgraded runner"
+    "phase_effect": "none on the SEO Runner prerequisite; the Audio P7 live evidence run is a separate local Research Chrome workflow"
   },
   "dependencies": {
     "animation": "motion",
@@ -114,13 +122,14 @@
     "browser_test": "@playwright/test"
   },
   "documentation_policy": {
-    "state": "post_p6_3_implementation_evidence_synchronized",
+    "state": "p7_runner_prerequisite_synchronized",
     "original_cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
-    "next_step": "wait for the upgraded SEO runner before P7; only explicitly allowed polish/audit work may proceed meanwhile",
+    "next_step": "execute the fresh targeted Audio P7 Runner workflow from docs/evidence/P7_RUNNER_EXECUTION.md; do not make evidence-dependent SEO decisions before reviewing its live artifacts",
     "reopen_for": [
       "implementation-discovered contradiction",
       "real CI/browser failure requiring source-of-truth correction",
-      "new blocking factual error"
+      "new blocking factual error",
+      "new P7 runner evidence"
     ]
   },
   "repository_gate": {
