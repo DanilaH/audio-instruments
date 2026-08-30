@@ -1,5 +1,23 @@
 # Documentation Changelog
 
+## v1.13 — 2026-08-30
+
+P7 live Audio evidence review and evidence-backed SEO closeout.
+
+Changes:
+
+- preserved the actual 63-seed direct-run cohort used for P7, including the 25 explicit task/problem-intent variants added after the original 38-seed contract;
+- recorded completed discovery (63/63), 24 finalist SERP clusters, 29 representative selections, 203 entrant-domain rows, cohort history and the finalist evidence matrix;
+- selected and recorded the Audio history policy (`730 / 365 / 730` days);
+- preserved the physical Google-location mismatch, domain/site-structure caps, unavailable first-seen evidence, page-fetch gaps and missing exact local Runner SHA as explicit limitations rather than fabricating provenance;
+- recorded traffic velocity as unavailable because no provider-neutral V2.1 traffic series was imported; retained older manual Ahrefs snapshots only as supplemental single-snapshot evidence;
+- assigned acquisition-anchor, strong-supporting and completeness roles while keeping all 16 v1 routes live;
+- rejected thin synonym routes and found no evidence strong enough to justify slug migrations;
+- applied narrow evidence-backed metadata wording to Tone, Headphone, Microphone, Pitch, Decibel and Noise pages without changing H1 product identity or tool behavior;
+- retained dBFS-first, latency-estimate and other measurement/safety boundaries despite search wording;
+- synchronized README, AGENTS, Overview, Research, SEO Architecture, Roadmap and Manifest to the reviewed P7 state;
+- left production indexing, sitemap/canonical implementation, real-device/browser QA, analytics and release decisions in P8.
+
 ## v1.12 — 2026-08-30
 
 P7 Runner-prerequisite synchronization and reproducible Audio evidence contract.
