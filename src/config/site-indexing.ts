@@ -10,10 +10,11 @@ export interface SiteIndexingConfig {
 }
 
 /**
- * P8 keeps production indexing mechanically blocked until the sitemap integration
- * and its positive build validation land in the repository.
+ * P8.3 ships the sitemap integration and positive indexed-build verification,
+ * so production indexing may now pass the readiness gate when explicitly enabled
+ * with a valid HTTPS origin. Preview/non-final builds remain disabled by default.
  */
-export const PRODUCTION_INDEXING_ARTIFACTS_READY = false;
+export const PRODUCTION_INDEXING_ARTIFACTS_READY = true;
 
 const disabledConfig: SiteIndexingConfig = {
   indexingEnabled: false,
