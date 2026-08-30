@@ -290,7 +290,7 @@ export class MultichannelOutput implements SessionResource {
       oscillator: enginePlayback.oscillator,
       channelIndex,
       stop: () => enginePlayback.stop(),
-      dispose: () => enginePlayback.dispose?.(),
+      dispose: () => enginePlayback.stop(),
     };
 
     enginePlayback.oscillator.addEventListener(
