@@ -295,7 +295,7 @@ No canonical is emitted when indexing gate is disabled.
 
 ## P7 research refresh
 
-P7 live evidence collection and human review are complete.
+P7 live evidence collection, human review and evidence-backed metadata/role decisions are complete in the current source baseline.
 
 Canonical records:
 
@@ -308,7 +308,7 @@ Material limitations remain explicit: physical Google location mismatch, capped 
 
 Those gaps constrain claims; they do not justify fabricating evidence or reopening functional scope.
 
-P7 closes only after this evidence-backed repository change passes the normal PR + cold-review workflow. P8 then owns production indexing and release work.
+P8 is the next phase and owns production indexing, final metadata/technical-SEO release mechanics, analytics, and browser/device release validation.
 
 ## Post-launch
 
