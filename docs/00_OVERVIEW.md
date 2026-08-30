@@ -69,12 +69,14 @@ As of 2026-08-30:
 P0–P6.3: implemented and merged
 core v1 catalog: all 16 tool routes live
 P7: fresh Runner evidence collected, reviewed and applied to SEO roles/metadata
-P8: in progress — P8.1 safe indexing-gate foundation implemented
+P8: in progress — P8.1 safe indexing gate + P8.2 static claims/metadata release audit complete
 ```
 
 P7 kept all 16 distinct product jobs, found no justified slug migrations, and prohibited synonym-page expansion. The reviewed evidence record lives at `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
 
 P8.1 preserves the preview safety boundary while moving release infrastructure into code: pages remain crawlable `noindex,nofollow` with no production canonical by default, and `/robots.txt` allows crawling without advertising a sitemap. `SITE_INDEXING=enabled` is intentionally blocked while `PRODUCTION_INDEXING_ARTIFACTS_READY = false`; the later sitemap/positive indexed-build unit must land before that guard may be lifted.
+
+P8.2 reviewed the static measurement/claims wording, final route metadata, page-level H1 identity, live-only related-link construction and current core-v1 privacy copy on baseline `dad7ec774659123a65fa279747c403e9d0db3ac3`. No source-copy/runtime change was justified. This is not browser/device/accessibility/visual or production-indexing certification. The audit record lives at `docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md`.
 
 The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units use the repository's PR + cold-review workflow and exact-SHA review evidence.
 
@@ -135,7 +137,7 @@ It is not a placeholder and is not left for the agent to invent.
 
 Its structural contract lives in `18_HOMEPAGE_AND_SITE_SHELL.md`.
 
-P6.3 finalized the live v1 catalog composition with the canonical featured four and live-only category directory. P7 found that composition compatible with current acquisition evidence and did not churn it merely to mirror keyword ranking.
+P6.3 finalized the live v1 catalog composition with the canonical featured four and live-only category directory. P7 found that composition compatible with current acquisition evidence and did not churn it merely to mirror keyword ranking. P8.2 found no static claims/metadata reason to change that composition.
 
 ## Mechanical merge gate
 
