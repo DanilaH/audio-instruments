@@ -102,7 +102,9 @@ P7 keeps all 16 routes, adds no synonym routes, makes no functional changes, and
 
 Do not reopen resolved choices because another implementation seems personally preferable.
 
-P8 is **in progress**. P8.1 implements the fail-closed indexing foundation: centralized `SITE_INDEXING` / `SITE_ORIGIN` validation, default `noindex,nofollow`, no default canonical, and crawlable `/robots.txt`.
+P8 is **in progress**.
+
+P8.1 implements the fail-closed indexing foundation: centralized `SITE_INDEXING` / `SITE_ORIGIN` validation, default `noindex,nofollow`, no default canonical, and crawlable `/robots.txt`.
 
 P8.2 completed the exact-baseline static release audit for measurement/claims wording, final static metadata, page-level H1 identity, live-only related links and current core-v1 privacy copy. The reviewed record is:
 
@@ -112,9 +114,15 @@ docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md
 
 Do not repeat P8.2 as speculative copy/metadata churn unless new material evidence or a blocking contradiction appears. P8.2 is **not** runtime accessibility, visual, browser/device, production-indexing, analytics/privacy-provider or CI certification.
 
-`PRODUCTION_INDEXING_ARTIFACTS_READY = false` is intentional. Do not flip it or make `SITE_INDEXING=enabled` produce indexable output until the official sitemap dependency/configuration and positive indexed-build validation land together in a later P8 unit. Do not invent a production domain.
+P8.3 installs and configures `@astrojs/sitemap@3.7.3`, makes Astro config the single owner of `SITE_INDEXING` / `SITE_ORIGIN` activation, derives runtime canonical/robots behavior from resolved `Astro.site`, and adds a positive indexed-build verifier. Supported local validation on Node `24.16.0` / pnpm `11.21.0` passed frozen install, `pnpm check`, all 172 unit tests and `pnpm test:indexing`; the verifier built all 18 HTML routes and verified robots/canonical/sitemap consistency at the synthetic validation origin. The evidence record is:
 
-Remaining P8 work includes sitemap integration, Playwright release execution, runtime accessibility/visual QA, final browser/device QA, analytics/privacy decisions, deployment and explicit production indexing activation.
+```text
+docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md
+```
+
+`PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means the technical sitemap/indexing artifacts exist and have positive build evidence. It is **not** release authorization. Default builds still remain `noindex,nofollow` with no production canonical or sitemap. Do not invent a production domain and do not enable final production indexing before the remaining P8 release gates and an explicit real-domain deployment decision.
+
+Remaining P8 work includes Playwright release execution, runtime accessibility/visual QA, final real browser/device QA, analytics/privacy decisions, deployment, Search Console and explicit production indexing activation.
 
 ## 4. Locked stack
 

@@ -124,7 +124,7 @@ export class AudioAnalyzer implements SessionResource {
   readonly #meterAnalyser: AnalyserNode;
   readonly #spectrumAnalyser: AnalyserNode;
   readonly #meterConfiguration: MeterConfiguration;
-  readonly #meterSamples: Float32Array;
+  readonly #meterSamples: Float32Array<ArrayBuffer>;
 
   #heldPeakDbfs = METER_DBFS_FLOOR;
   #peakHoldUntilMs = 0;
@@ -236,7 +236,9 @@ export class AudioAnalyzer implements SessionResource {
         `Waveform buffer length must equal current fftSize ${this.#spectrumAnalyser.fftSize}`,
       );
     }
-    this.#spectrumAnalyser.getFloatTimeDomainData(output);
+    this.#spectrumAnalyser.getFloatTimeDomainData(
+      output as Float32Array<ArrayBuffer>,
+    );
     return output;
   }
 
@@ -249,7 +251,9 @@ export class AudioAnalyzer implements SessionResource {
         `Frequency buffer length must equal frequencyBinCount ${this.#spectrumAnalyser.frequencyBinCount}`,
       );
     }
-    this.#spectrumAnalyser.getFloatFrequencyData(output);
+    this.#spectrumAnalyser.getFloatFrequencyData(
+      output as Float32Array<ArrayBuffer>,
+    );
     return output;
   }
 

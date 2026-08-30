@@ -34,15 +34,18 @@ Do not silently move the gate earlier in the workflow.
 Repository scripts are exact:
 
 ```text
-dev          = astro dev
-build        = astro build
-preview      = astro preview --host 127.0.0.1
-check        = astro check
-test         = vitest run
-test:browser = pnpm build && playwright test
-lint         = eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts"
-format:check = prettier --check source/tests/config files per `20_P0_TOOLING_CONTRACT.md`
+dev           = astro dev
+build         = astro build
+preview       = astro preview --host 127.0.0.1
+check         = astro check
+test          = vitest run
+test:indexing = node scripts/verify-indexed-build.mjs
+test:browser  = pnpm build && playwright test
+lint          = eslint src + tests + scripts + playwright/vitest/astro config files
+format:check  = prettier --check source/tests/scripts/config files per `20_P0_TOOLING_CONTRACT.md`
 ```
+
+`test:indexing` is the P8.3 positive indexed-build verifier; it is separate from the default noindex browser suite.
 
 ## Unit tests
 
@@ -396,32 +399,37 @@ Stop cancels sequence/sweep
 
 ## Indexing-gate tests
 
-### P0–P6
-
-Non-indexable behavior only:
+### Default/non-indexable build
 
 ```text
 SITE_INDEXING unset/disabled
 → noindex,nofollow
 → no production canonical
 → no production sitemap
+→ public preview remains crawlable
 ```
 
-Public preview stays crawlable.
+The browser regression covers `/`, `/privacy` and all 16 live tool routes, and verifies `/sitemap-index.xml` is absent in the default preview build.
 
-### P8 only
+### P8.3 positive indexed build
 
-After `@astrojs/sitemap`, production robots and SITE_ORIGIN validation are implemented:
+`pnpm test:indexing` builds with a synthetic valid HTTPS origin and verifies:
 
 ```text
 SITE_INDEXING=enabled + valid SITE_ORIGIN
-→ index,follow
-→ correct canonical
-→ correct sitemap origin
+→ index,follow on all 18 HTML routes
+→ canonical remains on configured origin
+→ sitemap-index.xml exists
+→ sitemap-0.xml exists
 → robots Sitemap directive correct
+→ every canonical appears in sitemap
 ```
 
-Do not make positive sitemap tests block P0–P6.
+Supported local execution on Node `24.16.0` / pnpm `11.21.0` passed at validation SHA `5d2bde8e5b51c26507abb4b63e0da1e043998ea5`.
+
+Evidence: `docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md`.
+
+Positive artifact readiness does not certify production activation or the remaining browser/device release gates.
 
 ## Browser-test server contract
 
@@ -430,8 +438,10 @@ Do not make positive sitemap tests block P0–P6.
 ```text
 command = pnpm preview
 url/baseURL = http://127.0.0.1:4321
-reuseExistingServer = !CI
+reuseExistingServer = false
 ```
+
+Local and CI browser runs must start the preview for the current checkout rather than silently reusing an unrelated/stale process already listening on port 4321.
 
 The build step runs before browser tests in full CI.
 

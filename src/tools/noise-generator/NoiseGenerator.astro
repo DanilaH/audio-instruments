@@ -63,7 +63,7 @@ const timerLabel = (minutes: number) => (minutes === 0 ? "Off" : `${minutes} min
                 <button
                   type="button"
                   data-noise-kind={kind}
-                  aria-pressed={String(kind === NOISE_GENERATOR_INITIAL_KIND)}
+                  aria-pressed={kind === NOISE_GENERATOR_INITIAL_KIND}
                 >
                   <span class={`noise-dot noise-dot--${kind}`} aria-hidden="true"></span>
                   {kindLabel(kind)}
@@ -81,7 +81,7 @@ const timerLabel = (minutes: number) => (minutes === 0 ? "Off" : `${minutes} min
                 <button
                   type="button"
                   data-noise-timer={minutes}
-                  aria-pressed={String(minutes === NOISE_GENERATOR_INITIAL_TIMER_MINUTES)}
+                  aria-pressed={minutes === NOISE_GENERATOR_INITIAL_TIMER_MINUTES}
                 >
                   {timerLabel(minutes)}
                 </button>

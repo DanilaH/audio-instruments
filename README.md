@@ -14,23 +14,27 @@ The working visual direction is **Soft Sonic Studio**: a warm, friendly, express
 
 ## Documentation status
 
-Documentation baseline: **v1.15**
+Documentation baseline: **v1.16**
 
 Implementation status:
 
 ```text
 P0–P6.3 functional roadmap    IMPLEMENTED
 P7 SEO evidence refresh       COMPLETED — fresh Runner evidence reviewed and applied
-P8 final audit / release      IN PROGRESS — indexing foundation + static release audit complete
+P8 final audit / release      IN PROGRESS — indexing foundation, static audit and sitemap/positive-indexing gate complete
 ```
 
 All 16 core v1 tool routes are live, and P6.3 final catalog homepage composition is merged. P7 retained the full route set, assigned evidence-backed acquisition/support/completeness roles, found no justified slug migrations, and applied narrow metadata wording changes without changing tool behavior.
 
 Reviewed P7 evidence: `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
 
-P8.1 centralizes the `SITE_INDEXING` / `SITE_ORIGIN` policy, keeps public preview pages crawlable but `noindex,nofollow`, omits production canonicals by default, and serves an environment-aware `/robots.txt`. Production indexing remains mechanically blocked by `PRODUCTION_INDEXING_ARTIFACTS_READY = false` until the official sitemap integration and positive indexed-build validation land in a later P8 unit.
+P8.1 centralizes the `SITE_INDEXING` / `SITE_ORIGIN` policy, keeps public preview pages crawlable but `noindex,nofollow`, omits production canonicals by default, and serves an environment-aware `/robots.txt`.
 
 P8.2 completed a static release audit on main baseline `dad7ec774659123a65fa279747c403e9d0db3ac3`. Measurement/claims wording, final static metadata, page-level H1 identity, live-only related links and current core-v1 privacy copy were clean; no runtime/source-copy change was justified. Evidence: `docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md`. This does not certify runtime accessibility, visual QA, browser/device behavior, production indexing, analytics/privacy-provider compliance, deployment or CI.
+
+P8.3 installed `@astrojs/sitemap@3.7.3`, made Astro config the single activation owner for `SITE_INDEXING` / `SITE_ORIGIN`, and added a real positive indexed-build verifier. Supported local validation on Node `24.16.0` / pnpm `11.21.0` passed frozen install, `pnpm check`, all 172 unit tests and `pnpm test:indexing`; the verifier built `/`, `/privacy` and all 16 live tool routes at the synthetic origin `https://indexing-test.example`, then verified robots, canonical and sitemap consistency. Evidence: `docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md`.
+
+`PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means the repository contains the required sitemap/indexing artifacts. It is **not** production release authorization. Default builds remain `noindex,nofollow` with no production canonical or sitemap. Real production indexing still requires the remaining P8 gates plus explicit `SITE_INDEXING=enabled` and a valid real HTTPS `SITE_ORIGIN` during deployment.
 
 The original cold pre-code review on 2026-08-28 closed with:
 
@@ -43,7 +47,7 @@ The repository intentionally remains private on the current free GitHub plan. Pr
 
 A GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`.
 
-Remaining P8 work includes the sitemap dependency/positive indexing build, Playwright release execution, runtime accessibility/visual QA, real-device/browser QA, analytics/privacy decisions, deployment and final indexing activation on a real production domain.
+Remaining P8 work includes Playwright release execution, runtime accessibility/visual QA, real-device/browser QA, analytics/privacy decisions, deployment, Search Console, explicit final indexing activation on a real production domain and final validation evidence.
 
 ## Stack
 
@@ -111,7 +115,8 @@ docs/
     ├── P7_AUDIO_RUNNER_SEEDS_2026-08-30.csv
     ├── P7_RUNNER_EXECUTION.md
     ├── P7_AUDIO_EVIDENCE_2026-08-30.md
-    └── P8_STATIC_RELEASE_AUDIT_2026-08-30.md
+    ├── P8_STATIC_RELEASE_AUDIT_2026-08-30.md
+    └── P8_INDEXING_VALIDATION_2026-08-30.md
 ```
 
 Each concern has one authoritative home. Do not recreate a second master specification.
@@ -213,11 +218,17 @@ motion
 @phosphor-icons/web
 ```
 
+P8 additionally uses the release-only build integration:
+
+```text
+@astrojs/sitemap@3.7.3
+```
+
 Do not substitute React/Vue icon or Motion bindings.
 
 Import only the Phosphor weights actually used; do not load the complete icon-font bundle.
 
-Exact resolved package versions are pinned by `pnpm-lock.yaml` during P0.
+Exact resolved package versions are pinned by `pnpm-lock.yaml`.
 
 ## CI merge-gate rule
 
@@ -246,7 +257,7 @@ Current private-plan/manual-gate limitations and the recorded no-runner incident
 
 ## Documentation freeze rule
 
-v1.15 records P8.2's exact-baseline static release audit. It does not claim the sitemap dependency, a production domain, positive indexed-build validation, Playwright release execution, runtime accessibility/visual QA, real-device/browser QA, analytics, deployment or release are complete.
+v1.16 records P8.3 sitemap/indexing artifact readiness and positive build evidence. It does not claim a production domain, Playwright release execution, runtime accessibility/visual QA, real-device/browser QA, analytics, deployment, Search Console, final production indexing activation or green hosted CI are complete.
 
 Current rule:
 

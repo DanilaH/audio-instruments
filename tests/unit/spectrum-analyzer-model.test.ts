@@ -116,7 +116,7 @@ describe("SpectrogramHistory", () => {
       history.ingest(index * step, values);
     }
 
-    const nowMs = SPECTROGRAM_COLUMN_CAPACITY * step;
+    const nowMs = (SPECTROGRAM_COLUMN_CAPACITY + 4) * step;
     const columns = history.columnsForRender(nowMs);
     expect(columns.length).toBeLessThanOrEqual(SPECTROGRAM_COLUMN_CAPACITY);
     expect(history.size).toBeLessThanOrEqual(SPECTROGRAM_COLUMN_CAPACITY);

@@ -1,5 +1,25 @@
 # Documentation Changelog
 
+## v1.16 — 2026-08-30
+
+P8.3 sitemap integration and positive indexed-build gate.
+
+Changes:
+
+- installed `@astrojs/sitemap@3.7.3` with a pnpm-generated lockfile;
+- moved production-indexing activation into typed `astro.config.ts` so `SITE_INDEXING` / `SITE_ORIGIN` are validated once at config time;
+- derived runtime canonical and robots behavior from resolved `Astro.site` rather than independently re-reading environment values;
+- kept ordinary/default builds crawlable but `noindex,nofollow`, with no production canonical and no sitemap output;
+- enabled sitemap output only for explicit enabled builds with a valid absolute HTTPS origin;
+- added `scripts/verify-indexed-build.mjs` and `pnpm test:indexing` to build an indexed synthetic release and verify all 18 HTML routes, `robots.txt`, `sitemap-index.xml`, `sitemap-0.xml`, canonical origin-lock and canonical↔sitemap consistency;
+- added the positive indexing verifier to full-validation;
+- validated frozen install, `pnpm check`, 172/172 unit tests and `pnpm test:indexing` on Node `24.16.0` / pnpm `11.21.0` at execution SHA `5d2bde8e5b51c26507abb4b63e0da1e043998ea5`;
+- preserved `https://indexing-test.example` as synthetic validation input only, not a production-domain decision;
+- set `PRODUCTION_INDEXING_ARTIFACTS_READY = true` only to represent technical artifact readiness, while keeping final production indexing gated by the remaining P8 release work and explicit real-domain deployment configuration;
+- recorded validation evidence in `docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md`;
+- investigated validation follow-up findings instead of blanket-classifying them as environment failures, including Windows pnpm spawn compatibility, TypeScript/tooling issues, stale Playwright preview reuse and targeted first-viewport layout failures;
+- kept full Playwright release execution, runtime accessibility/visual QA, real browser/device QA, analytics/privacy decisions, deployment, Search Console, final production indexing activation and green hosted CI pending.
+
 ## v1.15 — 2026-08-30
 
 P8.2 exact-baseline static release audit.

@@ -1,6 +1,6 @@
 {
-  "version": "1.15",
-  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence is collected, reviewed and applied; P8 is in progress with P8.1 fail-closed indexing foundation and P8.2 static claims/metadata release audit complete while sitemap, runtime/browser/device QA, analytics, deployment and production activation remain pending",
+  "version": "1.16",
+  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence is collected, reviewed and applied; P8 is in progress with P8.1 indexing foundation, P8.2 static claims/metadata audit and P8.3 sitemap/positive-indexing build gate complete while runtime/browser/device QA, analytics, deployment and explicit production activation remain pending",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
     "docs/01_RESEARCH_AND_EVIDENCE.md",
@@ -28,7 +28,8 @@
     "docs/evidence/competitor-evidence.csv",
     "docs/evidence/MANUAL_AHREFS_2026-08-28.md",
     "docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md",
-    "docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md"
+    "docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md",
+    "docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md"
   ],
   "p7_evidence_contract": {
     "state": "completed_live_audio_evidence_reviewed_and_applied",
@@ -93,7 +94,7 @@
     "core_v1_live_tool_routes": 16,
     "p6_3_main_commit": "0be4128242ddeab669cbc8374e9fc9b9b5bd23ac",
     "p7": "completed_live_evidence_reviewed_and_applied",
-    "p8": "in_progress_p8_1_indexing_foundation_p8_2_static_release_audit",
+    "p8": "in_progress_p8_1_indexing_foundation_p8_2_static_release_audit_p8_3_sitemap_positive_indexing_gate",
     "p8_scope": [
       "final_audit_and_release",
       "real_device_browser_qa",
@@ -101,13 +102,9 @@
     ],
     "p8_1": {
       "state": "safe_indexing_gate_foundation_implemented",
-      "production_indexing_artifacts_ready": false,
-      "remaining_before_positive_indexing": [
-        "lockfile-consistent @astrojs/sitemap installation and configuration",
-        "positive SITE_INDEXING + SITE_ORIGIN indexed-build/sitemap validation",
-        "real production domain",
-        "remaining release gates"
-      ]
+      "artifact_prerequisite_state": "satisfied_by_p8_3",
+      "production_indexing_artifacts_ready": true,
+      "default_indexing_state": "disabled_noindex_nofollow"
     },
     "p8_2": {
       "state": "static_release_audit_complete_no_source_change_required",
@@ -132,24 +129,57 @@
         "search_console",
         "green_ci"
       ]
+    },
+    "p8_3": {
+      "state": "sitemap_and_positive_indexing_build_gate_complete",
+      "dependency": "@astrojs/sitemap@3.7.3",
+      "validated_execution_sha": "5d2bde8e5b51c26507abb4b63e0da1e043998ea5",
+      "validated_runtime": {
+        "node": "24.16.0",
+        "pnpm": "11.21.0"
+      },
+      "validated_commands": {
+        "pnpm_install_frozen_lockfile": "pass",
+        "pnpm_check": "pass",
+        "pnpm_test": "pass_172_of_172",
+        "pnpm_test_indexing": "pass"
+      },
+      "positive_indexing_routes_verified": 18,
+      "synthetic_validation_origin": "https://indexing-test.example",
+      "evidence": "docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md",
+      "release_authorization": "not_granted_by_artifact_readiness",
+      "remaining_release_gates": [
+        "playwright_release_execution",
+        "runtime_accessibility",
+        "visual_qa",
+        "real_browser_matrix",
+        "real_device_qa",
+        "analytics_privacy_provider_decision",
+        "deployment",
+        "search_console",
+        "explicit_real_domain_indexing_activation",
+        "green_ci_final_validation"
+      ]
     }
   },
   "workflow": "development -> checkpoint commit -> Draft PR -> cold Review #1 by project assistant -> fixes/commits -> cold Review #2 by project assistant -> add full-ci-approved -> Ready -> full-validation -> merge-gate -> fix/cold re-review/rerun if needed -> squash merge -> next branch",
   "repository_files": [
     ".gitignore",
+    ".gitattributes",
     ".github/workflows/ci.yml",
     ".github/dependabot.yml",
     ".nvmrc",
     "package.json",
     "pnpm-lock.yaml",
     "pnpm-workspace.yaml",
-    "astro.config.mjs",
+    "astro.config.ts",
     "tsconfig.json",
     "vitest.config.ts",
     "playwright.config.ts",
     "eslint.config.mjs",
     ".prettierrc.mjs",
-    ".prettierignore"
+    ".prettierignore",
+    "scripts/verify-indexed-build.mjs"
   ],
   "runtime": {
     "node": ">=24.16 <25",
@@ -162,11 +192,12 @@
     "default": "noindex,nofollow",
     "preview_robots": "crawlable: User-agent * / Allow /; no Sitemap directive",
     "production_env_requirements": "SITE_INDEXING=enabled + valid absolute HTTPS origin-only SITE_ORIGIN",
-    "production_artifacts_ready": false,
+    "production_artifacts_ready": true,
     "readiness_guard": "PRODUCTION_INDEXING_ARTIFACTS_READY",
-    "current_effect": "SITE_INDEXING=enabled fails closed until the later sitemap + positive indexed-build P8 unit lands",
+    "current_effect": "default builds remain noindex with no canonical or sitemap; explicit enabled builds with a valid HTTPS origin may emit index,follow + canonical + sitemap artifacts",
     "canonical_default": "omitted",
-    "sitemap": "pending @astrojs/sitemap installation/configuration and positive build validation"
+    "sitemap": "@astrojs/sitemap@3.7.3 configured only for an explicitly enabled valid production-origin build",
+    "release_activation_policy": "technical readiness is not release authorization; real-domain activation waits for remaining P8 gates"
   },
   "ci_gate": {
     "authorization_label": "full-ci-approved",
@@ -193,7 +224,7 @@
   "dependencies": {
     "animation": "motion",
     "icons": "@phosphor-icons/web",
-    "release_sitemap": "@astrojs/sitemap (P8; pending lockfile-consistent install)"
+    "release_sitemap": "@astrojs/sitemap@3.7.3"
   },
   "tooling": {
     "astro_check": [
@@ -212,12 +243,13 @@
       "prettier",
       "prettier-plugin-astro"
     ],
-    "browser_test": "@playwright/test"
+    "browser_test": "@playwright/test",
+    "positive_indexing_test": "scripts/verify-indexed-build.mjs"
   },
   "documentation_policy": {
-    "state": "p8_in_progress_static_release_audit_recorded",
+    "state": "p8_in_progress_p8_3_indexing_artifacts_ready",
     "original_cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
-    "next_step": "complete a lockfile-consistent sitemap + positive indexed-build P8 unit before lifting PRODUCTION_INDEXING_ARTIFACTS_READY; continue runtime accessibility, visual and real browser/device release QA separately without treating P8.2 as runtime certification",
+    "next_step": "continue P8 with Playwright release execution, runtime accessibility/visual QA and real browser/device QA; keep production indexing disabled until real-domain deployment and the remaining release gates are explicitly satisfied",
     "reopen_for": [
       "implementation-discovered contradiction",
       "real CI/browser failure requiring source-of-truth correction",

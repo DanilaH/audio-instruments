@@ -286,12 +286,11 @@ export class MultichannelOutput implements SessionResource {
       durationSeconds,
     });
 
-    let playback: MultichannelBurstPlayback;
-    playback = {
+    const playback: MultichannelBurstPlayback = {
       oscillator: enginePlayback.oscillator,
       channelIndex,
       stop: () => enginePlayback.stop(),
-      dispose: () => enginePlayback.dispose(),
+      dispose: () => enginePlayback.stop(),
     };
 
     enginePlayback.oscillator.addEventListener(

@@ -240,7 +240,7 @@ hostname is non-empty
 no path/query/hash beyond "/"
 ```
 
-When indexing is enabled:
+When indexing is explicitly enabled:
 
 ```text
 robots = index,follow
@@ -248,20 +248,30 @@ canonical = SITE_ORIGIN + normalized pathname
 sitemap origin = SITE_ORIGIN
 ```
 
+P8.3 makes this positive build path technically available, but final production activation still waits for the remaining P8 release gates and a real production domain.
+
 ## Sitemap / robots implementation ownership
 
-P8 adds official package:
+Implemented in P8.1/P8.3 with:
 
 ```text
-@astrojs/sitemap
+@astrojs/sitemap@3.7.3
+astro.config.ts
+src/pages/robots.txt.ts
+src/config/site-indexing.ts
+scripts/verify-indexed-build.mjs
 ```
 
-Astro config includes the sitemap integration only when the indexing gate is satisfied.
+Astro config is the single owner of `SITE_INDEXING` / `SITE_ORIGIN` activation. It includes the sitemap integration only when the indexing gate is explicitly enabled and the origin is valid.
+
+Runtime page canonical/robots behavior derives from resolved `Astro.site`; pages do not independently re-read the activation environment.
 
 For non-indexable builds:
 
 ```text
 do not enable @astrojs/sitemap
+robots meta = noindex,nofollow
+canonical omitted
 ```
 
 `src/pages/robots.txt.ts` is environment-aware:
@@ -283,15 +293,17 @@ Sitemap: <SITE_ORIGIN>/sitemap-index.xml
 
 Private staging is protected at hosting level; robots.txt is not its protection mechanism.
 
-## Canonical
-
-Production canonical uses:
+P8.3 positive build evidence is recorded in:
 
 ```text
-new URL(normalizedPathname, SITE_ORIGIN)
+docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md
 ```
 
-No canonical is emitted when indexing gate is disabled.
+## Canonical
+
+Production canonical is built from the validated configured origin and a normalized pathname while keeping the origin locked.
+
+No canonical is emitted when the indexing gate is disabled.
 
 ## P7 research refresh
 
@@ -308,7 +320,7 @@ Material limitations remain explicit: physical Google location mismatch, capped 
 
 Those gaps constrain claims; they do not justify fabricating evidence or reopening functional scope.
 
-P8 is the next phase and owns production indexing, final metadata/technical-SEO release mechanics, analytics, and browser/device release validation.
+P8 is in progress. P8.1 established the default noindex gate, P8.2 closed the static claims/metadata audit, and P8.3 implemented and positively build-tested the sitemap/canonical/robots production artifact path. Remaining P8 work owns release QA, analytics/privacy decisions, deployment and explicit real-domain indexing activation.
 
 ## Post-launch
 

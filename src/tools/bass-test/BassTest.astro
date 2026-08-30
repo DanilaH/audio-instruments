@@ -514,42 +514,85 @@ import {
     border: 0;
   }
 
+  @media (min-width: 931px) and (max-height: 820px) {
+    .bass-instrument {
+      min-height: 390px;
+    }
+
+    .bass-visual,
+    .bass-controls {
+      padding: 16px 20px;
+    }
+
+    .bass-controls {
+      gap: 7px;
+    }
+
+    .bass-safety {
+      padding: 8px 10px;
+    }
+
+    .bass-safety p {
+      font-size: 0.72rem;
+      line-height: 1.32;
+    }
+
+    .bass-safety strong {
+      display: none;
+    }
+
+    .bass-panel {
+      gap: 7px;
+      min-height: 118px;
+    }
+
+    .bass-panel__summary {
+      gap: 6px;
+      padding: 9px 11px;
+    }
+
+    .bass-footer {
+      gap: 8px;
+      padding-top: 5px;
+    }
+
+    .bass-driver {
+      width: min(170px, 54%);
+    }
+  }
+
   @media (max-width: 930px) {
     .bass-instrument {
       grid-template-columns: 1fr;
     }
 
     .bass-visual {
-      min-height: 250px;
+      min-height: 210px;
       border-right: 0;
       border-bottom: 1px solid var(--color-border);
     }
 
     .bass-driver {
-      width: min(160px, 44%);
+      width: min(132px, 38%);
     }
   }
 
   @media (max-width: 560px) {
     .bass-visual {
-      min-height: 130px;
-      padding: 10px 20px;
+      min-height: 0;
+      padding: 8px 16px;
     }
 
     .bass-controls {
-      padding: 12px 20px 18px;
+      gap: 8px;
+      padding: 8px 14px 12px;
     }
 
-    .bass-driver {
-      width: 72px;
-    }
-
-    .bass-visual__note {
+    .bass-driver,
+    .bass-scale,
+    .bass-visual__note,
+    .bass-safety strong {
       display: none;
-    }
-
-    .bass-scale {
-      padding-top: 5px;
     }
 
     .bass-mode-selector {

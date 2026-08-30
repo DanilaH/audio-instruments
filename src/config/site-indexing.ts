@@ -1,6 +1,6 @@
 export interface SiteIndexingEnvironment {
-  readonly SITE_INDEXING?: string;
-  readonly SITE_ORIGIN?: string;
+  readonly SITE_INDEXING?: string | undefined;
+  readonly SITE_ORIGIN?: string | undefined;
 }
 
 export interface SiteIndexingConfig {
@@ -10,10 +10,11 @@ export interface SiteIndexingConfig {
 }
 
 /**
- * P8 keeps production indexing mechanically blocked until the sitemap integration
- * and its positive build validation land in the repository.
+ * P8.3 ships the sitemap integration and positive indexed-build verification,
+ * so production indexing may now pass the readiness gate when explicitly enabled
+ * with a valid HTTPS origin. Preview/non-final builds remain disabled by default.
  */
-export const PRODUCTION_INDEXING_ARTIFACTS_READY = false;
+export const PRODUCTION_INDEXING_ARTIFACTS_READY = true;
 
 const disabledConfig: SiteIndexingConfig = {
   indexingEnabled: false,
@@ -40,6 +41,48 @@ export function resolveSiteIndexingConfig(
     throw new Error("SITE_ORIGIN is required when SITE_INDEXING=enabled.");
   }
 
+  return enabledConfigFromOrigin(rawOrigin);
+}
+
+/**
+ * Runtime pages consume Astro's resolved `site` config rather than reading env
+ * again. This keeps sitemap activation, canonical metadata and robots output on
+ * one config-time decision path.
+ */
+export function resolveSiteIndexingConfigFromSite(
+  site: URL | null | undefined,
+): SiteIndexingConfig {
+  if (!site) {
+    return disabledConfig;
+  }
+
+  return enabledConfigFromOrigin(site.href);
+}
+
+export function buildCanonicalUrl(
+  config: SiteIndexingConfig,
+  pathname: string,
+): string | null {
+  if (!config.indexingEnabled || !config.siteOrigin) {
+    return null;
+  }
+
+  const canonical = new URL(config.siteOrigin);
+  canonical.pathname = normalizePathname(pathname);
+  return canonical.href;
+}
+
+export function buildRobotsTxt(config: SiteIndexingConfig): string {
+  const lines = ["User-agent: *", "Allow: /"];
+
+  if (config.indexingEnabled && config.siteOrigin) {
+    lines.push(`Sitemap: ${config.siteOrigin}/sitemap-index.xml`);
+  }
+
+  return `${lines.join("\n")}\n`;
+}
+
+function enabledConfigFromOrigin(rawOrigin: string): SiteIndexingConfig {
   let origin: URL;
   try {
     origin = new URL(rawOrigin);
@@ -72,29 +115,6 @@ export function resolveSiteIndexingConfig(
     siteOrigin: origin.origin,
     robotsDirective: "index,follow",
   };
-}
-
-export function buildCanonicalUrl(
-  config: SiteIndexingConfig,
-  pathname: string,
-): string | null {
-  if (!config.indexingEnabled || !config.siteOrigin) {
-    return null;
-  }
-
-  const canonical = new URL(config.siteOrigin);
-  canonical.pathname = normalizePathname(pathname);
-  return canonical.href;
-}
-
-export function buildRobotsTxt(config: SiteIndexingConfig): string {
-  const lines = ["User-agent: *", "Allow: /"];
-
-  if (config.indexingEnabled && config.siteOrigin) {
-    lines.push(`Sitemap: ${config.siteOrigin}/sitemap-index.xml`);
-  }
-
-  return `${lines.join("\n")}\n`;
 }
 
 function normalizePathname(pathname: string): string {
