@@ -10,6 +10,15 @@ Raw/manual competitor snapshots live in:
 docs/evidence/competitor-evidence.csv
 ```
 
+The canonical P7 live-run input and execution contract live in:
+
+```text
+docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv
+docs/evidence/P7_RUNNER_EXECUTION.md
+```
+
+Those P7 files define collection/provenance rules; they are not live evidence by themselves.
+
 ## Evidence ladder
 
 ```text
@@ -28,11 +37,11 @@ Current Audio research is pre-launch evidence, primarily L1–L3.
 
 ## Current conclusion
 
-Audio has enough evidence to build.
+Audio has enough evidence to build and the full 16-tool v1 catalog is already implemented.
 
-The upgraded SEO runner is not a development blocker.
+The upgraded SEO Runner V2.1 prerequisite is now available. The Audio-specific fresh P7 evidence run is still pending.
 
-It is expected to refine:
+P7 is expected to refine:
 
 ```text
 entrant repeatability
@@ -41,6 +50,8 @@ traffic velocity
 domain/page/history moat
 acquisition-anchor priority
 ```
+
+Do not treat Runner availability or the execution contract as evidence that those questions are already resolved.
 
 ## Current notable signals
 
@@ -130,9 +141,9 @@ traffic-estimate noise
 
 Never infer a success probability from observed winners.
 
-## Future runner evidence matrix
+## P7 Runner evidence matrix
 
-Each finalist cluster should eventually expose:
+The V2.1 finalist evidence matrix exposes the following evidence blocks for each selected finalist cluster:
 
 ```text
 Demand
@@ -143,6 +154,8 @@ Moat
 Geo/monetization
 Product feasibility
 ```
+
+The matrix remains an evidence surface, not a single opportunity score.
 
 Separate:
 
@@ -158,6 +171,8 @@ strong_supporting_tool
 completeness_tool
 experimental
 ```
+
+Human decisions are recorded only after the current live evidence is reviewed.
 
 ## Evidence provenance requirement
 
