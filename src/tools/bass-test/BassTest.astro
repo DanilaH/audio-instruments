@@ -566,42 +566,33 @@ import {
       grid-template-columns: 1fr;
     }
 
-    .bass-controls {
-      order: -1;
-    }
-
     .bass-visual {
-      min-height: 250px;
+      min-height: 210px;
       border-right: 0;
       border-bottom: 1px solid var(--color-border);
     }
 
     .bass-driver {
-      width: min(160px, 44%);
+      width: min(132px, 38%);
     }
   }
 
   @media (max-width: 560px) {
     .bass-visual {
-      min-height: 110px;
+      min-height: 0;
       padding: 8px 16px;
     }
 
     .bass-controls {
-      padding: 10px 16px 14px;
+      gap: 8px;
+      padding: 8px 14px 12px;
     }
 
-    .bass-driver {
-      width: 64px;
-    }
-
+    .bass-driver,
+    .bass-scale,
     .bass-visual__note,
     .bass-safety strong {
       display: none;
-    }
-
-    .bass-scale {
-      padding-top: 4px;
     }
 
     .bass-mode-selector {
