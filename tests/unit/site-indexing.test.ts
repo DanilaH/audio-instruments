@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  PRODUCTION_INDEXING_ARTIFACTS_READY,
   buildCanonicalUrl,
   buildRobotsTxt,
   resolveSiteIndexingConfig,
@@ -18,13 +19,8 @@ describe("site indexing gate", () => {
     expect(buildRobotsTxt(config)).toBe("User-agent: *\nAllow: /\n");
   });
 
-  it("blocks SITE_INDEXING until the remaining P8 indexing artifacts land", () => {
-    expect(() =>
-      resolveSiteIndexingConfig({
-        SITE_INDEXING: "enabled",
-        SITE_ORIGIN: "https://example.com",
-      }),
-    ).toThrow(/blocked until the production sitemap\/indexing artifacts are ready/i);
+  it("marks the production indexing artifacts ready after P8.3 sitemap integration", () => {
+    expect(PRODUCTION_INDEXING_ARTIFACTS_READY).toBe(true);
   });
 
   it.each([
@@ -37,24 +33,18 @@ describe("site indexing gate", () => {
     ["not a url", /valid absolute HTTPS origin/],
   ])("rejects invalid production origins: %s", (siteOrigin, expected) => {
     expect(() =>
-      resolveSiteIndexingConfig(
-        {
-          SITE_INDEXING: "enabled",
-          ...(siteOrigin === undefined ? {} : { SITE_ORIGIN: siteOrigin }),
-        },
-        true,
-      ),
+      resolveSiteIndexingConfig({
+        SITE_INDEXING: "enabled",
+        ...(siteOrigin === undefined ? {} : { SITE_ORIGIN: siteOrigin }),
+      }),
     ).toThrow(expected);
   });
 
   it("builds canonical and robots output only for a valid enabled origin", () => {
-    const config = resolveSiteIndexingConfig(
-      {
-        SITE_INDEXING: "enabled",
-        SITE_ORIGIN: "https://Audio.Example.com/",
-      },
-      true,
-    );
+    const config = resolveSiteIndexingConfig({
+      SITE_INDEXING: "enabled",
+      SITE_ORIGIN: "https://Audio.Example.com/",
+    });
 
     expect(config).toEqual({
       indexingEnabled: true,
