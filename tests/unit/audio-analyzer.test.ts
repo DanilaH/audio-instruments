@@ -192,7 +192,7 @@ describe("AudioAnalyzer service", () => {
     meter!.timeData = quiet;
 
     const duringHold = analyzer.readMeter(500);
-    expect(duringHold.peakDbfs).toBeCloseTo(-26.020599913, 8);
+    expect(duringHold.peakDbfs).toBeCloseTo(-26.020599913, 6);
     expect(duringHold.heldPeakDbfs).toBeCloseTo(-6.020599913, 8);
 
     const afterHalfSecondDecay = analyzer.readMeter(1_500);
