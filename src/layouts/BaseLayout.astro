@@ -4,7 +4,7 @@ import "../styles/global.css";
 import "../styles/touch-targets.css";
 import {
   buildCanonicalUrl,
-  resolveSiteIndexingConfig,
+  resolveSiteIndexingConfigFromSite,
 } from "../config/site-indexing";
 
 interface Props {
@@ -15,7 +15,7 @@ interface Props {
 
 const { title, description, hasLiveTools = false } = Astro.props;
 const year = new Date().getFullYear();
-const indexing = resolveSiteIndexingConfig(import.meta.env);
+const indexing = resolveSiteIndexingConfigFromSite(Astro.site);
 const canonicalUrl = buildCanonicalUrl(indexing, Astro.url.pathname);
 ---
 
