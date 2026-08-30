@@ -92,13 +92,17 @@ P0 package/scripts/lint/format/test tooling
 
 P0–P6.3 are **implemented and merged** as of 2026-08-30, including all 16 core v1 tool routes and the final catalog homepage composition.
 
+P7 fresh SEO evidence has now been collected, reviewed and applied. The reviewed source-of-truth record is:
+
+```text
+docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md
+```
+
+P7 keeps all 16 routes, adds no synonym routes, makes no functional changes, and uses acquisition/support/completeness roles only to guide SEO emphasis. Evidence gaps such as the physical Google-location mismatch, capped domain-history coverage, unavailable first-seen evidence, unavailable traffic velocity and missing exact local Runner SHA remain explicit rather than being guessed away.
+
 Do not reopen resolved choices because another implementation seems personally preferable.
 
-The upgraded SEO Research Runner V2.1 prerequisite for P7 is available. The Audio-specific live P7 evidence run is still pending and must follow `docs/evidence/P7_RUNNER_EXECUTION.md` with `docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv` as the canonical initial input.
-
-Do not treat the P7 execution contract itself as evidence or make evidence-dependent SEO decisions before the live artifacts are reviewed.
-
-P8 remains phase-gated after completed P7 and still requires real-device/browser QA plus production decisions.
+P8 is the next phase and still requires final browser/device QA, accessibility/release review, analytics, and explicit production indexing decisions.
 
 ## 4. Locked stack
 
@@ -281,7 +285,9 @@ No thin synonym pages.
 
 A route requires a distinct job/interaction/result/intent.
 
-SEO priority may change later without redefining functional behavior.
+SEO priority may change without redefining functional behavior.
+
+P7 route roles and intent ownership live in `09_SEO_ARCHITECTURE.md`; do not replace them with a single aggregate opportunity score.
 
 ## 15. Workflow is mandatory
 
@@ -512,7 +518,6 @@ For that signature:
 - never call it green CI;
 - the no-runner signature is **not merge authorization**;
 - do not weaken or rewrite the required merge-gate contract merely to make the failure disappear;
-- preserve exact-SHA review/CI evidence for incident diagnosis and historical record;
-- do not confuse this hosted GitHub Actions incident with the separate local SEO Research Runner prerequisite, which is now available for P7.
+- preserve exact-SHA review/CI evidence for incident diagnosis and historical record.
 
 This section records an observed infrastructure incident. It is not a permanent waiver policy and does not replace `15_DEVELOPMENT_WORKFLOW.md` or `16_CI_AND_REPOSITORY_GATES.md`.

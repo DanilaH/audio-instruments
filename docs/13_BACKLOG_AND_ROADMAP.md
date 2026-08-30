@@ -11,11 +11,11 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 ```text
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
-P7 prerequisite available: upgraded SEO Runner V2.1 is landed; Audio-specific live evidence run is pending
-P8 phase-gated after completed P7; includes real-device/browser QA + production decisions
+P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
+P8 next phase: real-device/browser QA + production decisions
 ```
 
-Do not substitute manual source polish for the P7 evidence run. The reproducible Audio input and execution contract live in `docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv` and `docs/evidence/P7_RUNNER_EXECUTION.md`.
+P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
 
 ## P0 — Repository bootstrap
 
@@ -151,25 +151,41 @@ Then PR/review/validation/merge.
 
 ## P7 — SEO evidence refresh
 
-Current gate: **unblocked at the Runner-capability level; Audio-specific live evidence is still pending**.
+Current state: **complete in the current source baseline**.
 
-The upgraded Runner V2.1 analytical pipeline is available. Execute P7 from the canonical Audio seed cohort and execution contract in `docs/evidence/`.
-
-Do not substitute manual source polish, old frozen-corpus observations or warm-cache replay for the fresh Audio evidence run.
-
-Then review:
+Completed evidence path:
 
 ```text
-cohorts
-target intent
-velocity
-moat
-role update
-slug review
-internal-link review
+63-seed fresh discovery
+→ SERP clustering
+→ targeted deep enrichment
+→ representative queries
+→ entrant cohort
+→ cohort history
+→ finalist evidence matrix
+→ human route/intent review
 ```
 
-P7 is not complete until the fresh artifacts are reviewed and any justified repository changes pass the normal PR + cold-review workflow.
+Final decisions:
+
+```text
+keep all 16 live routes
+no synonym routes
+no slug migrations
+no functional changes
+assign acquisition/support/completeness SEO roles
+apply narrow evidence-backed metadata wording
+preserve traffic velocity as unavailable
+preserve geo/history/provider/provenance gaps explicitly
+```
+
+Canonical reviewed record:
+
+```text
+docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md
+```
+
+Do not reopen P7 for speculative keyword/content churn. Reopen only from new material evidence or a blocking contradiction.
 
 ## P8 — Final audit / launch
 
@@ -189,6 +205,8 @@ analytics
 deploy
 GSC
 ```
+
+P8 must not enable indexing merely because P7 has evidence. Production indexability remains an explicit release decision.
 
 ## Polish backlog
 

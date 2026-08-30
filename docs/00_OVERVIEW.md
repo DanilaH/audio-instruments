@@ -68,13 +68,13 @@ As of 2026-08-30:
 ```text
 P0–P6.3: implemented and merged
 core v1 catalog: all 16 tool routes live
-P7: upgraded Runner V2.1 prerequisite is available; Audio-specific live evidence run is pending
-P8: phase-gated after completed P7; includes real-device/browser QA + production decisions
+P7: fresh Runner evidence collected, reviewed and applied to SEO roles/metadata
+P8: next phase — final audit, real-device/browser QA and production decisions
 ```
 
-The reproducible P7 seed cohort and Runner execution contract live under `docs/evidence/`. Their existence does not count as completed SEO evidence.
+P7 kept all 16 distinct product jobs, found no justified slug migrations, and prohibited synonym-page expansion. The reviewed evidence record lives at `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
 
-The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units used the repository's PR + cold-review workflow and exact-SHA review evidence.
+The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units use the repository's PR + cold-review workflow and exact-SHA review evidence.
 
 ## Visual identity
 
@@ -101,6 +101,8 @@ revenue
 maintenance cost
 ```
 
+P7 traffic velocity remains unavailable because no comparable provider-neutral traffic series was collected. Missing evidence is not converted into a positive or negative claim.
+
 ## Repository quality gate
 
 The repository uses Draft PRs for early review.
@@ -112,7 +114,7 @@ cold Review #1
 → fixes
 → cold Review #2
 → full-ci-approved
-→ PR marked Ready for review
+→ Ready for review
 → full-validation
 → merge-gate
 ```
@@ -121,7 +123,7 @@ See `15_DEVELOPMENT_WORKFLOW.md` and `16_CI_AND_REPOSITORY_GATES.md`.
 
 The repository is private on the current free GitHub plan, so protected-branch/ruleset enforcement is unavailable and the owner has accepted manual repository-gate enforcement. This does not change the required review/validation sequence.
 
-Recent later-P5/P6 GitHub Actions attempts also exposed a separate hosted infrastructure incident: jobs failed before runner allocation with `runner_id = 0` and `steps = []`. Those runs are infrastructure/no-runner evidence, not green CI and not repository test failures. Affected merge history records exact-SHA review evidence and explicit infrastructure incident notes. This historical record does not authorize future merges without a green `merge-gate` and does not redefine the required CI policy.
+Recent later-P5/P6 GitHub Actions attempts also exposed a separate hosted infrastructure incident: jobs failed before runner allocation with `runner_id = 0` and `steps = []`. Those runs are infrastructure/no-runner evidence, not green CI and not repository test failures. This historical record does not authorize future merges without a green `merge-gate` and does not redefine the required CI policy.
 
 ## Site shell
 
@@ -131,7 +133,7 @@ It is not a placeholder and is not left for the agent to invent.
 
 Its structural contract lives in `18_HOMEPAGE_AND_SITE_SHELL.md`.
 
-P6.3 finalized the live v1 catalog composition with the canonical featured four and live-only category directory.
+P6.3 finalized the live v1 catalog composition with the canonical featured four and live-only category directory. P7 found that composition compatible with current acquisition evidence and did not churn it merely to mirror keyword ranking.
 
 ## Mechanical merge gate
 
