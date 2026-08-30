@@ -37,11 +37,31 @@ The actual discovery input was the expanded 63-seed cohort now preserved as:
 
 ```text
 docs/evidence/P7_AUDIO_RUNNER_SEEDS_2026-08-30.csv
+SHA-256: 68da23c8de946fc906753bf5f3beabcfcf13dd70b1ea3f7503d029a9631935e9
 ```
 
 This deliberately extends the original 38-seed contract with 25 task/problem-intent variants such as `how to test speakers`, `test my microphone`, `online ...`, and `what frequencies can i hear`.
 
 The change did **not** enable Runner `--expand`: all 63 queries were explicit direct seeds. The original 38-seed file remains the initial contract artifact; the dated 63-seed file is the actual-run provenance artifact.
+
+Operator archive sequence retained outside the repository:
+
+```text
+results(20260830-085838).zip  discovery
+results(20260830-090331).zip  63-query clustering
+results(20260830-092216).zip  targeted deep enrichment
+results(20260830-092748).zip  representatives + entrant cohort
+results(20260830-093457).zip  cohort history + finalist evidence
+```
+
+Final archive identity:
+
+```text
+results(20260830-093457).zip
+SHA-256: e201ca6581d8a88e775cc5b491e12345ec29e7d8aaeb67780d60f8557d036c16
+```
+
+Raw Runner databases/archives are intentionally not committed to the product repository; run/enrichment IDs and cryptographic identities are preserved here instead.
 
 Enrichment:
 
@@ -50,6 +70,7 @@ enrichment id: 20260830090605698_c45a9028-a431-460a-a0e4-08659ecc7e3f
 state: completed
 deep shortlist: 29 representative candidate queries
 SERP clusters: 24
+selected finalist clusters: cluster-1 through cluster-24
 representative revision: 1
 representative query selections: 29
 manual representative overrides: 0
@@ -58,6 +79,14 @@ entrant ranking occurrences: 232
 weak domains: 37 / 203 with known DR
 repeated domains across representative queries: 17
 entrant fingerprint: 265131504cb59b45ad96acfd4949b38883a142e9f9e93bab3510e989533190c1
+```
+
+Finalist evidence identity:
+
+```text
+matrix version: 1.0.0
+finalist-evidence-matrix.json SHA-256: fe1b45b53400b206c6056450cb2e3684b3fb8ff09c79128d1ebf2031fb31c5ad
+finalist-evidence-matrix.csv  SHA-256: 3ea5e8421a98d30b58e64b7236b4d234198ce335042a068076852d9104e92f98
 ```
 
 History policy chosen before the first projection:
@@ -80,7 +109,7 @@ first-seen observations: 0
 comparable registration-vs-first-seen history: 0
 ```
 
-### Runner SHA provenance gap
+### Runner SHA provenance exception
 
 The output archive does not persist the local Runner git SHA, so the exact checkout used cannot be reconstructed from the artifact alone.
 
@@ -90,9 +119,9 @@ GitHub `main` at the discovery start time was:
 3b60a0b41ee8ed8892ad3c5abd3cfeefdcc84158
 ```
 
-That is useful upstream timing evidence, **not proof of the local Runner HEAD**. The missing exact local SHA is retained as a provenance limitation rather than being fabricated.
+That is useful upstream timing evidence, **not proof of the local Runner HEAD**.
 
-The output artifacts themselves demonstrate the required V2.1 capabilities used by this review: clustering, query suggestions, domain age, page/site inspection, representatives, entrant cohort, cohort history, and finalist evidence matrix.
+P7 Review #1 explicitly accepts the missing exact local SHA as a provenance exception rather than fabricating it or repeating the full browser collection solely to recover metadata. The collected artifacts are internally coherent and demonstrate the V2.1 capabilities required by this review. Future live runs must capture the local Runner SHA before collection starts.
 
 ## Known evidence limitations
 
@@ -142,7 +171,13 @@ imported traffic snapshots: 0
 traffic velocity: unavailable
 ```
 
-A `low-base-organic-traffic-threshold` was therefore not selected: the contract requires it before the first traffic projection, and no traffic projection was performed.
+P7 traffic policy for any future first compatible projection is:
+
+```text
+low-base-organic-traffic-threshold: 1000 monthly organic visits
+```
+
+This is a caution threshold, not an opportunity gate: percentage movement from a baseline below 1,000 estimated monthly organic visits must be labeled low-base and must not be presented as strong velocity evidence. The threshold was not used to manufacture a current traffic result because no compatible traffic series was imported.
 
 The older manual Ahrefs observations in `MANUAL_AHREFS_2026-08-28.md` remain supplemental traffic proof where current SERP ownership still matches. They are single third-party snapshots, not velocity.
 
@@ -185,6 +220,19 @@ The 24 explicitly selected clusters remain mapped to existing jobs. No cluster j
 | cluster-24 | what frequencies can i hear | 0 | 0 / 8 | watch | optional language around `/hearing-frequency-test`; no expansion mandate |
 
 `build` means retain/optimize the existing route coverage. It does not mean create a new route for every cluster.
+
+### Human-decision currentness
+
+The Runner finalist matrix was intentionally built before human decisions and therefore still reports zero imported human decisions. The canonical P7 human decisions are the table above plus the route roles below; they were reviewed against:
+
+```text
+representative revision: 1
+entrant fingerprint: 265131504cb59b45ad96acfd4949b38883a142e9f9e93bab3510e989533190c1
+finalist matrix version: 1.0.0
+evidenceCurrent: true
+```
+
+These decisions are stored in the Audio source-of-truth rather than back-written into the raw Runner archive. If representative revision, entrant fingerprint, or finalist matrix generation changes, `evidenceCurrent` must be re-evaluated before reusing them.
 
 ## Route roles after P7
 
@@ -269,8 +317,8 @@ claiming a success probability
 
 ## P7 acceptance
 
-The live evidence collection and human review are complete enough for the current product/SEO decisions.
+P7 live evidence collection, human review, route-role decisions and the evidence-backed repository changes are complete in this source baseline.
 
-Unresolved provenance/data gaps are explicitly retained above and are not silently converted into positive or negative evidence.
+The exact local Runner SHA exception and all other unresolved data gaps are explicitly retained above and are not silently converted into positive or negative evidence.
 
-P7 can close after the evidence-backed metadata/status changes pass the normal Audio PR + cold-review workflow. P8 remains the next phase and owns production indexing, sitemap/canonical implementation, real browser/device QA, analytics, and release decisions.
+P8 is the next phase and owns production indexing, sitemap/canonical implementation, real browser/device QA, analytics, and release decisions.
