@@ -6,13 +6,24 @@ export interface MicrophoneInputDevice {
   readonly label: string;
 }
 
+export type MicrophoneCaptureSettings = Readonly<
+  Omit<
+    MediaTrackSettings,
+    "autoGainControl" | "noiseSuppression" | "echoCancellation"
+  > & {
+    readonly autoGainControl?: boolean;
+    readonly noiseSuppression?: boolean;
+    readonly echoCancellation?: boolean;
+  }
+>;
+
 export interface MicrophoneCapture {
   readonly stream: MediaStream;
-  readonly settings: Readonly<MediaTrackSettings>;
+  readonly settings: MicrophoneCaptureSettings;
 }
 
 export interface MicrophoneTrackEndedEvent {
-  readonly lastSettings: Readonly<MediaTrackSettings>;
+  readonly lastSettings: MicrophoneCaptureSettings;
 }
 
 export type MicrophoneTrackEndedListener = (
@@ -30,8 +41,15 @@ function getBrowserMediaDevices(): MediaDevices {
   return navigator.mediaDevices;
 }
 
-function copySettings(settings: MediaTrackSettings): Readonly<MediaTrackSettings> {
-  return { ...settings };
+function copySettings(settings: MediaTrackSettings): MicrophoneCaptureSettings {
+  const { autoGainControl, noiseSuppression, echoCancellation, ...rest } = settings;
+
+  return {
+    ...rest,
+    ...(typeof autoGainControl === "boolean" ? { autoGainControl } : {}),
+    ...(typeof noiseSuppression === "boolean" ? { noiseSuppression } : {}),
+    ...(typeof echoCancellation === "boolean" ? { echoCancellation } : {}),
+  };
 }
 
 function stopStreamTracks(stream: MediaStream): void {
@@ -69,7 +87,7 @@ export class MicrophoneService implements SessionResource {
   #stream: MediaStream | null = null;
   #source: MediaStreamAudioSourceNode | null = null;
   #track: MediaStreamTrack | null = null;
-  #settings: Readonly<MediaTrackSettings> | null = null;
+  #settings: MicrophoneCaptureSettings | null = null;
   #trackEndedHandler: EventListener | null = null;
   #pendingAcquisition: Promise<MicrophoneCapture> | null = null;
   #lifecycleToken = 0;
@@ -95,7 +113,7 @@ export class MicrophoneService implements SessionResource {
     return this.#stream;
   }
 
-  activeSettings(): Readonly<MediaTrackSettings> | null {
+  activeSettings(): MicrophoneCaptureSettings | null {
     return this.#settings ? { ...this.#settings } : null;
   }
 
@@ -269,7 +287,7 @@ export class MicrophoneService implements SessionResource {
     stream: MediaStream,
     source: MediaStreamAudioSourceNode,
     track: MediaStreamTrack,
-    settings: Readonly<MediaTrackSettings>,
+    settings: MicrophoneCaptureSettings,
   ): void {
     const oldStream = this.#stream;
     const oldSource = this.#source;
@@ -296,7 +314,9 @@ export class MicrophoneService implements SessionResource {
     if (track !== this.#track) return;
 
     this.#invalidatePendingAcquisition();
-    const lastSettings = this.#settings ? { ...this.#settings } : {};
+    const lastSettings: MicrophoneCaptureSettings = this.#settings
+      ? { ...this.#settings }
+      : {};
     const stream = this.#stream;
     const source = this.#source;
     source?.disconnect();
