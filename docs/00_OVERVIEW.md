@@ -69,14 +69,20 @@ As of 2026-08-30:
 P0–P6.3: implemented and merged
 core v1 catalog: all 16 tool routes live
 P7: fresh Runner evidence collected, reviewed and applied to SEO roles/metadata
-P8: in progress — P8.1 safe indexing gate + P8.2 static claims/metadata release audit complete
+P8: in progress — P8.1 indexing foundation + P8.2 static release audit + P8.3 sitemap/positive-indexing build gate complete
 ```
 
 P7 kept all 16 distinct product jobs, found no justified slug migrations, and prohibited synonym-page expansion. The reviewed evidence record lives at `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
 
-P8.1 preserves the preview safety boundary while moving release infrastructure into code: pages remain crawlable `noindex,nofollow` with no production canonical by default, and `/robots.txt` allows crawling without advertising a sitemap. `SITE_INDEXING=enabled` is intentionally blocked while `PRODUCTION_INDEXING_ARTIFACTS_READY = false`; the later sitemap/positive indexed-build unit must land before that guard may be lifted.
+P8.1 established the fail-closed preview boundary: pages remain crawlable `noindex,nofollow` with no production canonical by default, and `/robots.txt` allows crawling without advertising a sitemap.
 
 P8.2 reviewed the static measurement/claims wording, final route metadata, page-level H1 identity, live-only related-link construction and current core-v1 privacy copy on baseline `dad7ec774659123a65fa279747c403e9d0db3ac3`. No source-copy/runtime change was justified. This is not browser/device/accessibility/visual or production-indexing certification. The audit record lives at `docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md`.
+
+P8.3 installed and configured `@astrojs/sitemap@3.7.3`, made Astro config the single owner of `SITE_INDEXING` / `SITE_ORIGIN` activation, and added a positive indexed-build verifier. Supported local validation on Node `24.16.0` / pnpm `11.21.0` passed frozen install, `pnpm check`, all 172 unit tests and `pnpm test:indexing`; the verifier built all 18 HTML routes at synthetic origin `https://indexing-test.example` and checked robots, canonical and sitemap consistency. Evidence lives at `docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md`.
+
+`PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means the repository contains the required sitemap/indexing artifacts. It is **not** production release authorization. Default builds remain `noindex,nofollow` with no production canonical or sitemap, and a real-domain indexed deployment still requires explicit `SITE_INDEXING=enabled`, a valid HTTPS `SITE_ORIGIN`, and the remaining P8 release gates.
+
+Remaining P8 work is runtime/release QA: Playwright release execution, runtime accessibility and visual review, real-browser/device QA, analytics/privacy-provider decisions, deployment, Search Console, explicit real-domain indexing activation and final validation evidence.
 
 The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units use the repository's PR + cold-review workflow and exact-SHA review evidence.
 
