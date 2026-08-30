@@ -4,6 +4,7 @@ import {
   buildCanonicalUrl,
   buildRobotsTxt,
   resolveSiteIndexingConfig,
+  resolveSiteIndexingConfigFromSite,
 } from "../../src/config/site-indexing";
 
 describe("site indexing gate", () => {
@@ -15,12 +16,25 @@ describe("site indexing gate", () => {
       siteOrigin: null,
       robotsDirective: "noindex,nofollow",
     });
+    expect(resolveSiteIndexingConfigFromSite(undefined)).toEqual(config);
     expect(buildCanonicalUrl(config, "/tone-generator")).toBeNull();
     expect(buildRobotsTxt(config)).toBe("User-agent: *\nAllow: /\n");
   });
 
   it("marks the production indexing artifacts ready after P8.3 sitemap integration", () => {
     expect(PRODUCTION_INDEXING_ARTIFACTS_READY).toBe(true);
+  });
+
+  it("still fails closed when readiness is explicitly unavailable", () => {
+    expect(() =>
+      resolveSiteIndexingConfig(
+        {
+          SITE_INDEXING: "enabled",
+          SITE_ORIGIN: "https://example.com",
+        },
+        false,
+      ),
+    ).toThrow(/blocked until the production sitemap\/indexing artifacts are ready/i);
   });
 
   it.each([
@@ -51,6 +65,9 @@ describe("site indexing gate", () => {
       siteOrigin: "https://audio.example.com",
       robotsDirective: "index,follow",
     });
+    expect(resolveSiteIndexingConfigFromSite(new URL("https://audio.example.com"))).toEqual(
+      config,
+    );
     expect(buildCanonicalUrl(config, "tone-generator/index.html")).toBe(
       "https://audio.example.com/tone-generator/",
     );
