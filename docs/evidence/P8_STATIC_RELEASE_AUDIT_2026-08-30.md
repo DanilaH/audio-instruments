@@ -195,6 +195,16 @@ raw microphone audio is not stored in that calibration record
 analytics/advertising privacy behavior must be revised before future providers are enabled
 ```
 
+The static source review also searched the repository for the obvious browser network transport primitives used by application code:
+
+```text
+fetch(
+navigator.sendBeacon / sendBeacon
+XMLHttpRequest
+```
+
+No matches were found on the reviewed source baseline. This supports the current no-upload core-v1 copy but is still a static-source check, not packet-level/runtime network certification.
+
 No analytics or advertising provider is enabled by this audit.
 
 ## Closed P8 gates from this record
