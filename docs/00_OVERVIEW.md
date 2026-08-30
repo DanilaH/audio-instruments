@@ -63,14 +63,16 @@ Phosphor
 
 ## Implementation status
 
-As of 2026-08-29:
+As of 2026-08-30:
 
 ```text
 P0–P6.3: implemented and merged
 core v1 catalog: all 16 tool routes live
-P7: blocked by its explicit upgraded-runner prerequisite
-P8: phase-gated after P7; includes real-device/browser QA + production decisions
+P7: upgraded Runner V2.1 prerequisite is available; Audio-specific live evidence run is pending
+P8: phase-gated after completed P7; includes real-device/browser QA + production decisions
 ```
+
+The reproducible P7 seed cohort and Runner execution contract live under `docs/evidence/`. Their existence does not count as completed SEO evidence.
 
 The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units used the repository's PR + cold-review workflow and exact-SHA review evidence.
 
