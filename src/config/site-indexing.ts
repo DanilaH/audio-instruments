@@ -1,0 +1,105 @@
+export interface SiteIndexingEnvironment {
+  readonly SITE_INDEXING?: string;
+  readonly SITE_ORIGIN?: string;
+}
+
+export interface SiteIndexingConfig {
+  readonly indexingEnabled: boolean;
+  readonly siteOrigin: string | null;
+  readonly robotsDirective: "index,follow" | "noindex,nofollow";
+}
+
+/**
+ * P8 keeps production indexing mechanically blocked until the sitemap integration
+ * and its positive build validation land in the repository.
+ */
+export const PRODUCTION_INDEXING_ARTIFACTS_READY = false;
+
+const disabledConfig: SiteIndexingConfig = {
+  indexingEnabled: false,
+  siteOrigin: null,
+  robotsDirective: "noindex,nofollow",
+};
+
+export function resolveSiteIndexingConfig(
+  env: SiteIndexingEnvironment,
+  indexingArtifactsReady = PRODUCTION_INDEXING_ARTIFACTS_READY,
+): SiteIndexingConfig {
+  if (env.SITE_INDEXING !== "enabled") {
+    return disabledConfig;
+  }
+
+  if (!indexingArtifactsReady) {
+    throw new Error(
+      "SITE_INDEXING=enabled is blocked until the production sitemap/indexing artifacts are ready.",
+    );
+  }
+
+  const rawOrigin = env.SITE_ORIGIN?.trim();
+  if (!rawOrigin) {
+    throw new Error("SITE_ORIGIN is required when SITE_INDEXING=enabled.");
+  }
+
+  let origin: URL;
+  try {
+    origin = new URL(rawOrigin);
+  } catch {
+    throw new Error("SITE_ORIGIN must be a valid absolute HTTPS origin.");
+  }
+
+  if (origin.protocol !== "https:") {
+    throw new Error("SITE_ORIGIN must use https:// when SITE_INDEXING=enabled.");
+  }
+
+  if (!origin.hostname) {
+    throw new Error("SITE_ORIGIN must include a hostname.");
+  }
+
+  if (
+    origin.pathname !== "/" ||
+    origin.search !== "" ||
+    origin.hash !== "" ||
+    origin.username !== "" ||
+    origin.password !== ""
+  ) {
+    throw new Error(
+      "SITE_ORIGIN must be an origin only, without credentials, path, query, or hash.",
+    );
+  }
+
+  return {
+    indexingEnabled: true,
+    siteOrigin: origin.origin,
+    robotsDirective: "index,follow",
+  };
+}
+
+export function buildCanonicalUrl(
+  config: SiteIndexingConfig,
+  pathname: string,
+): string | null {
+  if (!config.indexingEnabled || !config.siteOrigin) {
+    return null;
+  }
+
+  const normalizedPathname = normalizePathname(pathname);
+  return new URL(normalizedPathname, `${config.siteOrigin}/`).href;
+}
+
+export function buildRobotsTxt(config: SiteIndexingConfig): string {
+  const lines = ["User-agent: *", "Allow: /"];
+
+  if (config.indexingEnabled && config.siteOrigin) {
+    lines.push(`Sitemap: ${config.siteOrigin}/sitemap-index.xml`);
+  }
+
+  return `${lines.join("\n")}\n`;
+}
+
+function normalizePathname(pathname: string): string {
+  const trimmed = pathname.trim();
+  if (!trimmed) return "/";
+
+  const rooted = trimmed.startsWith("/") ? trimmed : `/${trimmed}`;
+  return rooted.replace(/\/index\.html$/, "/");
+}
