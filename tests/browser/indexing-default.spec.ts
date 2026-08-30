@@ -30,4 +30,7 @@ test("default preview robots policy allows crawling without advertising a sitema
   expect(robotsResponse.status()).toBe(200);
   expect(robotsResponse.headers()["content-type"]).toContain("text/plain");
   expect(await robotsResponse.text()).toBe("User-agent: *\nAllow: /\n");
+
+  const sitemapResponse = await request.get("/sitemap-index.xml");
+  expect(sitemapResponse.status()).toBe(404);
 });
