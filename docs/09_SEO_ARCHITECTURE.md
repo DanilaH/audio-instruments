@@ -34,7 +34,7 @@ Non-tool route:
 /privacy
 ```
 
-Exact tool slugs may be refined before launch.
+P7 found no evidence strong enough to justify a slug migration. Current tool slugs stay unchanged for launch.
 
 ## Route rule
 
@@ -43,6 +43,104 @@ One distinct user job per tool route.
 No thin singular/plural/order/synonym pages.
 
 Only live tool routes are linked publicly.
+
+SERP overlap does not automatically collapse distinct product jobs. Conversely, distinct keyword formulations do not automatically create distinct routes.
+
+## P7 route roles — reviewed 2026-08-30
+
+### Acquisition anchors
+
+```text
+/tone-generator
+/sound-test
+/headphone-test
+/microphone-test
+/decibel-meter
+/pitch-detector
+```
+
+### Strong supporting tools
+
+```text
+/speaker-test
+/stereo-test
+/surround-sound-test
+/bass-test
+/noise-generator
+/spectrum-analyzer
+/audio-latency-test
+```
+
+### Completeness tools
+
+```text
+/phase-test
+/frequency-sweep
+/hearing-frequency-test
+```
+
+These are acquisition-priority roles, not quality tiers. All 16 routes remain first-class live product tools.
+
+Full evidence and cluster ownership: `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
+
+## Intent ownership notes
+
+### Sound / Speaker / Stereo
+
+Fresh clustering groups `sound test`, `speaker test` and `stereo test` into one broad SERP cluster.
+
+SEO ownership is therefore:
+
+```text
+/sound-test   → broad quick sound/output-test acquisition intent
+/speaker-test → focused speaker troubleshooting job
+/stereo-test  → focused channel/separation job
+```
+
+Do not make Speaker or Stereo copy mimic the broad Sound page merely to chase the shared cluster.
+
+### Tone / frequency / sine
+
+`tone generator`, `online tone generator` and `sine wave generator` are separate observed SERP clusters, while `frequency generator` also has meaningful direct discovery demand.
+
+All are satisfied by the existing oscillator job:
+
+```text
+/tone-generator
+```
+
+Do not create `/online-tone-generator`, `/frequency-generator` or `/sine-wave-generator` synonym routes.
+
+### Noise
+
+White, pink and brown generator intents are handled by the existing multi-mode:
+
+```text
+/noise-generator
+```
+
+Do not create color-specific thin routes unless a future product change creates materially different interaction/result jobs.
+
+### Audio latency / AV sync
+
+`audio latency test` and `av sync test` are separate observed SERP clusters but are intentionally combined in the current route because the page exposes two clearly separated evidence classes under one timing job.
+
+Keep measurement wording explicit: browser-reported latency metadata is not end-to-end physical latency, and manual AV sync is perception-based.
+
+## P7 metadata emphasis
+
+Fresh evidence supports modest task-language refinement without changing claims:
+
+```text
+/tone-generator      → online tone + frequency generator wording
+/headphone-test      → online headphone-test wording
+/microphone-test     → online microphone-test wording
+/pitch-detector      → online pitch-detector wording
+/decibel-meter       → online decibel-meter wording, dBFS-first
+/noise-generator     → white / pink / brown generator wording
+```
+
+Do not keyword-stuff H1/body copy when the existing tool label is already the clearest product name.
 
 ## Tool-first rule
 
@@ -96,6 +194,8 @@ Decibel Meter
 ```
 
 Render related links only when target registry status is `live`.
+
+The current homepage and related-tool graph are compatible with P7 evidence. Do not churn them merely to reproduce acquisition-role ordering.
 
 ## Indexing environments
 
@@ -195,30 +295,20 @@ No canonical is emitted when indexing gate is disabled.
 
 ## P7 research refresh
 
-The upgraded Runner V2.1 prerequisite is available. The Audio-specific live evidence run remains pending.
+P7 live evidence collection and human review are complete.
 
-Canonical P7 input/execution ownership:
-
-```text
-docs/evidence/P7_AUDIO_RUNNER_SEEDS.csv
-docs/evidence/P7_RUNNER_EXECUTION.md
-```
-
-The live refresh reviews:
+Canonical records:
 
 ```text
-representative-query cohort
-target-intent validation
-traffic snapshots/velocity
-domain/page/history moat
-role update
-slug review
-internal-link emphasis review
+docs/evidence/P7_AUDIO_RUNNER_SEEDS_2026-08-30.csv
+docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md
 ```
 
-The execution contract is not evidence by itself. Do not make evidence-dependent SEO changes until the fresh Audio artifacts are reviewed.
+Material limitations remain explicit: physical Google location mismatch, capped domain history/site-structure coverage, unavailable first-seen evidence, missing exact local Runner SHA provenance, and unavailable traffic velocity.
 
-Do not rewrite functional product behavior merely because acquisition priority changes.
+Those gaps constrain claims; they do not justify fabricating evidence or reopening functional scope.
+
+P7 closes only after this evidence-backed repository change passes the normal PR + cold-review workflow. P8 then owns production indexing and release work.
 
 ## Post-launch
 
