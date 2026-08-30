@@ -64,6 +64,9 @@ jobs:
       - name: Unit and service tests
         run: pnpm test
 
+      - name: Verify positive indexing build
+        run: pnpm test:indexing
+
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
