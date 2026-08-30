@@ -10,10 +10,18 @@ Package identities and responsibilities are fixed here.
 
 ## Runtime dependencies
 
+P0 baseline:
+
 ```text
 astro
 motion
 @phosphor-icons/web
+```
+
+P8.3 additionally installs the release-only build integration:
+
+```text
+@astrojs/sitemap@3.7.3
 ```
 
 Do not install framework bindings for Motion or Phosphor.
@@ -43,13 +51,7 @@ prettier-plugin-astro
 
 `@types/node` is required because repository TypeScript validation includes Node-hosted configuration such as `playwright.config.ts`, which reads `process.env.CI`.
 
-P8 only:
-
-```text
-@astrojs/sitemap
-```
-
-Do not install `@astrojs/sitemap` during P0–P6 merely to satisfy future production-indexing tests.
+The sitemap package was intentionally deferred until P8 and is now installed as part of P8.3. Do not back-project it into the P0–P6 baseline.
 
 ## pnpm 11 supply-chain baseline
 
@@ -142,10 +144,10 @@ typescript-eslint recommended
 eslint-plugin-astro recommended flat config
 ```
 
-Lint script:
+Current lint script:
 
 ```text
-eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts"
+eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "scripts/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts" "astro.config.ts"
 ```
 
 Do not use an ESLint invocation that silently skips `.astro` files.
@@ -171,26 +173,31 @@ The Astro plugin is explicitly registered.
 
 `.astro` files use the Astro parser.
 
-Formatting check uses the exact source/tests/config glob script defined below.
+Formatting check uses the exact source/tests/scripts/config glob script defined below.
 
-Do not expand it to `prettier --check .`; the documentation corpus is intentionally outside the P0 formatting gate.
+Do not expand it to `prettier --check .`; the documentation corpus is intentionally outside the formatting gate.
+
+P8.3 also adds `.gitattributes` with LF normalization so Windows `core.autocrlf` checkouts do not make the repository-wide source/config Prettier gate depend on local line-ending policy.
 
 ## Exact scripts
 
-`package.json` scripts:
+Current `package.json` scripts:
 
 ```text
-dev          = astro dev
-build        = astro build
-preview      = astro preview --host 127.0.0.1
-check        = astro check
-test         = vitest run
-test:browser = pnpm build && playwright test
-lint         = eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts"
-format:check = prettier --check "src/**/*.{astro,css,js,mjs,ts}" "tests/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts" "eslint.config.mjs" ".prettierrc.mjs" "astro.config.mjs" "pnpm-workspace.yaml" "package.json" "tsconfig.json"
+dev           = astro dev
+build         = astro build
+preview       = astro preview --host 127.0.0.1
+check         = astro check
+test          = vitest run
+test:indexing = node scripts/verify-indexed-build.mjs
+test:browser  = pnpm build && playwright test
+lint          = eslint "src/**/*.{js,mjs,ts,astro}" "tests/**/*.{js,mjs,ts}" "scripts/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts" "astro.config.ts"
+format:check  = prettier --check "src/**/*.{astro,css,js,mjs,ts}" "tests/**/*.{js,mjs,ts}" "scripts/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts" "eslint.config.mjs" ".prettierrc.mjs" "astro.config.ts" "pnpm-workspace.yaml" "package.json" "tsconfig.json"
 ```
 
 `test` is never watch mode.
+
+`test:indexing` is P8 release tooling. It performs a synthetic positive indexed build and verifies the generated sitemap/canonical/robots contract; it is not part of the historical P0–P6 acceptance baseline.
 
 `test:browser` is standalone-safe on a clean checkout because it creates the static build before Playwright starts `pnpm preview`.
 
@@ -215,6 +222,14 @@ Retries:
 ```text
 retries = 0
 ```
+
+Server reuse:
+
+```text
+reuseExistingServer = false
+```
+
+Every local/CI run must validate the preview produced by the current checkout rather than silently attach to an unrelated process already listening on port 4321.
 
 Failure diagnostics:
 
