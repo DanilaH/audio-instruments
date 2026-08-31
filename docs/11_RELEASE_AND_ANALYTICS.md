@@ -61,7 +61,7 @@ recording contents
 raw personal audio
 ```
 
-Instrument code should call a small provider-neutral `trackEvent()` adapter.
+If a future custom-event provider is explicitly approved, instrument code should use a small provider-neutral `trackEvent()` adapter rather than coupling core tool logic to that vendor.
 
 Do not couple core tool logic to a specific analytics vendor.
 
