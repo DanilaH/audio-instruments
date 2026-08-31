@@ -63,13 +63,13 @@ Phosphor
 
 ## Implementation status
 
-As of 2026-08-30:
+As of 2026-08-31:
 
 ```text
 P0–P6.3: implemented and merged
 core v1 catalog: all 16 tool routes live
 P7: fresh Runner evidence collected, reviewed and applied to SEO roles/metadata
-P8: in progress — P8.1 indexing foundation + P8.2 static release audit + P8.3 sitemap/positive-indexing build gate complete
+P8: in progress — automated release validation complete; real-device and rollout gates remain
 ```
 
 P7 kept all 16 distinct product jobs, found no justified slug migrations, and prohibited synonym-page expansion. The reviewed evidence record lives at `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
@@ -82,7 +82,7 @@ P8.3 installed and configured `@astrojs/sitemap@3.7.3`, made Astro config the si
 
 `PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means the repository contains the required sitemap/indexing artifacts. It is **not** production release authorization. Default builds remain `noindex,nofollow` with no production canonical or sitemap, and a real-domain indexed deployment still requires explicit `SITE_INDEXING=enabled`, a valid HTTPS `SITE_ORIGIN`, and the remaining P8 release gates.
 
-Remaining P8 work is runtime/release QA: Playwright release execution, runtime accessibility and visual review, real-browser/device QA, analytics/privacy-provider decisions, deployment, Search Console, explicit real-domain indexing activation and final validation evidence.
+Automated release evidence now lives at `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: full hosted Chromium/Firefox/WebKit validation is green, required-viewport visual QA is complete, runtime accessibility audit reports zero axe A/AA violations across 34 desktop/mobile surfaces, and cross-engine visual spot-checks found no material rendering divergence. Cloudflare Web Analytics is selected for v1 rollout but remains disabled. Remaining P8 work is actual real-device/browser smoke QA, production domain/deployment, analytics privacy/consent activation review, Search Console and explicit real-domain indexing activation.
 
 The original cold pre-code review passed with 0 blockers / 0 majors. Subsequent implementation units use the repository's PR + cold-review workflow and exact-SHA review evidence.
 

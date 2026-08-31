@@ -685,3 +685,19 @@ document visible again
 → does not auto-resume
 → explicit Start required
 ```
+
+## P8 automated release evidence — 2026-08-31
+
+Recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`:
+
+```text
+exact-head Full Validation incl. Chromium/Firefox/WebKit PASS
+172/172 unit/service tests PASS
+positive indexing verifier PASS
+17 routes × required viewport matrix visual review complete
+34 desktop/mobile runtime axe surfaces: 0 WCAG A/AA violations
+34 desktop/mobile surfaces: 0 horizontal overflow
+cross-engine visual spot-check: no material layout divergence
+```
+
+This closes the automation-executable browser/accessibility/visual P8 gates. Actual Safari macOS, iOS Safari, Android Chrome, Edge and physical microphone/output-device smoke QA remain manual pre-production work.

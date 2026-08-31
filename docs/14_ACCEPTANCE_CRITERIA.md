@@ -439,6 +439,8 @@ Chrome/Firefox real-browser smoke QA recorded
 
 Playwright WebKit alone is insufficient for a Safari support claim.
 
+Automated portion satisfied on 2026-08-31: the exact-head hosted Chromium/Firefox/WebKit release suite is green. Physical Safari/iOS/Android/Edge/Chrome/Firefox smoke QA remains required before claiming real-device/browser production support.
+
 ## Indexing acceptance
 
 Default/non-production:
@@ -633,17 +635,19 @@ force pushes blocked
 branch deletion blocked
 ```
 
-Current private/free repository mode is an explicitly owner-accepted exception:
+Current public repository state observed on 2026-08-31:
 
 ```text
-repository gate mode = manual
+main protected = false
+repository rulesets = none configured
+repository gate mode = manual until protection is explicitly configured and verified
 PR/review/CI sequence remains mandatory
 latest merge-gate must be green before merge
 no direct roadmap push to main
 no claim of mechanically unbypassable protection
 ```
 
-Unavailable protected-branch/ruleset controls are not a P0 blocker in this accepted mode.
+The former private/free-plan exception no longer describes the repository. Mechanical repository protection remains an open hardening task; manual enforcement remains the active operating mode in the meantime.
 
 ## P0 bootstrap-test acceptance
 

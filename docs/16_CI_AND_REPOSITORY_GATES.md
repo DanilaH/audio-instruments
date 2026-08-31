@@ -25,17 +25,16 @@ The CI workflow is designed for repositories that already have a `main` branch.
 
 A brand-new empty repository may receive the reviewed baseline as a one-time direct bootstrap before normal PR enforcement exists. After that seed, roadmap implementation uses PRs.
 
-Current observed state on 2026-08-28:
+Current observed state on 2026-08-31:
 
 ```text
-repository visibility = private
-GitHub protected-branch/ruleset API = unavailable on current plan
-repository gate mode = manual
+repository visibility = public
+main branch metadata: protected = false
+repository rulesets endpoint: []
+repository gate mode = manual until protection is configured and verified
 ```
 
-Therefore the workflow may run and provide the `merge-gate` check, but the repository must not claim that GitHub mechanically prevents an administrator from bypassing it until protected branches/rulesets become available.
-
-The project owner has explicitly accepted this manual mode as the current operating model. No visibility change or paid GitHub plan is required for P0–P8. The assistant still treats a green `merge-gate` as mandatory before performing a merge, while documenting that GitHub itself does not make the rule unbypassable.
+The old private/free-plan explanation is no longer current. The workflow provides a real `merge-gate` and it remains mandatory process policy, but GitHub does not currently mechanically prevent owner/admin bypass. Mechanical protection is now an explicit repository-hardening task rather than a plan-availability assumption.
 
 ## Tracked PR events
 
@@ -257,7 +256,7 @@ Block branch deletion
 Disable bypass where supported
 ```
 
-The current private/free repository cannot expose those controls. The owner explicitly accepts manual enforcement, so P0 is complete when the process itself is followed and the latest `merge-gate` is green.
+The repository is now public, but current observed configuration still has no protected `main` and no repository rulesets. Manual enforcement remains active until protection is explicitly configured and verified. The latest `merge-gate` must still be green before merge.
 
 Current mandatory policy:
 
@@ -270,4 +269,4 @@ merge only after full-validation + merge-gate success
 squash merge by default
 ```
 
-Do not describe this as mechanically unbypassable GitHub protection. Do not repeatedly reopen the unavailable-protection issue unless repository visibility or plan changes.
+Do not describe the current repository as mechanically protected. Because visibility has changed to public, the former unavailable-protection rationale is closed; the relevant next step is actual protection configuration/verification when the owner chooses to harden the repository.
