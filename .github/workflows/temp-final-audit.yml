@@ -1,0 +1,172 @@
+name: Temporary Final Release Audit
+
+on:
+  push:
+    branches:
+      - audit/final-release-2026-09-01
+
+permissions:
+  contents: read
+
+jobs:
+  narrow-mobile-audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create one-off 320px Playwright config
+        run: |
+          cat > playwright.audit-320.config.ts <<'EOF'
+          import { defineConfig, devices } from "@playwright/test";
+
+          const baseURL = "http://127.0.0.1:4321";
+
+          export default defineConfig({
+            testDir: "./tests/browser",
+            fullyParallel: true,
+            forbidOnly: true,
+            retries: 0,
+            reporter: "line",
+            use: {
+              baseURL,
+              trace: "retain-on-failure",
+              screenshot: "only-on-failure",
+              viewport: { width: 320, height: 844 },
+            },
+            webServer: {
+              command: "pnpm preview",
+              url: baseURL,
+              reuseExistingServer: false,
+              timeout: 120_000,
+            },
+            projects: [
+              {
+                name: "chromium-320",
+                use: {
+                  ...devices["Desktop Chrome"],
+                  viewport: { width: 320, height: 844 },
+                },
+              },
+            ],
+          });
+          EOF
+
+      - name: Create one-off all-route narrow geometry audit
+        run: |
+          cat > tests/browser/__temp-final-audit-320.spec.ts <<'EOF'
+          import { expect, test } from "@playwright/test";
+
+          const routes = [
+            "/",
+            "/privacy",
+            "/sound-test",
+            "/speaker-test",
+            "/headphone-test",
+            "/stereo-test",
+            "/phase-test",
+            "/surround-sound-test",
+            "/bass-test",
+            "/tone-generator",
+            "/frequency-sweep",
+            "/noise-generator",
+            "/microphone-test",
+            "/spectrum-analyzer",
+            "/pitch-detector",
+            "/decibel-meter",
+            "/audio-latency-test",
+            "/hearing-frequency-test",
+          ] as const;
+
+          test("all 18 HTML routes fit a 320px viewport without control overflow", async ({ page }) => {
+            await page.setViewportSize({ width: 320, height: 844 });
+
+            for (const route of routes) {
+              await page.goto(route);
+
+              const geometry = await page.evaluate(() => {
+                const root = document.documentElement;
+                const selectors = [
+                  "button",
+                  "input",
+                  "select",
+                  "textarea",
+                  "summary",
+                  "audio[controls]",
+                  "a[href]",
+                ].join(",");
+
+                const controls = Array.from(document.querySelectorAll<HTMLElement>(selectors))
+                  .filter((element) => {
+                    const style = getComputedStyle(element);
+                    const rect = element.getBoundingClientRect();
+                    return (
+                      style.display !== "none" &&
+                      style.visibility !== "hidden" &&
+                      !element.hidden &&
+                      rect.width > 0 &&
+                      rect.height > 0
+                    );
+                  })
+                  .map((element) => {
+                    const rect = element.getBoundingClientRect();
+                    return {
+                      tag: element.tagName.toLowerCase(),
+                      text: (element.textContent ?? "").trim().replace(/\s+/g, " ").slice(0, 80),
+                      left: rect.left,
+                      right: rect.right,
+                      width: rect.width,
+                    };
+                  });
+
+                return {
+                  scrollWidth: root.scrollWidth,
+                  clientWidth: root.clientWidth,
+                  offenders: controls.filter(
+                    (control) => control.left < -1 || control.right > window.innerWidth + 1,
+                  ),
+                  h1Count: document.querySelectorAll("h1").length,
+                };
+              });
+
+              expect(geometry.scrollWidth, `${route} document overflow`).toBeLessThanOrEqual(
+                geometry.clientWidth,
+              );
+              expect(geometry.offenders, `${route} controls outside viewport`).toEqual([]);
+              expect(geometry.h1Count, `${route} H1 count`).toBe(1);
+            }
+          });
+          EOF
+
+      - name: Build default noindex release
+        run: pnpm build
+
+      - name: Verify indexed build artifacts
+        run: pnpm test:indexing
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Run full browser suite at 320px plus all-route geometry audit
+        run: pnpm exec playwright test --config=playwright.audit-320.config.ts --project=chromium-320
+
+      - name: Upload failure diagnostics only
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: final-audit-320-failure-${{ github.run_id }}
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 2
