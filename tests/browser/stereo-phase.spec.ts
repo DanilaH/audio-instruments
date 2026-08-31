@@ -149,7 +149,7 @@ async function installDeterministicAudioContext(
 
       class FakeBufferSourceNode extends FakeAudioNode {
         loop = false;
-        #buffer: { length: number; sampleRate: number } | null = null;
+        bufferValue: { length: number; sampleRate: number } | null = null;
         readonly record: BufferSourceRecord;
 
         constructor() {
@@ -165,13 +165,13 @@ async function installDeterministicAudioContext(
         }
 
         set buffer(value: { length: number; sampleRate: number } | null) {
-          this.#buffer = value;
+          this.bufferValue = value;
           this.record.bufferLength = value?.length ?? 0;
           this.record.bufferSampleRate = value?.sampleRate ?? 0;
         }
 
         get buffer() {
-          return this.#buffer;
+          return this.bufferValue;
         }
 
         start(time = 0, offset = 0) {
@@ -198,20 +198,20 @@ async function installDeterministicAudioContext(
         readonly numberOfChannels: number;
         readonly length: number;
         readonly sampleRate: number;
-        readonly #channels: Float32Array[];
+        readonly channels: Float32Array[];
 
         constructor(numberOfChannels: number, length: number, sampleRate: number) {
           this.numberOfChannels = numberOfChannels;
           this.length = length;
           this.sampleRate = sampleRate;
-          this.#channels = Array.from(
+          this.channels = Array.from(
             { length: numberOfChannels },
             () => new Float32Array(length),
           );
         }
 
         getChannelData(channel: number) {
-          const data = this.#channels[channel];
+          const data = this.channels[channel];
           if (!data) throw new RangeError("Invalid channel");
           return data;
         }
@@ -433,12 +433,12 @@ test("Stereo and Phase expose only implemented related-tool links", async ({ pag
   await page.goto("/stereo-test");
   await expect(page.locator('a[href="/sound-test"]')).toHaveCount(1);
   await expect(page.locator('a[href="/phase-test"]')).toHaveCount(1);
-  await expect(page.locator('a[href="/speaker-test"]')).toHaveCount(0);
-  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/speaker-test"]')).toHaveCount(1);
+  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(1);
 
   await page.goto("/phase-test");
   await expect(page.locator('a[href="/stereo-test"]')).toHaveCount(1);
   await expect(page.locator('a[href="/sound-test"]')).toHaveCount(1);
-  await expect(page.locator('a[href="/speaker-test"]')).toHaveCount(0);
-  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/speaker-test"]')).toHaveCount(1);
+  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(1);
 });
