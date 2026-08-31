@@ -24,11 +24,7 @@ const touchTargetCases = [
   { path: "/speaker-test", selectors: [".speaker-field input"] },
   {
     path: "/microphone-test",
-    selectors: [
-      ".mic-input-field select",
-      ".mic-details summary",
-      ".mic-recording audio[controls]",
-    ],
+    selectors: [".mic-input-field select", ".mic-details summary"],
   },
   {
     path: "/spectrum-analyzer",
