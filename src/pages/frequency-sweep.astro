@@ -37,9 +37,9 @@ const relatedTools = sweepTool.relatedToolIds.flatMap((id) => {
         <p>
           Frequency Sweep generates one digital oscillator across the requested
           frequency interval. Choose a low and high endpoint, a 5–60 second
-          duration, linear or logarithmic progression, and Ascending or Descending
-          direction. The browser audio sample rate may reduce the nominal 20 Hz–20
-          kHz ceiling for the current session.
+          duration, linear or logarithmic progression, and Ascending or
+          Descending direction. The browser audio sample rate may reduce the
+          nominal 20 Hz–20 kHz ceiling for the current session.
         </p>
         <p>
           What you hear is a listening-based observation. The page knows the
@@ -53,8 +53,9 @@ const relatedTools = sweepTool.relatedToolIds.flatMap((id) => {
       <h2 id="sweep-help-title">How to compare a range safely</h2>
       <div class="sweep-help__grid">
         <p>
-          Start with system volume low and keep playback comfortable. If part of a
-          sweep is difficult to hear, do not compensate by turning system volume up.
+          Start with system volume low and keep playback comfortable. If part of
+          a sweep is difficult to hear, do not compensate by turning system
+          volume up.
         </p>
         <p>
           Use the same endpoints, duration, scale and Level when repeating a
@@ -132,7 +133,9 @@ const relatedTools = sweepTool.relatedToolIds.flatMap((id) => {
       gap: 3px 5px;
     }
 
-    :global([data-frequency-sweep] .sweep-range-grid .frequency-control__header) {
+    :global(
+      [data-frequency-sweep] .sweep-range-grid .frequency-control__header
+    ) {
       grid-column: 1 / -1;
       gap: 4px;
     }
@@ -142,16 +145,33 @@ const relatedTools = sweepTool.relatedToolIds.flatMap((id) => {
       white-space: nowrap;
     }
 
-    :global([data-frequency-sweep] .sweep-range-grid .frequency-control__header span) {
+    :global(
+      [data-frequency-sweep] .sweep-range-grid .frequency-control__header span
+    ) {
       font-size: 0.72rem;
     }
 
-    :global([data-frequency-sweep] .sweep-range-grid .frequency-control input[type="number"]),
-    :global([data-frequency-sweep] .sweep-range-grid .frequency-control input[type="range"]) {
+    :global(
+      [data-frequency-sweep]
+        .sweep-range-grid
+        .frequency-control
+        input[type="number"]
+    ),
+    :global(
+      [data-frequency-sweep]
+        .sweep-range-grid
+        .frequency-control
+        input[type="range"]
+    ) {
       min-height: 44px;
     }
 
-    :global([data-frequency-sweep] .sweep-range-grid .frequency-control input[type="number"]) {
+    :global(
+      [data-frequency-sweep]
+        .sweep-range-grid
+        .frequency-control
+        input[type="number"]
+    ) {
       padding-inline: 6px;
       font-size: 0.9rem;
     }
