@@ -1,5 +1,5 @@
 {
-  "version": "1.17",
+  "version": "1.18",
   "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence reviewed and applied; P8 automated release validation is complete with green hosted Chromium/Firefox/WebKit, required-viewport visual QA, runtime accessibility audit and cross-engine visual evidence; Cloudflare Web Analytics is selected but not enabled; real-device QA, deployment, Search Console and explicit production indexing activation remain pending",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
@@ -95,7 +95,7 @@
     "core_v1_live_tool_routes": 16,
     "p6_3_main_commit": "0be4128242ddeab669cbc8374e9fc9b9b5bd23ac",
     "p7": "completed_live_evidence_reviewed_and_applied",
-    "p8": "in_progress_p8_1_indexing_foundation_p8_2_static_release_audit_p8_3_sitemap_positive_indexing_gate",
+    "p8": "automated_release_validation_complete_rollout_gates_pending",
     "p8_scope": [
       "final_audit_and_release",
       "real_device_browser_qa",
@@ -150,16 +150,12 @@
       "evidence": "docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md",
       "release_authorization": "not_granted_by_artifact_readiness",
       "remaining_release_gates": [
-        "playwright_release_execution",
-        "runtime_accessibility",
-        "visual_qa",
         "real_browser_matrix",
         "real_device_qa",
-        "analytics_privacy_provider_decision",
+        "analytics_privacy_provider_activation_review",
         "deployment",
         "search_console",
-        "explicit_real_domain_indexing_activation",
-        "green_ci_final_validation"
+        "explicit_real_domain_indexing_activation"
       ]
     }
   },
@@ -216,11 +212,11 @@
     ]
   },
   "ci_observation": {
-    "state": "recent_hosted_runner_allocation_failure",
-    "signature": "runner_id=0; steps=[]",
-    "interpretation": "infrastructure/no-runner; not green CI and not a repository test failure",
-    "policy_effect": "does not redefine the required green merge-gate workflow",
-    "phase_effect": "P8 implementation may progress under the established owner override, but no affected run is represented as green and final release validation remains required"
+    "state": "latest_required_release_validation_green_historical_no_runner_incident_recorded",
+    "signature": "historical runner_id=0; steps=[] on affected 2026-08-29 runs",
+    "interpretation": "historical infrastructure/no-runner incident; later required hosted full validation is green and the incident does not redefine repository test semantics",
+    "policy_effect": "manual repository-gate policy remains in force until branch protection/rulesets are configured",
+    "phase_effect": "automated P8 release validation is complete; remaining gates are real-browser/device and rollout/privacy/deployment/search-indexing work"
   },
   "dependencies": {
     "animation": "motion",
@@ -248,9 +244,9 @@
     "positive_indexing_test": "scripts/verify-indexed-build.mjs"
   },
   "documentation_policy": {
-    "state": "p8_in_progress_p8_3_indexing_artifacts_ready",
+    "state": "p8_automated_release_validation_complete_rollout_pending",
     "original_cold_review": "2026-08-28 BLOCKER=0 MAJOR=0",
-    "next_step": "continue P8 with Playwright release execution, runtime accessibility/visual QA and real browser/device QA; keep production indexing disabled until real-domain deployment and the remaining release gates are explicitly satisfied",
+    "next_step": "perform real-browser/device smoke QA and rollout: domain/deployment, analytics privacy/consent activation review, Search Console, then explicit real-domain indexing activation",
     "reopen_for": [
       "implementation-discovered contradiction",
       "real CI/browser failure requiring source-of-truth correction",
@@ -261,14 +257,14 @@
   "repository_gate": {
     "mode": "manual",
     "accepted_by_owner": true,
-    "observed_at": "2026-08-28",
-    "reason": "private repository on current free GitHub plan does not expose protected branches/rulesets",
+    "observed_at": "2026-09-01",
+    "reason": "public repository currently has main protected=false and no repository rulesets; manual enforcement remains the accepted mode until protection is configured",
     "policy": {
       "pull_request_required_by_process": true,
       "latest_merge_gate_must_be_green": true,
       "direct_roadmap_push_to_main": false,
       "mechanically_unbypassable": false
     },
-    "reopen_only_if": "repository visibility or GitHub plan changes"
+    "reopen_only_if": "branch protection, ruleset, plan, or enforcement state changes"
   }
 }

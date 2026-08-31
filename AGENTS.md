@@ -102,7 +102,7 @@ P7 keeps all 16 routes, adds no synonym routes, makes no functional changes, and
 
 Do not reopen resolved choices because another implementation seems personally preferable.
 
-P8 is **in progress**.
+P8 automated release validation is **complete**; rollout gates remain open.
 
 P8.1 implements the fail-closed indexing foundation: centralized `SITE_INDEXING` / `SITE_ORIGIN` validation, default `noindex,nofollow`, no default canonical, and crawlable `/robots.txt`.
 
@@ -505,7 +505,7 @@ P0 must verify the repository-plan/settings capability and record any limitation
 
 ## 29. Current repository-gate mode
 
-The repository intentionally remains private on the current free GitHub plan. Protected-branch/ruleset controls are unavailable for this setup, and the project owner has explicitly accepted **manual repository-gate enforcement** as the operating mode.
+The repository is public, but `main` currently has `protected=false` and no repository rulesets. The project owner has explicitly accepted **manual repository-gate enforcement** until those controls are configured.
 
 When `docs/MANIFEST.json` reports:
 
@@ -519,7 +519,7 @@ then:
 - `merge-gate` must be green before the assistant performs the merge;
 - do not direct-push roadmap implementation to `main`;
 - do not claim GitHub mechanically prevents an owner/admin bypass;
-- unavailable branch protection is **not** a P0 blocker and must not be raised again unless repository visibility/plan changes.
+- manual repository-gate enforcement is **not** a release blocker by itself; reopen this decision if branch protection, rulesets, plan, or enforcement state changes.
 
 The only direct-to-main exception remains the already-completed empty-repository baseline seed.
 
