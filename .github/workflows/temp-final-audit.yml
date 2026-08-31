@@ -6,12 +6,12 @@ on:
       - audit/final-release-2026-09-01
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  narrow-mobile-audit:
+  final-release-audit:
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 35
     steps:
       - name: Checkout
         uses: actions/checkout@v7
@@ -24,10 +24,128 @@ jobs:
           cache: true
           install: false
 
+      - name: Apply narrowly-scoped audit fixes
+        run: |
+          python <<'PY'
+          from pathlib import Path
+          import json
+
+          def replace_once(path: str, old: str, new: str) -> None:
+              p = Path(path)
+              text = p.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f"{path}: expected one replacement target, found {count}")
+              p.write_text(text.replace(old, new, 1))
+
+          index_path = Path("src/pages/index.astro")
+          index_text = index_path.read_text()
+          narrow_rule = """  @media (max-width: 340px) {
+            .hero h1 {
+              font-size: 3rem;
+            }
+          }
+
+"""
+          marker = "  @media (prefers-reduced-motion: reduce) {"
+          if narrow_rule not in index_text:
+              if index_text.count(marker) != 1:
+                  raise SystemExit("src/pages/index.astro: reduced-motion marker is not unique")
+              index_path.write_text(index_text.replace(marker, narrow_rule + marker, 1))
+
+          for path in ("docs/10_TESTING_AND_QA.md", "docs/14_ACCEPTANCE_CRITERIA.md"):
+              p = Path(path)
+              text = p.read_text()
+              old = """1440×900
+          1366×768
+          1024×768
+          390×844
+"""
+              new = """1440×900
+          1366×768
+          1024×768
+          390×844
+          320×844
+"""
+              if "320×844" not in text:
+                  if text.count(old) != 1:
+                      raise SystemExit(f"{path}: viewport matrix target is not unique")
+                  p.write_text(text.replace(old, new, 1))
+
+          replace_once(
+              "AGENTS.md",
+              "P8 is **in progress**.",
+              "P8 automated release validation is **complete**; rollout gates remain open.",
+          )
+
+          replace_once(
+              "AGENTS.md",
+              """The repository intentionally remains private on the current free GitHub plan. Protected-branch/ruleset controls are unavailable for this setup, and the project owner has explicitly accepted **manual repository-gate enforcement** as the operating mode.
+""",
+              """The repository is public, but `main` currently has `protected=false` and no repository rulesets. The project owner has explicitly accepted **manual repository-gate enforcement** until those controls are configured.
+""",
+          )
+
+          replace_once(
+              "AGENTS.md",
+              """- unavailable branch protection is **not** a P0 blocker and must not be raised again unless repository visibility/plan changes.
+""",
+              """- manual repository-gate enforcement is **not** a release blocker by itself; reopen this decision if branch protection, rulesets, plan, or enforcement state changes.
+""",
+          )
+
+          manifest_path = Path("docs/MANIFEST.json")
+          manifest = json.loads(manifest_path.read_text())
+          manifest["version"] = "1.18"
+          implementation = manifest["implementation"]
+          implementation["p8"] = "automated_release_validation_complete_rollout_gates_pending"
+          implementation["p8_3"]["remaining_release_gates"] = [
+              "real_browser_matrix",
+              "real_device_qa",
+              "analytics_privacy_provider_activation_review",
+              "deployment",
+              "search_console",
+              "explicit_real_domain_indexing_activation",
+          ]
+
+          manifest["ci_observation"] = {
+              "state": "latest_required_release_validation_green_historical_no_runner_incident_recorded",
+              "signature": "historical runner_id=0; steps=[] on affected 2026-08-29 runs",
+              "interpretation": "historical infrastructure/no-runner incident; later required hosted full validation is green and the incident does not redefine repository test semantics",
+              "policy_effect": "manual repository-gate policy remains in force until branch protection/rulesets are configured",
+              "phase_effect": "automated P8 release validation is complete; remaining gates are real-browser/device and rollout/privacy/deployment/search-indexing work",
+          }
+
+          manifest["documentation_policy"]["state"] = "p8_automated_release_validation_complete_rollout_pending"
+          manifest["documentation_policy"]["next_step"] = "perform real-browser/device smoke QA and rollout: domain/deployment, analytics privacy/consent activation review, Search Console, then explicit real-domain indexing activation"
+
+          manifest["repository_gate"]["observed_at"] = "2026-09-01"
+          manifest["repository_gate"]["reason"] = "public repository currently has main protected=false and no repository rulesets; manual enforcement remains the accepted mode until protection is configured"
+          manifest["repository_gate"]["reopen_only_if"] = "branch protection, ruleset, plan, or enforcement state changes"
+
+          manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
+
+          Path(".github/workflows/temp-final-audit.yml").unlink()
+          PY
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Create one-off 320px Playwright config
+      - name: Static validation
+        run: |
+          git diff --check
+          pnpm format:check
+          pnpm lint
+          pnpm check
+          pnpm test
+
+      - name: Verify indexed build artifacts
+        run: pnpm test:indexing
+
+      - name: Restore default noindex preview build
+        run: pnpm build
+
+      - name: Create one-off 320px Playwright config and all-route geometry audit
         run: |
           cat > playwright.audit-320.config.ts <<'EOF'
           import { defineConfig, devices } from "@playwright/test";
@@ -64,8 +182,6 @@ jobs:
           });
           EOF
 
-      - name: Create one-off all-route narrow geometry audit
-        run: |
           cat > tests/browser/__temp-final-audit-320.spec.ts <<'EOF'
           import { expect, test } from "@playwright/test";
 
@@ -92,6 +208,7 @@ jobs:
 
           test("all 18 HTML routes fit a 320px viewport without control overflow", async ({ page }) => {
             await page.setViewportSize({ width: 320, height: 844 });
+            const failures: string[] = [];
 
             for (const route of routes) {
               await page.goto(route);
@@ -141,32 +258,42 @@ jobs:
                 };
               });
 
-              expect(geometry.scrollWidth, `${route} document overflow`).toBeLessThanOrEqual(
-                geometry.clientWidth,
-              );
-              expect(geometry.offenders, `${route} controls outside viewport`).toEqual([]);
-              expect(geometry.h1Count, `${route} H1 count`).toBe(1);
+              if (geometry.scrollWidth > geometry.clientWidth) {
+                failures.push(`${route}: document ${geometry.scrollWidth}px > ${geometry.clientWidth}px`);
+              }
+              if (geometry.offenders.length > 0) {
+                failures.push(`${route}: controls outside viewport ${JSON.stringify(geometry.offenders)}`);
+              }
+              if (geometry.h1Count !== 1) {
+                failures.push(`${route}: H1 count ${geometry.h1Count}`);
+              }
             }
+
+            expect(failures).toEqual([]);
           });
           EOF
-
-      - name: Build default noindex release
-        run: pnpm build
-
-      - name: Verify indexed build artifacts
-        run: pnpm test:indexing
 
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
 
-      - name: Run full browser suite at 320px plus all-route geometry audit
+      - name: Run full browser/state suite at 320px plus all-route geometry audit
         run: pnpm exec playwright test --config=playwright.audit-320.config.ts --project=chromium-320
+
+      - name: Commit validated fixes and remove temporary audit workflow
+        run: |
+          rm -f playwright.audit-320.config.ts tests/browser/__temp-final-audit-320.spec.ts
+          git diff --check
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "fix: close final release audit findings"
+          git push origin HEAD:audit/final-release-2026-09-01
 
       - name: Upload failure diagnostics only
         if: ${{ failure() }}
         uses: actions/upload-artifact@v7
         with:
-          name: final-audit-320-failure-${{ github.run_id }}
+          name: final-audit-failure-${{ github.run_id }}
           path: test-results
           if-no-files-found: ignore
           retention-days: 2
