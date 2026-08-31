@@ -226,7 +226,7 @@ test("Bass Test exposes its safe idle contract without creating AudioContext", a
   );
   await expect(page.locator("#bass-level")).toHaveValue("-24");
   await expect(
-    page.getByText("Keep playback volume moderate."),
+    page.getByText("Start with your device/headphone volume low."),
   ).toBeVisible();
   await expect(page.locator('[data-bass-preset="20"]')).toBeVisible();
   await expect(page.locator('[data-bass-preset="100"]')).toBeVisible();

@@ -54,19 +54,13 @@ async function installPitchHarness(page: Page): Promise<void> {
     }
 
     class FakeAnalyserNode extends FakeNode {
-      #fftSize = 2_048;
+      fftSize = 2_048;
       smoothingTimeConstant = 0;
       minDecibels = -100;
       maxDecibels = -30;
 
-      get fftSize() {
-        return this.#fftSize;
-      }
-      set fftSize(value: number) {
-        this.#fftSize = value;
-      }
       get frequencyBinCount() {
-        return this.#fftSize / 2;
+        return this.fftSize / 2;
       }
       getFloatTimeDomainData(target: Float32Array) {
         state.timeDomainReadTimes.push(performance.now());
