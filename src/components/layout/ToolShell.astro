@@ -41,9 +41,55 @@ const { eyebrow, title, description, accent = "lavender" } = Astro.props;
     line-height: 1.65;
   }
 
+  @media (min-width: 821px) and (max-height: 900px) {
+    .tool-shell {
+      padding-top: 14px;
+    }
+
+    .tool-shell__header {
+      max-width: 900px;
+      margin-bottom: 14px;
+    }
+
+    .tool-shell__header h1 {
+      max-width: 900px;
+      font-size: 3rem;
+    }
+
+    .tool-shell__header .eyebrow {
+      margin-bottom: 10px;
+    }
+
+    .tool-shell__lede {
+      max-width: 780px;
+      margin-top: 10px;
+      font-size: 0.95rem;
+      line-height: 1.45;
+    }
+  }
+
   @media (max-width: 520px) {
     .tool-shell {
-      padding-top: 24px;
+      padding-top: 14px;
+    }
+
+    .tool-shell__header {
+      margin-bottom: 14px;
+    }
+
+    .tool-shell__header h1 {
+      font-size: 2.2rem;
+      line-height: 1.02;
+    }
+
+    .tool-shell__header .eyebrow {
+      margin-bottom: 10px;
+    }
+
+    .tool-shell__lede {
+      margin-top: 10px;
+      font-size: 0.9rem;
+      line-height: 1.45;
     }
   }
 </style>

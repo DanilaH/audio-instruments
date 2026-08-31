@@ -5,8 +5,11 @@ import RelatedTools from "../components/navigation/RelatedTools.astro";
 import HearingFrequency from "../tools/hearing-frequency/HearingFrequency.astro";
 import { getPublicTools, toolRegistry } from "../registry/tools";
 
-const hearingTool = toolRegistry.find((tool) => tool.id === "hearing-frequency-test");
-if (!hearingTool) throw new Error("Hearing Frequency Test registry entry is missing");
+const hearingTool = toolRegistry.find(
+  (tool) => tool.id === "hearing-frequency-test",
+);
+if (!hearingTool)
+  throw new Error("Hearing Frequency Test registry entry is missing");
 const publicTools = getPublicTools();
 const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
 const relatedTools = hearingTool.relatedToolIds.flatMap((id) => {
@@ -35,30 +38,33 @@ const relatedTools = hearingTool.relatedToolIds.flatMap((id) => {
       </div>
       <div class="hearing-content__copy">
         <p>
-          The Guided result records only the highest frequency you explicitly said
-          you heard during this session. It does not determine hearing age,
-          normality, diagnosis, a clinical threshold or a complete hearing range.
+          The Guided result records only the highest frequency you explicitly
+          said you heard during this session. It does not determine hearing age,
+          normality, diagnosis, a clinical threshold or a complete hearing
+          range.
         </p>
         <p>
-          What you hear depends on headphones or speakers, system volume, browser
-          processing, environment and individual perception. Keep the system/device
-          volume fixed after the Guided setup reference so the app does not turn a
-          volume change into a false frequency comparison.
+          What you hear depends on headphones or speakers, system volume,
+          browser processing, environment and individual perception. Keep the
+          system/device volume fixed after the Guided setup reference so the app
+          does not turn a volume change into a false frequency comparison.
         </p>
       </div>
     </section>
 
     <section class="hearing-help" aria-labelledby="hearing-limit-title">
-      <h2 id="hearing-limit-title">Unavailable frequencies are not hearing results</h2>
+      <h2 id="hearing-limit-title">
+        Unavailable frequencies are not hearing results
+      </h2>
       <div class="hearing-help__grid">
         <p>
-          Generated frequencies are capped below the current AudioContext Nyquist
-          limit. If a nominal Guided step is above that safe cap, the browser removes
-          it from the session rather than marking it as unheard.
+          Generated frequencies are capped below the current AudioContext
+          Nyquist limit. If a nominal Guided step is above that safe cap, the
+          browser removes it from the session rather than marking it as unheard.
         </p>
         <p>
-          Manual mode is exploratory. Its adjustable digital Level and manual tone
-          choices never update the fixed-level Guided result.
+          Manual mode is exploratory. Its adjustable digital Level and manual
+          tone choices never update the fixed-level Guided result.
         </p>
       </div>
     </section>
@@ -103,6 +109,99 @@ const relatedTools = hearingTool.relatedToolIds.flatMap((id) => {
       grid-template-columns: 1fr;
       margin-top: 48px;
       padding-top: 34px;
+    }
+  }
+
+  @media (max-width: 520px) {
+    :global([data-hearing-frequency] .hearing-stage) {
+      grid-template-columns: minmax(0, 0.78fr) minmax(0, 1.22fr);
+      grid-template-rows: auto auto auto;
+      gap: 8px;
+      padding: 10px 12px;
+    }
+
+    :global([data-hearing-frequency] .hearing-stage__header),
+    :global([data-hearing-frequency] .hearing-frequency-track) {
+      grid-column: 1 / -1;
+    }
+
+    :global([data-hearing-frequency] .hearing-frequency-display) {
+      min-height: 0;
+      padding: 10px 8px;
+      border-radius: 18px;
+    }
+
+    :global([data-hearing-frequency] .hearing-frequency-display p),
+    :global([data-hearing-frequency] .hearing-frequency-display span),
+    :global([data-hearing-frequency] .hearing-result-card p),
+    :global([data-hearing-frequency] .hearing-result-card span) {
+      font-size: 0.66rem;
+      line-height: 1.28;
+    }
+
+    :global([data-hearing-frequency] .hearing-frequency-display strong) {
+      font-size: 2.2rem;
+    }
+
+    :global([data-hearing-frequency] .hearing-result-card) {
+      gap: 3px;
+      padding: 8px 9px;
+      border-radius: 14px;
+    }
+
+    :global([data-hearing-frequency] .hearing-result-card strong) {
+      font-size: 1rem;
+    }
+
+    :global([data-hearing-frequency] .hearing-controls) {
+      gap: 8px;
+      padding: 10px 12px 14px;
+    }
+
+    :global([data-hearing-frequency] .hearing-safety) {
+      gap: 7px;
+      padding: 7px 8px;
+    }
+
+    :global([data-hearing-frequency] .hearing-safety p) {
+      font-size: 0.67rem;
+      line-height: 1.28;
+    }
+
+    :global([data-hearing-frequency] .hearing-setup) {
+      grid-template-columns: minmax(0, 1fr) 142px;
+      gap: 7px 9px;
+      padding: 8px 9px;
+    }
+
+    :global([data-hearing-frequency] .hearing-setup .hearing-section-heading),
+    :global(
+      [data-hearing-frequency] .hearing-setup > [data-hearing-setup-status]
+    ),
+    :global([data-hearing-frequency] .hearing-setup > .hearing-confirm) {
+      grid-column: 1 / -1;
+    }
+
+    :global(
+      [data-hearing-frequency]
+        .hearing-setup
+        > div:not(.hearing-section-heading)
+    ) {
+      grid-column: 1;
+    }
+
+    :global([data-hearing-frequency] .hearing-setup > .hearing-secondary) {
+      grid-column: 2;
+      grid-row: 2;
+      align-self: start;
+      padding-inline: 10px;
+      font-size: 0.74rem;
+    }
+
+    :global([data-hearing-frequency] .hearing-setup p),
+    :global([data-hearing-frequency] .hearing-confirm) {
+      font-size: 0.68rem;
+      line-height: 1.3;
     }
   }
 </style>
