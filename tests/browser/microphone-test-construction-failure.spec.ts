@@ -45,21 +45,21 @@ test("partial service construction is disposed before a clean retry", async ({ p
     }
 
     class FakeAnalyserNode extends FakeNode {
-      #fftSize = 2048;
+      _fftSize = 2048;
       smoothingTimeConstant = 0;
       minDecibels = -100;
       maxDecibels = -30;
 
       get fftSize() {
-        return this.#fftSize;
+        return this._fftSize;
       }
 
       set fftSize(value: number) {
-        this.#fftSize = value;
+        this._fftSize = value;
       }
 
       get frequencyBinCount() {
-        return this.#fftSize / 2;
+        return this._fftSize / 2;
       }
 
       getFloatTimeDomainData(target: Float32Array) {
