@@ -40,58 +40,37 @@ jobs:
 
           index_path = Path("src/pages/index.astro")
           index_text = index_path.read_text()
-          narrow_rule = """  @media (max-width: 340px) {
-            .hero h1 {
-              font-size: 3rem;
-            }
-          }
-
-"""
+          narrow_rule = "  @media (max-width: 340px) {\n    .hero h1 {\n      font-size: 3rem;\n    }\n  }\n\n"
           marker = "  @media (prefers-reduced-motion: reduce) {"
           if narrow_rule not in index_text:
               if index_text.count(marker) != 1:
                   raise SystemExit("src/pages/index.astro: reduced-motion marker is not unique")
               index_path.write_text(index_text.replace(marker, narrow_rule + marker, 1))
 
+          viewport_old = "1440×900\n1366×768\n1024×768\n390×844\n"
+          viewport_new = "1440×900\n1366×768\n1024×768\n390×844\n320×844\n"
           for path in ("docs/10_TESTING_AND_QA.md", "docs/14_ACCEPTANCE_CRITERIA.md"):
               p = Path(path)
               text = p.read_text()
-              old = """1440×900
-          1366×768
-          1024×768
-          390×844
-"""
-              new = """1440×900
-          1366×768
-          1024×768
-          390×844
-          320×844
-"""
               if "320×844" not in text:
-                  if text.count(old) != 1:
+                  if text.count(viewport_old) != 1:
                       raise SystemExit(f"{path}: viewport matrix target is not unique")
-                  p.write_text(text.replace(old, new, 1))
+                  p.write_text(text.replace(viewport_old, viewport_new, 1))
 
           replace_once(
               "AGENTS.md",
               "P8 is **in progress**.",
               "P8 automated release validation is **complete**; rollout gates remain open.",
           )
-
           replace_once(
               "AGENTS.md",
-              """The repository intentionally remains private on the current free GitHub plan. Protected-branch/ruleset controls are unavailable for this setup, and the project owner has explicitly accepted **manual repository-gate enforcement** as the operating mode.
-""",
-              """The repository is public, but `main` currently has `protected=false` and no repository rulesets. The project owner has explicitly accepted **manual repository-gate enforcement** until those controls are configured.
-""",
+              "The repository intentionally remains private on the current free GitHub plan. Protected-branch/ruleset controls are unavailable for this setup, and the project owner has explicitly accepted **manual repository-gate enforcement** as the operating mode.\n",
+              "The repository is public, but `main` currently has `protected=false` and no repository rulesets. The project owner has explicitly accepted **manual repository-gate enforcement** until those controls are configured.\n",
           )
-
           replace_once(
               "AGENTS.md",
-              """- unavailable branch protection is **not** a P0 blocker and must not be raised again unless repository visibility/plan changes.
-""",
-              """- manual repository-gate enforcement is **not** a release blocker by itself; reopen this decision if branch protection, rulesets, plan, or enforcement state changes.
-""",
+              "- unavailable branch protection is **not** a P0 blocker and must not be raised again unless repository visibility/plan changes.\n",
+              "- manual repository-gate enforcement is **not** a release blocker by itself; reopen this decision if branch protection, rulesets, plan, or enforcement state changes.\n",
           )
 
           manifest_path = Path("docs/MANIFEST.json")
@@ -107,7 +86,6 @@ jobs:
               "search_console",
               "explicit_real_domain_indexing_activation",
           ]
-
           manifest["ci_observation"] = {
               "state": "latest_required_release_validation_green_historical_no_runner_incident_recorded",
               "signature": "historical runner_id=0; steps=[] on affected 2026-08-29 runs",
@@ -115,14 +93,11 @@ jobs:
               "policy_effect": "manual repository-gate policy remains in force until branch protection/rulesets are configured",
               "phase_effect": "automated P8 release validation is complete; remaining gates are real-browser/device and rollout/privacy/deployment/search-indexing work",
           }
-
           manifest["documentation_policy"]["state"] = "p8_automated_release_validation_complete_rollout_pending"
           manifest["documentation_policy"]["next_step"] = "perform real-browser/device smoke QA and rollout: domain/deployment, analytics privacy/consent activation review, Search Console, then explicit real-domain indexing activation"
-
           manifest["repository_gate"]["observed_at"] = "2026-09-01"
           manifest["repository_gate"]["reason"] = "public repository currently has main protected=false and no repository rulesets; manual enforcement remains the accepted mode until protection is configured"
           manifest["repository_gate"]["reopen_only_if"] = "branch protection, ruleset, plan, or enforcement state changes"
-
           manifest_path.write_text(json.dumps(manifest, indent=2, ensure_ascii=False) + "\n")
 
           Path(".github/workflows/temp-final-audit.yml").unlink()
@@ -212,30 +187,14 @@ jobs:
 
             for (const route of routes) {
               await page.goto(route);
-
               const geometry = await page.evaluate(() => {
                 const root = document.documentElement;
-                const selectors = [
-                  "button",
-                  "input",
-                  "select",
-                  "textarea",
-                  "summary",
-                  "audio[controls]",
-                  "a[href]",
-                ].join(",");
-
+                const selectors = ["button", "input", "select", "textarea", "summary", "audio[controls]", "a[href]"].join(",");
                 const controls = Array.from(document.querySelectorAll<HTMLElement>(selectors))
                   .filter((element) => {
                     const style = getComputedStyle(element);
                     const rect = element.getBoundingClientRect();
-                    return (
-                      style.display !== "none" &&
-                      style.visibility !== "hidden" &&
-                      !element.hidden &&
-                      rect.width > 0 &&
-                      rect.height > 0
-                    );
+                    return style.display !== "none" && style.visibility !== "hidden" && !element.hidden && rect.width > 0 && rect.height > 0;
                   })
                   .map((element) => {
                     const rect = element.getBoundingClientRect();
@@ -247,28 +206,17 @@ jobs:
                       width: rect.width,
                     };
                   });
-
                 return {
                   scrollWidth: root.scrollWidth,
                   clientWidth: root.clientWidth,
-                  offenders: controls.filter(
-                    (control) => control.left < -1 || control.right > window.innerWidth + 1,
-                  ),
+                  offenders: controls.filter((control) => control.left < -1 || control.right > window.innerWidth + 1),
                   h1Count: document.querySelectorAll("h1").length,
                 };
               });
-
-              if (geometry.scrollWidth > geometry.clientWidth) {
-                failures.push(`${route}: document ${geometry.scrollWidth}px > ${geometry.clientWidth}px`);
-              }
-              if (geometry.offenders.length > 0) {
-                failures.push(`${route}: controls outside viewport ${JSON.stringify(geometry.offenders)}`);
-              }
-              if (geometry.h1Count !== 1) {
-                failures.push(`${route}: H1 count ${geometry.h1Count}`);
-              }
+              if (geometry.scrollWidth > geometry.clientWidth) failures.push(`${route}: document ${geometry.scrollWidth}px > ${geometry.clientWidth}px`);
+              if (geometry.offenders.length > 0) failures.push(`${route}: controls outside viewport ${JSON.stringify(geometry.offenders)}`);
+              if (geometry.h1Count !== 1) failures.push(`${route}: H1 count ${geometry.h1Count}`);
             }
-
             expect(failures).toEqual([]);
           });
           EOF
