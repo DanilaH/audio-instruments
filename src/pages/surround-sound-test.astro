@@ -5,8 +5,11 @@ import RelatedTools from "../components/navigation/RelatedTools.astro";
 import SurroundSoundTest from "../tools/surround-sound-test/SurroundSoundTest.astro";
 import { getPublicTools, toolRegistry } from "../registry/tools";
 
-const surroundTool = toolRegistry.find((tool) => tool.id === "surround-sound-test");
-if (!surroundTool) throw new Error("Surround Sound Test registry entry is missing");
+const surroundTool = toolRegistry.find(
+  (tool) => tool.id === "surround-sound-test",
+);
+if (!surroundTool)
+  throw new Error("Surround Sound Test registry entry is missing");
 const publicTools = getPublicTools();
 const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
 const relatedTools = surroundTool.relatedToolIds.flatMap((id) => {
@@ -31,35 +34,40 @@ const relatedTools = surroundTool.relatedToolIds.flatMap((id) => {
     <section class="surround-content" aria-labelledby="surround-about-title">
       <div>
         <p class="eyebrow">What this checks</p>
-        <h2 id="surround-about-title">Requested digital channel routing, not physical speaker correctness</h2>
+        <h2 id="surround-about-title">
+          Requested digital channel routing, not physical speaker correctness
+        </h2>
       </div>
       <div class="surround-content__copy">
         <p>
-          Standardized 5.1 is enabled only after the current AudioDestinationNode accepts
-          six explicit speaker channels and reads the requested configuration back exactly.
-          The channel order is Front Left, Front Right, Center, LFE, Surround Left and
-          Surround Right.
+          Standardized 5.1 is enabled only after the current
+          AudioDestinationNode accepts six explicit speaker channels and reads
+          the requested configuration back exactly. The channel order is Front
+          Left, Front Right, Center, LFE, Surround Left and Surround Right.
         </p>
         <p>
-          Experimental 8-channel is a separate raw discrete mode. It is not labeled as a
-          guaranteed 7.1 speaker layout because Web Audio does not define one universal
-          eight-channel speaker mapping.
+          Experimental 8-channel is a separate raw discrete mode. It is not
+          labeled as a guaranteed 7.1 speaker layout because Web Audio does not
+          define one universal eight-channel speaker mapping.
         </p>
       </div>
     </section>
 
     <section class="surround-help" aria-labelledby="surround-help-title">
-      <h2 id="surround-help-title">If surround is unavailable or a channel sounds wrong</h2>
+      <h2 id="surround-help-title">
+        If surround is unavailable or a channel sounds wrong
+      </h2>
       <div class="surround-help__grid">
         <p>
-          A browser-reported maximum channel count is only a candidate ceiling. Browser,
-          operating-system and output-device routing can still reject or rewrite the requested
-          multichannel configuration, in which case this tool stays with Stereo spatial preview.
+          A browser-reported maximum channel count is only a candidate ceiling.
+          Browser, operating-system and output-device routing can still reject
+          or rewrite the requested multichannel configuration, in which case
+          this tool stays with Stereo spatial preview.
         </p>
         <p>
-          Even a confirmed digital route does not prove physical speaker placement or wiring.
-          Treat what you hear as troubleshooting evidence and verify the OS, receiver/interface
-          and speaker setup separately.
+          Even a confirmed digital route does not prove physical speaker
+          placement or wiring. Treat what you hear as troubleshooting evidence
+          and verify the OS, receiver/interface and speaker setup separately.
         </p>
       </div>
     </section>
