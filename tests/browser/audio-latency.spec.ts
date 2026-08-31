@@ -157,7 +157,10 @@ async function installLatencyHarness(
 
       createGain() {
         if (options.failCreateGain) {
-          throw new DOMException("gain construction failed", "NotSupportedError");
+          throw new DOMException(
+            "gain construction failed",
+            "NotSupportedError",
+          );
         }
         return new FakeGainNode(
           this as unknown as BaseAudioContext,
@@ -195,7 +198,10 @@ async function harnessState(page: Page): Promise<LatencyHarnessState> {
 
 async function contextCurrentTime(page: Page): Promise<number> {
   return page.evaluate(() => {
-    const currentTime = Reflect.get(window, "__latencyCurrentTime") as () => number;
+    const currentTime = Reflect.get(
+      window,
+      "__latencyCurrentTime",
+    ) as () => number;
     return currentTime();
   });
 }
@@ -216,7 +222,10 @@ async function setOffsetAtContextLead(
 ): Promise<number> {
   return page.evaluate(
     async ({ targetContextSec: target, leadMs: lead, value: nextValue }) => {
-      const currentTime = Reflect.get(window, "__latencyCurrentTime") as () => number;
+      const currentTime = Reflect.get(
+        window,
+        "__latencyCurrentTime",
+      ) as () => number;
       const threshold = target - lead / 1_000;
       while (currentTime() < threshold) {
         await new Promise((resolve) => window.setTimeout(resolve, 2));
@@ -272,14 +281,18 @@ test("stays lazy until Start, reports browser latency in ms, and schedules the 1
   await observeVisualPulses(page);
 
   expect((await harnessState(page)).audioContextCount).toBe(0);
-  await expect(page.locator("[data-latency-base]")).toHaveText("Start to query");
+  await expect(page.locator("[data-latency-base]")).toHaveText(
+    "Start to query",
+  );
   await expect(page.locator("[data-latency-output]")).toHaveText(
     "Start to query",
   );
   await expect(page.locator("[data-latency-stop]")).toBeDisabled();
   await expect(page.getByRole("link", { name: "Sound Test" })).toHaveCount(1);
   await expect(page.getByRole("link", { name: "Speaker Test" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Headphone Test" })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Headphone Test" })).toHaveCount(
+    1,
+  );
 
   await page.locator("[data-latency-start]").click();
   await expect(
@@ -304,7 +317,10 @@ test("stays lazy until Start, reports browser latency in ms, and schedules the 1
   await expect
     .poll(() =>
       page.evaluate(() => {
-        const pulseCount = Reflect.get(window, "__latencyPulseCount") as () => number;
+        const pulseCount = Reflect.get(
+          window,
+          "__latencyPulseCount",
+        ) as () => number;
         return pulseCount();
       }),
     )
@@ -357,7 +373,8 @@ test("reanchors on offset changes, preserves the sign convention, and cancels ol
     .toBeGreaterThan(beforeNegativeCount);
 
   const negativeState = await harnessState(page);
-  const firstNegativeStart = negativeState.oscillators[beforeNegativeCount]?.startTime;
+  const firstNegativeStart =
+    negativeState.oscillators[beforeNegativeCount]?.startTime;
   expect(firstNegativeStart).not.toBeNull();
   expect((firstNegativeStart ?? 0) - beforeNegativeTime).toBeGreaterThan(0.38);
   expect((firstNegativeStart ?? 0) - beforeNegativeTime).toBeLessThan(0.55);
@@ -433,14 +450,18 @@ test("BFCache restoration mounts a fresh idle controller and creates a new Audio
   expect((await harnessState(page)).audioContextCount).toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
   await expect
     .poll(async () => (await harnessState(page)).closedContextCount)
     .toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
   await expect(
     page.locator("#audio-latency-status [data-status-label]"),
@@ -453,7 +474,9 @@ test("BFCache restoration mounts a fresh idle controller and creates a new Audio
     .toBe(2);
 });
 
-test("shows an explicit fallback when outputLatency is not reported", async ({ page }) => {
+test("shows an explicit fallback when outputLatency is not reported", async ({
+  page,
+}) => {
   await installLatencyHarness(page, { baseLatency: 0.008 });
   await page.goto("/audio-latency-test");
   await page.locator("[data-latency-start]").click();

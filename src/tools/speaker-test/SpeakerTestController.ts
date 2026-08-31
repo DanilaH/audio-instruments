@@ -30,7 +30,8 @@ const GENERAL_LEVEL_MIN_DB = -60;
 const GENERAL_LEVEL_MAX_DB = -12;
 const GENERAL_LEVEL_DEFAULT_DB = -24;
 const MILLISECONDS_PER_SECOND = 1_000;
-const CHANNEL_BURST_MS = CHANNEL_TEST_DURATION_SECONDS * MILLISECONDS_PER_SECOND;
+const CHANNEL_BURST_MS =
+  CHANNEL_TEST_DURATION_SECONDS * MILLISECONDS_PER_SECOND;
 const CHANNEL_STEP_MS = CHANNEL_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
 const CHANNEL_SEQUENCE_TOTAL_MS =
   CHANNEL_SEQUENCE_TOTAL_SECONDS * MILLISECONDS_PER_SECOND;
@@ -46,7 +47,10 @@ type SpeakerVisualState =
   | "sweep"
   | "bass";
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
     throw new Error(`Speaker Test is missing required element: ${selector}`);
@@ -142,7 +146,9 @@ export class SpeakerTestController {
       throw new Error("Speaker Test requires four modes and four mode panels");
     }
     if (this.#channelButtons.length !== 3) {
-      throw new Error("Speaker Test requires Left, Both and Right channel controls");
+      throw new Error(
+        "Speaker Test requires Left, Both and Right channel controls",
+      );
     }
 
     this.#sequenceButton = requireElement(root, "[data-speaker-sequence]");
@@ -151,7 +157,10 @@ export class SpeakerTestController {
       root,
       "[data-speaker-phase-inverted]",
     );
-    this.#phaseToggleButton = requireElement(root, "[data-speaker-phase-toggle]");
+    this.#phaseToggleButton = requireElement(
+      root,
+      "[data-speaker-phase-toggle]",
+    );
     this.#sweepButton = requireElement(root, "[data-speaker-sweep]");
     this.#bassButton = requireElement(root, "[data-speaker-bass]");
     this.#stopButton = requireElement(root, "[data-speaker-stop]");
@@ -253,16 +262,12 @@ export class SpeakerTestController {
       },
       { signal },
     );
-    this.#sweepButton.addEventListener(
-      "click",
-      () => void this.#runSweep(),
-      { signal },
-    );
-    this.#bassButton.addEventListener(
-      "click",
-      () => void this.#runBass(),
-      { signal },
-    );
+    this.#sweepButton.addEventListener("click", () => void this.#runSweep(), {
+      signal,
+    });
+    this.#bassButton.addEventListener("click", () => void this.#runBass(), {
+      signal,
+    });
     this.#stopButton.addEventListener(
       "click",
       () => this.#stopCurrent("Stopped"),
@@ -294,7 +299,9 @@ export class SpeakerTestController {
     }
 
     if (!this.#engine) {
-      this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
+      this.#engine = new AudioOutputEngine(context, {
+        levelProfile: "general",
+      });
       this.#engine.setLevelDb(this.#levelDb);
       this.#session.register(this.#engine);
     }
@@ -478,10 +485,7 @@ export class SpeakerTestController {
       this.#oscillatorPlaybacks = [playback];
       this.#starting = false;
       this.#setControlsActive(true);
-      this.#setVisual(
-        "sweep",
-        `${definition.lowHz} → ${definition.highHz} Hz`,
-      );
+      this.#setVisual("sweep", `${definition.lowHz} → ${definition.highHz} Hz`);
       this.#setStatus("playing", "Speaker sweep running");
       this.#schedule(
         definition.durationSeconds * MILLISECONDS_PER_SECOND,
@@ -508,10 +512,7 @@ export class SpeakerTestController {
         );
       }
 
-      const definition = createBassSweepDefinition(
-        SPEAKER_BASS_LOW_HZ,
-        highHz,
-      );
+      const definition = createBassSweepDefinition(SPEAKER_BASS_LOW_HZ, highHz);
       const startTime = context.currentTime;
       const playback = engine.startOscillator({
         frequencyHz: definition.lowHz,
@@ -598,7 +599,10 @@ export class SpeakerTestController {
     try {
       this.#engine?.stop();
     } catch (stopError) {
-      console.error("Speaker Test cleanup after start failure failed", stopError);
+      console.error(
+        "Speaker Test cleanup after start failure failed",
+        stopError,
+      );
     }
 
     this.#starting = false;

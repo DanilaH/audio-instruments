@@ -137,7 +137,9 @@ async function installPitchHarness(page: Page): Promise<void> {
         this.state = "closed";
       }
       createGain() {
-        return new FakeGainNode(this as unknown as BaseAudioContext) as unknown as GainNode;
+        return new FakeGainNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as GainNode;
       }
       createAnalyser() {
         return new FakeAnalyserNode(
@@ -160,19 +162,26 @@ async function installPitchHarness(page: Page): Promise<void> {
           autoGainControl: true,
         };
       }
-      async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
+      async getUserMedia(
+        constraints: MediaStreamConstraints,
+      ): Promise<MediaStream> {
         state.getUserMediaCalls.push(constraints);
         const audio = constraints.audio as MediaTrackConstraints;
         const exact =
           typeof audio === "object" &&
           audio.deviceId &&
           typeof audio.deviceId === "object"
-            ? String((audio.deviceId as ConstrainDOMStringParameters).exact ?? "")
+            ? String(
+                (audio.deviceId as ConstrainDOMStringParameters).exact ?? "",
+              )
             : "";
         const deviceId = exact || "mic-1";
         state.lifecycle.push(`gum:${deviceId}`);
         if (deviceId === "mic-fail") {
-          throw new DOMException("deterministic selection failure", "NotReadableError");
+          throw new DOMException(
+            "deterministic selection failure",
+            "NotReadableError",
+          );
         }
         return createStream(deviceId);
       }
@@ -266,18 +275,28 @@ test("stays idle until Start, then produces a stabilized YIN A4 estimate at boun
   expect((await harnessState(page)).audioContextCount).toBe(0);
   await expect(page.locator("[data-pitch-note]")).toHaveText("—");
   await expect(page.locator("[data-pitch-stop]")).toBeDisabled();
-  await expect(page.getByRole("link", { name: "Microphone Test" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Spectrum Analyzer" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Decibel Meter" })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Microphone Test" })).toHaveCount(
+    1,
+  );
+  await expect(
+    page.getByRole("link", { name: "Spectrum Analyzer" }),
+  ).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Decibel Meter" })).toHaveCount(
+    1,
+  );
 
   await page.locator("[data-pitch-start]").click();
-  await expect(page.locator("#pitch-detector-status [data-status-label]")).toHaveText(
-    "Listening for pitch",
-  );
+  await expect(
+    page.locator("#pitch-detector-status [data-status-label]"),
+  ).toHaveText("Listening for pitch");
   await expect(page.locator("[data-pitch-input] option")).toHaveCount(3);
-  await expect(page.locator("[data-pitch-analysis-rate]")).toHaveText("48000 Hz");
+  await expect(page.locator("[data-pitch-analysis-rate]")).toHaveText(
+    "48000 Hz",
+  );
   await expect(page.locator("[data-pitch-downsample]")).toHaveText("1×");
-  await expect(page.locator("[data-pitch-frame-size]")).toHaveText("2048 samples");
+  await expect(page.locator("[data-pitch-frame-size]")).toHaveText(
+    "2048 samples",
+  );
 
   await expect(page.locator("[data-pitch-note]")).toHaveText("A4", {
     timeout: 2_000,
@@ -300,9 +319,9 @@ test("stays idle until Start, then produces a stabilized YIN A4 estimate at boun
     },
   ]);
   expect(state.timeDomainReadTimes.length).toBeGreaterThanOrEqual(3);
-  const deltas = state.timeDomainReadTimes.slice(1).map(
-    (time, index) => time - (state.timeDomainReadTimes[index] ?? time),
-  );
+  const deltas = state.timeDomainReadTimes
+    .slice(1)
+    .map((time, index) => time - (state.timeDomainReadTimes[index] ?? time));
   expect(deltas.every((delta) => delta >= 40)).toBe(true);
 });
 
@@ -315,9 +334,12 @@ test("weak input hides the current pitch and breaks stability without a random n
   });
 
   await setSignal(page, "silence");
-  await expect(page.locator("[data-pitch-frequency]")).toHaveText("Listening…", {
-    timeout: 2_000,
-  });
+  await expect(page.locator("[data-pitch-frequency]")).toHaveText(
+    "Listening…",
+    {
+      timeout: 2_000,
+    },
+  );
   await expect(page.locator("[data-pitch-note]")).toHaveText("—");
   await expect(page.locator("[data-pitch-message]")).toHaveText(
     "Signal too weak or unstable",
@@ -368,7 +390,9 @@ test("successful exact switch acquires the replacement before old-track teardown
 
   await setSignal(page, "tone", 523.251);
   await page.locator("[data-pitch-input]").selectOption("mic-2");
-  await expect(page.locator("[data-pitch-active-input]")).toHaveText("USB microphone");
+  await expect(page.locator("[data-pitch-active-input]")).toHaveText(
+    "USB microphone",
+  );
   await expect(page.locator("[data-pitch-note]")).toHaveText("C5", {
     timeout: 2_000,
   });
@@ -397,13 +421,15 @@ test("Stop cancels the 20 Hz analysis loop and restart does not create a second 
   });
 
   await page.locator("[data-pitch-stop]").click();
-  await expect(page.locator("#pitch-detector-status [data-status-label]")).toHaveText(
-    "Stopped",
-  );
+  await expect(
+    page.locator("#pitch-detector-status [data-status-label]"),
+  ).toHaveText("Stopped");
   await expect(page.locator("[data-pitch-note]")).toHaveText("—");
   const readsAtStop = (await harnessState(page)).timeDomainReadTimes.length;
   await page.waitForTimeout(160);
-  expect((await harnessState(page)).timeDomainReadTimes).toHaveLength(readsAtStop);
+  expect((await harnessState(page)).timeDomainReadTimes).toHaveLength(
+    readsAtStop,
+  );
 
   await page.locator("[data-pitch-start]").click();
   await expect(page.locator("[data-pitch-note]")).toHaveText("A4", {
@@ -412,20 +438,25 @@ test("Stop cancels the 20 Hz analysis loop and restart does not create a second 
   expect((await harnessState(page)).audioContextCount).toBe(1);
 });
 
-test("track loss clears the estimate and requires explicit restart", async ({ page }) => {
+test("track loss clears the estimate and requires explicit restart", async ({
+  page,
+}) => {
   await page.locator("[data-pitch-start]").click();
   await expect(page.locator("[data-pitch-note]")).toHaveText("A4", {
     timeout: 2_000,
   });
 
   await page.evaluate(() => {
-    const endTrack = Reflect.get(window, "__pitchEndActiveTrack") as () => boolean;
+    const endTrack = Reflect.get(
+      window,
+      "__pitchEndActiveTrack",
+    ) as () => boolean;
     endTrack();
   });
 
-  await expect(page.locator("#pitch-detector-status [data-status-label]")).toHaveText(
-    "Input device disconnected",
-  );
+  await expect(
+    page.locator("#pitch-detector-status [data-status-label]"),
+  ).toHaveText("Input device disconnected");
   await expect(page.locator("[data-pitch-active-input]")).toHaveText(
     "Input device disconnected",
   );
@@ -443,16 +474,22 @@ test("BFCache restoration remounts a fresh idle detector and next Start creates 
   expect((await harnessState(page)).audioContextCount).toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
-  await expect.poll(async () => (await harnessState(page)).closedContextCount).toBe(1);
+  await expect
+    .poll(async () => (await harnessState(page)).closedContextCount)
+    .toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
-  await expect(page.locator("#pitch-detector-status [data-status-label]")).toHaveText(
-    "Ready",
-  );
+  await expect(
+    page.locator("#pitch-detector-status [data-status-label]"),
+  ).toHaveText("Ready");
   await expect(page.locator("[data-pitch-note]")).toHaveText("—");
 
   await page.locator("[data-pitch-start]").click();

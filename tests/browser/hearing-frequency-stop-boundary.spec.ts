@@ -65,18 +65,18 @@ test("Stop cancels an unsounded high-frequency tone before its scheduled start",
     class FakeOscillatorNode extends EventTarget {
       readonly frequency: FakeAudioParam;
       type: OscillatorType = "sine";
-      readonly #record: OscillatorRecord;
+      readonly _record: OscillatorRecord;
 
       constructor(readonly context: BaseAudioContext) {
         super();
-        this.#record = {
+        this._record = {
           frequencyHz: null,
           startTime: null,
           stopTimes: [],
         };
-        oscillators.push(this.#record);
+        oscillators.push(this._record);
         this.frequency = new FakeAudioParam((value) => {
-          this.#record.frequencyHz = value;
+          this._record.frequencyHz = value;
         });
       }
 
@@ -87,11 +87,11 @@ test("Stop cancels an unsounded high-frequency tone before its scheduled start",
       disconnect() {}
 
       start(when = 0) {
-        this.#record.startTime = when;
+        this._record.startTime = when;
       }
 
       stop(when = 0) {
-        this.#record.stopTimes.push(when);
+        this._record.stopTimes.push(when);
       }
     }
 
@@ -142,7 +142,7 @@ test("Stop cancels an unsounded high-frequency tone before its scheduled start",
     page.locator("#hearing-frequency-status [data-status-label]"),
   ).toHaveText("Setup reference complete", { timeout: 2_000 });
   await page.locator("[data-hearing-setup-confirm]").check();
-  await page.locator('input[name="hearing-mode"][value="manual"]').check();
+  await page.locator("label.mode-pill").filter({ hasText: "Manual" }).click();
 
   await page.locator("[data-hearing-manual-play]").click();
   await expect

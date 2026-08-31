@@ -119,7 +119,8 @@ async function installDbHarness(page: Page): Promise<void> {
       }
       stop() {
         state.lifecycle.push(`track-stop:${this.internalId}`);
-        if (state.activeDeviceId === this.internalId) state.activeDeviceId = null;
+        if (state.activeDeviceId === this.internalId)
+          state.activeDeviceId = null;
       }
     }
 
@@ -184,19 +185,26 @@ async function installDbHarness(page: Page): Promise<void> {
           autoGainControl: true,
         };
       }
-      async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
+      async getUserMedia(
+        constraints: MediaStreamConstraints,
+      ): Promise<MediaStream> {
         state.getUserMediaCalls.push(constraints);
         const audio = constraints.audio as MediaTrackConstraints;
         const exact =
           typeof audio === "object" &&
           audio.deviceId &&
           typeof audio.deviceId === "object"
-            ? String((audio.deviceId as ConstrainDOMStringParameters).exact ?? "")
+            ? String(
+                (audio.deviceId as ConstrainDOMStringParameters).exact ?? "",
+              )
             : "";
         const deviceId = exact || state.defaultDevice;
         state.lifecycle.push(`gum:${deviceId}`);
         if (deviceId === "mic-fail") {
-          throw new DOMException("deterministic selection failure", "NotReadableError");
+          throw new DOMException(
+            "deterministic selection failure",
+            "NotReadableError",
+          );
         }
         return createStream(deviceId);
       }
@@ -245,9 +253,13 @@ async function installDbHarness(page: Page): Promise<void> {
     });
 
     Reflect.set(window, "__dbHarness", state);
-    Reflect.set(window, "__dbSetMeterMode", (mode: DbHarnessState["meterMode"]) => {
-      state.meterMode = mode;
-    });
+    Reflect.set(
+      window,
+      "__dbSetMeterMode",
+      (mode: DbHarnessState["meterMode"]) => {
+        state.meterMode = mode;
+      },
+    );
     Reflect.set(
       window,
       "__dbSetDefaultDevice",
@@ -296,18 +308,28 @@ test("stays dBFS-first until Start, then meters at the shared 10 Hz cadence", as
   await expect(page.locator("[data-db-peak]")).toHaveText("—");
   await expect(page.locator("[data-db-stop]")).toBeDisabled();
   await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
-  await expect(page.getByRole("link", { name: "Microphone Test" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Spectrum Analyzer" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Pitch Detector" })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Microphone Test" })).toHaveCount(
+    1,
+  );
+  await expect(
+    page.getByRole("link", { name: "Spectrum Analyzer" }),
+  ).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Pitch Detector" })).toHaveCount(
+    1,
+  );
 
   await page.locator("[data-db-start]").click();
-  await expect(page.locator("#decibel-meter-status [data-status-label]")).toHaveText(
-    "Measuring digital microphone level",
-  );
+  await expect(
+    page.locator("#decibel-meter-status [data-status-label]"),
+  ).toHaveText("Measuring digital microphone level");
   await expect(page.locator("[data-db-rms]")).toHaveText("-40.0 dBFS");
   await expect(page.locator("[data-db-peak]")).toHaveText("-40.0 dBFS");
-  await expect(page.locator("[data-db-detail-analysis-rate]")).toHaveText("48000 Hz");
-  await expect(page.locator("[data-db-detail-sample-rate]")).toHaveText("48000 Hz");
+  await expect(page.locator("[data-db-detail-analysis-rate]")).toHaveText(
+    "48000 Hz",
+  );
+  await expect(page.locator("[data-db-detail-sample-rate]")).toHaveText(
+    "48000 Hz",
+  );
   await expect(page.locator("[data-db-detail-auto-gain]")).toHaveText("Off");
   await expect(page.locator("[data-db-calibration-eligibility]")).toContainText(
     "Eligible",
@@ -327,7 +349,9 @@ test("stays dBFS-first until Start, then meters at the shared 10 Hz cadence", as
     .poll(async () => (await harnessState(page)).meterReadTimes.length)
     .toBeGreaterThanOrEqual(3);
   const reads = (await harnessState(page)).meterReadTimes;
-  const deltas = reads.slice(1).map((time, index) => time - (reads[index] ?? time));
+  const deltas = reads
+    .slice(1)
+    .map((time, index) => time - (reads[index] ?? time));
   expect(deltas.every((delta) => delta >= 80)).toBe(true);
 });
 
@@ -418,7 +442,9 @@ test("resets only the active device calibration", async ({ page }) => {
 
   const persisted = await page.evaluate(() => {
     const raw = localStorage.getItem("browserAudioLab.dbCalibration.v2");
-    return raw ? (JSON.parse(raw) as { byDeviceId: Record<string, unknown> }) : null;
+    return raw
+      ? (JSON.parse(raw) as { byDeviceId: Record<string, unknown> })
+      : null;
   });
   expect(persisted?.byDeviceId["mic-1"]).toBeUndefined();
   expect(persisted?.byDeviceId["mic-2"]).toBeDefined();
@@ -446,7 +472,9 @@ test("loads calibration only for the matching device and restores it when switch
   await expect(page.locator("[data-db-estimate]")).toHaveText("72.0 dB");
 
   await page.locator("[data-db-input]").selectOption("mic-2");
-  await expect(page.locator("[data-db-active-input]")).toHaveText("USB microphone");
+  await expect(page.locator("[data-db-active-input]")).toHaveText(
+    "USB microphone",
+  );
   await expect(page.locator("[data-db-calibration-status]")).toHaveText(
     "Uncalibrated",
   );
@@ -465,7 +493,9 @@ test("failed exact selection preserves the previous input and its calibration", 
   await page.evaluate(() => {
     localStorage.setItem(
       "browserAudioLab.dbCalibration.v2",
-      JSON.stringify({ byDeviceId: { "mic-1": { offset: 112, createdAt: 1_000 } } }),
+      JSON.stringify({
+        byDeviceId: { "mic-1": { offset: 112, createdAt: 1_000 } },
+      }),
     );
   });
   await page.locator("[data-db-start]").click();
@@ -484,7 +514,9 @@ test("failed exact selection preserves the previous input and its calibration", 
   expect(state.lifecycle).not.toContain("track-stop:mic-1");
 });
 
-test("rejects clipping during calibration and leaves the tool dBFS-only", async ({ page }) => {
+test("rejects clipping during calibration and leaves the tool dBFS-only", async ({
+  page,
+}) => {
   await page.locator("[data-db-start]").click();
   await setMeterMode(page, "clipping");
   await page.locator("[data-db-reference]").fill("72");
@@ -495,7 +527,9 @@ test("rejects clipping during calibration and leaves the tool dBFS-only", async 
     "Calibration rejected",
     { timeout: 4_500 },
   );
-  await expect(page.locator("[data-db-calibration-status]")).toContainText("clipped");
+  await expect(page.locator("[data-db-calibration-status]")).toContainText(
+    "clipped",
+  );
   await expect(page.locator("[data-db-estimate-panel]")).toBeHidden();
   expect(
     await page.evaluate(() =>
@@ -504,16 +538,18 @@ test("rejects clipping during calibration and leaves the tool dBFS-only", async 
   ).toBeNull();
 });
 
-test("Stop cancels meter work and an in-flight calibration window", async ({ page }) => {
+test("Stop cancels meter work and an in-flight calibration window", async ({
+  page,
+}) => {
   await page.locator("[data-db-start]").click();
   await page.locator("[data-db-reference]").fill("72");
   await page.locator("[data-db-weighting-confirm]").check();
   await page.locator("[data-db-calibrate]").click();
   await page.waitForTimeout(350);
   await page.locator("[data-db-stop]").click();
-  await expect(page.locator("#decibel-meter-status [data-status-label]")).toHaveText(
-    "Stopped",
-  );
+  await expect(
+    page.locator("#decibel-meter-status [data-status-label]"),
+  ).toHaveText("Stopped");
   const readsAtStop = (await harnessState(page)).meterReadTimes.length;
   await page.waitForTimeout(3_100);
   expect((await harnessState(page)).meterReadTimes).toHaveLength(readsAtStop);
@@ -535,22 +571,28 @@ test("track loss clears the estimate and BFCache restoration creates a fresh ses
     const endTrack = Reflect.get(window, "__dbEndActiveTrack") as () => boolean;
     endTrack();
   });
-  await expect(page.locator("#decibel-meter-status [data-status-label]")).toHaveText(
-    "Input device disconnected",
-  );
+  await expect(
+    page.locator("#decibel-meter-status [data-status-label]"),
+  ).toHaveText("Input device disconnected");
   await expect(page.locator("[data-db-rms]")).toHaveText("—");
 
   await page.locator("[data-db-start]").click();
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
-  await expect.poll(async () => (await harnessState(page)).closedContextCount).toBe(1);
+  await expect
+    .poll(async () => (await harnessState(page)).closedContextCount)
+    .toBe(1);
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
-  await expect(page.locator("#decibel-meter-status [data-status-label]")).toHaveText(
-    "Ready",
-  );
+  await expect(
+    page.locator("#decibel-meter-status [data-status-label]"),
+  ).toHaveText("Ready");
   await page.locator("[data-db-start]").click();
   expect((await harnessState(page)).audioContextCount).toBe(2);
 });

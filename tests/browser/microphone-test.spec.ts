@@ -50,16 +50,16 @@ async function installMicrophoneHarness(page: Page): Promise<void> {
     }
 
     class FakeAnalyserNode extends FakeNode {
-      #fftSize = 2048;
+      _fftSize = 2048;
       smoothingTimeConstant = 0;
       get fftSize() {
-        return this.#fftSize;
+        return this._fftSize;
       }
       set fftSize(value: number) {
-        this.#fftSize = value;
+        this._fftSize = value;
       }
       get frequencyBinCount() {
-        return this.#fftSize / 2;
+        return this._fftSize / 2;
       }
       getFloatTimeDomainData(target: Float32Array) {
         target.fill(0.125);
@@ -130,10 +130,14 @@ async function installMicrophoneHarness(page: Page): Promise<void> {
         this.state = "closed";
       }
       createGain() {
-        return new FakeGainNode(this as unknown as BaseAudioContext) as unknown as GainNode;
+        return new FakeGainNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as GainNode;
       }
       createAnalyser() {
-        return new FakeAnalyserNode(this as unknown as BaseAudioContext) as unknown as AnalyserNode;
+        return new FakeAnalyserNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as AnalyserNode;
       }
       createMediaStreamSource(_stream: MediaStream) {
         return new FakeNode(
@@ -151,17 +155,26 @@ async function installMicrophoneHarness(page: Page): Promise<void> {
           autoGainControl: true,
         };
       }
-      async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
+      async getUserMedia(
+        constraints: MediaStreamConstraints,
+      ): Promise<MediaStream> {
         state.getUserMediaCalls.push(constraints);
         const audio = constraints.audio as MediaTrackConstraints;
         const exact =
-          typeof audio === "object" && audio.deviceId && typeof audio.deviceId === "object"
-            ? String((audio.deviceId as ConstrainDOMStringParameters).exact ?? "")
+          typeof audio === "object" &&
+          audio.deviceId &&
+          typeof audio.deviceId === "object"
+            ? String(
+                (audio.deviceId as ConstrainDOMStringParameters).exact ?? "",
+              )
             : "";
         const deviceId = exact || "mic-1";
         state.lifecycle.push(`gum:${deviceId}`);
         if (deviceId === "mic-fail") {
-          throw new DOMException("deterministic selection failure", "NotReadableError");
+          throw new DOMException(
+            "deterministic selection failure",
+            "NotReadableError",
+          );
         }
         return createStream(deviceId);
       }
@@ -272,9 +285,9 @@ test("stays idle until explicit Start, then uses raw-ish constraints and actual 
   await expect(page.locator("[data-mic-record]")).toBeDisabled();
 
   await page.locator("[data-mic-start]").click();
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone active",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone active");
   await expect(page.locator("[data-mic-rms]")).not.toHaveText("—");
   await expect(page.locator("[data-mic-peak]")).not.toHaveText("—");
   await expect(page.locator("[data-mic-input-field]")).toBeVisible();
@@ -295,11 +308,17 @@ test("stays idle until explicit Start, then uses raw-ish constraints and actual 
     (details as HTMLDetailsElement).open = true;
   });
   await expect(page.locator("[data-mic-detail-device-id]")).toHaveText("mic-1");
-  await expect(page.locator("[data-mic-detail-sample-rate]")).toHaveText("48000 Hz");
-  await expect(page.locator("[data-mic-detail-echo-cancellation]")).toHaveText("Off");
+  await expect(page.locator("[data-mic-detail-sample-rate]")).toHaveText(
+    "48000 Hz",
+  );
+  await expect(page.locator("[data-mic-detail-echo-cancellation]")).toHaveText(
+    "Off",
+  );
 });
 
-test("failed exact input selection preserves the previous live microphone", async ({ page }) => {
+test("failed exact input selection preserves the previous live microphone", async ({
+  page,
+}) => {
   await page.locator("[data-mic-start]").click();
   const select = page.locator("[data-mic-input-select]");
   await select.selectOption("mic-fail");
@@ -323,8 +342,12 @@ test("successful exact input switch acquires the replacement before old-track te
   await page.locator("[data-mic-start]").click();
   await page.locator("[data-mic-input-select]").selectOption("mic-2");
 
-  await expect(page.locator("[data-mic-active-input]")).toHaveText("USB microphone");
-  await expect(page.locator("[data-mic-detail-sample-rate]")).toHaveText("44100 Hz");
+  await expect(page.locator("[data-mic-active-input]")).toHaveText(
+    "USB microphone",
+  );
+  await expect(page.locator("[data-mic-detail-sample-rate]")).toHaveText(
+    "44100 Hz",
+  );
 
   const lifecycle = (await harnessState(page)).lifecycle;
   expect(lifecycle.indexOf("gum:mic-2")).toBeGreaterThan(-1);
@@ -354,9 +377,9 @@ test("recording locks input selection and tool-wide Stop finalizes recorder befo
   ]);
 
   await page.locator("[data-mic-stop]").click();
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Stopped",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Stopped");
   await expect(page.locator("[data-mic-playback]")).toBeVisible();
 
   const lifecycle = (await harnessState(page)).lifecycle;
@@ -373,13 +396,16 @@ test("track end clears live measurements and keeps an explicit disconnected stat
   await expect(page.locator("[data-mic-rms]")).not.toHaveText("—");
 
   await page.evaluate(() => {
-    const endTrack = Reflect.get(window, "__micEndActiveTrack") as () => boolean;
+    const endTrack = Reflect.get(
+      window,
+      "__micEndActiveTrack",
+    ) as () => boolean;
     endTrack();
   });
 
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Input device disconnected",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Input device disconnected");
   await expect(page.locator("[data-mic-active-input]")).toHaveText(
     "Input device disconnected",
   );
@@ -395,21 +421,27 @@ test("BFCache restoration remounts a fresh idle controller and next Start create
   expect((await harnessState(page)).audioContextCount).toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
-  await expect.poll(async () => (await harnessState(page)).closedContextCount).toBe(1);
+  await expect
+    .poll(async () => (await harnessState(page)).closedContextCount)
+    .toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Ready",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Ready");
   await expect(page.locator("[data-mic-rms]")).toHaveText("—");
 
   await page.locator("[data-mic-start]").click();
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone active",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone active");
   expect((await harnessState(page)).audioContextCount).toBe(2);
 });

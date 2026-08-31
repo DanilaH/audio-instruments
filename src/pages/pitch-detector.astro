@@ -31,13 +31,16 @@ const relatedTools = pitchTool.relatedToolIds.flatMap((id) => {
     <section class="pitch-content" aria-labelledby="pitch-about-title">
       <div>
         <p class="eyebrow">Monophonic estimate</p>
-        <h2 id="pitch-about-title">Pitch detection, not strongest-bin guessing</h2>
+        <h2 id="pitch-about-title">
+          Pitch detection, not strongest-bin guessing
+        </h2>
       </div>
       <div class="pitch-content__copy">
         <p>
-          The detector uses bounded YIN analysis on time-domain microphone samples
-          for a 50–2000 Hz target. High-rate Web Audio streams are reduced with a
-          fixed averaged decimator so the YIN workload remains bounded.
+          The detector uses bounded YIN analysis on time-domain microphone
+          samples for a 50–2000 Hz target. High-rate Web Audio streams are
+          reduced with a fixed averaged decimator so the YIN workload remains
+          bounded.
         </p>
         <p>
           Accepted estimates are mapped against A4 = 440 Hz to the nearest MIDI
@@ -52,9 +55,9 @@ const relatedTools = pitchTool.relatedToolIds.flatMap((id) => {
       <div class="pitch-help__grid">
         <p>
           YIN analysis runs at no more than 20 times per second. Estimates below
-          the confidence threshold are rejected and no note is displayed for that
-          frame. A rejection breaks the consecutive-stability streak; stability
-          must be earned again from accepted frames.
+          the confidence threshold are rejected and no note is displayed for
+          that frame. A rejection breaks the consecutive-stability streak;
+          stability must be earned again from accepted frames.
         </p>
         <p>
           Pitch is still an estimate. Noise, chords, multiple simultaneous

@@ -3,7 +3,11 @@ import {
   type MonoOscillatorPlayback,
 } from "../audio-output/AudioOutputEngine";
 import type { SessionResource } from "../audio-session/AudioSession";
-import { DEFAULT_RAMP_SECONDS, clamp, getLevelProfile } from "../../utils/audio";
+import {
+  DEFAULT_RAMP_SECONDS,
+  clamp,
+  getLevelProfile,
+} from "../../utils/audio";
 
 export type MultichannelMode = "five-one" | "experimental-eight";
 
@@ -142,7 +146,9 @@ export class MultichannelOutput implements SessionResource {
   constructor(context: AudioContext) {
     this.#context = context;
     this.#destination = context.destination;
-    this.#originalConfiguration = readDestinationConfiguration(this.#destination);
+    this.#originalConfiguration = readDestinationConfiguration(
+      this.#destination,
+    );
   }
 
   get activeMode(): MultichannelMode | null {
@@ -167,7 +173,9 @@ export class MultichannelOutput implements SessionResource {
     };
   }
 
-  async configure(mode: MultichannelMode): Promise<MultichannelConfigurationResult> {
+  async configure(
+    mode: MultichannelMode,
+  ): Promise<MultichannelConfigurationResult> {
     this.#assertUsable();
     const maxChannelCount = this.#destination.maxChannelCount;
 
@@ -192,7 +200,10 @@ export class MultichannelOutput implements SessionResource {
       };
     }
 
-    const attempted = attemptDestinationConfiguration(this.#destination, target);
+    const attempted = attemptDestinationConfiguration(
+      this.#destination,
+      target,
+    );
     if (attempted !== "confirmed") {
       const restored = this.#restoreImmediately();
       if (!restored) {
@@ -262,7 +273,9 @@ export class MultichannelOutput implements SessionResource {
       channelIndex >= channelCount ||
       !engine
     ) {
-      throw new RangeError(`channelIndex must be between 0 and ${channelCount - 1}`);
+      throw new RangeError(
+        `channelIndex must be between 0 and ${channelCount - 1}`,
+      );
     }
     if (!Number.isFinite(frequencyHz) || frequencyHz <= 0) {
       throw new RangeError("frequencyHz must be a positive finite number");
@@ -350,7 +363,11 @@ export class MultichannelOutput implements SessionResource {
     try {
       this.#merger = this.#context.createChannelMerger(channelCount);
 
-      for (let channelIndex = 0; channelIndex < channelCount; channelIndex += 1) {
+      for (
+        let channelIndex = 0;
+        channelIndex < channelCount;
+        channelIndex += 1
+      ) {
         const sink = this.#context.createGain();
         this.#channelSinks.push(sink);
         sink.channelCount = 1;

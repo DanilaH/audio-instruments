@@ -24,11 +24,7 @@ const touchTargetCases = [
   { path: "/speaker-test", selectors: [".speaker-field input"] },
   {
     path: "/microphone-test",
-    selectors: [
-      ".mic-input-field select",
-      ".mic-details summary",
-      ".mic-recording audio[controls]",
-    ],
+    selectors: [".mic-input-field select", ".mic-details summary"],
   },
   {
     path: "/spectrum-analyzer",
@@ -106,7 +102,9 @@ test("tool-local controls keep a 44px touch target", async ({ page }) => {
   }
 });
 
-test("native microphone playback keeps a 44px outer height", async ({ page }) => {
+test("native microphone playback keeps a 44px outer height", async ({
+  page,
+}) => {
   for (const viewport of targetViewports) {
     await page.setViewportSize(viewport);
     await page.goto("/microphone-test");

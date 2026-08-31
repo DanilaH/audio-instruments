@@ -32,9 +32,7 @@ export interface CalibrationWindowResult {
 }
 
 export type CalibrationWindowFailure =
-  | "insufficient-valid-samples"
-  | "clipping"
-  | "unstable";
+  "insufficient-valid-samples" | "clipping" | "unstable";
 
 interface StoredCalibrationEnvelope {
   readonly byDeviceId: Record<string, CalibrationRecord>;
@@ -83,7 +81,8 @@ export function evaluateCalibrationWindow(
   }
 
   const validSamples = samples.filter(
-    (sample) => Number.isFinite(sample.rmsDbfs) && Number.isFinite(sample.peakDbfs),
+    (sample) =>
+      Number.isFinite(sample.rmsDbfs) && Number.isFinite(sample.peakDbfs),
   );
   if (validSamples.length < DB_CALIBRATION_MIN_VALID_SAMPLES) {
     return { ok: false, reason: "insufficient-valid-samples" };
@@ -142,7 +141,8 @@ function isCalibrationRecord(value: unknown): value is CalibrationRecord {
     Number.isFinite(record.offset) &&
     typeof record.createdAt === "number" &&
     Number.isFinite(record.createdAt) &&
-    (record.optionalLabel === undefined || typeof record.optionalLabel === "string")
+    (record.optionalLabel === undefined ||
+      typeof record.optionalLabel === "string")
   );
 }
 

@@ -133,7 +133,11 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     padding: clamp(22px, 3vw, 34px);
     border-right: 1px solid var(--color-border);
     background:
-      radial-gradient(circle at 50% 52%, rgb(255 181 141 / 0.2), transparent 34%),
+      radial-gradient(
+        circle at 50% 52%,
+        rgb(255 181 141 / 0.2),
+        transparent 34%
+      ),
       linear-gradient(145deg, rgb(255 253 252 / 0.9), rgb(255 247 242 / 0.72));
   }
 
@@ -227,10 +231,18 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     box-shadow: 0 18px 52px rgb(183 92 45 / 0.16);
   }
 
-  [data-active-channel="left"] .channel-stage__speaker--left .channel-stage__ring,
-  [data-active-channel="both"] .channel-stage__speaker--left .channel-stage__ring,
-  [data-active-channel="right"] .channel-stage__speaker--right .channel-stage__ring,
-  [data-active-channel="both"] .channel-stage__speaker--right .channel-stage__ring {
+  [data-active-channel="left"]
+    .channel-stage__speaker--left
+    .channel-stage__ring,
+  [data-active-channel="both"]
+    .channel-stage__speaker--left
+    .channel-stage__ring,
+  [data-active-channel="right"]
+    .channel-stage__speaker--right
+    .channel-stage__ring,
+  [data-active-channel="both"]
+    .channel-stage__speaker--right
+    .channel-stage__ring {
     opacity: 0.34;
   }
 

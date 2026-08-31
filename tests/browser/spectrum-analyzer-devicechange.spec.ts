@@ -75,7 +75,9 @@ test("devicechange never makes another input look active without explicit captur
       }
 
       createGain() {
-        return new FakeNode(this as unknown as BaseAudioContext) as unknown as GainNode;
+        return new FakeNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as GainNode;
       }
 
       createAnalyser() {
@@ -108,7 +110,8 @@ test("devicechange never makes another input look active without explicit captur
               deviceId,
               groupId: `group-${index + 1}`,
               kind: "audioinput",
-              label: deviceId === "mic-1" ? "Built-in microphone" : "USB microphone",
+              label:
+                deviceId === "mic-1" ? "Built-in microphone" : "USB microphone",
               toJSON: () => ({}),
             }) as MediaDeviceInfo,
         );
@@ -154,9 +157,9 @@ test("devicechange never makes another input look active without explicit captur
   await expect(page.locator("[data-spectrum-active-input]")).toHaveText(
     "Active input",
   );
-  await expect(page.locator('[data-spectrum-input] option[value="mic-2"]')).toHaveText(
-    "USB microphone",
-  );
+  await expect(
+    page.locator('[data-spectrum-input] option[value="mic-2"]'),
+  ).toHaveText("USB microphone");
 
   const state = await page.evaluate(() =>
     structuredClone(Reflect.get(window, "__spectrumDevicechangeState")),

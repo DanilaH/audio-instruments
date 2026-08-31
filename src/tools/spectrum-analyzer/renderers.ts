@@ -55,7 +55,8 @@ export class SpectrumCanvas {
 
   constructor(canvas: HTMLCanvasElement) {
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("SpectrumCanvas requires a 2D canvas context");
+    if (!context)
+      throw new Error("SpectrumCanvas requires a 2D canvas context");
     this.#canvas = canvas;
     this.#context = context;
   }
@@ -78,7 +79,10 @@ export class SpectrumCanvas {
 
     const padding = { top: 12, right: 12, bottom: 24, left: 38 };
     const width = Math.max(1, geometry.cssWidth - padding.left - padding.right);
-    const height = Math.max(1, geometry.cssHeight - padding.top - padding.bottom);
+    const height = Math.max(
+      1,
+      geometry.cssHeight - padding.top - padding.bottom,
+    );
     const maxHz = getSpectrumDisplayMaxHz(sampleRate);
 
     context.font = "10px system-ui, sans-serif";
@@ -104,7 +108,8 @@ export class SpectrumCanvas {
       if (frequencyHz > maxHz) continue;
       const x =
         padding.left +
-        frequencyToLogRatio(frequencyHz, SPECTRUM_DISPLAY_MIN_HZ, maxHz) * width;
+        frequencyToLogRatio(frequencyHz, SPECTRUM_DISPLAY_MIN_HZ, maxHz) *
+          width;
       context.strokeStyle = "rgba(31, 63, 72, 0.08)";
       context.beginPath();
       context.moveTo(x, padding.top);
@@ -113,7 +118,11 @@ export class SpectrumCanvas {
       context.fillStyle = "rgba(40, 54, 60, 0.62)";
       context.textAlign = "center";
       context.textBaseline = "top";
-      context.fillText(formatFrequency(frequencyHz), x, padding.top + height + 6);
+      context.fillText(
+        formatFrequency(frequencyHz),
+        x,
+        padding.top + height + 6,
+      );
       context.textBaseline = "middle";
     }
 
@@ -135,7 +144,8 @@ export class SpectrumCanvas {
 
       const x =
         padding.left +
-        frequencyToLogRatio(frequencyHz, SPECTRUM_DISPLAY_MIN_HZ, maxHz) * width;
+        frequencyToLogRatio(frequencyHz, SPECTRUM_DISPLAY_MIN_HZ, maxHz) *
+          width;
       const y =
         padding.top +
         (1 - dbToDisplayRatio(valuesDb[binIndex] ?? -100)) * height;
@@ -172,7 +182,8 @@ export class SpectrogramCanvas {
 
   constructor(canvas: HTMLCanvasElement) {
     const context = canvas.getContext("2d");
-    if (!context) throw new Error("SpectrogramCanvas requires a 2D canvas context");
+    if (!context)
+      throw new Error("SpectrogramCanvas requires a 2D canvas context");
     this.#canvas = canvas;
     this.#context = context;
   }

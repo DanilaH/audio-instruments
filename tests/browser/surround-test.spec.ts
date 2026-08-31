@@ -24,7 +24,10 @@ type ConnectionRecord = {
   input: number;
 };
 
-async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<void> {
+async function installSurroundProbe(
+  page: Page,
+  options: ProbeOptions,
+): Promise<void> {
   await page.addInitScript((probeOptions) => {
     type ParamEvent = {
       kind: "hold" | "cancel" | "set" | "linear";
@@ -165,10 +168,10 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
     class FakeDestinationNode extends FakeNode {
       readonly maxChannelCount = probeOptions.maxChannelCount;
       readonly writes: string[];
-      #channelCount = 2;
-      #channelCountMode: ChannelCountMode = "max";
-      #channelInterpretation: ChannelInterpretation = "speakers";
-      #targetApplied = false;
+      channelCountValue = 2;
+      channelCountModeValue: ChannelCountMode = "max";
+      channelInterpretationValue: ChannelInterpretation = "speakers";
+      targetApplied = false;
 
       constructor(contextId: number) {
         super(contextId, "destination");
@@ -177,49 +180,51 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
       }
 
       get channelCount() {
-        return this.#channelCount;
+        return this.channelCountValue;
       }
       set channelCount(value: number) {
         this.writes.push(`count:${value}`);
-        if (value === 6 && probeOptions.throwSix) throw new Error("5.1 rejected");
-        if (value === 8 && probeOptions.throwEight) throw new Error("8-channel rejected");
+        if (value === 6 && probeOptions.throwSix)
+          throw new Error("5.1 rejected");
+        if (value === 8 && probeOptions.throwEight)
+          throw new Error("8-channel rejected");
         if (
           probeOptions.failRestoreAfterTarget &&
-          this.#targetApplied &&
+          this.targetApplied &&
           value === 2
         ) {
           throw new Error("restore rejected");
         }
-        this.#channelCount =
+        this.channelCountValue =
           value === 6 && probeOptions.mismatchSix
             ? 5
             : value === 8 && probeOptions.mismatchEight
               ? 7
               : value;
-        if (value >= 6) this.#targetApplied = true;
+        if (value >= 6) this.targetApplied = true;
       }
 
       get channelCountMode() {
-        return this.#channelCountMode;
+        return this.channelCountModeValue;
       }
       set channelCountMode(value: ChannelCountMode) {
         this.writes.push(`mode:${value}`);
         if (
           probeOptions.failRestoreAfterTarget &&
-          this.#targetApplied &&
+          this.targetApplied &&
           value === "max"
         ) {
           throw new Error("restore rejected");
         }
-        this.#channelCountMode = value;
+        this.channelCountModeValue = value;
       }
 
       get channelInterpretation() {
-        return this.#channelInterpretation;
+        return this.channelInterpretationValue;
       }
       set channelInterpretation(value: ChannelInterpretation) {
         this.writes.push(`interpretation:${value}`);
-        this.#channelInterpretation = value;
+        this.channelInterpretationValue = value;
       }
     }
 
@@ -229,9 +234,9 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
       state = "suspended";
       readonly contextId: number;
       readonly destination: FakeDestinationNode;
-      #gainIndex = 0;
-      #oscillatorIndex = 0;
-      #pannerIndex = 0;
+      gainIndex = 0;
+      oscillatorIndex = 0;
+      pannerIndex = 0;
 
       constructor() {
         this.contextId = increment("__surroundContextCount");
@@ -246,16 +251,16 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
         increment("__surroundClosedContextCount");
       }
       createGain() {
-        const node = new FakeGainNode(this.contextId, `gain-${this.#gainIndex}`);
-        this.#gainIndex += 1;
+        const node = new FakeGainNode(this.contextId, `gain-${this.gainIndex}`);
+        this.gainIndex += 1;
         return node;
       }
       createOscillator() {
         const node = new FakeOscillatorNode(
           this.contextId,
-          this.#oscillatorIndex,
+          this.oscillatorIndex,
         );
-        this.#oscillatorIndex += 1;
+        this.oscillatorIndex += 1;
         return node;
       }
       createChannelMerger(numberOfInputs = 2) {
@@ -265,9 +270,9 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
       createStereoPanner() {
         const node = new FakeStereoPannerNode(
           this.contextId,
-          `panner-${this.#pannerIndex}`,
+          `panner-${this.pannerIndex}`,
         );
-        this.#pannerIndex += 1;
+        this.pannerIndex += 1;
         return node;
       }
     }
@@ -294,38 +299,65 @@ async function readCount(page: Page, key: string): Promise<number> {
   );
 }
 
-test("Surround starts idle, safe and without creating an AudioContext", async ({ page }) => {
+test("Surround starts idle, safe and without creating an AudioContext", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 8 });
   await page.goto("/surround-sound-test");
 
-  await expect(page.getByRole("heading", { name: "Surround Sound Test", level: 1 })).toBeVisible();
-  await expect(page.locator("#surround-status")).toContainText("Capability not checked");
-  await expect(page.getByText("Start with your device/headphone volume low.")).toBeVisible();
-  await expect(page.getByRole("button", { name: "Check surround support" })).toBeVisible();
+  await expect(
+    page.getByRole("heading", { name: "Surround Sound Test", level: 1 }),
+  ).toBeVisible();
+  await expect(page.locator("#surround-status")).toContainText(
+    "Capability not checked",
+  );
+  await expect(
+    page.getByText("Start with your device/headphone volume low."),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Check surround support" }),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Stop" })).toBeDisabled();
   expect(await readCount(page, "__surroundContextCount")).toBe(0);
 });
 
-test("unsupported multichannel exposes only the truthful Stereo spatial preview", async ({ page }) => {
+test("unsupported multichannel exposes only the truthful Stereo spatial preview", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 2 });
   await page.goto("/surround-sound-test");
   await page.getByRole("button", { name: "Check surround support" }).click();
 
-  await expect(page.locator("#surround-status")).toContainText("Stereo spatial preview ready");
-  await expect(page.getByRole("button", { name: "Stereo spatial preview" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Left", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Center", exact: true })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Right", exact: true })).toBeVisible();
+  await expect(page.locator("#surround-status")).toContainText(
+    "Stereo spatial preview ready",
+  );
+  await expect(
+    page.getByRole("button", { name: "Stereo spatial preview" }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Left", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Center", exact: true }),
+  ).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Right", exact: true }),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Front Left" })).toBeHidden();
   await expect(page.getByRole("button", { name: "Channel 1" })).toBeHidden();
   await expect(page.locator(".surround-map--five-one")).toBeHidden();
   await expect(page.locator(".surround-map--eight")).toBeHidden();
 
-  const writes = await readProbe<string[][]>(page, "__surroundDestinationWrites");
+  const writes = await readProbe<string[][]>(
+    page,
+    "__surroundDestinationWrites",
+  );
   expect(writes[0]).toEqual([]);
 });
 
-test("5.1 requires exact readback; a mismatch falls back without surround controls", async ({ page }) => {
+test("5.1 requires exact readback; a mismatch falls back without surround controls", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 6, mismatchSix: true });
   await page.goto("/surround-sound-test");
   await page.getByRole("button", { name: "Check surround support" }).click();
@@ -334,10 +366,14 @@ test("5.1 requires exact readback; a mismatch falls back without surround contro
     "5.1 candidate was rejected or did not read back exactly.",
   );
   await expect(page.getByRole("button", { name: "Front Left" })).toBeHidden();
-  await expect(page.getByRole("button", { name: "Stereo spatial preview" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Stereo spatial preview" }),
+  ).toBeVisible();
 });
 
-test("confirmed 5.1 schedules canonical FL, FR, Center, LFE, SL, SR bursts with 700 ms / 300 ms timing", async ({ page }) => {
+test("confirmed 5.1 schedules canonical FL, FR, Center, LFE, SL, SR bursts with 700 ms / 300 ms timing", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 6 });
   await page.goto("/surround-sound-test");
   await page.getByRole("button", { name: "Check surround support" }).click();
@@ -348,17 +384,25 @@ test("confirmed 5.1 schedules canonical FL, FR, Center, LFE, SL, SR bursts with 
   await expect(page.locator(".surround-map--stereo")).toBeHidden();
 
   await page.getByRole("button", { name: "Test all 5.1 channels" }).click();
-  const oscillators = await readProbe<OscillatorRecord[]>(page, "__surroundOscillators");
+  const oscillators = await readProbe<OscillatorRecord[]>(
+    page,
+    "__surroundOscillators",
+  );
 
   expect(oscillators.map(({ frequency }) => frequency)).toEqual([
     500, 500, 500, 80, 500, 500,
   ]);
-  expect(oscillators.map(({ starts }) => starts[0])).toEqual([10, 11, 12, 13, 14, 15]);
+  expect(oscillators.map(({ starts }) => starts[0])).toEqual([
+    10, 11, 12, 13, 14, 15,
+  ]);
   expect(oscillators.map(({ stops }) => stops[0])).toEqual([
     10.7, 11.7, 12.7, 13.7, 14.7, 15.7,
   ]);
 
-  const connections = await readProbe<ConnectionRecord[]>(page, "__surroundConnections");
+  const connections = await readProbe<ConnectionRecord[]>(
+    page,
+    "__surroundConnections",
+  );
   expect(
     connections
       .filter(({ to, from }) => to === "merger-6" && from.startsWith("gain-"))
@@ -366,14 +410,19 @@ test("confirmed 5.1 schedules canonical FL, FR, Center, LFE, SL, SR bursts with 
   ).toEqual([0, 1, 2, 3, 4, 5]);
 });
 
-test("Stop cancels already-scheduled future multichannel bursts with the shared stop ramp", async ({ page }) => {
+test("Stop cancels already-scheduled future multichannel bursts with the shared stop ramp", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 6 });
   await page.goto("/surround-sound-test");
   await page.getByRole("button", { name: "Check surround support" }).click();
   await page.getByRole("button", { name: "Test all 5.1 channels" }).click();
   await page.getByRole("button", { name: "Stop" }).click();
 
-  const oscillators = await readProbe<OscillatorRecord[]>(page, "__surroundOscillators");
+  const oscillators = await readProbe<OscillatorRecord[]>(
+    page,
+    "__surroundOscillators",
+  );
   expect(oscillators).toHaveLength(6);
   for (const oscillator of oscillators) {
     expect(oscillator.stops.at(-1)).toBeCloseTo(10.05, 10);
@@ -381,18 +430,26 @@ test("Stop cancels already-scheduled future multichannel bursts with the shared 
   await expect(page.getByRole("button", { name: "Stop" })).toBeDisabled();
 });
 
-test("experimental 8-channel is only a candidate after the initial check and is confirmed on explicit selection", async ({ page }) => {
+test("experimental 8-channel is only a candidate after the initial check and is confirmed on explicit selection", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 8 });
   await page.goto("/surround-sound-test");
   await page.getByRole("button", { name: "Check surround support" }).click();
 
-  await expect(page.getByRole("button", { name: "Try Experimental 8-channel" })).toBeVisible();
+  await expect(
+    page.getByRole("button", { name: "Try Experimental 8-channel" }),
+  ).toBeVisible();
   let writes = await readProbe<string[][]>(page, "__surroundDestinationWrites");
   expect(writes[0]).not.toContain("count:8");
   await expect(page.locator(".surround-map--eight")).toBeHidden();
 
-  await page.getByRole("button", { name: "Try Experimental 8-channel" }).click();
-  await expect(page.locator("#surround-status")).toContainText("Experimental 8-channel ready");
+  await page
+    .getByRole("button", { name: "Try Experimental 8-channel" })
+    .click();
+  await expect(page.locator("#surround-status")).toContainText(
+    "Experimental 8-channel ready",
+  );
   await expect(page.getByRole("button", { name: "Channel 1" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Channel 8" })).toBeVisible();
   await expect(page.locator(".surround-map--eight")).toBeVisible();
@@ -403,14 +460,21 @@ test("experimental 8-channel is only a candidate after the initial check and is 
   expect(writes[0]).toContain("interpretation:discrete");
 });
 
-test("experimental 8-channel Test All uses raw Channel 1 to Channel 8 in canonical timing", async ({ page }) => {
+test("experimental 8-channel Test All uses raw Channel 1 to Channel 8 in canonical timing", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 8 });
   await page.goto("/surround-sound-test");
   await page.getByRole("button", { name: "Check surround support" }).click();
-  await page.getByRole("button", { name: "Try Experimental 8-channel" }).click();
+  await page
+    .getByRole("button", { name: "Try Experimental 8-channel" })
+    .click();
   await page.getByRole("button", { name: "Test all 8 channels" }).click();
 
-  const oscillators = await readProbe<OscillatorRecord[]>(page, "__surroundOscillators");
+  const oscillators = await readProbe<OscillatorRecord[]>(
+    page,
+    "__surroundOscillators",
+  );
   expect(oscillators.map(({ frequency }) => frequency)).toEqual(
     Array.from({ length: 8 }, () => 500),
   );
@@ -422,14 +486,23 @@ test("experimental 8-channel Test All uses raw Channel 1 to Channel 8 in canonic
   ]);
 });
 
-test("Stereo spatial preview reuses ordinary stereo Center routing and pan primitives", async ({ page }) => {
+test("Stereo spatial preview reuses ordinary stereo Center routing and pan primitives", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 2 });
   await page.goto("/surround-sound-test");
   await page.getByRole("button", { name: "Check surround support" }).click();
   await page.getByRole("button", { name: "Center", exact: true }).click();
 
-  let oscillators = await readProbe<OscillatorRecord[]>(page, "__surroundOscillators");
-  expect(oscillators[0]).toMatchObject({ frequency: 500, starts: [10], stops: [10.7] });
+  let oscillators = await readProbe<OscillatorRecord[]>(
+    page,
+    "__surroundOscillators",
+  );
+  expect(oscillators[0]).toMatchObject({
+    frequency: 500,
+    starts: [10],
+    stops: [10.7],
+  });
   const mergers = await readProbe<Array<{ contextId: number; inputs: number }>>(
     page,
     "__surroundMergers",
@@ -438,16 +511,28 @@ test("Stereo spatial preview reuses ordinary stereo Center routing and pan primi
 
   await page.waitForTimeout(750);
   await page.getByRole("button", { name: "L → R" }).click();
-  const panEvents = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
+  const panEvents = await readProbe<
+    Array<Array<{ kind: string; value?: number; time: number }>>
+  >(page, "__surroundPanEvents");
+  expect(panEvents.at(-1)).toContainEqual({
+    kind: "linear",
+    value: 1,
+    time: 14,
+  });
+  oscillators = await readProbe<OscillatorRecord[]>(
     page,
-    "__surroundPanEvents",
+    "__surroundOscillators",
   );
-  expect(panEvents.at(-1)).toContainEqual({ kind: "linear", value: 1, time: 14 });
-  oscillators = await readProbe<OscillatorRecord[]>(page, "__surroundOscillators");
-  expect(oscillators.at(-1)).toMatchObject({ frequency: 500, starts: [10], stops: [14] });
+  expect(oscillators.at(-1)).toMatchObject({
+    frequency: 500,
+    starts: [10],
+    stops: [14],
+  });
 });
 
-test("failed destination restoration closes the uncertain session before fresh stereo playback", async ({ page }) => {
+test("failed destination restoration closes the uncertain session before fresh stereo playback", async ({
+  page,
+}) => {
   await installSurroundProbe(page, {
     maxChannelCount: 6,
     failRestoreAfterTarget: true,
@@ -457,21 +542,46 @@ test("failed destination restoration closes the uncertain session before fresh s
   await expect(page.locator("#surround-status")).toContainText("5.1 ready");
 
   await page.getByRole("button", { name: "Stereo spatial preview" }).click();
-  await expect(page.locator("#surround-status")).toContainText("Stereo spatial preview ready");
-  await expect(page.getByRole("button", { name: "Check surround support" })).toBeEnabled();
+  await expect(page.locator("#surround-status")).toContainText(
+    "Stereo spatial preview ready",
+  );
+  await expect(
+    page.getByRole("button", { name: "Check surround support" }),
+  ).toBeEnabled();
   await expect(page.locator("[data-surround-mode-selector]")).toBeHidden();
   expect(await readCount(page, "__surroundClosedContextCount")).toBe(1);
   expect(await readCount(page, "__surroundContextCount")).toBe(1);
 
-  const capabilityCheck = page.getByRole("button", { name: "Check surround support" });
+  const capabilityCheck = page.getByRole("button", {
+    name: "Check surround support",
+  });
   await page.getByRole("button", { name: "Left", exact: true }).click();
-  expect(await readCount(page, "__surroundContextCount")).toBe(2);
-  await expect(capabilityCheck).toBeDisabled();
+  const activeState = await page.evaluate(() => ({
+    status: document.querySelector("#surround-status [data-status-label]")
+      ?.textContent,
+    checkDisabled: (
+      document.querySelector(
+        "[data-surround-check]",
+      ) as HTMLButtonElement | null
+    )?.disabled,
+    stopDisabled: (
+      document.querySelector("[data-surround-stop]") as HTMLButtonElement | null
+    )?.disabled,
+    contextCount: Number(Reflect.get(window, "__surroundContextCount") ?? 0),
+  }));
+  expect(activeState).toEqual({
+    status: "Playing Left",
+    checkDisabled: true,
+    stopDisabled: false,
+    contextCount: 2,
+  });
   await page.getByRole("button", { name: "Stop" }).click();
   await expect(capabilityCheck).toBeEnabled();
 });
 
-test("pagehide disposal and BFCache pageshow mount a fresh idle controller without stale 5.1 capability", async ({ page }) => {
+test("pagehide disposal and BFCache pageshow mount a fresh idle controller without stale 5.1 capability", async ({
+  page,
+}) => {
   await installSurroundProbe(page, { maxChannelCount: 6 });
   await page.goto("/surround-sound-test");
   await page.getByRole("button", { name: "Check surround support" }).click();
@@ -479,16 +589,26 @@ test("pagehide disposal and BFCache pageshow mount a fresh idle controller witho
   expect(await readCount(page, "__surroundContextCount")).toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
-  await expect.poll(() => readCount(page, "__surroundClosedContextCount")).toBe(1);
+  await expect
+    .poll(() => readCount(page, "__surroundClosedContextCount"))
+    .toBe(1);
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
 
-  await expect(page.locator("#surround-status")).toContainText("Capability not checked");
+  await expect(page.locator("#surround-status")).toContainText(
+    "Capability not checked",
+  );
   await expect(page.locator("[data-surround-mode-selector]")).toBeHidden();
-  await expect(page.getByRole("button", { name: "Check surround support" })).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Check surround support" }),
+  ).toBeEnabled();
   expect(await readCount(page, "__surroundContextCount")).toBe(1);
 
   await page.getByRole("button", { name: "Check surround support" }).click();

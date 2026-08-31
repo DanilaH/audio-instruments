@@ -9,16 +9,7 @@ export const HEARING_MANUAL_LEVEL_MAX_DB = -24;
 export const HEARING_NOMINAL_MAX_HZ = 20_000;
 
 export const HEARING_GUIDED_FREQUENCIES_HZ = [
-  2_000,
-  4_000,
-  6_000,
-  8_000,
-  10_000,
-  12_000,
-  14_000,
-  16_000,
-  18_000,
-  20_000,
+  2_000, 4_000, 6_000, 8_000, 10_000, 12_000, 14_000, 16_000, 18_000, 20_000,
 ] as const;
 
 export interface HearingCapability {
@@ -64,7 +55,9 @@ export function recordHeardFrequency(
   }
   if (highestHeardHz === null) return frequencyHz;
   if (!Number.isFinite(highestHeardHz) || highestHeardHz <= 0) {
-    throw new RangeError("highestHeardHz must be null or a positive finite number");
+    throw new RangeError(
+      "highestHeardHz must be null or a positive finite number",
+    );
   }
   return Math.max(highestHeardHz, frequencyHz);
 }

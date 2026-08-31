@@ -38,9 +38,9 @@ import {
           Your selected sync offset: 0 ms
         </p>
         <p class="latency-stage__note">
-          Adjust until the click and localized pulse feel synchronized to you. This
-          is a perception-based setting, not a measurement of exact hardware,
-          headphone or Bluetooth latency.
+          Adjust until the click and localized pulse feel synchronized to you.
+          This is a perception-based setting, not a measurement of exact
+          hardware, headphone or Bluetooth latency.
         </p>
       </section>
 
@@ -60,7 +60,12 @@ import {
               <i class="ph ph-play" aria-hidden="true"></i>
               Start sync loop
             </button>
-            <button type="button" class="latency-stop" data-latency-stop disabled>
+            <button
+              type="button"
+              class="latency-stop"
+              data-latency-stop
+              disabled
+            >
               <i class="ph ph-stop" aria-hidden="true"></i>
               Stop
             </button>
@@ -75,7 +80,9 @@ import {
         <div class="latency-offset-control">
           <div class="latency-field-header">
             <label for="audio-latency-offset">Manual sync offset</label>
-            <output for="audio-latency-offset" data-latency-offset-value>0 ms</output>
+            <output for="audio-latency-offset" data-latency-offset-value
+              >0 ms</output
+            >
           </div>
           <input
             id="audio-latency-offset"
@@ -92,9 +99,9 @@ import {
             <span>+300 ms</span>
           </div>
           <p>
-            Positive values place the audio click after the visual pulse. Negative
-            values place the audio click before it. The 5 ms step is control
-            granularity, not a ±5 ms accuracy claim.
+            Positive values place the audio click after the visual pulse.
+            Negative values place the audio click before it. The 5 ms step is
+            control granularity, not a ±5 ms accuracy claim.
           </p>
         </div>
 
@@ -118,8 +125,8 @@ import {
             </div>
           </dl>
           <p>
-            Values are browser-reported estimates shown in milliseconds. They are
-            not exact end-to-end hardware latency.
+            Values are browser-reported estimates shown in milliseconds. They
+            are not exact end-to-end hardware latency.
           </p>
         </div>
 
@@ -173,7 +180,11 @@ import {
     gap: 18px;
     border-right: 1px solid var(--color-border);
     background:
-      radial-gradient(circle at 52% 48%, rgb(244 196 92 / 0.24), transparent 28%),
+      radial-gradient(
+        circle at 52% 48%,
+        rgb(244 196 92 / 0.24),
+        transparent 28%
+      ),
       linear-gradient(145deg, rgb(255 253 244 / 0.98), rgb(252 246 225 / 0.9));
   }
 

@@ -115,12 +115,14 @@ for (const viewport of targetViewports) {
     const featuredColumns = await page
       .locator(".tool-grid--featured")
       .evaluate(
-        (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
+        (element) =>
+          getComputedStyle(element).gridTemplateColumns.split(" ").length,
       );
     const categoryColumns = await page
       .locator(".tool-categories")
       .evaluate(
-        (element) => getComputedStyle(element).gridTemplateColumns.split(" ").length,
+        (element) =>
+          getComputedStyle(element).gridTemplateColumns.split(" ").length,
       );
 
     if (viewport.width <= 820) {
@@ -177,7 +179,9 @@ test("desktop category composition gives dense groups more space without stretch
   );
 });
 
-test("reduced motion disables decorative homepage transitions", async ({ page }) => {
+test("reduced motion disables decorative homepage transitions", async ({
+  page,
+}) => {
   await page.emulateMedia({ reducedMotion: "reduce" });
   await page.goto("/");
 
@@ -189,7 +193,9 @@ test("reduced motion disables decorative homepage transitions", async ({ page })
     const durations = await page
       .locator(selector)
       .first()
-      .evaluate((element) => getComputedStyle(element).transitionDuration.split(", "));
+      .evaluate((element) =>
+        getComputedStyle(element).transitionDuration.split(", "),
+      );
 
     expect(durations.every((duration) => duration === "0s")).toBe(true);
   }

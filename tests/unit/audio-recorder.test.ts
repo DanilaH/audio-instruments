@@ -27,13 +27,15 @@ class FakeMediaRecorder extends EventTarget {
 
   start(): void {
     this.startCount += 1;
-    if (this.throwOnStart) throw new DOMException("start failed", "InvalidStateError");
+    if (this.throwOnStart)
+      throw new DOMException("start failed", "InvalidStateError");
     this.state = "recording";
   }
 
   stop(): void {
     this.stopCount += 1;
-    if (this.throwOnStop) throw new DOMException("stop failed", "InvalidStateError");
+    if (this.throwOnStop)
+      throw new DOMException("stop failed", "InvalidStateError");
     this.state = "inactive";
     if (this.emitStopSynchronously) this.emitStop();
   }
@@ -69,7 +71,11 @@ class FakeFactory implements MediaRecorderFactory {
   create(_stream: MediaStream, options?: MediaRecorderOptions): MediaRecorder {
     const mimeType = options?.mimeType ?? null;
     this.createCalls.push(mimeType);
-    if (mimeType ? this.constructionFailures.has(mimeType) : this.failDefaultConstruction) {
+    if (
+      mimeType
+        ? this.constructionFailures.has(mimeType)
+        : this.failDefaultConstruction
+    ) {
       throw new DOMException("construction failed", "NotSupportedError");
     }
 

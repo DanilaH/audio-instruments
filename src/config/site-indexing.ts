@@ -91,7 +91,9 @@ function enabledConfigFromOrigin(rawOrigin: string): SiteIndexingConfig {
   }
 
   if (origin.protocol !== "https:") {
-    throw new Error("SITE_ORIGIN must use https:// when SITE_INDEXING=enabled.");
+    throw new Error(
+      "SITE_ORIGIN must use https:// when SITE_INDEXING=enabled.",
+    );
   }
 
   if (!origin.hostname) {

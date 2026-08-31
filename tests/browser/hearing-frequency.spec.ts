@@ -18,6 +18,7 @@ interface HearingHarnessState {
 interface HearingHarnessConfig {
   readonly sampleRate?: number;
   readonly resumeDelayMs?: number;
+  readonly holdResume?: boolean;
 }
 
 async function installHearingHarness(
@@ -32,6 +33,12 @@ async function installHearingHarness(
       oscillators: [],
       masterGainValues: [],
     };
+    let releaseResume: (() => void) | null = null;
+    const resumeGate = options.holdResume
+      ? new Promise<void>((resolve) => {
+          releaseResume = resolve;
+        })
+      : null;
 
     class FakeAudioParam {
       value = 1;
@@ -82,7 +89,10 @@ async function installHearingHarness(
     class FakeGainNode extends FakeNode {
       readonly gain: FakeAudioParam;
 
-      constructor(context: BaseAudioContext, onValue?: (value: number) => void) {
+      constructor(
+        context: BaseAudioContext,
+        onValue?: (value: number) => void,
+      ) {
         super(context);
         this.gain = new FakeAudioParam(onValue);
       }
@@ -91,19 +101,19 @@ async function installHearingHarness(
     class FakeOscillatorNode extends EventTarget {
       readonly frequency: FakeAudioParam;
       type: OscillatorType = "sine";
-      readonly #record: HearingOscillatorRecord;
+      readonly _record: HearingOscillatorRecord;
 
       constructor(readonly context: BaseAudioContext) {
         super();
-        this.#record = {
+        this._record = {
           id: state.oscillators.length,
           frequencyHz: null,
           startTime: null,
           stopTimes: [],
         };
-        state.oscillators.push(this.#record);
+        state.oscillators.push(this._record);
         this.frequency = new FakeAudioParam((value) => {
-          this.#record.frequencyHz = value;
+          this._record.frequencyHz = value;
         });
       }
 
@@ -114,11 +124,11 @@ async function installHearingHarness(
       disconnect() {}
 
       start(when = 0) {
-        this.#record.startTime = when;
+        this._record.startTime = when;
       }
 
       stop(when = 0) {
-        this.#record.stopTimes.push(when);
+        this._record.stopTimes.push(when);
       }
     }
 
@@ -126,9 +136,9 @@ async function installHearingHarness(
       readonly sampleRate = options.sampleRate ?? 48_000;
       readonly destination: FakeNode;
       state: AudioContextState = "suspended";
-      #runningPerfMs: number | null = null;
-      #elapsedBeforeSuspendSec = 0;
-      #gainCount = 0;
+      _runningPerfMs: number | null = null;
+      _elapsedBeforeSuspendSec = 0;
+      _gainCount = 0;
 
       constructor(contextOptions?: AudioContextOptions) {
         state.audioContextCount += 1;
@@ -137,17 +147,19 @@ async function installHearingHarness(
       }
 
       get currentTime(): number {
-        if (this.#runningPerfMs === null || this.state !== "running") {
-          return this.#elapsedBeforeSuspendSec;
+        if (this._runningPerfMs === null || this.state !== "running") {
+          return this._elapsedBeforeSuspendSec;
         }
         return (
-          this.#elapsedBeforeSuspendSec +
-          (performance.now() - this.#runningPerfMs) / 1_000
+          this._elapsedBeforeSuspendSec +
+          (performance.now() - this._runningPerfMs) / 1_000
         );
       }
 
       async resume() {
-        if (options.resumeDelayMs) {
+        if (resumeGate) {
+          await resumeGate;
+        } else if (options.resumeDelayMs) {
           await new Promise((resolve) =>
             window.setTimeout(resolve, options.resumeDelayMs),
           );
@@ -156,22 +168,22 @@ async function installHearingHarness(
           throw new DOMException("closed", "InvalidStateError");
         }
         if (this.state !== "running") {
-          this.#runningPerfMs = performance.now();
+          this._runningPerfMs = performance.now();
           this.state = "running";
         }
       }
 
       async close() {
         if (this.state === "closed") return;
-        this.#elapsedBeforeSuspendSec = this.currentTime;
-        this.#runningPerfMs = null;
+        this._elapsedBeforeSuspendSec = this.currentTime;
+        this._runningPerfMs = null;
         this.state = "closed";
         state.closedContextCount += 1;
       }
 
       createGain() {
-        const isMaster = this.#gainCount === 0;
-        this.#gainCount += 1;
+        const isMaster = this._gainCount === 0;
+        this._gainCount += 1;
         return new FakeGainNode(
           this as unknown as BaseAudioContext,
           isMaster
@@ -194,6 +206,7 @@ async function installHearingHarness(
       value: FakeAudioContext,
     });
     Reflect.set(window, "__hearingHarness", state);
+    Reflect.set(window, "__releaseHearingResume", () => releaseResume?.());
   }, config);
 }
 
@@ -205,8 +218,14 @@ async function harnessState(page: Page): Promise<HearingHarnessState> {
   );
 }
 
-async function selectMode(page: Page, mode: "guided" | "manual"): Promise<void> {
-  await page.locator(`input[name="hearing-mode"][value="${mode}"]`).check();
+async function selectMode(
+  page: Page,
+  mode: "guided" | "manual",
+): Promise<void> {
+  await page
+    .locator("label.mode-pill")
+    .filter({ hasText: mode === "guided" ? "Guided" : "Manual" })
+    .click();
 }
 
 async function playSetupReference(page: Page): Promise<void> {
@@ -243,8 +262,12 @@ test("keeps high-frequency playback locked behind a fresh 1 kHz / -36 dB listeni
   await expect(page.locator("[data-hearing-result]")).toHaveText("—");
   await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
   await expect(page.locator("[data-hearing-stop]")).toBeDisabled();
-  await expect(page.getByRole("link", { name: "Tone Generator" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Headphone Test" })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Tone Generator" })).toHaveCount(
+    1,
+  );
+  await expect(page.getByRole("link", { name: "Headphone Test" })).toHaveCount(
+    1,
+  );
 
   await selectMode(page, "manual");
   await expect(page.locator("[data-hearing-manual-play]")).toBeDisabled();
@@ -275,13 +298,13 @@ test("keeps high-frequency playback locked behind a fresh 1 kHz / -36 dB listeni
   await expect(page.locator("[data-hearing-setup-confirm]")).not.toBeChecked();
   await expect(page.locator("[data-hearing-setup-confirm]")).toBeDisabled();
   await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
-  await expect(page.locator("[data-hearing-setup-status]")).toContainText(
-    "while the 1-second reference is audible",
-  );
 
   await expect(
     page.locator("#hearing-frequency-status [data-status-label]"),
   ).toHaveText("Setup reference complete", { timeout: 2_000 });
+  await expect(page.locator("[data-hearing-setup-status]")).toContainText(
+    "Reference complete",
+  );
   await expect(page.locator("[data-hearing-setup-confirm]")).toBeEnabled();
   await expect(page.locator("[data-hearing-setup-confirm]")).not.toBeChecked();
   await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
@@ -334,18 +357,20 @@ test("capability filtering removes unavailable Guided and Manual frequencies wit
   await playSetupReference(page);
 
   await expect(page.locator("#hearing-frequency-cap")).toBeVisible();
-  await expect(page.locator("#hearing-frequency-cap")).toContainText("15.2 kHz");
+  await expect(page.locator("#hearing-frequency-cap")).toContainText(
+    "15.2 kHz",
+  );
   await expect(page.locator("[data-hearing-result]")).toHaveText("—");
 
   await selectMode(page, "manual");
   await expect(page.locator("[data-hearing-manual-play]")).toBeDisabled();
   const unavailableOptions = page.locator(
-    "[data-hearing-manual-frequency] option:disabled",
+    "[data-hearing-manual-frequency] option[disabled]",
   );
   await expect(unavailableOptions).toHaveCount(3);
-  await expect(unavailableOptions.nth(0)).toHaveValue("16000");
-  await expect(unavailableOptions.nth(1)).toHaveValue("18000");
-  await expect(unavailableOptions.nth(2)).toHaveValue("20000");
+  await expect(unavailableOptions.nth(0)).toHaveAttribute("value", "16000");
+  await expect(unavailableOptions.nth(1)).toHaveAttribute("value", "18000");
+  await expect(unavailableOptions.nth(2)).toHaveAttribute("value", "20000");
 
   await confirmListeningSetup(page);
   await expect(page.locator("[data-hearing-manual-play]")).toBeEnabled();
@@ -413,7 +438,7 @@ test("Manual mode uses finite 800 ms tones and never changes the Guided session 
 test("Stop cancels tone preparation atomically before duplicate audio can start", async ({
   page,
 }) => {
-  await installHearingHarness(page, { resumeDelayMs: 150 });
+  await installHearingHarness(page, { holdResume: true });
   await page.goto("/hearing-frequency-test");
 
   await page.locator("[data-hearing-reference]").click();
@@ -422,11 +447,16 @@ test("Stop cancels tone preparation atomically before duplicate audio can start"
   await expect(
     page.locator("#hearing-frequency-status [data-status-label]"),
   ).toHaveText("Stopped");
-  await page.waitForTimeout(220);
+  await page.evaluate(() => {
+    const release = Reflect.get(window, "__releaseHearingResume") as () => void;
+    release();
+  });
+  await expect
+    .poll(async () => (await harnessState(page)).closedContextCount)
+    .toBe(1);
 
   const state = await harnessState(page);
   expect(state.oscillators).toHaveLength(0);
-  expect(state.closedContextCount).toBe(1);
   await expect(page.locator("[data-hearing-reference]")).toBeEnabled();
 });
 
@@ -452,7 +482,9 @@ test("hidden-tab Stop and BFCache restoration leave a fresh idle session", async
   ).toHaveText("Stopped while tab was hidden");
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
   await expect
     .poll(async () => (await harnessState(page)).closedContextCount)
@@ -463,7 +495,9 @@ test("hidden-tab Stop and BFCache restoration leave a fresh idle session", async
       configurable: true,
       get: () => false,
     });
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
   await expect(
     page.locator("#hearing-frequency-status [data-status-label]"),

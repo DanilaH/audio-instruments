@@ -72,10 +72,7 @@ export function frequencyToLogRatio(
   }
 
   const boundedFrequency = Math.min(maxHz, Math.max(minHz, frequencyHz));
-  return (
-    Math.log(boundedFrequency / minHz) /
-    Math.log(maxHz / minHz)
-  );
+  return Math.log(boundedFrequency / minHz) / Math.log(maxHz / minHz);
 }
 
 export function dbToDisplayRatio(valueDb: number): number {
@@ -100,10 +97,7 @@ export function findDominantFftBin(
 
   const binWidthHz = getFrequencyBinWidthHz(sampleRate, fftSize);
   const firstBin = Math.max(1, Math.ceil(DOMINANT_FFT_MIN_HZ / binWidthHz));
-  const lastBin = Math.min(
-    valuesDb.length - 1,
-    Math.floor(maxHz / binWidthHz),
-  );
+  const lastBin = Math.min(valuesDb.length - 1, Math.floor(maxHz / binWidthHz));
 
   let strongestBin = -1;
   let strongestDb = Number.NEGATIVE_INFINITY;

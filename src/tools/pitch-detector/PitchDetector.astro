@@ -3,14 +3,13 @@ import ToolStatus from "../../components/feedback/ToolStatus.astro";
 import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 ---
 
-<div
-  data-pitch-detector
-  data-pitch-state="idle"
-  data-pitch-result-state="idle"
->
+<div data-pitch-detector data-pitch-state="idle" data-pitch-result-state="idle">
   <InstrumentSurface label="Pitch Detector monophonic tuner" accent="mint">
     <div class="pitch-instrument">
-      <section class="pitch-monitor" aria-label="Live monophonic pitch estimate">
+      <section
+        class="pitch-monitor"
+        aria-label="Live monophonic pitch estimate"
+      >
         <div class="pitch-monitor__header">
           <ToolStatus id="pitch-detector-status" label="Ready" state="idle" />
           <div class="pitch-input-readout">
@@ -60,7 +59,8 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         <div class="pitch-permission">
           <i class="ph ph-microphone" aria-hidden="true"></i>
           <div>
-            <strong>Microphone permission is requested only after Start.</strong>
+            <strong>Microphone permission is requested only after Start.</strong
+            >
             <p>
               Audio is analyzed locally in the browser. The live microphone is
               never connected to speaker output.
@@ -81,14 +81,16 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
         <label class="pitch-field" data-pitch-input-field hidden>
           <span>Input device</span>
-          <select data-pitch-input aria-label="Pitch Detector input device"></select>
+          <select data-pitch-input aria-label="Pitch Detector input device"
+          ></select>
         </label>
         <p
           class="pitch-selection-error"
           data-pitch-selection-error
           role="alert"
           hidden
-        ></p>
+        >
+        </p>
 
         <dl class="pitch-details" aria-label="Pitch analysis settings">
           <div>
@@ -172,8 +174,16 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     gap: 18px;
     border-right: 1px solid var(--color-border);
     background:
-      radial-gradient(circle at 22% 22%, rgb(102 209 178 / 0.2), transparent 34%),
-      radial-gradient(circle at 84% 78%, rgb(143 124 255 / 0.11), transparent 34%),
+      radial-gradient(
+        circle at 22% 22%,
+        rgb(102 209 178 / 0.2),
+        transparent 34%
+      ),
+      radial-gradient(
+        circle at 84% 78%,
+        rgb(143 124 255 / 0.11),
+        transparent 34%
+      ),
       linear-gradient(145deg, rgb(252 255 253 / 0.98), rgb(241 251 247 / 0.94));
   }
 

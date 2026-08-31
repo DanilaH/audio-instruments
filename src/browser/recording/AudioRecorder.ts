@@ -132,10 +132,12 @@ export class AudioRecorder implements SessionResource {
     const token = ++this.#token;
     let resolve!: (result: RecordingResult) => void;
     let reject!: (error: unknown) => void;
-    const completion = new Promise<RecordingResult>((resolvePromise, rejectPromise) => {
-      resolve = resolvePromise;
-      reject = rejectPromise;
-    });
+    const completion = new Promise<RecordingResult>(
+      (resolvePromise, rejectPromise) => {
+        resolve = resolvePromise;
+        reject = rejectPromise;
+      },
+    );
 
     const active = {} as ActiveRecording;
     const dataHandler: EventListener = (event) => {
@@ -207,7 +209,9 @@ export class AudioRecorder implements SessionResource {
     timeoutMs: number = RECORDING_FINALIZATION_TIMEOUT_MS,
   ): Promise<RecordingResult | null> {
     if (!Number.isFinite(timeoutMs) || timeoutMs < 0) {
-      throw new RangeError("Recording finalization timeout must be non-negative");
+      throw new RangeError(
+        "Recording finalization timeout must be non-negative",
+      );
     }
 
     const active = this.#active;

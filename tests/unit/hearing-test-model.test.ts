@@ -15,7 +15,9 @@ describe("Hearing Frequency Test capability", () => {
     expect(capability.effectiveMaxHz).toBe(20_000);
     expect(capability.referenceAvailable).toBe(true);
     expect(capability.limited).toBe(false);
-    expect(capability.guidedFrequenciesHz).toEqual(HEARING_GUIDED_FREQUENCIES_HZ);
+    expect(capability.guidedFrequenciesHz).toEqual(
+      HEARING_GUIDED_FREQUENCIES_HZ,
+    );
   });
 
   it("removes guided steps above the shared Nyquist-safe cap", () => {
@@ -24,13 +26,7 @@ describe("Hearing Frequency Test capability", () => {
     expect(capability.effectiveMaxHz).toBe(15_200);
     expect(capability.limited).toBe(true);
     expect(capability.guidedFrequenciesHz).toEqual([
-      2_000,
-      4_000,
-      6_000,
-      8_000,
-      10_000,
-      12_000,
-      14_000,
+      2_000, 4_000, 6_000, 8_000, 10_000, 12_000, 14_000,
     ]);
   });
 
@@ -56,14 +52,11 @@ describe("Hearing Frequency Test guided session", () => {
     expect(recordHeardFrequency(4_000, 8_000)).toBe(8_000);
   });
 
-  it(
-    "formats session observations and capability values without diagnostic language or cap overstatement",
-    () => {
-      expect(formatHearingFrequency(2_000)).toBe("2 kHz");
-      expect(formatHearingFrequency(12_000)).toBe("12 kHz");
-      expect(formatHearingFrequency(15_200)).toBe("15.2 kHz");
-      expect(formatHearingFrequency(19_950)).toBe("19.9 kHz");
-      expect(formatHearingFrequency(750)).toBe("750 Hz");
-    },
-  );
+  it("formats session observations and capability values without diagnostic language or cap overstatement", () => {
+    expect(formatHearingFrequency(2_000)).toBe("2 kHz");
+    expect(formatHearingFrequency(12_000)).toBe("12 kHz");
+    expect(formatHearingFrequency(15_200)).toBe("15.2 kHz");
+    expect(formatHearingFrequency(19_950)).toBe("19.9 kHz");
+    expect(formatHearingFrequency(750)).toBe("750 Hz");
+  });
 });

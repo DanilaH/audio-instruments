@@ -193,7 +193,8 @@ async function openSweep(page: Page): Promise<void> {
 async function readOscillators(page: Page): Promise<OscillatorRecord[]> {
   return page.evaluate(() =>
     structuredClone(
-      (Reflect.get(window, "__frequencySweepOscillators") ?? []) as OscillatorRecord[],
+      (Reflect.get(window, "__frequencySweepOscillators") ??
+        []) as OscillatorRecord[],
     ),
   );
 }
@@ -216,7 +217,9 @@ test("Frequency Sweep exposes its safe default contract without creating AudioCo
   ).toBeVisible();
   await expect(page.locator("#frequency-sweep-status")).toContainText("Ready");
   await expect(page.locator("#frequency-sweep-low-number")).toHaveValue("20");
-  await expect(page.locator("#frequency-sweep-high-number")).toHaveValue("20000");
+  await expect(page.locator("#frequency-sweep-high-number")).toHaveValue(
+    "20000",
+  );
   await expect(page.locator("#frequency-sweep-duration")).toHaveValue("15");
   await expect(page.locator("#frequency-sweep-level")).toHaveValue("-24");
   await expect(
@@ -231,7 +234,9 @@ test("Frequency Sweep exposes its safe default contract without creating AudioCo
   await expect(page.getByText("Low frequency", { exact: true })).toBeVisible();
   await expect(page.getByText("High frequency", { exact: true })).toBeVisible();
   await expect(page.locator('a[href="/noise-generator"]')).toHaveCount(0);
-  expect(await readWindowNumber(page, "__frequencySweepAudioContextCount")).toBe(0);
+  expect(
+    await readWindowNumber(page, "__frequencySweepAudioContextCount"),
+  ).toBe(0);
 });
 
 test("default Frequency Sweep schedules one 20 Hz to 20 kHz logarithmic sweep and stops cleanly", async ({
@@ -258,13 +263,17 @@ test("default Frequency Sweep schedules one 20 Hz to 20 kHz logarithmic sweep an
   });
 
   await page.locator("[data-sweep-stop]").click();
-  await expect(page.locator("#frequency-sweep-status")).toContainText("Stopped");
+  await expect(page.locator("#frequency-sweep-status")).toContainText(
+    "Stopped",
+  );
   oscillators = await readOscillators(page);
   expect(oscillators[0]?.stopTimes.at(-1)).toBeCloseTo(0.05, 10);
   await expect(page.locator("#frequency-sweep-low-number")).toBeEnabled();
 });
 
-test("Frequency Sweep preserves custom linear descending semantics", async ({ page }) => {
+test("Frequency Sweep preserves custom linear descending semantics", async ({
+  page,
+}) => {
   await installDeterministicAudioContext(page);
   await openSweep(page);
 
@@ -311,14 +320,15 @@ test("Frequency Sweep keeps selector state truthful while endpoint order is inva
   await expect(page.locator("[data-sweep-play]")).toBeDisabled();
   await expect(page.locator("[data-sweep-from]")).toHaveText("—");
   await expect(page.locator("[data-sweep-to]")).toHaveText("—");
-  await expect(page.locator('button[data-sweep-scale="linear"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(
+    page.locator('button[data-sweep-scale="linear"]'),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(
     page.locator('button[data-sweep-direction="descending"]'),
   ).toHaveAttribute("aria-pressed", "true");
-  expect(await readWindowNumber(page, "__frequencySweepAudioContextCount")).toBe(0);
+  expect(
+    await readWindowNumber(page, "__frequencySweepAudioContextCount"),
+  ).toBe(0);
 });
 
 test("Frequency Sweep runtime cap clamps both shared frequency controls and resynchronizes their logarithmic sliders", async ({
@@ -342,7 +352,9 @@ test("Frequency Sweep runtime cap clamps both shared frequency controls and resy
     "max",
     "15200",
   );
-  await expect(page.locator("#frequency-sweep-high-number")).toHaveValue("15200");
+  await expect(page.locator("#frequency-sweep-high-number")).toHaveValue(
+    "15200",
+  );
   await expect(page.locator("#frequency-sweep-cap")).toContainText("15200 Hz");
 
   const expectedLowSliderPosition =
@@ -393,21 +405,31 @@ test("Frequency Sweep BFCache teardown closes the old session and remounts fresh
   await page.locator("#frequency-sweep-low-number").fill("400");
   await page.locator('button[data-sweep-direction="descending"]').click();
   await page.locator("[data-sweep-play]").click();
-  expect(await readWindowNumber(page, "__frequencySweepAudioContextCount")).toBe(1);
+  expect(
+    await readWindowNumber(page, "__frequencySweepAudioContextCount"),
+  ).toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
   await expect
-    .poll(() => readWindowNumber(page, "__frequencySweepClosedAudioContextCount"))
+    .poll(() =>
+      readWindowNumber(page, "__frequencySweepClosedAudioContextCount"),
+    )
     .toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
   await expect(page.locator("#frequency-sweep-status")).toContainText("Ready");
   await expect(page.locator("#frequency-sweep-low-number")).toHaveValue("20");
-  await expect(page.locator("#frequency-sweep-high-number")).toHaveValue("20000");
+  await expect(page.locator("#frequency-sweep-high-number")).toHaveValue(
+    "20000",
+  );
   await expect(page.locator("#frequency-sweep-duration")).toHaveValue("15");
   await expect(
     page.locator('button[data-sweep-direction="ascending"]'),
@@ -415,5 +437,7 @@ test("Frequency Sweep BFCache teardown closes the old session and remounts fresh
   await expect(page.locator("[data-sweep-stop]")).toBeDisabled();
 
   await page.locator("[data-sweep-play]").click();
-  expect(await readWindowNumber(page, "__frequencySweepAudioContextCount")).toBe(2);
+  expect(
+    await readWindowNumber(page, "__frequencySweepAudioContextCount"),
+  ).toBe(2);
 });

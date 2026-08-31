@@ -121,7 +121,9 @@ async function installDeterministicAudioContext(
           oscillators.push(this.record);
           const events: ParamEvent[] = [];
           this.frequency = new FakeAudioParam(events);
-          const originalSet = this.frequency.setValueAtTime.bind(this.frequency);
+          const originalSet = this.frequency.setValueAtTime.bind(
+            this.frequency,
+          );
           this.frequency.setValueAtTime = (value: number, time: number) => {
             this.record.frequency = value;
             return originalSet(value, time);
@@ -149,7 +151,7 @@ async function installDeterministicAudioContext(
 
       class FakeBufferSourceNode extends FakeAudioNode {
         loop = false;
-        #buffer: { length: number; sampleRate: number } | null = null;
+        bufferValue: { length: number; sampleRate: number } | null = null;
         readonly record: BufferSourceRecord;
 
         constructor() {
@@ -165,13 +167,13 @@ async function installDeterministicAudioContext(
         }
 
         set buffer(value: { length: number; sampleRate: number } | null) {
-          this.#buffer = value;
+          this.bufferValue = value;
           this.record.bufferLength = value?.length ?? 0;
           this.record.bufferSampleRate = value?.sampleRate ?? 0;
         }
 
         get buffer() {
-          return this.#buffer;
+          return this.bufferValue;
         }
 
         start(time = 0, offset = 0) {
@@ -198,20 +200,24 @@ async function installDeterministicAudioContext(
         readonly numberOfChannels: number;
         readonly length: number;
         readonly sampleRate: number;
-        readonly #channels: Float32Array[];
+        readonly channels: Float32Array[];
 
-        constructor(numberOfChannels: number, length: number, sampleRate: number) {
+        constructor(
+          numberOfChannels: number,
+          length: number,
+          sampleRate: number,
+        ) {
           this.numberOfChannels = numberOfChannels;
           this.length = length;
           this.sampleRate = sampleRate;
-          this.#channels = Array.from(
+          this.channels = Array.from(
             { length: numberOfChannels },
             () => new Float32Array(length),
           );
         }
 
         getChannelData(channel: number) {
-          const data = this.#channels[channel];
+          const data = this.channels[channel];
           if (!data) throw new RangeError("Invalid channel");
           return data;
         }
@@ -261,7 +267,11 @@ async function installDeterministicAudioContext(
           return new FakeAudioNode();
         }
 
-        createBuffer(numberOfChannels: number, length: number, sampleRate: number) {
+        createBuffer(
+          numberOfChannels: number,
+          length: number,
+          sampleRate: number,
+        ) {
           return new FakeAudioBuffer(numberOfChannels, length, sampleRate);
         }
       }
@@ -294,32 +304,42 @@ test("Stereo Test exposes a safe lazy idle baseline", async ({ page }) => {
   await installDeterministicAudioContext(page);
   await page.goto("/stereo-test");
 
-  expect(await page.evaluate(() => Reflect.get(window, "__audioProbeInstalled"))).toBe(true);
-  await expect(page.getByRole("heading", { name: "Stereo Test", level: 1 })).toBeVisible();
+  expect(
+    await page.evaluate(() => Reflect.get(window, "__audioProbeInstalled")),
+  ).toBe(true);
+  await expect(
+    page.getByRole("heading", { name: "Stereo Test", level: 1 }),
+  ).toBeVisible();
   await expect(page.locator("#stereo-status")).toContainText("Ready");
-  await expect(page.getByText("Start with your device/headphone volume low.")).toBeVisible();
+  await expect(
+    page.getByText("Start with your device/headphone volume low."),
+  ).toBeVisible();
   await expect(page.getByRole("button", { name: "Stop" })).toBeDisabled();
   expect(await readCount(page, "__audioProbeContextCount")).toBe(0);
 });
 
-test("Stereo static Center uses the shared hard Both route", async ({ page }) => {
+test("Stereo static Center uses the shared hard Both route", async ({
+  page,
+}) => {
   await installDeterministicAudioContext(page);
   await page.goto("/stereo-test");
 
   await page.getByRole("button", { name: "Center" }).click();
   await expect(page.locator("#stereo-status")).toContainText("Playing Center");
 
-  const oscillators = await readProbe<Array<{ frequency: number; starts: number[]; stops: number[] }>>(
-    page,
-    "__audioProbeOscillators",
-  );
-  const gains = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
-    page,
-    "__audioProbeGains",
-  );
+  const oscillators = await readProbe<
+    Array<{ frequency: number; starts: number[]; stops: number[] }>
+  >(page, "__audioProbeOscillators");
+  const gains = await readProbe<
+    Array<Array<{ kind: string; value?: number; time: number }>>
+  >(page, "__audioProbeGains");
 
   expect(oscillators).toHaveLength(1);
-  expect(oscillators[0]).toMatchObject({ frequency: 500, starts: [10], stops: [10.7] });
+  expect(oscillators[0]).toMatchObject({
+    frequency: 500,
+    starts: [10],
+    stops: [10.7],
+  });
   expect(gains[2]?.at(-1)).toMatchObject({ kind: "set", value: 1, time: 10 });
   expect(gains[3]?.at(-1)).toMatchObject({ kind: "set", value: 1, time: 10 });
 });
@@ -334,17 +354,19 @@ test("Stereo L to R uses one four-second linear StereoPanner sweep and exposes S
   await expect(page.locator("#stereo-status")).toContainText("Panning L → R");
   await expect(page.getByRole("button", { name: "Stop" })).toBeEnabled();
 
-  const oscillators = await readProbe<Array<{ frequency: number; starts: number[]; stops: number[] }>>(
-    page,
-    "__audioProbeOscillators",
-  );
-  const pans = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
-    page,
-    "__audioProbePans",
-  );
+  const oscillators = await readProbe<
+    Array<{ frequency: number; starts: number[]; stops: number[] }>
+  >(page, "__audioProbeOscillators");
+  const pans = await readProbe<
+    Array<Array<{ kind: string; value?: number; time: number }>>
+  >(page, "__audioProbePans");
 
   expect(oscillators).toHaveLength(1);
-  expect(oscillators[0]).toMatchObject({ frequency: 500, starts: [10], stops: [14] });
+  expect(oscillators[0]).toMatchObject({
+    frequency: 500,
+    starts: [10],
+    stops: [14],
+  });
   expect(pans).toHaveLength(1);
   expect(pans[0]).toEqual([
     { kind: "set", value: -1, time: 10 },
@@ -367,10 +389,14 @@ test("Phase Test keeps one running correlated source across In phase, Inverted a
   await page.getByRole("button", { name: "In phase" }).click();
   await expect(page.locator("#phase-status")).toContainText("Playing in phase");
 
-  let sources = await readProbe<Array<{ starts: Array<{ time: number; offset: number }>; loop: boolean; bufferLength: number; bufferSampleRate: number }>>(
-    page,
-    "__audioProbeBufferSources",
-  );
+  let sources = await readProbe<
+    Array<{
+      starts: Array<{ time: number; offset: number }>;
+      loop: boolean;
+      bufferLength: number;
+      bufferSampleRate: number;
+    }>
+  >(page, "__audioProbeBufferSources");
   expect(sources).toHaveLength(1);
   expect(sources[0]).toMatchObject({
     starts: [{ time: 10, offset: 0 }],
@@ -388,10 +414,9 @@ test("Phase Test keeps one running correlated source across In phase, Inverted a
   expect(sources).toHaveLength(1);
   expect(sources[0]?.starts).toHaveLength(1);
 
-  const gains = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
-    page,
-    "__audioProbeGains",
-  );
+  const gains = await readProbe<
+    Array<Array<{ kind: string; value?: number; time: number }>>
+  >(page, "__audioProbeGains");
   const leftEvents = gains[2] ?? [];
   const rightEvents = gains[3] ?? [];
   expect(leftEvents).toEqual([{ kind: "set", value: 1, time: 10 }]);
@@ -413,32 +438,40 @@ test("Phase Test keeps one running correlated source across In phase, Inverted a
   await expect(page.locator("#phase-status")).toContainText("Stopped");
 });
 
-test("Stereo and Phase close their tool-local AudioContext on pagehide", async ({ page }) => {
+test("Stereo and Phase close their tool-local AudioContext on pagehide", async ({
+  page,
+}) => {
   await installDeterministicAudioContext(page);
 
   await page.goto("/stereo-test");
   await page.getByRole("button", { name: "Left" }).click();
   expect(await readCount(page, "__audioProbeContextCount")).toBe(1);
   await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
-  await expect.poll(() => readCount(page, "__audioProbeClosedContextCount")).toBe(1);
+  await expect
+    .poll(() => readCount(page, "__audioProbeClosedContextCount"))
+    .toBe(1);
 
   await page.goto("/phase-test");
   await page.getByRole("button", { name: "In phase" }).click();
-  expect(await readCount(page, "__audioProbeContextCount")).toBe(2);
+  expect(await readCount(page, "__audioProbeContextCount")).toBe(1);
   await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
-  await expect.poll(() => readCount(page, "__audioProbeClosedContextCount")).toBe(2);
+  await expect
+    .poll(() => readCount(page, "__audioProbeClosedContextCount"))
+    .toBe(1);
 });
 
-test("Stereo and Phase expose only implemented related-tool links", async ({ page }) => {
+test("Stereo and Phase expose only implemented related-tool links", async ({
+  page,
+}) => {
   await page.goto("/stereo-test");
   await expect(page.locator('a[href="/sound-test"]')).toHaveCount(1);
   await expect(page.locator('a[href="/phase-test"]')).toHaveCount(1);
-  await expect(page.locator('a[href="/speaker-test"]')).toHaveCount(0);
-  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/speaker-test"]')).toHaveCount(1);
+  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(1);
 
   await page.goto("/phase-test");
   await expect(page.locator('a[href="/stereo-test"]')).toHaveCount(1);
   await expect(page.locator('a[href="/sound-test"]')).toHaveCount(1);
-  await expect(page.locator('a[href="/speaker-test"]')).toHaveCount(0);
-  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(0);
+  await expect(page.locator('a[href="/speaker-test"]')).toHaveCount(1);
+  await expect(page.locator('a[href="/headphone-test"]')).toHaveCount(1);
 });

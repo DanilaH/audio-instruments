@@ -6,7 +6,10 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 <div data-phase-test data-phase-mode="idle">
   <InstrumentSurface label="Phase Test output controls" accent="lavender">
     <div class="phase-instrument">
-      <section class="phase-visual" aria-label="Phase relationship visualization">
+      <section
+        class="phase-visual"
+        aria-label="Phase relationship visualization"
+      >
         <div class="phase-visual__header">
           <ToolStatus id="phase-status" label="Ready" state="idle" />
           <div class="phase-reference">
@@ -19,13 +22,17 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
           <div class="phase-waveform-row">
             <span>L</span>
             <svg viewBox="0 0 420 92" preserveAspectRatio="none">
-              <path d="M0 46 C28 18 48 74 78 46 S130 20 160 46 S214 72 244 46 S296 18 326 46 S382 74 420 46"></path>
+              <path
+                d="M0 46 C28 18 48 74 78 46 S130 20 160 46 S214 72 244 46 S296 18 326 46 S382 74 420 46"
+              ></path>
             </svg>
           </div>
           <div class="phase-waveform-row phase-waveform-row--right">
             <span>R</span>
             <svg viewBox="0 0 420 92" preserveAspectRatio="none">
-              <path d="M0 46 C28 18 48 74 78 46 S130 20 160 46 S214 72 244 46 S296 18 326 46 S382 74 420 46"></path>
+              <path
+                d="M0 46 C28 18 48 74 78 46 S130 20 160 46 S214 72 244 46 S296 18 326 46 S382 74 420 46"
+              ></path>
             </svg>
           </div>
         </div>
@@ -52,11 +59,18 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         <div class="phase-group">
           <div>
             <strong>Compare relationship</strong>
-            <span>Switching keeps the same deterministic source and playback position.</span>
+            <span
+              >Switching keeps the same deterministic source and playback
+              position.</span
+            >
           </div>
           <div class="phase-actions phase-actions--modes">
-            <button type="button" data-phase-in-phase aria-pressed="false">In phase</button>
-            <button type="button" data-phase-inverted aria-pressed="false">Inverted</button>
+            <button type="button" data-phase-in-phase aria-pressed="false"
+              >In phase</button
+            >
+            <button type="button" data-phase-inverted aria-pressed="false"
+              >Inverted</button
+            >
           </div>
         </div>
 
@@ -118,7 +132,11 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     grid-template-rows: auto 1fr auto auto;
     border-right: 1px solid var(--color-border);
     background:
-      radial-gradient(circle at 50% 52%, rgb(143 124 255 / 0.16), transparent 36%),
+      radial-gradient(
+        circle at 50% 52%,
+        rgb(143 124 255 / 0.16),
+        transparent 36%
+      ),
       linear-gradient(145deg, rgb(255 253 252 / 0.92), rgb(247 244 255 / 0.82));
   }
 
@@ -180,7 +198,9 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     stroke-linecap: round;
     vector-effect: non-scaling-stroke;
     opacity: 0.72;
-    transition: transform 50ms linear, opacity 120ms ease;
+    transition:
+      transform 50ms linear,
+      opacity 120ms ease;
     transform-origin: 50% 50%;
   }
 

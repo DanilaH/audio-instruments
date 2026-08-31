@@ -21,10 +21,15 @@ import {
 type HearingMode = "guided" | "manual";
 type ToneKind = "reference" | "guided" | "manual";
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
-    throw new Error(`Hearing Frequency Test is missing required element: ${selector}`);
+    throw new Error(
+      `Hearing Frequency Test is missing required element: ${selector}`,
+    );
   }
   return element;
 }
@@ -93,15 +98,24 @@ export class HearingFrequencyController {
     this.#manualPanel = requireElement(root, "[data-hearing-manual-panel]");
     this.#referenceButton = requireElement(root, "[data-hearing-reference]");
     this.#setupConfirm = requireElement(root, "[data-hearing-setup-confirm]");
-    this.#guidedStartButton = requireElement(root, "[data-hearing-guided-start]");
+    this.#guidedStartButton = requireElement(
+      root,
+      "[data-hearing-guided-start]",
+    );
     this.#heardButton = requireElement(root, "[data-hearing-heard]");
     this.#notHeardButton = requireElement(root, "[data-hearing-not-heard]");
     this.#stopButton = requireElement(root, "[data-hearing-stop]");
-    this.#manualFrequency = requireElement(root, "[data-hearing-manual-frequency]");
+    this.#manualFrequency = requireElement(
+      root,
+      "[data-hearing-manual-frequency]",
+    );
     this.#manualLevel = requireElement(root, "#hearing-manual-level");
     this.#manualPlayButton = requireElement(root, "[data-hearing-manual-play]");
     this.#setupStatus = requireElement(root, "[data-hearing-setup-status]");
-    this.#currentFrequency = requireElement(root, "[data-hearing-current-frequency]");
+    this.#currentFrequency = requireElement(
+      root,
+      "[data-hearing-current-frequency]",
+    );
     this.#guidedProgress = requireElement(root, "[data-hearing-progress]");
     this.#answerPanel = requireElement(root, "[data-hearing-answer-panel]");
     this.#resultValue = requireElement(root, "[data-hearing-result]");
@@ -116,8 +130,7 @@ export class HearingFrequencyController {
     this.#errorMessage = requireElement(root, "[data-hearing-error]");
 
     this.#bindEvents();
-    this.#renderSessionResult();
-    this.#renderControls();
+    this.#resetIdleUi();
   }
 
   async dispose(): Promise<void> {
@@ -161,17 +174,25 @@ export class HearingFrequencyController {
       () => void this.#playReference(),
       { signal },
     );
-    this.#setupConfirm.addEventListener("change", () => this.#renderControls(), {
-      signal,
-    });
+    this.#setupConfirm.addEventListener(
+      "change",
+      () => this.#renderControls(),
+      {
+        signal,
+      },
+    );
     this.#guidedStartButton.addEventListener(
       "click",
       () => void this.#startGuided(),
       { signal },
     );
-    this.#heardButton.addEventListener("click", () => this.#answerGuided(true), {
-      signal,
-    });
+    this.#heardButton.addEventListener(
+      "click",
+      () => this.#answerGuided(true),
+      {
+        signal,
+      },
+    );
     this.#notHeardButton.addEventListener(
       "click",
       () => this.#answerGuided(false),
@@ -210,7 +231,9 @@ export class HearingFrequencyController {
     const session = new AudioSession();
     try {
       const context = await session.getContext();
-      const output = new AudioOutputEngine(context, { levelProfile: "hearing" });
+      const output = new AudioOutputEngine(context, {
+        levelProfile: "hearing",
+      });
       session.register(output);
 
       if (!this.#isCurrent(token)) {
@@ -380,8 +403,7 @@ export class HearingFrequencyController {
       kind: "manual",
       playingLabel: `Playing ${formatHearingFrequency(frequencyHz)} manual tone`,
       onComplete: () => {
-        this.#manualStatus.textContent =
-          `${formatHearingFrequency(frequencyHz)} manual tone complete at ${levelDb} dB relative to unity. Manual observations do not change the Guided result.`;
+        this.#manualStatus.textContent = `${formatHearingFrequency(frequencyHz)} manual tone complete at ${levelDb} dB relative to unity. Manual observations do not change the Guided result.`;
         this.#setStatus("idle", "Manual tone complete");
       },
     });
@@ -518,8 +540,7 @@ export class HearingFrequencyController {
 
     if (capability.limited) {
       this.#capabilityNotice.hidden = false;
-      this.#capabilityMessage.textContent =
-        `This browser/audio context supports generated tones up to approximately ${formatHearingFrequency(capability.effectiveMaxHz)} in this session. Higher guided steps are unavailable and are not hearing results.`;
+      this.#capabilityMessage.textContent = `This browser/audio context supports generated tones up to approximately ${formatHearingFrequency(capability.effectiveMaxHz)} in this session. Higher guided steps are unavailable and are not hearing results.`;
     } else {
       this.#capabilityNotice.hidden = true;
       this.#capabilityMessage.textContent = "";
@@ -530,6 +551,32 @@ export class HearingFrequencyController {
       this.#capabilityMessage.textContent =
         "This audio context cannot safely generate the required 1 kHz setup reference, so Guided and Manual high-frequency playback are unavailable in this session.";
     }
+    this.#renderControls();
+  }
+
+  #resetIdleUi(): void {
+    const checkedMode = this.#modeInputs.find((input) => input.checked)?.value;
+    this.#mode = checkedMode === "manual" ? "manual" : "guided";
+    this.#capability = null;
+    this.#referencePlayed = false;
+    this.#guidedActive = false;
+    this.#awaitingAnswer = false;
+    this.#guidedIndex = 0;
+    this.#highestHeardHz = null;
+
+    for (const option of this.#manualFrequency.options) option.disabled = false;
+    this.#setupConfirm.checked = false;
+    this.#setupStatus.textContent =
+      "Complete this setup before any Guided or Manual high-frequency tone.";
+    this.#currentFrequency.textContent = "—";
+    this.#guidedProgress.textContent = "Not started";
+    this.#manualStatus.textContent =
+      "Complete Listening setup above first. Manual tones never update the fixed-level Guided session result.";
+    this.#capabilityNotice.hidden = true;
+    this.#capabilityMessage.textContent = "";
+    this.#setStatus("idle", "Ready");
+    this.#hideError();
+    this.#renderSessionResult();
     this.#renderControls();
   }
 
@@ -562,12 +609,16 @@ export class HearingFrequencyController {
       !setupReady ||
       (this.#capability !== null && guidedFrequencies.length === 0);
     this.#heardButton.disabled = !this.#guidedActive || !this.#awaitingAnswer;
-    this.#notHeardButton.disabled = !this.#guidedActive || !this.#awaitingAnswer;
+    this.#notHeardButton.disabled =
+      !this.#guidedActive || !this.#awaitingAnswer;
     this.#answerPanel.hidden = !this.#guidedActive || !this.#awaitingAnswer;
     this.#stopButton.disabled = !playing && !this.#guidedActive;
 
     const manualDisabled =
-      this.#disposed || this.#mode !== "manual" || playing || this.#guidedActive;
+      this.#disposed ||
+      this.#mode !== "manual" ||
+      playing ||
+      this.#guidedActive;
     this.#manualFrequency.disabled = manualDisabled;
     this.#manualLevel.disabled = manualDisabled;
     this.#manualPlayButton.disabled =

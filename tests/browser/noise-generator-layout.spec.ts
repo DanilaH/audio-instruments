@@ -38,7 +38,9 @@ test("Noise Generator keeps safety and its primary controls in the natural first
     expect(playBox).not.toBeNull();
     if (safetyBox && playBox) {
       expect(safetyBox.y).toBeGreaterThanOrEqual(0);
-      expect(safetyBox.y + safetyBox.height).toBeLessThanOrEqual(viewport.height);
+      expect(safetyBox.y + safetyBox.height).toBeLessThanOrEqual(
+        viewport.height,
+      );
       expect(playBox.y).toBeGreaterThanOrEqual(0);
       expect(playBox.y + playBox.height).toBeLessThanOrEqual(viewport.height);
     }

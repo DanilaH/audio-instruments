@@ -64,7 +64,9 @@ class FakeMediaDevices extends EventTarget {
     return { deviceId: true };
   }
 
-  async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
+  async getUserMedia(
+    constraints: MediaStreamConstraints,
+  ): Promise<MediaStream> {
     this.calls.push(constraints);
     const next = this.queue.shift();
     if (!next) throw new Error("No deterministic stream queued");

@@ -29,14 +29,12 @@ const MILLISECONDS_PER_SECOND = 1_000;
 
 type HeadphoneMode = StereoChannelMode | "phase" | "sweep" | "bass";
 type HeadphoneVisualState =
-  | "idle"
-  | StereoChannelMode
-  | "phase-in"
-  | "phase-inverted"
-  | "sweep"
-  | "bass";
+  "idle" | StereoChannelMode | "phase-in" | "phase-inverted" | "sweep" | "bass";
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
     throw new Error(`Headphone Test is missing required element: ${selector}`);
@@ -124,12 +122,20 @@ export class HeadphoneTestController {
       ...root.querySelectorAll<HTMLElement>("[data-headphone-panel]"),
     ];
     if (this.#modeButtons.length !== 6 || this.#panels.length !== 3) {
-      throw new Error("Headphone Test requires six modes and three advanced panels");
+      throw new Error(
+        "Headphone Test requires six modes and three advanced panels",
+      );
     }
 
     this.#phaseInButton = requireElement(root, "[data-headphone-phase-in]");
-    this.#phaseInvertedButton = requireElement(root, "[data-headphone-phase-inverted]");
-    this.#phaseToggleButton = requireElement(root, "[data-headphone-phase-toggle]");
+    this.#phaseInvertedButton = requireElement(
+      root,
+      "[data-headphone-phase-inverted]",
+    );
+    this.#phaseToggleButton = requireElement(
+      root,
+      "[data-headphone-phase-toggle]",
+    );
     this.#sweepButton = requireElement(root, "[data-headphone-sweep]");
     this.#bassButton = requireElement(root, "[data-headphone-bass]");
     this.#stopButton = requireElement(root, "[data-headphone-stop]");
@@ -214,16 +220,12 @@ export class HeadphoneTestController {
       },
       { signal },
     );
-    this.#sweepButton.addEventListener(
-      "click",
-      () => void this.#runSweep(),
-      { signal },
-    );
-    this.#bassButton.addEventListener(
-      "click",
-      () => void this.#runBass(),
-      { signal },
-    );
+    this.#sweepButton.addEventListener("click", () => void this.#runSweep(), {
+      signal,
+    });
+    this.#bassButton.addEventListener("click", () => void this.#runBass(), {
+      signal,
+    });
     this.#stopButton.addEventListener(
       "click",
       () => this.#stopCurrent("Stopped"),
@@ -285,7 +287,9 @@ export class HeadphoneTestController {
     }
 
     if (!this.#engine) {
-      this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
+      this.#engine = new AudioOutputEngine(context, {
+        levelProfile: "general",
+      });
       this.#engine.setLevelDb(this.#levelDb);
       this.#session.register(this.#engine);
     }
@@ -400,10 +404,7 @@ export class HeadphoneTestController {
       this.#oscillatorPlayback = playback;
       this.#starting = false;
       this.#setControlsActive(true);
-      this.#setVisual(
-        "sweep",
-        `${definition.lowHz} → ${definition.highHz} Hz`,
-      );
+      this.#setVisual("sweep", `${definition.lowHz} → ${definition.highHz} Hz`);
       this.#setStatus("playing", "Headphone sweep running");
       this.#scheduleFinish(
         definition.durationSeconds * MILLISECONDS_PER_SECOND,
@@ -516,7 +517,10 @@ export class HeadphoneTestController {
     try {
       this.#engine?.stop();
     } catch (stopError) {
-      console.error("Headphone Test cleanup after start failure failed", stopError);
+      console.error(
+        "Headphone Test cleanup after start failure failed",
+        stopError,
+      );
     }
     this.#starting = false;
     this.#oscillatorPlayback = null;

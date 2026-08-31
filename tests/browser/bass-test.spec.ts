@@ -279,7 +279,9 @@ test("Bass slow sweep uses the shared 20 to 120 Hz logarithmic 12 second primiti
 
   await page.locator('[data-bass-mode="sweep"]').click();
   await page.locator("[data-bass-sweep-play]").click();
-  await expect(page.locator("#bass-status")).toContainText("Slow bass sweep running");
+  await expect(page.locator("#bass-status")).toContainText(
+    "Slow bass sweep running",
+  );
 
   const oscillators = await readOscillators(page);
   expect(oscillators).toHaveLength(1);
@@ -347,7 +349,10 @@ test("Bass runtime cap updates the shared frequency slider, clamps the sweep and
 
   const slider = page.locator("#bass-frequency-slider");
   const expectedSliderPosition = Math.log(60 / 20) / Math.log(76 / 20);
-  expect(Number(await slider.inputValue())).toBeCloseTo(expectedSliderPosition, 3);
+  expect(Number(await slider.inputValue())).toBeCloseTo(
+    expectedSliderPosition,
+    3,
+  );
 
   await slider.fill("1");
   await expect(frequency).toHaveValue("76");
@@ -356,7 +361,9 @@ test("Bass runtime cap updates the shared frequency slider, clamps the sweep and
   await expect(page.locator("[data-bass-sequence-play]")).toBeDisabled();
 
   await page.locator('[data-bass-mode="sweep"]').click();
-  await expect(page.locator("[data-bass-sweep-range]")).toHaveText("20 → 76 Hz");
+  await expect(page.locator("[data-bass-sweep-range]")).toHaveText(
+    "20 → 76 Hz",
+  );
   await page.locator("[data-bass-sweep-play]").click();
 
   const oscillators = await readOscillators(page);
@@ -404,14 +411,18 @@ test("Bass BFCache teardown closes the old session and remounts fresh idle state
   expect(await readWindowNumber(page, "__bassAudioContextCount")).toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
   await expect
     .poll(() => readWindowNumber(page, "__bassClosedAudioContextCount"))
     .toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
   await expect(page.locator("#bass-status")).toContainText("Ready");
   await expect(page.locator("#bass-frequency-number")).toHaveValue("60");

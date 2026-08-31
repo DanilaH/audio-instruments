@@ -12,12 +12,17 @@ import { AudioSession } from "../../browser/audio-session/AudioSession";
 
 const PAN_SWEEP_SECONDS = 4;
 
-type StereoAction = "left" | "center" | "right" | "left-to-right" | "right-to-left";
+type StereoAction =
+  "left" | "center" | "right" | "left-to-right" | "right-to-left";
 type StereoPlayback = OscillatorPlayback | PannedOscillatorPlayback;
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
-  if (!element) throw new Error(`Stereo Test is missing required element: ${selector}`);
+  if (!element)
+    throw new Error(`Stereo Test is missing required element: ${selector}`);
   return element;
 }
 
@@ -36,7 +41,9 @@ function actionLabel(action: StereoAction): string {
   }
 }
 
-function channelModeFor(action: "left" | "center" | "right"): StereoChannelMode {
+function channelModeFor(
+  action: "left" | "center" | "right",
+): StereoChannelMode {
   if (action === "center") return "both";
   return action;
 }
@@ -94,7 +101,8 @@ export class StereoTestController {
       button.addEventListener(
         "click",
         () => {
-          const action = button.dataset.stereoAction as StereoAction | undefined;
+          const action = button.dataset.stereoAction as
+            StereoAction | undefined;
           if (!action) return;
           if (action === "left-to-right" || action === "right-to-left") {
             void this.#runPan(action);
@@ -105,14 +113,22 @@ export class StereoTestController {
         { signal },
       );
     }
-    this.#stopButton.addEventListener("click", () => this.#stopCurrent(), { signal });
+    this.#stopButton.addEventListener("click", () => this.#stopCurrent(), {
+      signal,
+    });
   }
 
-  async #getEngine(): Promise<{ context: AudioContext; engine: AudioOutputEngine }> {
+  async #getEngine(): Promise<{
+    context: AudioContext;
+    engine: AudioOutputEngine;
+  }> {
     const context = await this.#session.getContext();
-    if (this.#disposed) throw new Error("Stereo Test was disposed before audio could start");
+    if (this.#disposed)
+      throw new Error("Stereo Test was disposed before audio could start");
     if (!this.#engine) {
-      this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
+      this.#engine = new AudioOutputEngine(context, {
+        levelProfile: "general",
+      });
       this.#session.register(this.#engine);
     }
     return { context, engine: this.#engine };
@@ -182,7 +198,10 @@ export class StereoTestController {
     try {
       this.#engine?.stop();
     } catch (stopError) {
-      console.error("Stereo Test cleanup after start failure failed", stopError);
+      console.error(
+        "Stereo Test cleanup after start failure failed",
+        stopError,
+      );
     }
     this.#starting = false;
     this.#playback = null;

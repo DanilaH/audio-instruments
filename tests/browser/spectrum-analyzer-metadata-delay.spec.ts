@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("slow device enumeration never blocks active analyzer state or Stop", async ({ page }) => {
+test("slow device enumeration never blocks active analyzer state or Stop", async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     const state = {
       enumerateStarted: 0,
@@ -28,18 +30,18 @@ test("slow device enumeration never blocks active analyzer state or Stop", async
     }
 
     class FakeAnalyserNode extends FakeNode {
-      #fftSize = 2_048;
+      _fftSize = 2_048;
       smoothingTimeConstant = 0;
       minDecibels = -100;
       maxDecibels = -30;
       get fftSize() {
-        return this.#fftSize;
+        return this._fftSize;
       }
       set fftSize(value: number) {
-        this.#fftSize = value;
+        this._fftSize = value;
       }
       get frequencyBinCount() {
-        return this.#fftSize / 2;
+        return this._fftSize / 2;
       }
       getFloatTimeDomainData(target: Float32Array) {
         target.fill(0.1);
@@ -83,7 +85,9 @@ test("slow device enumeration never blocks active analyzer state or Stop", async
         this.state = "closed";
       }
       createGain() {
-        return new FakeGainNode(this as unknown as BaseAudioContext) as unknown as GainNode;
+        return new FakeGainNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as GainNode;
       }
       createAnalyser() {
         return new FakeAnalyserNode(
@@ -144,11 +148,13 @@ test("slow device enumeration never blocks active analyzer state or Stop", async
   await page.goto("/spectrum-analyzer");
   await page.locator("[data-spectrum-start]").click();
 
-  await expect(page.locator("#spectrum-analyzer-status [data-status-label]")).toHaveText(
-    "Analyzing microphone",
-  );
+  await expect(
+    page.locator("#spectrum-analyzer-status [data-status-label]"),
+  ).toHaveText("Analyzing microphone");
   await expect(page.locator("[data-spectrum-stop]")).toBeEnabled();
-  await expect(page.locator("[data-spectrum-analysis-rate]")).toHaveText("48000 Hz");
+  await expect(page.locator("[data-spectrum-analysis-rate]")).toHaveText(
+    "48000 Hz",
+  );
 
   const beforeStop = await page.evaluate(() =>
     structuredClone(Reflect.get(window, "__spectrumMetadataDelayState")),
@@ -156,19 +162,22 @@ test("slow device enumeration never blocks active analyzer state or Stop", async
   expect(beforeStop).toEqual({ enumerateStarted: 1, trackStopCount: 0 });
 
   await page.locator("[data-spectrum-stop]").click();
-  await expect(page.locator("#spectrum-analyzer-status [data-status-label]")).toHaveText(
-    "Stopped",
-  );
+  await expect(
+    page.locator("#spectrum-analyzer-status [data-status-label]"),
+  ).toHaveText("Stopped");
 
   await page.evaluate(() => {
-    const resolve = Reflect.get(window, "__resolveSpectrumEnumeration") as () => void;
+    const resolve = Reflect.get(
+      window,
+      "__resolveSpectrumEnumeration",
+    ) as () => void;
     resolve();
   });
   await page.waitForTimeout(0);
 
-  await expect(page.locator("#spectrum-analyzer-status [data-status-label]")).toHaveText(
-    "Stopped",
-  );
+  await expect(
+    page.locator("#spectrum-analyzer-status [data-status-label]"),
+  ).toHaveText("Stopped");
   await expect(page.locator("[data-spectrum-input-field]")).toBeHidden();
 
   const afterStop = await page.evaluate(() =>

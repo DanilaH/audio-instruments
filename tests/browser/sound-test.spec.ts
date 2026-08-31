@@ -199,7 +199,9 @@ test("Sound Test exposes a safe lazy idle baseline", async ({ page }) => {
   await expect(page.getByRole("button", { name: "Left" })).toBeEnabled();
   await expect(page.getByRole("button", { name: "Both" })).toBeEnabled();
   await expect(page.getByRole("button", { name: "Right" })).toBeEnabled();
-  await expect(page.getByRole("button", { name: "Run sequence" })).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Run sequence" }),
+  ).toBeEnabled();
   await expect(page.getByRole("button", { name: "Stop" })).toBeDisabled();
   expect(await readWindowNumber(page, "__soundAudioContextCount")).toBe(0);
 });
@@ -251,15 +253,15 @@ test("Sound Test schedules the canonical guided sequence and exposes Stop", asyn
 
   const oscillators = await readOscillators(page);
   expect(oscillators).toHaveLength(3);
-  expect(oscillators.map((record: { frequency: number }) => record.frequency)).toEqual([
-    500, 500, 500,
-  ]);
-  expect(oscillators.map((record: { starts: number[] }) => record.starts[0])).toEqual([
-    10, 11, 12,
-  ]);
-  expect(oscillators.map((record: { stops: number[] }) => record.stops[0])).toEqual([
-    10.7, 11.7, 12.7,
-  ]);
+  expect(
+    oscillators.map((record: { frequency: number }) => record.frequency),
+  ).toEqual([500, 500, 500]);
+  expect(
+    oscillators.map((record: { starts: number[] }) => record.starts[0]),
+  ).toEqual([10, 11, 12]);
+  expect(
+    oscillators.map((record: { stops: number[] }) => record.stops[0]),
+  ).toEqual([10.7, 11.7, 12.7]);
 
   await expect(page.locator("[data-active-channel-label]")).toHaveText("Both", {
     timeout: 1_400,
@@ -267,7 +269,9 @@ test("Sound Test schedules the canonical guided sequence and exposes Stop", asyn
   await page.getByRole("button", { name: "Stop" }).click();
   await expect(page.locator("#sound-status")).toContainText("Stopped");
   await expect(page.locator("[data-active-channel-label]")).toHaveText("None");
-  await expect(page.getByRole("button", { name: "Run sequence" })).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Run sequence" }),
+  ).toBeEnabled();
 });
 
 test("Sound Test cleans a partial sequence start failure and remains retryable", async ({
@@ -277,10 +281,14 @@ test("Sound Test cleans a partial sequence start failure and remains retryable",
   await page.goto("/sound-test");
 
   await page.getByRole("button", { name: "Run sequence" }).click();
-  await expect(page.locator("#sound-status")).toContainText("Audio unavailable");
+  await expect(page.locator("#sound-status")).toContainText(
+    "Audio unavailable",
+  );
   await expect(page.locator("[data-active-channel-label]")).toHaveText("None");
   await expect(page.getByRole("button", { name: "Stop" })).toBeDisabled();
-  await expect(page.getByRole("button", { name: "Run sequence" })).toBeEnabled();
+  await expect(
+    page.getByRole("button", { name: "Run sequence" }),
+  ).toBeEnabled();
 
   const failedRunOscillators = await readOscillators(page);
   expect(failedRunOscillators).toHaveLength(1);
@@ -291,7 +299,9 @@ test("Sound Test cleans a partial sequence start failure and remains retryable",
   await expect(page.locator("#sound-status")).toContainText("Playing Left");
 });
 
-test("Sound Test closes its tool-local AudioContext on pagehide", async ({ page }) => {
+test("Sound Test closes its tool-local AudioContext on pagehide", async ({
+  page,
+}) => {
   await installDeterministicAudioContext(page);
   await page.goto("/sound-test");
   await page.getByRole("button", { name: "Both" }).click();

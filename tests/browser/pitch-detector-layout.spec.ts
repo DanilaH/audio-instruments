@@ -29,14 +29,14 @@ for (const viewport of viewports) {
 
     const startBox = await start.boundingBox();
     expect(startBox).not.toBeNull();
-    expect((startBox?.y ?? viewport.height) + (startBox?.height ?? 0)).toBeLessThanOrEqual(
-      viewport.height,
-    );
+    expect(
+      (startBox?.y ?? viewport.height) + (startBox?.height ?? 0),
+    ).toBeLessThanOrEqual(viewport.height);
 
     const resultBox = await result.boundingBox();
     expect(resultBox).not.toBeNull();
-    expect((resultBox?.x ?? -1) + (resultBox?.width ?? viewport.width + 1)).toBeLessThanOrEqual(
-      viewport.width,
-    );
+    expect(
+      (resultBox?.x ?? -1) + (resultBox?.width ?? viewport.width + 1),
+    ).toBeLessThanOrEqual(viewport.width);
   });
 }

@@ -100,9 +100,8 @@ describe("AudioAnalyzer recent time-domain frame access", () => {
     analyzer.configureSpectrum({ fftSize: 1_024 });
     expect(spectrum?.fftSize).toBe(1_024);
 
-    meter!.timeData = Float32Array.from(
-      { length: 32_768 },
-      (_, index) => (index >= 32_768 - 8_192 ? 0.25 : 0),
+    meter!.timeData = Float32Array.from({ length: 32_768 }, (_, index) =>
+      index >= 32_768 - 8_192 ? 0.25 : 0,
     );
     const pitchSourceFrame = analyzer.readRecentTimeDomain(
       new Float32Array(8_192),
@@ -119,6 +118,8 @@ describe("AudioAnalyzer recent time-domain frame access", () => {
     );
     expect(() =>
       analyzer.readRecentTimeDomain(new Float32Array(8_193)),
-    ).toThrow("Recent time-domain target cannot exceed meter buffer length 8192");
+    ).toThrow(
+      "Recent time-domain target cannot exceed meter buffer length 8192",
+    );
   });
 });

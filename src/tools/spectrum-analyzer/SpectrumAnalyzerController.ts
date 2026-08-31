@@ -24,10 +24,15 @@ type AnalyzerView = "spectrum" | "waveform" | "spectrogram";
 
 const SPECTRUM_RENDER_INTERVAL_MS = 1_000 / SPECTRUM_MAX_RENDER_FPS;
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
-    throw new Error(`Spectrum Analyzer is missing required element: ${selector}`);
+    throw new Error(
+      `Spectrum Analyzer is missing required element: ${selector}`,
+    );
   }
   return element;
 }
@@ -37,7 +42,10 @@ function captureErrorMessage(error: unknown): string {
     if (error.name === "NotAllowedError") {
       return "Microphone permission was denied. Allow microphone access for this site, then try again.";
     }
-    if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+    if (
+      error.name === "NotFoundError" ||
+      error.name === "DevicesNotFoundError"
+    ) {
       return "No microphone input was found. Connect or enable an input device, then try again.";
     }
     if (error.name === "NotReadableError" || error.name === "TrackStartError") {
@@ -114,15 +122,24 @@ export class SpectrumAnalyzerController {
     this.#inputSelect = requireElement(root, "[data-spectrum-input]");
     this.#status = requireElement(root, "#spectrum-analyzer-status");
     this.#statusLabel = requireElement(this.#status, "[data-status-label]");
-    this.#activeInputLabel = requireElement(root, "[data-spectrum-active-input]");
+    this.#activeInputLabel = requireElement(
+      root,
+      "[data-spectrum-active-input]",
+    );
     this.#dominantValue = requireElement(root, "[data-spectrum-dominant]");
-    this.#analysisRateValue = requireElement(root, "[data-spectrum-analysis-rate]");
+    this.#analysisRateValue = requireElement(
+      root,
+      "[data-spectrum-analysis-rate]",
+    );
     this.#fftValue = requireElement(root, "[data-spectrum-fft-value]");
     this.#binWidthValue = requireElement(root, "[data-spectrum-bin-width]");
     this.#rangeValue = requireElement(root, "[data-spectrum-range]");
     this.#canvas = requireElement(root, "[data-spectrum-canvas]");
     this.#errorMessage = requireElement(root, "[data-spectrum-error]");
-    this.#selectionError = requireElement(root, "[data-spectrum-selection-error]");
+    this.#selectionError = requireElement(
+      root,
+      "[data-spectrum-selection-error]",
+    );
 
     this.#spectrumCanvas = new SpectrumCanvas(this.#canvas);
     this.#waveformCanvas = new AnalyzerWaveformCanvas(this.#canvas);
@@ -155,9 +172,13 @@ export class SpectrumAnalyzerController {
 
   #bindEvents(): void {
     const signal = this.#listeners.signal;
-    this.#startButton.addEventListener("click", () => void this.#startMicrophone(), {
-      signal,
-    });
+    this.#startButton.addEventListener(
+      "click",
+      () => void this.#startMicrophone(),
+      {
+        signal,
+      },
+    );
     this.#stopButton.addEventListener("click", () => void this.#stopTool(), {
       signal,
     });
@@ -166,7 +187,9 @@ export class SpectrumAnalyzerController {
       () => void this.#switchInput(this.#inputSelect.value),
       { signal },
     );
-    this.#fftSelect.addEventListener("change", () => this.#changeFft(), { signal });
+    this.#fftSelect.addEventListener("change", () => this.#changeFft(), {
+      signal,
+    });
     for (const button of this.#viewButtons) {
       button.addEventListener(
         "click",
@@ -220,7 +243,8 @@ export class SpectrumAnalyzerController {
   }
 
   async #startMicrophone(): Promise<void> {
-    if (this.#disposed || this.#starting || this.isActive || this.#stopping) return;
+    if (this.#disposed || this.#starting || this.isActive || this.#stopping)
+      return;
     const token = ++this.#runToken;
     this.#starting = true;
     this.#hideErrors();
@@ -483,8 +507,8 @@ export class SpectrumAnalyzerController {
 
   #renderDevices(
     devices: readonly MicrophoneInputDevice[],
-    selectedDeviceId: string | undefined =
-      this.#microphone?.activeSettings()?.deviceId,
+    selectedDeviceId: string | undefined = this.#microphone?.activeSettings()
+      ?.deviceId,
   ): void {
     this.#devices = devices;
     this.#inputSelect.replaceChildren();
@@ -521,7 +545,10 @@ export class SpectrumAnalyzerController {
     this.#inputField.hidden = !this.isActive || !hasAlternativeInput;
 
     if (this.isActive) {
-      this.#activeInputLabel.textContent = deviceLabel(devices, selectedDeviceId);
+      this.#activeInputLabel.textContent = deviceLabel(
+        devices,
+        selectedDeviceId,
+      );
     }
     this.#renderControls();
   }

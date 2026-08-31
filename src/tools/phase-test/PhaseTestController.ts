@@ -5,9 +5,13 @@ import {
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 import { NoiseEngine } from "../../browser/noise/NoiseEngine";
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
-  if (!element) throw new Error(`Phase Test is missing required element: ${selector}`);
+  if (!element)
+    throw new Error(`Phase Test is missing required element: ${selector}`);
   return element;
 }
 
@@ -62,12 +66,20 @@ export class PhaseTestController {
 
   #bindEvents(): void {
     const signal = this.#listeners.signal;
-    this.#inPhaseButton.addEventListener("click", () => void this.#selectMode(false), {
-      signal,
-    });
-    this.#invertedButton.addEventListener("click", () => void this.#selectMode(true), {
-      signal,
-    });
+    this.#inPhaseButton.addEventListener(
+      "click",
+      () => void this.#selectMode(false),
+      {
+        signal,
+      },
+    );
+    this.#invertedButton.addEventListener(
+      "click",
+      () => void this.#selectMode(true),
+      {
+        signal,
+      },
+    );
     this.#toggleButton.addEventListener(
       "click",
       () => {
@@ -75,7 +87,9 @@ export class PhaseTestController {
       },
       { signal },
     );
-    this.#stopButton.addEventListener("click", () => this.#stopCurrent(), { signal });
+    this.#stopButton.addEventListener("click", () => this.#stopCurrent(), {
+      signal,
+    });
   }
 
   async #getAudio(): Promise<{
@@ -84,14 +98,18 @@ export class PhaseTestController {
     buffer: AudioBuffer;
   }> {
     const context = await this.#session.getContext();
-    if (this.#disposed) throw new Error("Phase Test was disposed before audio could start");
+    if (this.#disposed)
+      throw new Error("Phase Test was disposed before audio could start");
 
     if (!this.#engine) {
-      this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
+      this.#engine = new AudioOutputEngine(context, {
+        levelProfile: "general",
+      });
       this.#session.register(this.#engine);
     }
     if (!this.#noiseEngine) this.#noiseEngine = new NoiseEngine(context);
-    if (!this.#phaseBuffer) this.#phaseBuffer = this.#noiseEngine.createPhaseTestPinkBuffer();
+    if (!this.#phaseBuffer)
+      this.#phaseBuffer = this.#noiseEngine.createPhaseTestPinkBuffer();
 
     return { context, engine: this.#engine, buffer: this.#phaseBuffer };
   }
@@ -107,7 +125,11 @@ export class PhaseTestController {
     try {
       const { context, engine, buffer } = await this.#getAudio();
       if (!this.#isCurrentRun(token)) return;
-      this.#playback = engine.startPhaseBuffer(buffer, inverted, context.currentTime);
+      this.#playback = engine.startPhaseBuffer(
+        buffer,
+        inverted,
+        context.currentTime,
+      );
       this.#starting = false;
       this.#setControlsActive(true);
       this.#applyMode(inverted);
@@ -122,7 +144,10 @@ export class PhaseTestController {
     this.#inverted = inverted;
     this.#root.dataset.phaseMode = inverted ? "inverted" : "in-phase";
     this.#modeLabel.textContent = inverted ? "Inverted right" : "In phase";
-    this.#setStatus("playing", inverted ? "Playing inverted" : "Playing in phase");
+    this.#setStatus(
+      "playing",
+      inverted ? "Playing inverted" : "Playing in phase",
+    );
     this.#inPhaseButton.setAttribute("aria-pressed", String(!inverted));
     this.#invertedButton.setAttribute("aria-pressed", String(inverted));
   }

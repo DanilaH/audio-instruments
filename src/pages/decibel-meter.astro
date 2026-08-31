@@ -35,15 +35,17 @@ const relatedTools = decibelTool.relatedToolIds.flatMap((id) => {
       </div>
       <div class="db-content__copy">
         <p>
-          RMS and peak values come from the shared 100 ms Web Audio PCM meter and
-          are expressed in dBFS. They describe the browser's digital microphone
-          signal, not physical sound pressure at the microphone position.
+          RMS and peak values come from the shared 100 ms Web Audio PCM meter
+          and are expressed in dBFS. They describe the browser's digital
+          microphone signal, not physical sound pressure at the microphone
+          position.
         </p>
         <p>
-          The optional reference-calibrated value applies one offset derived from
-          a stable three-second comparison with an external meter. It is an
+          The optional reference-calibrated value applies one offset derived
+          from a stable three-second comparison with an external meter. It is an
           estimate tied to the current input and reference conditions, not a
-          laboratory calibration or a correction of microphone frequency response.
+          laboratory calibration or a correction of microphone frequency
+          response.
         </p>
       </div>
     </section>
@@ -52,16 +54,16 @@ const relatedTools = decibelTool.relatedToolIds.flatMap((id) => {
       <h2 id="db-help-title">Why calibration may be unavailable</h2>
       <div class="db-help__grid">
         <p>
-          Calibration is disabled unless the active track explicitly reports auto
-          gain control, noise suppression and echo cancellation all Off. Missing or
-          unknown settings remain dBFS-only rather than being treated as safe for an
-          acoustic estimate.
+          Calibration is disabled unless the active track explicitly reports
+          auto gain control, noise suppression and echo cancellation all Off.
+          Missing or unknown settings remain dBFS-only rather than being treated
+          as safe for an acoustic estimate.
         </p>
         <p>
           The external reference must use Z, Flat or Linear weighting. A- and
-          C-weighted readings are intentionally not accepted for this v1 one-point
-          offset. Recalibrate whenever the microphone, input gain, processing,
-          position or reference conditions change.
+          C-weighted readings are intentionally not accepted for this v1
+          one-point offset. Recalibrate whenever the microphone, input gain,
+          processing, position or reference conditions change.
         </p>
       </div>
     </section>

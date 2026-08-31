@@ -120,11 +120,13 @@ class FakeDestinationNode extends FakeNode {
 
   set channelCount(value: number) {
     this.writes.push(`count:${value}`);
-    if (value === this.#throwOnChannelCount) throw new Error("channelCount rejected");
+    if (value === this.#throwOnChannelCount)
+      throw new Error("channelCount rejected");
     if (this.failRestoration && this.#targetWasApplied && value === 2) {
       throw new Error("restoration rejected");
     }
-    this.#channelCount = value === this.#mismatchChannelCount ? value - 1 : value;
+    this.#channelCount =
+      value === this.#mismatchChannelCount ? value - 1 : value;
     if (value >= 6) this.#targetWasApplied = true;
   }
 
@@ -170,7 +172,10 @@ class FakeAudioContext {
     if (this.#gainCreateCalls === this.#throwOnGainCreateNumber) {
       throw new Error(`gain create ${this.#gainCreateCalls} failed`);
     }
-    const node = new FakeGainNode(`gain-${this.gains.length}`, this.connections);
+    const node = new FakeGainNode(
+      `gain-${this.gains.length}`,
+      this.connections,
+    );
     this.gains.push(node);
     return node as unknown as GainNode;
   }
@@ -261,15 +266,17 @@ describe("MultichannelOutput", () => {
     output.inspectCandidates();
     expect(context.destination.writes).toEqual([]);
 
-    await expect(output.configure("experimental-eight")).resolves.toMatchObject({
-      status: "confirmed",
-      mode: "experimental-eight",
-      configuration: {
-        channelCount: 8,
-        channelCountMode: "explicit",
-        channelInterpretation: "discrete",
+    await expect(output.configure("experimental-eight")).resolves.toMatchObject(
+      {
+        status: "confirmed",
+        mode: "experimental-eight",
+        configuration: {
+          channelCount: 8,
+          channelCountMode: "explicit",
+          channelInterpretation: "discrete",
+        },
       },
-    });
+    );
   });
 
   it("rejects experimental 8-channel when assignment throws and restores the prior destination", async () => {
@@ -279,10 +286,12 @@ describe("MultichannelOutput", () => {
     });
     const output = new MultichannelOutput(context as unknown as AudioContext);
 
-    await expect(output.configure("experimental-eight")).resolves.toMatchObject({
-      status: "unsupported",
-      reason: "configuration_rejected",
-    });
+    await expect(output.configure("experimental-eight")).resolves.toMatchObject(
+      {
+        status: "unsupported",
+        reason: "configuration_rejected",
+      },
+    );
     expect(context.destination.channelCount).toBe(2);
     expect(context.destination.channelCountMode).toBe("max");
     expect(context.destination.channelInterpretation).toBe("speakers");
@@ -295,10 +304,12 @@ describe("MultichannelOutput", () => {
     });
     const output = new MultichannelOutput(context as unknown as AudioContext);
 
-    await expect(output.configure("experimental-eight")).resolves.toMatchObject({
-      status: "unsupported",
-      reason: "readback_mismatch",
-    });
+    await expect(output.configure("experimental-eight")).resolves.toMatchObject(
+      {
+        status: "unsupported",
+        reason: "readback_mismatch",
+      },
+    );
     expect(context.destination.channelCount).toBe(2);
     expect(context.destination.channelCountMode).toBe("max");
   });
@@ -318,16 +329,18 @@ describe("MultichannelOutput", () => {
       .filter((connection) => connection.to === merger)
       .map((connection) => connection.input);
     expect(channelInputs).toEqual([0, 1, 2, 3, 4, 5]);
-    expect(context.oscillators.map((oscillator) => oscillator.starts[0])).toEqual([
-      10, 11, 12, 13, 14, 15,
-    ]);
-    expect(context.oscillators.map((oscillator) => oscillator.stops[0])).toEqual([
-      10.7, 11.7, 12.7, 13.7, 14.7, 15.7,
-    ]);
+    expect(
+      context.oscillators.map((oscillator) => oscillator.starts[0]),
+    ).toEqual([10, 11, 12, 13, 14, 15]);
+    expect(
+      context.oscillators.map((oscillator) => oscillator.stops[0]),
+    ).toEqual([10.7, 11.7, 12.7, 13.7, 14.7, 15.7]);
 
     expect(context.mergers).toHaveLength(1);
     expect(
-      context.connections.filter(({ from }) => from.kind.startsWith("oscillator-")),
+      context.connections.filter(({ from }) =>
+        from.kind.startsWith("oscillator-"),
+      ),
     ).toHaveLength(6);
   });
 
@@ -358,7 +371,9 @@ describe("MultichannelOutput", () => {
     const output = new MultichannelOutput(context as unknown as AudioContext);
     expect((await output.configure("five-one")).status).toBe("confirmed");
 
-    expect(() => output.startChannel(0, 500, 10, 0.7)).toThrow("gain create 13 failed");
+    expect(() => output.startChannel(0, 500, 10, 0.7)).toThrow(
+      "gain create 13 failed",
+    );
     expect(context.oscillators[0]?.starts).toEqual([]);
 
     expect(() => output.startChannel(0, 500, 11, 0.7)).not.toThrow();

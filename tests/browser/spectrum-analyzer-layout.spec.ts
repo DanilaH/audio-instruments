@@ -9,7 +9,10 @@ for (const viewport of [
   test(`${viewport.name} keeps Start reachable and avoids horizontal overflow`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.setViewportSize({
+      width: viewport.width,
+      height: viewport.height,
+    });
     await page.goto("/spectrum-analyzer");
 
     const start = page.locator("[data-spectrum-start]");
@@ -17,12 +20,14 @@ for (const viewport of [
 
     const box = await start.boundingBox();
     expect(box).not.toBeNull();
-    expect((box?.y ?? viewport.height) + (box?.height ?? 0)).toBeLessThanOrEqual(
-      viewport.height,
-    );
+    expect(
+      (box?.y ?? viewport.height) + (box?.height ?? 0),
+    ).toBeLessThanOrEqual(viewport.height);
 
     const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(1);
   });

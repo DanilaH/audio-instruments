@@ -67,9 +67,7 @@ describe("shared output reference signals", () => {
   it("keeps the exact Bass single-tone and preset sequence references", () => {
     expect(BASS_SINGLE_TONE_DEFAULT_HZ).toBe(60);
     expect(BASS_PRESET_FREQUENCIES_HZ).toContain(BASS_SINGLE_TONE_DEFAULT_HZ);
-    expect(BASS_PRESET_FREQUENCIES_HZ).toEqual([
-      20, 30, 40, 50, 60, 80, 100,
-    ]);
+    expect(BASS_PRESET_FREQUENCIES_HZ).toEqual([20, 30, 40, 50, 60, 80, 100]);
     expect(BASS_PRESET_SEQUENCE_MAX_HZ).toBe(100);
     expect(BASS_PRESET_TONE_DURATION_SECONDS).toBe(0.8);
     expect(BASS_PRESET_SEQUENCE_GAP_SECONDS).toBe(0.3);
@@ -128,7 +126,13 @@ describe("shared output reference signals", () => {
       createFrequencySweepDefinition(19, 1_000, 15, "logarithmic", "ascending"),
     ).toThrow("Frequency Sweep");
     expect(() =>
-      createFrequencySweepDefinition(20, 20_001, 15, "logarithmic", "ascending"),
+      createFrequencySweepDefinition(
+        20,
+        20_001,
+        15,
+        "logarithmic",
+        "ascending",
+      ),
     ).toThrow("Frequency Sweep");
     expect(() =>
       createFrequencySweepDefinition(20, 1_000, 4, "logarithmic", "ascending"),

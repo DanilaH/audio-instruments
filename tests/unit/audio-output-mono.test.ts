@@ -95,7 +95,10 @@ class FakeAudioContext {
   mergerCreates = 0;
 
   createGain() {
-    const gain = new FakeGainNode(`gain-${this.gains.length}`, this.connections);
+    const gain = new FakeGainNode(
+      `gain-${this.gains.length}`,
+      this.connections,
+    );
     this.gains.push(gain);
     return gain as unknown as GainNode;
   }
@@ -111,7 +114,10 @@ class FakeAudioContext {
 
   createChannelMerger() {
     this.mergerCreates += 1;
-    return new FakeNode("merger", this.connections) as unknown as ChannelMergerNode;
+    return new FakeNode(
+      "merger",
+      this.connections,
+    ) as unknown as ChannelMergerNode;
   }
 }
 
