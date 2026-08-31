@@ -98,6 +98,18 @@ const relatedTools = surroundTool.relatedToolIds.flatMap((id) => {
     color: var(--color-ink-muted);
     line-height: 1.72;
   }
+
+  @media (min-width: 961px) and (max-height: 900px) {
+    :global([data-surround-test] .surround-controls) {
+      gap: 8px;
+      padding: 20px 24px;
+    }
+
+    :global([data-surround-test] .surround-footer) {
+      padding-top: 4px;
+    }
+  }
+
   @media (max-width: 760px) {
     .surround-content,
     .surround-help {
