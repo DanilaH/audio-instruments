@@ -28,3 +28,10 @@
 .db-details summary {
   min-height: 44px !important;
 }
+
+/* WebKit's native audio control keeps its intrinsic 38px block-size even when
+ * min-height is raised. Set the control itself to the same 44px floor rather
+ * than weakening the cross-browser touch-target contract. */
+.mic-recording audio[controls] {
+  height: 44px !important;
+}
