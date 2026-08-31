@@ -100,6 +100,10 @@ export class AudioLatencyController {
     this.#errorMessage = requireElement(root, "[data-latency-error]");
 
     this.#bindEvents();
+    this.#setStatus("idle", "Ready");
+    this.#baseLatency.textContent = "Start to query";
+    this.#outputLatency.textContent = "Start to query";
+    this.#hideError();
     this.#renderOffset();
     this.#renderControls();
   }
