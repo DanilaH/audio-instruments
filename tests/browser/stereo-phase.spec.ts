@@ -424,9 +424,9 @@ test("Stereo and Phase close their tool-local AudioContext on pagehide", async (
 
   await page.goto("/phase-test");
   await page.getByRole("button", { name: "In phase" }).click();
-  expect(await readCount(page, "__audioProbeContextCount")).toBe(2);
+  expect(await readCount(page, "__audioProbeContextCount")).toBe(1);
   await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
-  await expect.poll(() => readCount(page, "__audioProbeClosedContextCount")).toBe(2);
+  await expect.poll(() => readCount(page, "__audioProbeClosedContextCount")).toBe(1);
 });
 
 test("Stereo and Phase expose only implemented related-tool links", async ({ page }) => {
