@@ -145,6 +145,7 @@ async function installNoDeviceIdHarness(page: Page): Promise<void> {
     });
     Object.defineProperty(window, "AudioContext", {
       configurable: true,
+      writable: true,
       value: FakeAudioContext,
     });
     Reflect.set(window, "__dbSetUnstableMeter", (value: boolean) => {
