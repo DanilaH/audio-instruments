@@ -1,6 +1,6 @@
 {
-  "version": "1.18",
-  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence reviewed and applied; P8 automated release validation is complete with green hosted Chromium/Firefox/WebKit, required-viewport visual QA, runtime accessibility audit and cross-engine visual evidence; Cloudflare Web Analytics is selected but not enabled; real-device QA, deployment, Search Console and explicit production indexing activation remain pending",
+  "version": "1.19",
+  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence reviewed and applied; P8 automated release validation is complete with green hosted Chromium/Firefox/WebKit, historical 1440/1366/1024/390 visual QA, runtime accessibility and cross-engine visual evidence; the 2026-09-01 adversarial audit adds validated 320×844 browser/state/geometry coverage and fixes its homepage overflow; Cloudflare Web Analytics is selected but not enabled; real-device QA, deployment, Search Console and explicit production indexing activation remain pending",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
     "docs/01_RESEARCH_AND_EVIDENCE.md",
@@ -30,7 +30,8 @@
     "docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md",
     "docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md",
     "docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md",
-    "docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md"
+    "docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md",
+    "docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md"
   ],
   "p7_evidence_contract": {
     "state": "completed_live_audio_evidence_reviewed_and_applied",
@@ -157,6 +158,23 @@
         "search_console",
         "explicit_real_domain_indexing_activation"
       ]
+    },
+    "p8_final_adversarial_audit": {
+      "state": "complete",
+      "evidence": "docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md",
+      "baseline_sha": "229a48f56e9abe4ee2b475d86cfa790379d56321",
+      "new_required_viewport": "320x844",
+      "real_findings": [
+        "homepage_320_horizontal_overflow",
+        "current_source_of_truth_drift"
+      ],
+      "validated_commands": {
+        "pnpm_check": "pass_0_errors_0_warnings_0_hints",
+        "pnpm_test": "pass_172_of_172",
+        "pnpm_test_indexing": "pass_18_routes",
+        "playwright_narrow_audit": "pass_300_of_300"
+      },
+      "historical_visual_boundary": "2026-08-31 screenshot artifact covers 1440x900, 1366x768, 1024x768 and 390x844; 320x844 is separate 2026-09-01 browser/state/geometry evidence"
     }
   },
   "workflow": "development -> checkpoint commit -> Draft PR -> cold Review #1 by project assistant -> fixes/commits -> cold Review #2 by project assistant -> add full-ci-approved -> Ready -> full-validation -> merge-gate -> fix/cold re-review/rerun if needed -> squash merge -> next branch",

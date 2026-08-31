@@ -12,7 +12,7 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
 P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
-P8 in progress: P8.1–P8.3 complete; hosted full browser validation, required-viewport visual QA, runtime accessibility audit and cross-engine visual spot-check complete; real-device/rollout gates remain
+P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; real-device/rollout gates remain
 ```
 
 P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
@@ -265,7 +265,7 @@ Completed automated P8 evidence is recorded in `docs/evidence/P8_RELEASE_VALIDAT
 ```text
 exact-head hosted full validation PASS
 Chromium / Firefox / WebKit browser suite PASS
-required viewport visual QA complete
+2026-08-31 visual QA complete for the then-required 1440×900 / 1366×768 / 1024×768 / 390×844 matrix
 runtime axe A/AA audit complete with zero violations
 cross-engine visual spot-check complete
 Cloudflare Web Analytics selected for v1 rollout but not enabled
@@ -288,6 +288,8 @@ post-deploy canonical/sitemap/indexing verification
 ```
 
 P8 must not enable production indexing merely because P7 has evidence or because P8.3 makes the positive build path technically available. Production indexability remains an explicit release decision after the remaining gates pass.
+
+The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence.
 
 ## Polish backlog
 
@@ -369,7 +371,7 @@ Dependabot monitors GitHub Actions and npm dependencies
 
 P0 CI must have at least one real Vitest suite and one real Playwright suite.
 
-Mechanical branch-protection enforcement remains unavailable under the current private/free-plan repository mode and is tracked separately from the implemented tooling baseline.
+Mechanical branch-protection enforcement is currently not configured: the public repository reports `main` as unprotected and has no repository rulesets. Manual enforcement remains the accepted mode until protection is explicitly configured and verified.
 
 ## P0 mandatory bootstrap tests
 
