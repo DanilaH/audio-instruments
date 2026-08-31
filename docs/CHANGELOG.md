@@ -1,5 +1,22 @@
 # Documentation Changelog
 
+## v1.17 — 2026-08-31
+
+P8 automated release-validation evidence synchronization.
+
+Changes:
+
+- recorded exact-head Full Validation #658 as green, including format, lint, Astro/TypeScript, 172/172 unit/service tests, positive indexing, full Chromium/Firefox/WebKit browser suite and merge-gate;
+- recorded the final residual cross-engine matrix as 54/54 PASS and PR #67 squash merge to `main` at `acdd9b6eb1178fa5d6e081434879e88b59c31b26`;
+- recorded required-viewport visual QA across the homepage + all 16 tool routes with 102 reviewed screenshots and no material layout defect requiring a polish PR;
+- recorded runtime axe WCAG A/AA audit across 34 desktop/mobile surfaces covering the homepage + all 16 tool routes with zero reported violations and zero horizontal-overflow surfaces;
+- recorded cross-engine Chromium/Firefox/WebKit visual spot-checks with no material clipping/wrap/control-geometry divergence;
+- selected Cloudflare Web Analytics for the initial rollout while explicitly keeping it disabled until production privacy/consent review and deployment;
+- preserved custom-event/UTM analytics as deferred because Cloudflare Web Analytics does not currently support them;
+- corrected stale repository-gate documentation after the repository became public: current `main` metadata reports `protected=false` and no repository rulesets are configured, so manual gate discipline remains active until mechanical protection is configured and verified;
+- added `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md` as the canonical automated-release evidence ledger;
+- kept actual Safari macOS/iOS Safari/Android Chrome/Edge and physical audio-device smoke QA, deployment, Search Console and explicit production indexing activation pending.
+
 ## v1.16 — 2026-08-30
 
 P8.3 sitemap integration and positive indexed-build gate.

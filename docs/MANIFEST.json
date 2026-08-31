@@ -1,6 +1,6 @@
 {
-  "version": "1.16",
-  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence is collected, reviewed and applied; P8 is in progress with P8.1 indexing foundation, P8.2 static claims/metadata audit and P8.3 sitemap/positive-indexing build gate complete while runtime/browser/device QA, analytics, deployment and explicit production activation remain pending",
+  "version": "1.17",
+  "status": "P0-P6.3 implemented and merged; all 16 core v1 tool routes are live; P7 fresh Runner evidence reviewed and applied; P8 automated release validation is complete with green hosted Chromium/Firefox/WebKit, required-viewport visual QA, runtime accessibility audit and cross-engine visual evidence; Cloudflare Web Analytics is selected but not enabled; real-device QA, deployment, Search Console and explicit production indexing activation remain pending",
   "authoritative_docs": [
     "docs/00_OVERVIEW.md",
     "docs/01_RESEARCH_AND_EVIDENCE.md",
@@ -29,7 +29,8 @@
     "docs/evidence/MANUAL_AHREFS_2026-08-28.md",
     "docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md",
     "docs/evidence/P8_STATIC_RELEASE_AUDIT_2026-08-30.md",
-    "docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md"
+    "docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md",
+    "docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md"
   ],
   "p7_evidence_contract": {
     "state": "completed_live_audio_evidence_reviewed_and_applied",

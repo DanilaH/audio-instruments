@@ -6,13 +6,13 @@ Each implementation unit follows `15_DEVELOPMENT_WORKFLOW.md`.
 
 Do not begin the next roadmap unit before the current one is merged unless explicit parallel work is approved.
 
-## Current checkpoint — 2026-08-30
+## Current checkpoint — 2026-08-31
 
 ```text
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
 P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
-P8 in progress: P8.1 safe indexing foundation, P8.2 static claims/metadata release audit and P8.3 sitemap/positive-indexing build gate complete; runtime/release gates remain pending
+P8 in progress: P8.1–P8.3 complete; hosted full browser validation, required-viewport visual QA, runtime accessibility audit and cross-engine visual spot-check complete; real-device/rollout gates remain
 ```
 
 P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
@@ -260,20 +260,31 @@ The positive verifier built all 18 HTML routes against synthetic origin `https:/
 
 `PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means only that the repository contains the required sitemap/indexing artifacts. It does **not** authorize release activation by itself. Production indexing still requires the remaining P8 release gates plus an explicit real-domain `SITE_INDEXING=enabled` / `SITE_ORIGIN=https://...` deployment decision.
 
+Completed automated P8 evidence is recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`:
+
+```text
+exact-head hosted full validation PASS
+Chromium / Firefox / WebKit browser suite PASS
+required viewport visual QA complete
+runtime axe A/AA audit complete with zero violations
+cross-engine visual spot-check complete
+Cloudflare Web Analytics selected for v1 rollout but not enabled
+```
+
 Remaining P8 work:
 
 ```text
 use the real production domain; do not invent one
-Playwright release execution
-runtime accessibility review
-visual QA
-real-browser QA matrix
-real-device QA
-analytics/privacy-provider decision and implementation where approved
+actual Safari macOS smoke QA
+actual iOS Safari smoke QA
+actual Android Chrome smoke QA
+actual Edge smoke QA
+real microphone/output-device smoke QA where practical
+enable Cloudflare Web Analytics only with updated privacy/consent review
 deploy
 GSC
 explicit production indexing activation
-green CI / final validation evidence
+post-deploy canonical/sitemap/indexing verification
 ```
 
 P8 must not enable production indexing merely because P7 has evidence or because P8.3 makes the positive build path technically available. Production indexability remains an explicit release decision after the remaining gates pass.
@@ -306,7 +317,7 @@ Draft PR workflow verified
 Ready-for-review CI trigger verified
 ```
 
-Repository observation: the repository is private on the current free GitHub plan and the connected GitHub API reports protected-branch/ruleset functionality unavailable. The owner has explicitly accepted **manual repository-gate enforcement** for this setup. Do not claim the gate is mechanically unbypassable unless repository visibility/plan changes and protection is actually verified.
+Repository observation on 2026-08-31: the repository is now public, `main` branch metadata reports `protected=false`, and the repository rulesets endpoint returns no configured rulesets. The previous private/free-plan rationale is stale. Manual repository-gate enforcement remains mandatory until mechanical protection is explicitly configured and verified; do not claim the current gate is mechanically unbypassable.
 
 A separate later implementation incident has also been observed: some hosted GitHub Actions jobs fail before runner allocation with `runner_id = 0` and `steps = []`. Treat that signature as infrastructure/no-runner evidence, not a green validation result and not a repository test failure. The required green `merge-gate` workflow remains normative; the incident record does not redefine it.
 

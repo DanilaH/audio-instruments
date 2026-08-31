@@ -57,6 +57,17 @@ Before enabling any analytics/ad provider:
 4. confirm no microphone/audio content is sent;
 5. record provider name/purpose in release docs.
 
+
+## Selected analytics provider for rollout
+
+The selected v1 provider is **Cloudflare Web Analytics**, but it is **not enabled in the current product baseline**.
+
+Official Cloudflare documentation reviewed on 2026-08-31 states that its Web Analytics usage-metric collection does not use cookies or localStorage and does not fingerprint individuals for Vitals collection. It currently does not support custom events or UTM parameters.
+
+That makes it suitable for the initial page/referrer/browser/device/Core-Web-Vitals need without introducing a broader product-event analytics surface.
+
+This decision does not change `/privacy` yet because no provider is active. Before enablement, the actual Cloudflare integration/network behavior and any required consent treatment must be reflected in `/privacy` and reviewed for the real deployment jurisdictions. Microphone/recording content remains prohibited from analytics.
+
 ## Indexing
 
 The Privacy route follows the same environment-level indexing gate as the rest of the public site unless a later SEO decision explicitly changes it.

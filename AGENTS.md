@@ -122,7 +122,7 @@ docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md
 
 `PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means the technical sitemap/indexing artifacts exist and have positive build evidence. It is **not** release authorization. Default builds still remain `noindex,nofollow` with no production canonical or sitemap. Do not invent a production domain and do not enable final production indexing before the remaining P8 release gates and an explicit real-domain deployment decision.
 
-Remaining P8 work includes Playwright release execution, runtime accessibility/visual QA, final real browser/device QA, analytics/privacy decisions, deployment, Search Console and explicit production indexing activation.
+Automated P8 release evidence is complete and recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: exact-head hosted full validation including Chromium/Firefox/WebKit is green; required-viewport visual QA, runtime accessibility audit and cross-engine visual spot-checks are complete. Cloudflare Web Analytics is selected for v1 rollout but is not enabled. Remaining P8 work is actual device/browser smoke QA, production domain/deployment, analytics privacy/consent activation review, Search Console and explicit production indexing activation.
 
 ## 4. Locked stack
 

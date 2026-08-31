@@ -14,14 +14,14 @@ The working visual direction is **Soft Sonic Studio**: a warm, friendly, express
 
 ## Documentation status
 
-Documentation baseline: **v1.16**
+Documentation baseline: **v1.17**
 
 Implementation status:
 
 ```text
 P0–P6.3 functional roadmap    IMPLEMENTED
 P7 SEO evidence refresh       COMPLETED — fresh Runner evidence reviewed and applied
-P8 final audit / release      IN PROGRESS — indexing foundation, static audit and sitemap/positive-indexing gate complete
+P8 final audit / release      IN PROGRESS — automated release validation complete; real-device/rollout gates remain
 ```
 
 All 16 core v1 tool routes are live, and P6.3 final catalog homepage composition is merged. P7 retained the full route set, assigned evidence-backed acquisition/support/completeness roles, found no justified slug migrations, and applied narrow metadata wording changes without changing tool behavior.
@@ -43,11 +43,11 @@ BLOCKER = 0
 MAJOR = 0
 ```
 
-The repository intentionally remains private on the current free GitHub plan. Protected branches/rulesets are unavailable, and the owner has explicitly accepted **manual gate enforcement**. The documented PR/review/CI sequence still requires a green `merge-gate` before merge; GitHub simply does not mechanically make owner/admin bypass impossible.
+The repository is now public. Current branch metadata reports `main` as `protected=false`, and the repository rulesets endpoint returns no configured rulesets. The documented PR/review/CI sequence therefore remains **manually mandatory** until mechanical protection is explicitly configured and verified; do not describe the current repository as protected or unbypassable.
 
 A GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`.
 
-Remaining P8 work includes Playwright release execution, runtime accessibility/visual QA, real-device/browser QA, analytics/privacy decisions, deployment, Search Console, explicit final indexing activation on a real production domain and final validation evidence.
+Automated P8 release validation is now recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: exact-head full Chromium/Firefox/WebKit validation is green, visual QA across the homepage + all 16 tool routes at the required viewport matrix is complete, and runtime axe audit reports zero WCAG A/AA violations on 34 desktop/mobile surfaces for that same 17-page scope, and cross-engine visual spot-checks found no material rendering regression. Remaining P8 work is real-device/browser smoke QA, production domain/deployment, Cloudflare Web Analytics enablement plus privacy/consent review, Search Console and explicit final indexing activation.
 
 ## Stack
 
@@ -116,7 +116,8 @@ docs/
     ├── P7_RUNNER_EXECUTION.md
     ├── P7_AUDIO_EVIDENCE_2026-08-30.md
     ├── P8_STATIC_RELEASE_AUDIT_2026-08-30.md
-    └── P8_INDEXING_VALIDATION_2026-08-30.md
+    ├── P8_INDEXING_VALIDATION_2026-08-30.md
+    └── P8_RELEASE_VALIDATION_2026-08-31.md
 ```
 
 Each concern has one authoritative home. Do not recreate a second master specification.
@@ -257,7 +258,7 @@ Current private-plan/manual-gate limitations and the recorded no-runner incident
 
 ## Documentation freeze rule
 
-v1.16 records P8.3 sitemap/indexing artifact readiness and positive build evidence. It does not claim a production domain, Playwright release execution, runtime accessibility/visual QA, real-device/browser QA, analytics, deployment, Search Console, final production indexing activation or green hosted CI are complete.
+v1.17 records completed automated P8 release evidence: green hosted full validation including Chromium/Firefox/WebKit, required-viewport visual QA, runtime accessibility audit, cross-engine visual spot-checks, public-repository gate state and the selected-but-not-enabled Cloudflare Web Analytics rollout decision. It still does not claim real-device QA, production deployment, Search Console or final production indexing activation are complete.
 
 Current rule:
 

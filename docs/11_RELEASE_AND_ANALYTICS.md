@@ -21,6 +21,21 @@ green CI
 
 P8.3 has implemented and positively build-tested the sitemap/canonical/robots artifact path. That closes the technical artifact prerequisite only; it does not waive the remaining release gate above.
 
+
+## Automated P8 release evidence
+
+`docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md` records the completed automation-executable P8 gates on the merged 2026-08-31 baseline:
+
+```text
+full hosted Chromium/Firefox/WebKit release suite PASS
+required-viewport visual QA complete
+runtime axe A/AA audit complete with zero violations on 34 surfaces
+cross-engine visual spot-check complete
+repository-wide format/lint/type/unit/indexing gates PASS
+```
+
+These results do not replace actual-device QA or authorize production indexing.
+
 ## Analytics boundary
 
 Track product interactions, not audio content.
@@ -46,9 +61,28 @@ recording contents
 raw personal audio
 ```
 
-Instrument code should call a small provider-neutral `trackEvent()` adapter.
+If a future custom-event provider is explicitly approved, instrument code should use a small provider-neutral `trackEvent()` adapter rather than coupling core tool logic to that vendor.
 
 Do not couple core tool logic to a specific analytics vendor.
+
+
+## Selected v1 analytics provider — rollout decision
+
+Selected for the initial production rollout:
+
+```text
+Cloudflare Web Analytics
+```
+
+Status: **selected, not enabled**.
+
+The v1 reason is deliberately narrow: page/referrer/browser/device/OS visibility and real-user Core Web Vitals are useful immediately, while a heavier custom-event analytics surface is not yet justified. Official Cloudflare documentation reviewed on 2026-08-31 states that Web Analytics does not use cookies or localStorage for usage metrics and does not fingerprint individuals for Vitals collection. It currently does not support custom events or UTM parameters.
+
+Therefore the possible provider-neutral product events listed above remain a future extension rather than a v1 requirement. Do not add a fake `trackEvent()` implementation that silently drops events merely to satisfy the old possibility list.
+
+Before Cloudflare Web Analytics is enabled, update `/privacy`, determine required consent behavior for the actual deployment jurisdictions, verify that no microphone/recording content enters analytics, and record the final deployment behavior.
+
+Current product baseline contains no analytics provider integration.
 
 ## Search Console
 
