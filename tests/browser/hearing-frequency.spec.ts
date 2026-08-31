@@ -91,19 +91,19 @@ async function installHearingHarness(
     class FakeOscillatorNode extends EventTarget {
       readonly frequency: FakeAudioParam;
       type: OscillatorType = "sine";
-      readonly #record: HearingOscillatorRecord;
+      readonly _record: HearingOscillatorRecord;
 
       constructor(readonly context: BaseAudioContext) {
         super();
-        this.#record = {
+        this._record = {
           id: state.oscillators.length,
           frequencyHz: null,
           startTime: null,
           stopTimes: [],
         };
-        state.oscillators.push(this.#record);
+        state.oscillators.push(this._record);
         this.frequency = new FakeAudioParam((value) => {
-          this.#record.frequencyHz = value;
+          this._record.frequencyHz = value;
         });
       }
 
@@ -114,11 +114,11 @@ async function installHearingHarness(
       disconnect() {}
 
       start(when = 0) {
-        this.#record.startTime = when;
+        this._record.startTime = when;
       }
 
       stop(when = 0) {
-        this.#record.stopTimes.push(when);
+        this._record.stopTimes.push(when);
       }
     }
 
@@ -126,9 +126,9 @@ async function installHearingHarness(
       readonly sampleRate = options.sampleRate ?? 48_000;
       readonly destination: FakeNode;
       state: AudioContextState = "suspended";
-      #runningPerfMs: number | null = null;
-      #elapsedBeforeSuspendSec = 0;
-      #gainCount = 0;
+      _runningPerfMs: number | null = null;
+      _elapsedBeforeSuspendSec = 0;
+      _gainCount = 0;
 
       constructor(contextOptions?: AudioContextOptions) {
         state.audioContextCount += 1;
@@ -137,12 +137,12 @@ async function installHearingHarness(
       }
 
       get currentTime(): number {
-        if (this.#runningPerfMs === null || this.state !== "running") {
-          return this.#elapsedBeforeSuspendSec;
+        if (this._runningPerfMs === null || this.state !== "running") {
+          return this._elapsedBeforeSuspendSec;
         }
         return (
-          this.#elapsedBeforeSuspendSec +
-          (performance.now() - this.#runningPerfMs) / 1_000
+          this._elapsedBeforeSuspendSec +
+          (performance.now() - this._runningPerfMs) / 1_000
         );
       }
 
@@ -156,22 +156,22 @@ async function installHearingHarness(
           throw new DOMException("closed", "InvalidStateError");
         }
         if (this.state !== "running") {
-          this.#runningPerfMs = performance.now();
+          this._runningPerfMs = performance.now();
           this.state = "running";
         }
       }
 
       async close() {
         if (this.state === "closed") return;
-        this.#elapsedBeforeSuspendSec = this.currentTime;
-        this.#runningPerfMs = null;
+        this._elapsedBeforeSuspendSec = this.currentTime;
+        this._runningPerfMs = null;
         this.state = "closed";
         state.closedContextCount += 1;
       }
 
       createGain() {
-        const isMaster = this.#gainCount === 0;
-        this.#gainCount += 1;
+        const isMaster = this._gainCount === 0;
+        this._gainCount += 1;
         return new FakeGainNode(
           this as unknown as BaseAudioContext,
           isMaster
@@ -206,7 +206,10 @@ async function harnessState(page: Page): Promise<HearingHarnessState> {
 }
 
 async function selectMode(page: Page, mode: "guided" | "manual"): Promise<void> {
-  await page.locator(`input[name="hearing-mode"][value="${mode}"]`).check();
+  await page
+    .locator("label.mode-pill")
+    .filter({ hasText: mode === "guided" ? "Guided" : "Manual" })
+    .click();
 }
 
 async function playSetupReference(page: Page): Promise<void> {
