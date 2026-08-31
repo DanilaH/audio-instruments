@@ -106,4 +106,92 @@ const relatedTools = sweepTool.relatedToolIds.flatMap((id) => {
       padding-top: 34px;
     }
   }
+
+  @media (max-width: 560px) {
+    :global([data-frequency-sweep] .sweep-controls) {
+      gap: 6px;
+    }
+
+    :global([data-frequency-sweep] .sweep-safety) {
+      gap: 8px;
+      padding: 7px 8px;
+    }
+
+    :global([data-frequency-sweep] .sweep-safety p) {
+      font-size: 0.68rem;
+      line-height: 1.28;
+    }
+
+    :global([data-frequency-sweep] .sweep-range-grid .frequency-control) {
+      grid-template-columns: minmax(68px, 0.9fr) minmax(0, 1.1fr);
+      gap: 3px 6px;
+    }
+
+    :global([data-frequency-sweep] .sweep-range-grid .frequency-control__header) {
+      grid-column: 1 / -1;
+    }
+
+    :global([data-frequency-sweep] .sweep-range-grid .frequency-control input[type="number"]),
+    :global([data-frequency-sweep] .sweep-range-grid .frequency-control input[type="range"]) {
+      min-height: 44px;
+    }
+
+    :global([data-frequency-sweep] .sweep-range-grid .frequency-control input[type="number"]) {
+      padding-inline: 8px;
+    }
+
+    :global([data-frequency-sweep] .sweep-duration) {
+      gap: 0;
+    }
+
+    :global([data-frequency-sweep] .sweep-duration input) {
+      min-height: 44px;
+    }
+
+    :global([data-frequency-sweep] .sweep-duration__bounds) {
+      display: none;
+    }
+
+    :global([data-frequency-sweep] .sweep-options) {
+      gap: 8px;
+    }
+
+    :global([data-frequency-sweep] .sweep-selector) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+      gap: 3px;
+      padding: 3px;
+    }
+
+    :global([data-frequency-sweep] .sweep-selector button) {
+      min-height: 44px;
+      padding-inline: 4px;
+      font-size: 0.68rem;
+    }
+
+    :global([data-frequency-sweep] .sweep-footer) {
+      grid-template-columns: minmax(0, 1fr) minmax(146px, 0.9fr);
+      align-items: end;
+      gap: 8px;
+    }
+
+    :global([data-frequency-sweep] .sweep-footer .level-control) {
+      gap: 3px;
+    }
+
+    :global([data-frequency-sweep] .sweep-footer .level-control__hint) {
+      display: none;
+    }
+
+    :global([data-frequency-sweep] .sweep-actions) {
+      grid-template-columns: minmax(0, 1fr) minmax(52px, 0.62fr);
+      gap: 4px;
+    }
+
+    :global([data-frequency-sweep] .sweep-play),
+    :global([data-frequency-sweep] .sweep-stop) {
+      min-height: 44px;
+      padding-inline: 6px;
+      font-size: 0.72rem;
+    }
+  }
 </style>
