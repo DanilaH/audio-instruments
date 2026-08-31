@@ -219,14 +219,12 @@ test("Frequency Sweep exposes its safe default contract without creating AudioCo
   await expect(page.locator("#frequency-sweep-high-number")).toHaveValue("20000");
   await expect(page.locator("#frequency-sweep-duration")).toHaveValue("15");
   await expect(page.locator("#frequency-sweep-level")).toHaveValue("-24");
-  await expect(page.locator('[data-sweep-scale="logarithmic"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
-  await expect(page.locator('[data-sweep-direction="ascending"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(
+    page.locator('button[data-sweep-scale="logarithmic"]'),
+  ).toHaveAttribute("aria-pressed", "true");
+  await expect(
+    page.locator('button[data-sweep-direction="ascending"]'),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(
     page.getByText("Start with your device/headphone volume low."),
   ).toBeVisible();
@@ -273,8 +271,8 @@ test("Frequency Sweep preserves custom linear descending semantics", async ({ pa
   await page.locator("#frequency-sweep-low-number").fill("100");
   await page.locator("#frequency-sweep-high-number").fill("8000");
   await page.locator("#frequency-sweep-duration").fill("32");
-  await page.locator('[data-sweep-scale="linear"]').click();
-  await page.locator('[data-sweep-direction="descending"]').click();
+  await page.locator('button[data-sweep-scale="linear"]').click();
+  await page.locator('button[data-sweep-direction="descending"]').click();
 
   await expect(page.locator("[data-sweep-from]")).toHaveText("8 kHz");
   await expect(page.locator("[data-sweep-to]")).toHaveText("100 Hz");
@@ -304,8 +302,8 @@ test("Frequency Sweep keeps selector state truthful while endpoint order is inva
 
   await page.locator("#frequency-sweep-low-number").fill("5000");
   await page.locator("#frequency-sweep-high-number").fill("1000");
-  await page.locator('[data-sweep-scale="linear"]').click();
-  await page.locator('[data-sweep-direction="descending"]').click();
+  await page.locator('button[data-sweep-scale="linear"]').click();
+  await page.locator('button[data-sweep-direction="descending"]').click();
 
   await expect(page.locator("[data-sweep-error]")).toContainText(
     "Low frequency must be less than or equal to high frequency.",
@@ -313,14 +311,13 @@ test("Frequency Sweep keeps selector state truthful while endpoint order is inva
   await expect(page.locator("[data-sweep-play]")).toBeDisabled();
   await expect(page.locator("[data-sweep-from]")).toHaveText("—");
   await expect(page.locator("[data-sweep-to]")).toHaveText("—");
-  await expect(page.locator('[data-sweep-scale="linear"]')).toHaveAttribute(
+  await expect(page.locator('button[data-sweep-scale="linear"]')).toHaveAttribute(
     "aria-pressed",
     "true",
   );
-  await expect(page.locator('[data-sweep-direction="descending"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(
+    page.locator('button[data-sweep-direction="descending"]'),
+  ).toHaveAttribute("aria-pressed", "true");
   expect(await readWindowNumber(page, "__frequencySweepAudioContextCount")).toBe(0);
 });
 
@@ -394,7 +391,7 @@ test("Frequency Sweep BFCache teardown closes the old session and remounts fresh
   await openSweep(page);
 
   await page.locator("#frequency-sweep-low-number").fill("400");
-  await page.locator('[data-sweep-direction="descending"]').click();
+  await page.locator('button[data-sweep-direction="descending"]').click();
   await page.locator("[data-sweep-play]").click();
   expect(await readWindowNumber(page, "__frequencySweepAudioContextCount")).toBe(1);
 
@@ -412,10 +409,9 @@ test("Frequency Sweep BFCache teardown closes the old session and remounts fresh
   await expect(page.locator("#frequency-sweep-low-number")).toHaveValue("20");
   await expect(page.locator("#frequency-sweep-high-number")).toHaveValue("20000");
   await expect(page.locator("#frequency-sweep-duration")).toHaveValue("15");
-  await expect(page.locator('[data-sweep-direction="ascending"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(
+    page.locator('button[data-sweep-direction="ascending"]'),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect(page.locator("[data-sweep-stop]")).toBeDisabled();
 
   await page.locator("[data-sweep-play]").click();
