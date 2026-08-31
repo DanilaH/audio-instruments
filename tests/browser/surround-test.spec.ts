@@ -438,7 +438,7 @@ test("Stereo spatial preview reuses ordinary stereo Center routing and pan primi
 
   await page.waitForTimeout(750);
   await page.getByRole("button", { name: "L → R" }).click();
-  const panEvents = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>(
+  const panEvents = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
     page,
     "__surroundPanEvents",
   );
