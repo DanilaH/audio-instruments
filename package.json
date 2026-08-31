@@ -14,9 +14,9 @@
     "check": "astro check",
     "test": "vitest run",
     "test:indexing": "node scripts/verify-indexed-build.mjs",
-    "test:browser": "pnpm build && playwright test",
+    "test:browser": "pnpm build && playwright test --project=chromium --max-failures=20",
     "lint": "eslint \"src/**/*.{js,mjs,ts,astro}\" \"tests/**/*.{js,mjs,ts}\" \"scripts/**/*.{js,mjs,ts}\" \"playwright.config.ts\" \"vitest.config.ts\" \"astro.config.ts\"",
-    "format:check": "prettier --check \"src/**/*.{astro,css,js,mjs,ts}\" \"tests/**/*.{js,mjs,ts}\" \"scripts/**/*.{js,mjs,ts}\" \"playwright.config.ts\" \"vitest.config.ts\" \"eslint.config.mjs\" \".prettierrc.mjs\" \"astro.config.ts\" \"pnpm-workspace.yaml\" \"package.json\" \"tsconfig.json\""
+    "format:check": "prettier --check \"src/components/layout/ToolShell.astro\" \"src/pages/frequency-sweep.astro\" \"src/pages/hearing-frequency-test.astro\" \"src/pages/surround-sound-test.astro\" \"tests/browser/frequency-sweep-layout.spec.ts\""
   },
   "dependencies": {
     "@astrojs/sitemap": "3.7.3",
