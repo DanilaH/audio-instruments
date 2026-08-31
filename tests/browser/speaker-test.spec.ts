@@ -137,7 +137,7 @@ async function installAudioProbe(page: Page, options: ProbeOptions = {}): Promis
 
       class FakeBufferSourceNode extends FakeNode {
         loop = false;
-        #buffer: { length: number; sampleRate: number } | null = null;
+        bufferValue: { length: number; sampleRate: number } | null = null;
         readonly record: BufferSourceRecord;
 
         constructor() {
@@ -153,13 +153,13 @@ async function installAudioProbe(page: Page, options: ProbeOptions = {}): Promis
         }
 
         set buffer(value: { length: number; sampleRate: number } | null) {
-          this.#buffer = value;
+          this.bufferValue = value;
           this.record.bufferLength = value?.length ?? 0;
           this.record.bufferSampleRate = value?.sampleRate ?? 0;
         }
 
         get buffer() {
-          return this.#buffer;
+          return this.bufferValue;
         }
 
         start(time = 0, offset = 0) {
@@ -186,20 +186,20 @@ async function installAudioProbe(page: Page, options: ProbeOptions = {}): Promis
         readonly numberOfChannels: number;
         readonly length: number;
         readonly sampleRate: number;
-        readonly #channels: Float32Array[];
+        readonly channels: Float32Array[];
 
         constructor(numberOfChannels: number, length: number, sampleRate: number) {
           this.numberOfChannels = numberOfChannels;
           this.length = length;
           this.sampleRate = sampleRate;
-          this.#channels = Array.from(
+          this.channels = Array.from(
             { length: numberOfChannels },
             () => new Float32Array(length),
           );
         }
 
         getChannelData(channel: number) {
-          const data = this.#channels[channel];
+          const data = this.channels[channel];
           if (!data) throw new RangeError("Invalid channel");
           return data;
         }
