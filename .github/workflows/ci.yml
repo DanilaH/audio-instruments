@@ -52,6 +52,22 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
+      - name: Generate Prettier normalization artifact
+        run: |
+          pnpm exec prettier --write "src/**/*.{astro,css,js,mjs,ts}" "tests/**/*.{js,mjs,ts}" "scripts/**/*.{js,mjs,ts}" "playwright.config.ts" "vitest.config.ts" "eslint.config.mjs" ".prettierrc.mjs" "astro.config.ts" "pnpm-workspace.yaml" "package.json" "tsconfig.json"
+          git diff --name-only --diff-filter=ACMRTUXB > prettier-normalized-files.txt
+          tar -czf prettier-normalized.tar.gz -T prettier-normalized-files.txt
+
+      - name: Upload Prettier normalization artifact
+        uses: actions/upload-artifact@v7
+        with:
+          name: prettier-normalized-${{ github.run_id }}
+          path: |
+            prettier-normalized.tar.gz
+            prettier-normalized-files.txt
+          if-no-files-found: error
+          retention-days: 1
+
       - name: Check formatting
         run: pnpm format:check
 
