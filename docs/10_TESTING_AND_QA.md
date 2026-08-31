@@ -694,8 +694,8 @@ Recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`:
 exact-head Full Validation incl. Chromium/Firefox/WebKit PASS
 172/172 unit/service tests PASS
 positive indexing verifier PASS
-17 routes × required viewport matrix visual review complete
-34 desktop/mobile runtime axe surfaces: 0 WCAG A/AA violations
+homepage + 16 tool routes × required viewport matrix visual review complete
+34 desktop/mobile runtime axe surfaces for homepage + 16 tools: 0 WCAG A/AA violations
 34 desktop/mobile surfaces: 0 horizontal overflow
 cross-engine visual spot-check: no material layout divergence
 ```

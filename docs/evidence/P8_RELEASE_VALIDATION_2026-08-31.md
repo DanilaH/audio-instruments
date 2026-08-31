@@ -54,11 +54,13 @@ MINOR 0
 
 ## Visual QA
 
+Audited page scope: `/` plus all 16 live tool routes. `/privacy` was not part of this screenshot matrix; it remains covered by the P8.2 static audit, positive indexing validation and the full Playwright release suite.
+
 Disposable workflow run `33421576945` checked out the exact merged product baseline `acdd9b6eb1178fa5d6e081434879e88b59c31b26` and captured:
 
 ```text
-17 routes × 4 viewport screenshots = 68
-17 routes × 2 full-page screenshots = 34
+17 audited pages (homepage + 16 tool routes) × 4 viewport screenshots = 68
+17 audited pages (homepage + 16 tool routes) × 2 full-page screenshots = 34
 102 screenshots total
 ```
 
@@ -84,10 +86,12 @@ The temporary workflow commit existed only to host the evidence runner; it was n
 
 ## Runtime accessibility audit
 
+Audited page scope: `/` plus all 16 live tool routes. `/privacy` was not part of this one-off axe matrix; do not generalize the zero-violation result beyond these 17 audited pages.
+
 Disposable workflow run `33422511414` checked out the same exact merged product baseline and audited:
 
 ```text
-17 routes × desktop/mobile = 34 runtime surfaces
+17 audited pages (homepage + 16 tool routes) × desktop/mobile = 34 runtime surfaces
 axe WCAG 2.0 / 2.1 A/AA rules
 horizontal overflow
 ```

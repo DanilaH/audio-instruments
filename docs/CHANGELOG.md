@@ -8,8 +8,8 @@ Changes:
 
 - recorded exact-head Full Validation #658 as green, including format, lint, Astro/TypeScript, 172/172 unit/service tests, positive indexing, full Chromium/Firefox/WebKit browser suite and merge-gate;
 - recorded the final residual cross-engine matrix as 54/54 PASS and PR #67 squash merge to `main` at `acdd9b6eb1178fa5d6e081434879e88b59c31b26`;
-- recorded required-viewport visual QA across all 17 public routes with 102 reviewed screenshots and no material layout defect requiring a polish PR;
-- recorded runtime axe WCAG A/AA audit across 34 desktop/mobile surfaces with zero reported violations and zero horizontal-overflow surfaces;
+- recorded required-viewport visual QA across the homepage + all 16 tool routes with 102 reviewed screenshots and no material layout defect requiring a polish PR;
+- recorded runtime axe WCAG A/AA audit across 34 desktop/mobile surfaces covering the homepage + all 16 tool routes with zero reported violations and zero horizontal-overflow surfaces;
 - recorded cross-engine Chromium/Firefox/WebKit visual spot-checks with no material clipping/wrap/control-geometry divergence;
 - selected Cloudflare Web Analytics for the initial rollout while explicitly keeping it disabled until production privacy/consent review and deployment;
 - preserved custom-event/UTM analytics as deferred because Cloudflare Web Analytics does not currently support them;
