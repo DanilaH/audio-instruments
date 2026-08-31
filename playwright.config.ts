@@ -7,11 +7,13 @@ export default defineConfig({
   fullyParallel: true,
   forbidOnly: Boolean(process.env.CI),
   retries: 0,
-  reporter: process.env.CI ? "line" : "list",
+  reporter: process.env.CI
+    ? [["json", { outputFile: "test-results/results.json" }]]
+    : "list",
   use: {
     baseURL,
-    trace: "retain-on-failure",
-    screenshot: "only-on-failure",
+    trace: "off",
+    screenshot: "off",
   },
   webServer: {
     command: "pnpm preview",
