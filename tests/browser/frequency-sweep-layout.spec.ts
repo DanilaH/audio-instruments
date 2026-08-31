@@ -28,8 +28,12 @@ test("Frequency Sweep keeps its core interaction usable at every required viewpo
     await expect(page.locator("#frequency-sweep-low-number")).toBeVisible();
     await expect(page.locator("#frequency-sweep-high-number")).toBeVisible();
     await expect(page.locator("#frequency-sweep-duration")).toBeVisible();
-    await expect(page.locator('[data-sweep-scale="logarithmic"]')).toBeVisible();
-    await expect(page.locator('[data-sweep-direction="ascending"]')).toBeVisible();
+    await expect(
+      page.locator('button[data-sweep-scale="logarithmic"]'),
+    ).toBeVisible();
+    await expect(
+      page.locator('button[data-sweep-direction="ascending"]'),
+    ).toBeVisible();
     await expect(page.locator("[data-sweep-play]")).toBeVisible();
     await expectNoHorizontalOverflow(page);
 
