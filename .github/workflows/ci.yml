@@ -1,27 +1,25 @@
-name: TEMP Final Browser Fixes
+name: TEMP Surround Recovery Probe
 
 on:
   pull_request:
     types:
-      - opened
-      - labeled
       - synchronize
+      - labeled
       - reopened
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  repair:
+  probe:
     if: ${{ github.event.pull_request.draft == false && contains(github.event.pull_request.labels.*.name, 'full-ci-approved') }}
     runs-on: ubuntu-latest
-    timeout-minutes: 30
+    timeout-minutes: 20
     steps:
       - name: Checkout target repair branch
         uses: actions/checkout@v7
         with:
           ref: p8-cross-browser-matrix-repair
-          fetch-depth: 0
 
       - name: Setup pnpm and Node
         uses: pnpm/setup@v2
@@ -34,71 +32,50 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Apply exact residual browser-test fixes
+      - name: Inject recovery-state diagnostics
         run: |
           python - <<'PY'
           from pathlib import Path
-
-          replacements = {
-              Path("tests/browser/hearing-frequency.spec.ts"): [
-                  (
-                      '  await expect(unavailableOptions.nth(0)).toHaveValue("16000");\n'
-                      '  await expect(unavailableOptions.nth(1)).toHaveValue("18000");\n'
-                      '  await expect(unavailableOptions.nth(2)).toHaveValue("20000");',
-                      '  await expect(unavailableOptions.nth(0)).toHaveAttribute("value", "16000");\n'
-                      '  await expect(unavailableOptions.nth(1)).toHaveAttribute("value", "18000");\n'
-                      '  await expect(unavailableOptions.nth(2)).toHaveAttribute("value", "20000");',
-                  ),
-              ],
-              Path("tests/browser/hearing-frequency-stop-boundary.spec.ts"): [
-                  (
-                      '  await page.locator(\'input[name="hearing-mode"][value="manual"]\').check();',
-                      '  await page\n'
-                      '    .locator("label.mode-pill")\n'
-                      '    .filter({ hasText: "Manual" })\n'
-                      '    .click();',
-                  ),
-              ],
-              Path("tests/browser/surround-test.spec.ts"): [
-                  (
-                      '  await page.getByRole("button", { name: "Left", exact: true }).click();\n'
-                      '  expect(await readCount(page, "__surroundContextCount")).toBe(2);\n'
-                      '  await expect(capabilityCheck).toBeDisabled();\n'
-                      '  await page.getByRole("button", { name: "Stop" }).click();\n'
-                      '  await expect(capabilityCheck).toBeEnabled();',
-                      '  await page.getByRole("button", { name: "Left", exact: true }).click();\n'
-                      '  await expect(capabilityCheck).toBeDisabled();\n'
-                      '  await page.getByRole("button", { name: "Stop" }).click();\n'
-                      '  await expect(capabilityCheck).toBeEnabled();\n'
-                      '  expect(await readCount(page, "__surroundContextCount")).toBe(2);',
-                  ),
-              ],
-          }
-
-          for path, edits in replacements.items():
-              text = path.read_text()
-              for old, new in edits:
-                  count = text.count(old)
-                  if count != 1:
-                      raise SystemExit(f"{path}: expected exact replacement once, found {count}")
-                  text = text.replace(old, new)
-              path.write_text(text)
+          path = Path("tests/browser/surround-test.spec.ts")
+          text = path.read_text()
+          old = '''  await page.getByRole("button", { name: "Left", exact: true }).click();
+  expect(await readCount(page, "__surroundContextCount")).toBe(2);
+  await expect(capabilityCheck).toBeDisabled();
+  await page.getByRole("button", { name: "Stop" }).click();
+  await expect(capabilityCheck).toBeEnabled();'''
+          new = '''  await page.getByRole("button", { name: "Left", exact: true }).click();
+  const probeImmediately = await page.evaluate(() => ({
+    status: document.querySelector("#surround-status [data-status-label]")?.textContent,
+    error: document.querySelector("[data-surround-error]")?.textContent,
+    errorHidden: (document.querySelector("[data-surround-error]") as HTMLElement | null)?.hidden,
+    checkDisabled: (document.querySelector("[data-surround-check]") as HTMLButtonElement | null)?.disabled,
+    stopDisabled: (document.querySelector("[data-surround-stop]") as HTMLButtonElement | null)?.disabled,
+    contextCount: Number(Reflect.get(window, "__surroundContextCount") ?? 0),
+    oscillatorCount: (Reflect.get(window, "__surroundOscillators") as unknown[] | undefined)?.length ?? 0,
+  }));
+  console.log("SURROUND_PROBE_IMMEDIATE", JSON.stringify(probeImmediately));
+  await page.waitForTimeout(100);
+  const probeAfter100 = await page.evaluate(() => ({
+    status: document.querySelector("#surround-status [data-status-label]")?.textContent,
+    error: document.querySelector("[data-surround-error]")?.textContent,
+    errorHidden: (document.querySelector("[data-surround-error]") as HTMLElement | null)?.hidden,
+    checkDisabled: (document.querySelector("[data-surround-check]") as HTMLButtonElement | null)?.disabled,
+    stopDisabled: (document.querySelector("[data-surround-stop]") as HTMLButtonElement | null)?.disabled,
+    contextCount: Number(Reflect.get(window, "__surroundContextCount") ?? 0),
+    oscillatorCount: (Reflect.get(window, "__surroundOscillators") as unknown[] | undefined)?.length ?? 0,
+  }));
+  console.log("SURROUND_PROBE_100MS", JSON.stringify(probeAfter100));
+  expect(probeAfter100.contextCount).toBe(2);'''
+          if text.count(old) != 1:
+              raise SystemExit(f"expected surround block once, found {text.count(old)}")
+          path.write_text(text.replace(old, new))
           PY
-          pnpm exec prettier --write tests/browser/hearing-frequency.spec.ts tests/browser/hearing-frequency-stop-boundary.spec.ts tests/browser/surround-test.spec.ts
-          pnpm format:check
+          pnpm exec prettier --write tests/browser/surround-test.spec.ts
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
-      - name: Run residual matrix across all engines
+      - name: Run surround recovery probe
         run: |
           pnpm build
-          pnpm exec playwright test tests/browser/hearing-frequency.spec.ts tests/browser/hearing-frequency-stop-boundary.spec.ts tests/browser/surround-test.spec.ts
-
-      - name: Commit proven fixes to repair branch
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tests/browser/hearing-frequency.spec.ts tests/browser/hearing-frequency-stop-boundary.spec.ts tests/browser/surround-test.spec.ts
-          git commit -m "P8: resolve residual cross-browser test races"
-          git push origin HEAD:p8-cross-browser-matrix-repair
+          pnpm exec playwright test tests/browser/surround-test.spec.ts --grep "failed destination restoration closes the uncertain session before fresh stereo playback"
