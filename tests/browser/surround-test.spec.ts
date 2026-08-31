@@ -556,8 +556,25 @@ test("failed destination restoration closes the uncertain session before fresh s
     name: "Check surround support",
   });
   await page.getByRole("button", { name: "Left", exact: true }).click();
-  expect(await readCount(page, "__surroundContextCount")).toBe(2);
-  await expect(capabilityCheck).toBeDisabled();
+  const activeState = await page.evaluate(() => ({
+    status: document.querySelector("#surround-status [data-status-label]")
+      ?.textContent,
+    checkDisabled: (
+      document.querySelector(
+        "[data-surround-check]",
+      ) as HTMLButtonElement | null
+    )?.disabled,
+    stopDisabled: (
+      document.querySelector("[data-surround-stop]") as HTMLButtonElement | null
+    )?.disabled,
+    contextCount: Number(Reflect.get(window, "__surroundContextCount") ?? 0),
+  }));
+  expect(activeState).toEqual({
+    status: "Playing Left",
+    checkDisabled: true,
+    stopDisabled: false,
+    contextCount: 2,
+  });
   await page.getByRole("button", { name: "Stop" }).click();
   await expect(capabilityCheck).toBeEnabled();
 });

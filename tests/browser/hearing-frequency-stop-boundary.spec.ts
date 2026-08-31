@@ -142,7 +142,7 @@ test("Stop cancels an unsounded high-frequency tone before its scheduled start",
     page.locator("#hearing-frequency-status [data-status-label]"),
   ).toHaveText("Setup reference complete", { timeout: 2_000 });
   await page.locator("[data-hearing-setup-confirm]").check();
-  await page.locator('input[name="hearing-mode"][value="manual"]').check();
+  await page.locator("label.mode-pill").filter({ hasText: "Manual" }).click();
 
   await page.locator("[data-hearing-manual-play]").click();
   await expect

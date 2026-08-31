@@ -368,9 +368,9 @@ test("capability filtering removes unavailable Guided and Manual frequencies wit
     "[data-hearing-manual-frequency] option[disabled]",
   );
   await expect(unavailableOptions).toHaveCount(3);
-  await expect(unavailableOptions.nth(0)).toHaveValue("16000");
-  await expect(unavailableOptions.nth(1)).toHaveValue("18000");
-  await expect(unavailableOptions.nth(2)).toHaveValue("20000");
+  await expect(unavailableOptions.nth(0)).toHaveAttribute("value", "16000");
+  await expect(unavailableOptions.nth(1)).toHaveAttribute("value", "18000");
+  await expect(unavailableOptions.nth(2)).toHaveAttribute("value", "20000");
 
   await confirmListeningSetup(page);
   await expect(page.locator("[data-hearing-manual-play]")).toBeEnabled();
