@@ -120,7 +120,7 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
 
       class FakeBufferSourceNode extends FakeNode {
         loop = false;
-        #buffer: { length: number; sampleRate: number } | null = null;
+        _buffer: { length: number; sampleRate: number } | null = null;
         readonly record: SourceRecord;
 
         constructor() {
@@ -135,11 +135,11 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
           sources.push(this.record);
         }
         set buffer(value: { length: number; sampleRate: number } | null) {
-          this.#buffer = value;
+          this._buffer = value;
           this.record.bufferLength = value?.length ?? 0;
           this.record.bufferSampleRate = value?.sampleRate ?? 0;
         }
-        get buffer() { return this.#buffer; }
+        get buffer() { return this._buffer; }
         start(time = 0, offset = 0) {
           this.record.loop = this.loop;
           this.record.starts.push({ time, offset });
@@ -152,19 +152,19 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
         readonly numberOfChannels: number;
         readonly length: number;
         readonly sampleRate: number;
-        readonly #channels: Float32Array[];
+        readonly _channels: Float32Array[];
 
         constructor(numberOfChannels: number, length: number, rate: number) {
           this.numberOfChannels = numberOfChannels;
           this.length = length;
           this.sampleRate = rate;
-          this.#channels = Array.from(
+          this._channels = Array.from(
             { length: numberOfChannels },
             () => new Float32Array(length),
           );
         }
         getChannelData(channel: number) {
-          const data = this.#channels[channel];
+          const data = this._channels[channel];
           if (!data) throw new RangeError("Invalid channel");
           return data;
         }
