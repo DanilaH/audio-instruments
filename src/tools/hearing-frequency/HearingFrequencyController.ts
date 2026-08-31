@@ -116,8 +116,7 @@ export class HearingFrequencyController {
     this.#errorMessage = requireElement(root, "[data-hearing-error]");
 
     this.#bindEvents();
-    this.#renderSessionResult();
-    this.#renderControls();
+    this.#resetIdleUi();
   }
 
   async dispose(): Promise<void> {
@@ -530,6 +529,32 @@ export class HearingFrequencyController {
       this.#capabilityMessage.textContent =
         "This audio context cannot safely generate the required 1 kHz setup reference, so Guided and Manual high-frequency playback are unavailable in this session.";
     }
+    this.#renderControls();
+  }
+
+  #resetIdleUi(): void {
+    const checkedMode = this.#modeInputs.find((input) => input.checked)?.value;
+    this.#mode = checkedMode === "manual" ? "manual" : "guided";
+    this.#capability = null;
+    this.#referencePlayed = false;
+    this.#guidedActive = false;
+    this.#awaitingAnswer = false;
+    this.#guidedIndex = 0;
+    this.#highestHeardHz = null;
+
+    for (const option of this.#manualFrequency.options) option.disabled = false;
+    this.#setupConfirm.checked = false;
+    this.#setupStatus.textContent =
+      "Complete this setup before any Guided or Manual high-frequency tone.";
+    this.#currentFrequency.textContent = "—";
+    this.#guidedProgress.textContent = "Not started";
+    this.#manualStatus.textContent =
+      "Complete Listening setup above first. Manual tones never update the fixed-level Guided session result.";
+    this.#capabilityNotice.hidden = true;
+    this.#capabilityMessage.textContent = "";
+    this.#setStatus("idle", "Ready");
+    this.#hideError();
+    this.#renderSessionResult();
     this.#renderControls();
   }
 
