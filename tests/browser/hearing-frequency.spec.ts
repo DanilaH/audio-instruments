@@ -18,6 +18,7 @@ interface HearingHarnessState {
 interface HearingHarnessConfig {
   readonly sampleRate?: number;
   readonly resumeDelayMs?: number;
+  readonly holdResume?: boolean;
 }
 
 async function installHearingHarness(
@@ -32,6 +33,12 @@ async function installHearingHarness(
       oscillators: [],
       masterGainValues: [],
     };
+    let releaseResume: (() => void) | null = null;
+    const resumeGate = options.holdResume
+      ? new Promise<void>((resolve) => {
+          releaseResume = resolve;
+        })
+      : null;
 
     class FakeAudioParam {
       value = 1;
@@ -147,7 +154,9 @@ async function installHearingHarness(
       }
 
       async resume() {
-        if (options.resumeDelayMs) {
+        if (resumeGate) {
+          await resumeGate;
+        } else if (options.resumeDelayMs) {
           await new Promise((resolve) =>
             window.setTimeout(resolve, options.resumeDelayMs),
           );
@@ -194,6 +203,7 @@ async function installHearingHarness(
       value: FakeAudioContext,
     });
     Reflect.set(window, "__hearingHarness", state);
+    Reflect.set(window, "__releaseHearingResume", () => releaseResume?.());
   }, config);
 }
 
@@ -278,13 +288,13 @@ test("keeps high-frequency playback locked behind a fresh 1 kHz / -36 dB listeni
   await expect(page.locator("[data-hearing-setup-confirm]")).not.toBeChecked();
   await expect(page.locator("[data-hearing-setup-confirm]")).toBeDisabled();
   await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
-  await expect(page.locator("[data-hearing-setup-status]")).toContainText(
-    "while the 1-second reference is audible",
-  );
 
   await expect(
     page.locator("#hearing-frequency-status [data-status-label]"),
   ).toHaveText("Setup reference complete", { timeout: 2_000 });
+  await expect(page.locator("[data-hearing-setup-status]")).toContainText(
+    "Reference complete",
+  );
   await expect(page.locator("[data-hearing-setup-confirm]")).toBeEnabled();
   await expect(page.locator("[data-hearing-setup-confirm]")).not.toBeChecked();
   await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
@@ -343,7 +353,7 @@ test("capability filtering removes unavailable Guided and Manual frequencies wit
   await selectMode(page, "manual");
   await expect(page.locator("[data-hearing-manual-play]")).toBeDisabled();
   const unavailableOptions = page.locator(
-    "[data-hearing-manual-frequency] option:disabled",
+    "[data-hearing-manual-frequency] option[disabled]",
   );
   await expect(unavailableOptions).toHaveCount(3);
   await expect(unavailableOptions.nth(0)).toHaveValue("16000");
@@ -416,7 +426,7 @@ test("Manual mode uses finite 800 ms tones and never changes the Guided session 
 test("Stop cancels tone preparation atomically before duplicate audio can start", async ({
   page,
 }) => {
-  await installHearingHarness(page, { resumeDelayMs: 150 });
+  await installHearingHarness(page, { holdResume: true });
   await page.goto("/hearing-frequency-test");
 
   await page.locator("[data-hearing-reference]").click();
@@ -425,11 +435,16 @@ test("Stop cancels tone preparation atomically before duplicate audio can start"
   await expect(
     page.locator("#hearing-frequency-status [data-status-label]"),
   ).toHaveText("Stopped");
-  await page.waitForTimeout(220);
+  await page.evaluate(() => {
+    const release = Reflect.get(window, "__releaseHearingResume") as () => void;
+    release();
+  });
+  await expect
+    .poll(async () => (await harnessState(page)).closedContextCount)
+    .toBe(1);
 
   const state = await harnessState(page);
   expect(state.oscillators).toHaveLength(0);
-  expect(state.closedContextCount).toBe(1);
   await expect(page.locator("[data-hearing-reference]")).toBeEnabled();
 });
 
