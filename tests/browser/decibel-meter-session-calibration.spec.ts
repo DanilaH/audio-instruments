@@ -26,19 +26,19 @@ async function installNoDeviceIdHarness(page: Page): Promise<void> {
     }
 
     class FakeAnalyserNode extends FakeNode {
-      #fftSize = 2_048;
+      fftSizeValue = 2_048;
       smoothingTimeConstant = 0;
 
       get fftSize() {
-        return this.#fftSize;
+        return this.fftSizeValue;
       }
 
       set fftSize(value: number) {
-        this.#fftSize = value;
+        this.fftSizeValue = value;
       }
 
       get frequencyBinCount() {
-        return this.#fftSize / 2;
+        return this.fftSizeValue / 2;
       }
 
       getFloatTimeDomainData(target: Float32Array) {
