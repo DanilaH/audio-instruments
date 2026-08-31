@@ -165,10 +165,10 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
     class FakeDestinationNode extends FakeNode {
       readonly maxChannelCount = probeOptions.maxChannelCount;
       readonly writes: string[];
-      #channelCount = 2;
-      #channelCountMode: ChannelCountMode = "max";
-      #channelInterpretation: ChannelInterpretation = "speakers";
-      #targetApplied = false;
+      channelCountValue = 2;
+      channelCountModeValue: ChannelCountMode = "max";
+      channelInterpretationValue: ChannelInterpretation = "speakers";
+      targetApplied = false;
 
       constructor(contextId: number) {
         super(contextId, "destination");
@@ -177,7 +177,7 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
       }
 
       get channelCount() {
-        return this.#channelCount;
+        return this.channelCountValue;
       }
       set channelCount(value: number) {
         this.writes.push(`count:${value}`);
@@ -185,41 +185,41 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
         if (value === 8 && probeOptions.throwEight) throw new Error("8-channel rejected");
         if (
           probeOptions.failRestoreAfterTarget &&
-          this.#targetApplied &&
+          this.targetApplied &&
           value === 2
         ) {
           throw new Error("restore rejected");
         }
-        this.#channelCount =
+        this.channelCountValue =
           value === 6 && probeOptions.mismatchSix
             ? 5
             : value === 8 && probeOptions.mismatchEight
               ? 7
               : value;
-        if (value >= 6) this.#targetApplied = true;
+        if (value >= 6) this.targetApplied = true;
       }
 
       get channelCountMode() {
-        return this.#channelCountMode;
+        return this.channelCountModeValue;
       }
       set channelCountMode(value: ChannelCountMode) {
         this.writes.push(`mode:${value}`);
         if (
           probeOptions.failRestoreAfterTarget &&
-          this.#targetApplied &&
+          this.targetApplied &&
           value === "max"
         ) {
           throw new Error("restore rejected");
         }
-        this.#channelCountMode = value;
+        this.channelCountModeValue = value;
       }
 
       get channelInterpretation() {
-        return this.#channelInterpretation;
+        return this.channelInterpretationValue;
       }
       set channelInterpretation(value: ChannelInterpretation) {
         this.writes.push(`interpretation:${value}`);
-        this.#channelInterpretation = value;
+        this.channelInterpretationValue = value;
       }
     }
 
@@ -229,9 +229,9 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
       state = "suspended";
       readonly contextId: number;
       readonly destination: FakeDestinationNode;
-      #gainIndex = 0;
-      #oscillatorIndex = 0;
-      #pannerIndex = 0;
+      gainIndex = 0;
+      oscillatorIndex = 0;
+      pannerIndex = 0;
 
       constructor() {
         this.contextId = increment("__surroundContextCount");
@@ -246,16 +246,16 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
         increment("__surroundClosedContextCount");
       }
       createGain() {
-        const node = new FakeGainNode(this.contextId, `gain-${this.#gainIndex}`);
-        this.#gainIndex += 1;
+        const node = new FakeGainNode(this.contextId, `gain-${this.gainIndex}`);
+        this.gainIndex += 1;
         return node;
       }
       createOscillator() {
         const node = new FakeOscillatorNode(
           this.contextId,
-          this.#oscillatorIndex,
+          this.oscillatorIndex,
         );
-        this.#oscillatorIndex += 1;
+        this.oscillatorIndex += 1;
         return node;
       }
       createChannelMerger(numberOfInputs = 2) {
@@ -265,9 +265,9 @@ async function installSurroundProbe(page: Page, options: ProbeOptions): Promise<
       createStereoPanner() {
         const node = new FakeStereoPannerNode(
           this.contextId,
-          `panner-${this.#pannerIndex}`,
+          `panner-${this.pannerIndex}`,
         );
-        this.#pannerIndex += 1;
+        this.pannerIndex += 1;
         return node;
       }
     }
@@ -438,7 +438,7 @@ test("Stereo spatial preview reuses ordinary stereo Center routing and pan primi
 
   await page.waitForTimeout(750);
   await page.getByRole("button", { name: "L → R" }).click();
-  const panEvents = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
+  const panEvents = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>(
     page,
     "__surroundPanEvents",
   );
