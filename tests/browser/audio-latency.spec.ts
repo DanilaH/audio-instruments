@@ -81,16 +81,16 @@ async function installLatencyHarness(
     class FakeOscillatorNode extends EventTarget {
       readonly frequency = new FakeAudioParam();
       type: OscillatorType = "sine";
-      readonly #record: OscillatorRecord;
+      readonly record: OscillatorRecord;
 
       constructor(readonly context: BaseAudioContext) {
         super();
-        this.#record = {
+        this.record = {
           id: state.oscillators.length,
           startTime: null,
           stopTimes: [],
         };
-        state.oscillators.push(this.#record);
+        state.oscillators.push(this.record);
       }
 
       connect(destination: unknown) {
@@ -100,11 +100,11 @@ async function installLatencyHarness(
       disconnect() {}
 
       start(when = 0) {
-        this.#record.startTime = when;
+        this.record.startTime = when;
       }
 
       stop(when = 0) {
-        this.#record.stopTimes.push(when);
+        this.record.stopTimes.push(when);
       }
     }
 
@@ -114,8 +114,8 @@ async function installLatencyHarness(
       readonly outputLatency?: number;
       readonly sampleRate = 48_000;
       state: AudioContextState = "suspended";
-      #runningPerfMs: number | null = null;
-      #elapsedBeforeSuspendSec = 0;
+      runningPerfMs: number | null = null;
+      elapsedBeforeSuspendSec = 0;
 
       constructor(contextOptions?: AudioContextOptions) {
         state.audioContextCount += 1;
@@ -128,12 +128,12 @@ async function installLatencyHarness(
       }
 
       get currentTime(): number {
-        if (this.#runningPerfMs === null || this.state !== "running") {
-          return this.#elapsedBeforeSuspendSec;
+        if (this.runningPerfMs === null || this.state !== "running") {
+          return this.elapsedBeforeSuspendSec;
         }
         return (
-          this.#elapsedBeforeSuspendSec +
-          (performance.now() - this.#runningPerfMs) / 1_000
+          this.elapsedBeforeSuspendSec +
+          (performance.now() - this.runningPerfMs) / 1_000
         );
       }
 
@@ -142,15 +142,15 @@ async function installLatencyHarness(
           throw new DOMException("closed", "InvalidStateError");
         }
         if (this.state !== "running") {
-          this.#runningPerfMs = performance.now();
+          this.runningPerfMs = performance.now();
           this.state = "running";
         }
       }
 
       async close() {
         if (this.state === "closed") return;
-        this.#elapsedBeforeSuspendSec = this.currentTime;
-        this.#runningPerfMs = null;
+        this.elapsedBeforeSuspendSec = this.currentTime;
+        this.runningPerfMs = null;
         this.state = "closed";
         state.closedContextCount += 1;
       }
