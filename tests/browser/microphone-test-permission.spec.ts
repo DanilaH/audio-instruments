@@ -60,10 +60,14 @@ test("permission denial closes the failed session and explicit retry uses a fres
         this.state = "closed";
       }
       createGain() {
-        return new FakeNode(this as unknown as BaseAudioContext) as unknown as GainNode;
+        return new FakeNode(
+          this as unknown as BaseAudioContext,
+        ) as unknown as GainNode;
       }
       createAnalyser() {
-        return new FakeAnalyser(this as unknown as BaseAudioContext) as unknown as AnalyserNode;
+        return new FakeAnalyser(
+          this as unknown as BaseAudioContext,
+        ) as unknown as AnalyserNode;
       }
       createMediaStreamSource() {
         return new FakeNode(
@@ -134,9 +138,9 @@ test("permission denial closes the failed session and explicit retry uses a fres
   await page.goto("/microphone-test");
   await page.locator("[data-mic-start]").click();
 
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone unavailable",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone unavailable");
   await expect(page.locator("[data-mic-error]")).toContainText(
     "Microphone permission was denied",
   );
@@ -155,9 +159,9 @@ test("permission denial closes the failed session and explicit retry uses a fres
     .toMatchObject({ contextCount: 1, closedCount: 1, captureCount: 1 });
 
   await page.locator("[data-mic-start]").click();
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone active",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone active");
 
   const retryState = await page.evaluate(() =>
     structuredClone(
@@ -168,5 +172,9 @@ test("permission denial closes the failed session and explicit retry uses a fres
       },
     ),
   );
-  expect(retryState).toEqual({ contextCount: 2, closedCount: 1, captureCount: 2 });
+  expect(retryState).toEqual({
+    contextCount: 2,
+    closedCount: 1,
+    captureCount: 2,
+  });
 });

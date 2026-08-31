@@ -101,7 +101,9 @@ function routeOutputPath(distDir, route) {
 function extractCanonical(html, route) {
   const match = html.match(/<link rel="canonical" href="([^"]+)">/);
   if (!match) {
-    throw new Error(`${route} is missing a canonical link in the indexed build.`);
+    throw new Error(
+      `${route} is missing a canonical link in the indexed build.`,
+    );
   }
 
   return match[1];

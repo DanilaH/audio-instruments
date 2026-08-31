@@ -31,18 +31,20 @@ const relatedTools = headphoneTool.relatedToolIds.flatMap((id) => {
     <section class="headphone-content" aria-labelledby="headphone-about-title">
       <div>
         <p class="eyebrow">What to listen for</p>
-        <h2 id="headphone-about-title">Missing ear, imbalance, rattles or obvious range changes</h2>
+        <h2 id="headphone-about-title">
+          Missing ear, imbalance, rattles or obvious range changes
+        </h2>
       </div>
       <div class="headphone-content__copy">
         <p>
-          Left, Right and Both use the same canonical short reference burst with explicit
-          hard channel routing. Phase mode keeps one correlated pink-noise source running
-          while only the right-channel sign changes.
+          Left, Right and Both use the same canonical short reference burst with
+          explicit hard channel routing. Phase mode keeps one correlated
+          pink-noise source running while only the right-channel sign changes.
         </p>
         <p>
-          Sweep and Bass / rattle modes generate digital reference signals for your own
-          listening comparison. They do not measure headphone frequency response, SPL,
-          driver health, imaging quality or physical polarity.
+          Sweep and Bass / rattle modes generate digital reference signals for
+          your own listening comparison. They do not measure headphone frequency
+          response, SPL, driver health, imaging quality or physical polarity.
         </p>
       </div>
     </section>
@@ -51,12 +53,14 @@ const relatedTools = headphoneTool.relatedToolIds.flatMap((id) => {
       <h2 id="headphone-help-title">If something sounds wrong</h2>
       <div class="headphone-help__grid">
         <p>
-          Check the selected output device, plug or Bluetooth route and any operating-system
-          balance setting before repeating the relevant test at a comfortable volume.
+          Check the selected output device, plug or Bluetooth route and any
+          operating-system balance setting before repeating the relevant test at
+          a comfortable volume.
         </p>
         <p>
-          Treat the result as troubleshooting evidence only. This tool does not provide
-          burn-in, “8D” processing, automatic quality scoring or a medical hearing result.
+          Treat the result as troubleshooting evidence only. This tool does not
+          provide burn-in, “8D” processing, automatic quality scoring or a
+          medical hearing result.
         </p>
       </div>
     </section>
@@ -76,13 +80,27 @@ const relatedTools = headphoneTool.relatedToolIds.flatMap((id) => {
     border-top: 1px solid var(--color-border);
   }
   .headphone-content h2,
-  .headphone-help h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.08; }
+  .headphone-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
   .headphone-content__copy,
-  .headphone-help__grid { display: grid; gap: 14px; }
+  .headphone-help__grid {
+    display: grid;
+    gap: 14px;
+  }
   .headphone-content p,
-  .headphone-help p { margin: 0; color: var(--color-ink-muted); line-height: 1.72; }
+  .headphone-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
   @media (max-width: 760px) {
     .headphone-content,
-    .headphone-help { grid-template-columns: 1fr; margin-top: 48px; padding-top: 34px; }
+    .headphone-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
   }
 </style>

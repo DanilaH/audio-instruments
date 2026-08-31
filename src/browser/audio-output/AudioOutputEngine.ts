@@ -107,7 +107,9 @@ function validateDurationSeconds(value: number | undefined): number | null {
 
 function validateAutomationDuration(value: number): number {
   if (!Number.isFinite(value) || value <= 0) {
-    throw new RangeError("Automation duration must be a positive finite number");
+    throw new RangeError(
+      "Automation duration must be a positive finite number",
+    );
   }
   return value;
 }
@@ -302,7 +304,9 @@ export class AudioOutputEngine implements SessionResource {
   }
 
   get levelDb(): number {
-    return 20 * Math.log10(Math.max(this.#masterGain.gain.value, Number.EPSILON));
+    return (
+      20 * Math.log10(Math.max(this.#masterGain.gain.value, Number.EPSILON))
+    );
   }
 
   get levelProfile(): Readonly<LevelProfile> {
@@ -327,14 +331,18 @@ export class AudioOutputEngine implements SessionResource {
     );
   }
 
-  startMonoOscillator(options: MonoOscillatorStartOptions): MonoOscillatorPlayback {
+  startMonoOscillator(
+    options: MonoOscillatorStartOptions,
+  ): MonoOscillatorPlayback {
     this.#assertUsable();
     if (!Number.isFinite(options.frequencyHz) || options.frequencyHz <= 0) {
       throw new RangeError("frequencyHz must be a positive finite number");
     }
 
     const durationSeconds = validateDurationSeconds(options.durationSeconds);
-    const coefficient = validateSourceCoefficient(options.sourceCoefficient ?? 1);
+    const coefficient = validateSourceCoefficient(
+      options.sourceCoefficient ?? 1,
+    );
     const startTime = options.startTime ?? this.#context.currentTime;
     const oscillator = this.#context.createOscillator();
     const sourceGain = this.#context.createGain();

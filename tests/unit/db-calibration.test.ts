@@ -188,7 +188,9 @@ describe("DbCalibrationStore", () => {
     expect(store.remove("mic-1")).toBe(true);
     expect(store.load("mic-1")).toBeNull();
     expect(store.load("mic-2")).toEqual(second);
-    expect(storage.getItem(DB_CALIBRATION_STORAGE_KEY)).not.toContain('"mic-1"');
+    expect(storage.getItem(DB_CALIBRATION_STORAGE_KEY)).not.toContain(
+      '"mic-1"',
+    );
     expect(storage.getItem(DB_CALIBRATION_STORAGE_KEY)).toContain('"mic-2"');
   });
 
@@ -202,7 +204,9 @@ describe("DbCalibrationStore", () => {
   });
 
   it("fails closed when persistent storage cannot be read", () => {
-    const store = new DbCalibrationStore(new FakeStorage({ throwOnRead: true }));
+    const store = new DbCalibrationStore(
+      new FakeStorage({ throwOnRead: true }),
+    );
     expect(store.load("mic-1")).toBeNull();
     expect(store.save("mic-1", { offset: 100, createdAt: 1 })).toBe(false);
     expect(store.remove("mic-1")).toBe(false);

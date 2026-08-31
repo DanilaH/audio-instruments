@@ -53,8 +53,8 @@ const relatedTools = phaseTool.relatedToolIds.flatMap((id) => {
       <div class="phase-help__grid">
         <p>
           In-phase playback often presents a more centered image, while an
-          inverted channel can sound wider, diffuse or less centered depending on
-          the device and environment.
+          inverted channel can sound wider, diffuse or less centered depending
+          on the device and environment.
         </p>
         <p>
           Treat that difference as a listening comparison only. This tool does
@@ -78,13 +78,27 @@ const relatedTools = phaseTool.relatedToolIds.flatMap((id) => {
     border-top: 1px solid var(--color-border);
   }
   .phase-content h2,
-  .phase-help h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.08; }
+  .phase-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
   .phase-content__copy,
-  .phase-help__grid { display: grid; gap: 14px; }
+  .phase-help__grid {
+    display: grid;
+    gap: 14px;
+  }
   .phase-content p,
-  .phase-help p { margin: 0; color: var(--color-ink-muted); line-height: 1.72; }
+  .phase-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
   @media (max-width: 760px) {
     .phase-content,
-    .phase-help { grid-template-columns: 1fr; margin-top: 48px; padding-top: 34px; }
+    .phase-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
   }
 </style>

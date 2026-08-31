@@ -103,7 +103,9 @@ export class WaveformCanvas {
 
   #syncSize(): { width: number; height: number } {
     const rect = this.#canvas.getBoundingClientRect();
-    const pixelRatio = getWaveformCanvasPixelRatio(window.devicePixelRatio || 1);
+    const pixelRatio = getWaveformCanvasPixelRatio(
+      window.devicePixelRatio || 1,
+    );
     const cssWidth = Math.max(1, rect.width);
     const cssHeight = Math.max(1, rect.height);
     const pixelWidth = Math.round(cssWidth * pixelRatio);

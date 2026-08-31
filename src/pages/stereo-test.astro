@@ -41,8 +41,8 @@ const relatedTools = stereoTool.relatedToolIds.flatMap((id) => {
         </p>
         <p>
           L → R and R → L use a four-second linear StereoPannerNode sweep. The
-          browser controls only the digital stereo target, so physical speaker or
-          headphone behavior remains your listening observation.
+          browser controls only the digital stereo target, so physical speaker
+          or headphone behavior remains your listening observation.
         </p>
       </div>
     </section>
@@ -76,13 +76,27 @@ const relatedTools = stereoTool.relatedToolIds.flatMap((id) => {
     border-top: 1px solid var(--color-border);
   }
   .stereo-content h2,
-  .stereo-help h2 { font-size: clamp(1.8rem, 3vw, 2.7rem); line-height: 1.08; }
+  .stereo-help h2 {
+    font-size: clamp(1.8rem, 3vw, 2.7rem);
+    line-height: 1.08;
+  }
   .stereo-content__copy,
-  .stereo-help__grid { display: grid; gap: 14px; }
+  .stereo-help__grid {
+    display: grid;
+    gap: 14px;
+  }
   .stereo-content p,
-  .stereo-help p { margin: 0; color: var(--color-ink-muted); line-height: 1.72; }
+  .stereo-help p {
+    margin: 0;
+    color: var(--color-ink-muted);
+    line-height: 1.72;
+  }
   @media (max-width: 760px) {
     .stereo-content,
-    .stereo-help { grid-template-columns: 1fr; margin-top: 48px; padding-top: 34px; }
+    .stereo-help {
+      grid-template-columns: 1fr;
+      margin-top: 48px;
+      padding-top: 34px;
+    }
   }
 </style>

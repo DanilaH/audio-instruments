@@ -6,8 +6,7 @@ export const YIN_THRESHOLD = 0.1;
 export const PITCH_MIN_CONFIDENCE = 0.8;
 export const PITCH_REFERENCE_A4_HZ = 440;
 export const PITCH_MAX_ANALYSES_PER_SECOND = 20;
-export const PITCH_ANALYSIS_INTERVAL_MS =
-  1_000 / PITCH_MAX_ANALYSES_PER_SECOND;
+export const PITCH_ANALYSIS_INTERVAL_MS = 1_000 / PITCH_MAX_ANALYSES_PER_SECOND;
 export const PITCH_STABILIZATION_WINDOW = 5;
 export const PITCH_STABLE_MIN_CONSECUTIVE = 3;
 export const PITCH_STABLE_CENTS = 25;
@@ -112,9 +111,7 @@ export function downsampleAveraged(
   const outputLength = Math.floor(source.length / factor);
   const output = target ?? new Float32Array(outputLength);
   if (output.length !== outputLength) {
-    throw new RangeError(
-      `downsample target length must equal ${outputLength}`,
-    );
+    throw new RangeError(`downsample target length must equal ${outputLength}`);
   }
 
   for (let outputIndex = 0; outputIndex < outputLength; outputIndex += 1) {
@@ -240,8 +237,7 @@ export function estimatePitchYin(
   const minHz = options.minHz ?? PITCH_MIN_HZ;
   const maxHz = options.maxHz ?? PITCH_MAX_HZ;
   const threshold = options.threshold ?? YIN_THRESHOLD;
-  const minimumConfidence =
-    options.minimumConfidence ?? PITCH_MIN_CONFIDENCE;
+  const minimumConfidence = options.minimumConfidence ?? PITCH_MIN_CONFIDENCE;
 
   assertPositiveFinite(minHz, "minHz");
   assertPositiveFinite(maxHz, "maxHz");
@@ -310,8 +306,7 @@ export function mapFrequencyToNote(
 
   const midiFloat = 69 + 12 * Math.log2(frequencyHz / referenceA4Hz);
   const nearestMidi = Math.round(midiFloat);
-  const noteFrequencyHz =
-    referenceA4Hz * 2 ** ((nearestMidi - 69) / 12);
+  const noteFrequencyHz = referenceA4Hz * 2 ** ((nearestMidi - 69) / 12);
   const cents = 1_200 * Math.log2(frequencyHz / noteFrequencyHz);
   const noteIndex = ((nearestMidi % 12) + 12) % 12;
   const noteName = NOTE_NAMES[noteIndex] ?? "—";
@@ -391,7 +386,8 @@ export class PitchStabilizer {
       const value = this.#accepted[this.#accepted.length - 1 - offset];
       if (
         !value ||
-        absoluteCentsBetween(value.frequencyHz, frequencyHz) > PITCH_STABLE_CENTS
+        absoluteCentsBetween(value.frequencyHz, frequencyHz) >
+          PITCH_STABLE_CENTS
       ) {
         break;
       }

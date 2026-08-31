@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("partial service construction is disposed before a clean retry", async ({ page }) => {
+test("partial service construction is disposed before a clean retry", async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     const state = {
       audioContextCount: 0,
@@ -209,9 +211,9 @@ test("partial service construction is disposed before a clean retry", async ({ p
   await page.goto("/microphone-test");
   await page.locator("[data-mic-start]").click();
 
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone unavailable",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone unavailable");
   await expect(page.locator("[data-mic-start]")).toBeEnabled();
 
   const failedState = await page.evaluate(() =>
@@ -226,9 +228,9 @@ test("partial service construction is disposed before a clean retry", async ({ p
   });
 
   await page.locator("[data-mic-start]").click();
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone active",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone active");
 
   const retryState = await page.evaluate(() =>
     structuredClone(Reflect.get(window, "__micConstructionState")),

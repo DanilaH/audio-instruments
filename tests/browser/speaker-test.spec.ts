@@ -4,7 +4,10 @@ type ProbeOptions = {
   sampleRate?: number;
 };
 
-async function installAudioProbe(page: Page, options: ProbeOptions = {}): Promise<void> {
+async function installAudioProbe(
+  page: Page,
+  options: ProbeOptions = {},
+): Promise<void> {
   await page.addInitScript(
     ({ configuredSampleRate }) => {
       type ParamEvent = {
@@ -109,7 +112,12 @@ async function installAudioProbe(page: Page, options: ProbeOptions = {}): Promis
         constructor() {
           super();
           const frequencyEvents: ParamEvent[] = [];
-          this.record = { frequency: 0, frequencyEvents, starts: [], stops: [] };
+          this.record = {
+            frequency: 0,
+            frequencyEvents,
+            starts: [],
+            stops: [],
+          };
           oscillators.push(this.record);
           this.frequency = new FakeAudioParam(frequencyEvents, (value) => {
             this.record.frequency = value;
@@ -188,7 +196,11 @@ async function installAudioProbe(page: Page, options: ProbeOptions = {}): Promis
         readonly sampleRate: number;
         readonly channels: Float32Array[];
 
-        constructor(numberOfChannels: number, length: number, sampleRate: number) {
+        constructor(
+          numberOfChannels: number,
+          length: number,
+          sampleRate: number,
+        ) {
           this.numberOfChannels = numberOfChannels;
           this.length = length;
           this.sampleRate = sampleRate;
@@ -241,7 +253,11 @@ async function installAudioProbe(page: Page, options: ProbeOptions = {}): Promis
           return new FakeNode();
         }
 
-        createBuffer(numberOfChannels: number, length: number, sampleRate: number) {
+        createBuffer(
+          numberOfChannels: number,
+          length: number,
+          sampleRate: number,
+        ) {
           return new FakeAudioBuffer(numberOfChannels, length, sampleRate);
         }
       }
@@ -270,14 +286,22 @@ async function readCount(page: Page, key: string): Promise<number> {
   );
 }
 
-test("Speaker Test exposes four safe modes with a lazy AudioContext", async ({ page }) => {
+test("Speaker Test exposes four safe modes with a lazy AudioContext", async ({
+  page,
+}) => {
   await installAudioProbe(page);
   await page.goto("/speaker-test");
 
-  expect(await page.evaluate(() => Reflect.get(window, "__speakerProbeInstalled"))).toBe(true);
-  await expect(page.getByRole("heading", { name: "Speaker Test", level: 1 })).toBeVisible();
+  expect(
+    await page.evaluate(() => Reflect.get(window, "__speakerProbeInstalled")),
+  ).toBe(true);
+  await expect(
+    page.getByRole("heading", { name: "Speaker Test", level: 1 }),
+  ).toBeVisible();
   await expect(page.locator("#speaker-status")).toContainText("Ready");
-  await expect(page.getByText("Start with your device/headphone volume low.")).toBeVisible();
+  await expect(
+    page.getByText("Start with your device/headphone volume low."),
+  ).toBeVisible();
   for (const name of ["Channel", "Phase", "Sweep", "Bass / rattle"]) {
     await expect(page.getByRole("button", { name, exact: true })).toBeVisible();
   }
@@ -285,20 +309,23 @@ test("Speaker Test exposes four safe modes with a lazy AudioContext", async ({ p
   expect(await readCount(page, "__speakerContextCount")).toBe(0);
 });
 
-test("Speaker channel sequence uses three exact hard-routed reference bursts", async ({ page }) => {
+test("Speaker channel sequence uses three exact hard-routed reference bursts", async ({
+  page,
+}) => {
   await installAudioProbe(page);
   await page.goto("/speaker-test");
 
   await page.getByRole("button", { name: "Run Left → Both → Right" }).click();
-  await expect(page.locator("#speaker-status")).toContainText("Channel sequence running");
+  await expect(page.locator("#speaker-status")).toContainText(
+    "Channel sequence running",
+  );
 
   const oscillators = await readProbe<
     Array<{ frequency: number; starts: number[]; stops: number[] }>
   >(page, "__speakerProbeOscillators");
-  const gains = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
-    page,
-    "__speakerProbeGains",
-  );
+  const gains = await readProbe<
+    Array<Array<{ kind: string; value?: number; time: number }>>
+  >(page, "__speakerProbeGains");
 
   expect(oscillators).toHaveLength(3);
   expect(oscillators.map((item) => item.frequency)).toEqual([500, 500, 500]);
@@ -321,11 +348,17 @@ test("Speaker Phase mode keeps one correlated source across In phase, Inverted a
 
   await page.getByRole("button", { name: "Phase", exact: true }).click();
   await page.getByRole("button", { name: "In phase" }).click();
-  await expect(page.locator("#speaker-status")).toContainText("Playing in phase");
+  await expect(page.locator("#speaker-status")).toContainText(
+    "Playing in phase",
+  );
   await page.getByRole("button", { name: "Inverted" }).click();
-  await expect(page.locator("#speaker-status")).toContainText("Playing inverted");
+  await expect(page.locator("#speaker-status")).toContainText(
+    "Playing inverted",
+  );
   await page.getByRole("button", { name: "A/B toggle" }).click();
-  await expect(page.locator("#speaker-status")).toContainText("Playing in phase");
+  await expect(page.locator("#speaker-status")).toContainText(
+    "Playing in phase",
+  );
 
   const sources = await readProbe<
     Array<{
@@ -343,23 +376,34 @@ test("Speaker Phase mode keeps one correlated source across In phase, Inverted a
     bufferSampleRate: 44_100,
   });
 
-  const gains = await readProbe<Array<Array<{ kind: string; value?: number; time: number }>>>(
-    page,
-    "__speakerProbeGains",
-  );
+  const gains = await readProbe<
+    Array<Array<{ kind: string; value?: number; time: number }>>
+  >(page, "__speakerProbeGains");
   const rightEvents = gains[3] ?? [];
-  expect(rightEvents).toContainEqual({ kind: "linear", value: 0, time: 10.025 });
-  expect(rightEvents).toContainEqual({ kind: "linear", value: -1, time: 10.05 });
+  expect(rightEvents).toContainEqual({
+    kind: "linear",
+    value: 0,
+    time: 10.025,
+  });
+  expect(rightEvents).toContainEqual({
+    kind: "linear",
+    value: -1,
+    time: 10.05,
+  });
   expect(sources[0]?.starts).toHaveLength(1);
 });
 
-test("Speaker Sweep uses the shared ten-second logarithmic scheduler", async ({ page }) => {
+test("Speaker Sweep uses the shared ten-second logarithmic scheduler", async ({
+  page,
+}) => {
   await installAudioProbe(page);
   await page.goto("/speaker-test");
 
   await page.getByRole("button", { name: "Sweep", exact: true }).click();
   await page.getByRole("button", { name: "Run speaker sweep" }).click();
-  await expect(page.locator("#speaker-status")).toContainText("Speaker sweep running");
+  await expect(page.locator("#speaker-status")).toContainText(
+    "Speaker sweep running",
+  );
 
   const oscillators = await readProbe<
     Array<{
@@ -370,7 +414,11 @@ test("Speaker Sweep uses the shared ten-second logarithmic scheduler", async ({ 
     }>
   >(page, "__speakerProbeOscillators");
   expect(oscillators).toHaveLength(1);
-  expect(oscillators[0]).toMatchObject({ frequency: 100, starts: [10], stops: [20] });
+  expect(oscillators[0]).toMatchObject({
+    frequency: 100,
+    starts: [10],
+    stops: [20],
+  });
   expect(oscillators[0]?.frequencyEvents).toContainEqual({
     kind: "exponential",
     value: 10_000,
@@ -389,7 +437,9 @@ test("Speaker Sweep caps its nominal high frequency to the runtime sample-rate c
   await expect(page.locator("#speaker-frequency-cap")).toBeVisible();
   await expect(page.locator("#speaker-sweep-high")).toHaveValue("7600");
   const oscillators = await readProbe<
-    Array<{ frequencyEvents: Array<{ kind: string; value?: number; time: number }> }>
+    Array<{
+      frequencyEvents: Array<{ kind: string; value?: number; time: number }>;
+    }>
   >(page, "__speakerProbeOscillators");
   expect(oscillators[0]?.frequencyEvents).toContainEqual({
     kind: "exponential",
@@ -404,9 +454,13 @@ test("Speaker Bass/rattle reuses the 40 to 120 Hz twelve-second logarithmic prim
   await installAudioProbe(page);
   await page.goto("/speaker-test");
 
-  await page.getByRole("button", { name: "Bass / rattle", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Bass / rattle", exact: true })
+    .click();
   await page.getByRole("button", { name: "Run bass / rattle sweep" }).click();
-  await expect(page.locator("#speaker-status")).toContainText("Bass / rattle sweep running");
+  await expect(page.locator("#speaker-status")).toContainText(
+    "Bass / rattle sweep running",
+  );
 
   const oscillators = await readProbe<
     Array<{
@@ -444,10 +498,14 @@ test("Speaker mode switching stops active playback and pagehide closes the sessi
   await page.getByRole("button", { name: "Left", exact: true }).click();
   expect(await readCount(page, "__speakerContextCount")).toBe(1);
   await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
-  await expect.poll(() => readCount(page, "__speakerClosedContextCount")).toBe(1);
+  await expect
+    .poll(() => readCount(page, "__speakerClosedContextCount"))
+    .toBe(1);
 });
 
-test("Speaker related tools include only currently live routes", async ({ page }) => {
+test("Speaker related tools include only currently live routes", async ({
+  page,
+}) => {
   await page.goto("/speaker-test");
   for (const route of [
     "/sound-test",

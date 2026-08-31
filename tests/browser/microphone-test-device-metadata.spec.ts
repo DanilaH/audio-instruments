@@ -142,22 +142,33 @@ async function installHarness(
         };
       }
 
-      async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
+      async getUserMedia(
+        constraints: MediaStreamConstraints,
+      ): Promise<MediaStream> {
         state.getUserMediaCalls.push(constraints);
         const audio = constraints.audio as MediaTrackConstraints;
         const exact =
-          typeof audio === "object" && audio.deviceId && typeof audio.deviceId === "object"
-            ? String((audio.deviceId as ConstrainDOMStringParameters).exact ?? "")
+          typeof audio === "object" &&
+          audio.deviceId &&
+          typeof audio.deviceId === "object"
+            ? String(
+                (audio.deviceId as ConstrainDOMStringParameters).exact ?? "",
+              )
             : "";
         const deviceId = exact || "mic-1";
         state.activeDeviceId = deviceId;
-        return new FakeStream(new FakeTrack(deviceId)) as unknown as MediaStream;
+        return new FakeStream(
+          new FakeTrack(deviceId),
+        ) as unknown as MediaStream;
       }
 
       async enumerateDevices(): Promise<MediaDeviceInfo[]> {
         state.enumerateCount += 1;
         if (state.enumerateCount === failEnumerateCall) {
-          throw new DOMException("deterministic metadata failure", "NotReadableError");
+          throw new DOMException(
+            "deterministic metadata failure",
+            "NotReadableError",
+          );
         }
         return [
           {
@@ -201,12 +212,14 @@ test("a device-list metadata failure does not tear down a valid initial capture"
   await page.goto("/microphone-test");
   await page.locator("[data-mic-start]").click();
 
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone active",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone active");
   await expect(page.locator("[data-mic-error]")).toBeHidden();
   await expect(page.locator("[data-mic-input-field]")).toBeHidden();
-  await expect(page.locator("[data-mic-active-input]")).toHaveText("Active input");
+  await expect(page.locator("[data-mic-active-input]")).toHaveText(
+    "Active input",
+  );
   await expect(page.locator("[data-mic-detail-device-id]")).toHaveText("mic-1");
 
   const state = await page.evaluate(() =>
@@ -230,14 +243,18 @@ test("post-switch metadata failure keeps the successfully selected replacement a
   await expect(select).toBeVisible();
   await select.selectOption("mic-2");
 
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone active",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone active");
   await expect(page.locator("[data-mic-selection-error]")).toBeHidden();
   await expect(select).toHaveValue("mic-2");
-  await expect(page.locator("[data-mic-active-input]")).toHaveText("USB microphone");
+  await expect(page.locator("[data-mic-active-input]")).toHaveText(
+    "USB microphone",
+  );
   await expect(page.locator("[data-mic-detail-device-id]")).toHaveText("mic-2");
-  await expect(page.locator("[data-mic-detail-sample-rate]")).toHaveText("44100 Hz");
+  await expect(page.locator("[data-mic-detail-sample-rate]")).toHaveText(
+    "44100 Hz",
+  );
 
   const state = await page.evaluate(() =>
     structuredClone(Reflect.get(window, "__micDeviceMetadataState")),

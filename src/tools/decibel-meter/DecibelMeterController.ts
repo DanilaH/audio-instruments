@@ -21,7 +21,10 @@ import {
   type MicrophoneInputDevice,
 } from "../../browser/microphone/MicrophoneService";
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
     throw new Error(`Decibel Meter is missing required element: ${selector}`);
@@ -46,7 +49,10 @@ function captureErrorMessage(error: unknown): string {
     if (error.name === "NotAllowedError") {
       return "Microphone permission was denied. Allow microphone access for this site, then try again.";
     }
-    if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+    if (
+      error.name === "NotFoundError" ||
+      error.name === "DevicesNotFoundError"
+    ) {
       return "No microphone input was found. Connect or enable an input device, then try again.";
     }
     if (error.name === "NotReadableError" || error.name === "TrackStartError") {
@@ -229,9 +235,13 @@ export class DecibelMeterController {
 
   #bindEvents(): void {
     const signal = this.#listeners.signal;
-    this.#startButton.addEventListener("click", () => void this.#startMicrophone(), {
-      signal,
-    });
+    this.#startButton.addEventListener(
+      "click",
+      () => void this.#startMicrophone(),
+      {
+        signal,
+      },
+    );
     this.#stopButton.addEventListener("click", () => this.#stopTool(), {
       signal,
     });
@@ -240,9 +250,13 @@ export class DecibelMeterController {
       () => void this.#switchInput(this.#inputSelect.value),
       { signal },
     );
-    this.#referenceInput.addEventListener("input", () => this.#renderControls(), {
-      signal,
-    });
+    this.#referenceInput.addEventListener(
+      "input",
+      () => this.#renderControls(),
+      {
+        signal,
+      },
+    );
     this.#weightingConfirm.addEventListener(
       "change",
       () => this.#renderControls(),
@@ -266,7 +280,8 @@ export class DecibelMeterController {
     const session = new AudioSession();
     this.#session = session;
     const context = await session.getContext();
-    if (this.#disposed) throw new Error("Decibel Meter was disposed during Start");
+    if (this.#disposed)
+      throw new Error("Decibel Meter was disposed during Start");
 
     const microphone = new MicrophoneService(context);
     session.register(microphone);
@@ -282,7 +297,8 @@ export class DecibelMeterController {
   }
 
   async #startMicrophone(): Promise<void> {
-    if (this.#disposed || this.#starting || this.isActive || this.#stopping) return;
+    if (this.#disposed || this.#starting || this.isActive || this.#stopping)
+      return;
     const token = ++this.#runToken;
     this.#starting = true;
     this.#hideErrors();
@@ -506,10 +522,15 @@ export class DecibelMeterController {
       return;
     }
 
-    const result = evaluateCalibrationWindow(this.#calibrationSamples, referenceDbSpl);
+    const result = evaluateCalibrationWindow(
+      this.#calibrationSamples,
+      referenceDbSpl,
+    );
     this.#calibrationSamples = [];
     if (!result.ok) {
-      this.#calibrationStatus.textContent = calibrationFailureMessage(result.reason);
+      this.#calibrationStatus.textContent = calibrationFailureMessage(
+        result.reason,
+      );
       this.#calibrationLiveStatus.textContent = "Calibration rejected";
       this.#renderControls();
       return;
@@ -630,10 +651,13 @@ export class DecibelMeterController {
     this.#setStatus("ready", "Stopping Decibel Meter…");
     this.#renderControls();
 
-    const sessionCalibration = this.#activeCalibration?.scope === "session-only";
+    const sessionCalibration =
+      this.#activeCalibration?.scope === "session-only";
     this.#microphone?.stop();
     this.#analyzer?.resetMeter();
-    this.#activeCalibration = sessionCalibration ? null : this.#activeCalibration;
+    this.#activeCalibration = sessionCalibration
+      ? null
+      : this.#activeCalibration;
     this.#clearMeterReadouts();
     this.#clearCaptureDetails();
     this.#activeInputLabel.textContent = "No active input";
@@ -679,8 +703,8 @@ export class DecibelMeterController {
 
   #renderDevices(
     devices: readonly MicrophoneInputDevice[],
-    selectedDeviceId: string | undefined =
-      this.#microphone?.activeSettings()?.deviceId,
+    selectedDeviceId: string | undefined = this.#microphone?.activeSettings()
+      ?.deviceId,
   ): void {
     this.#devices = devices;
     this.#inputSelect.replaceChildren();
@@ -716,7 +740,10 @@ export class DecibelMeterController {
     );
     this.#inputField.hidden = !this.isActive || !hasAlternativeInput;
     if (this.isActive) {
-      this.#activeInputLabel.textContent = deviceLabel(devices, selectedDeviceId);
+      this.#activeInputLabel.textContent = deviceLabel(
+        devices,
+        selectedDeviceId,
+      );
     }
     this.#renderControls();
   }
@@ -730,7 +757,10 @@ export class DecibelMeterController {
     }
     this.#detailsDeviceId.textContent = settings.deviceId || "Not reported";
     this.#detailsAnalysisSampleRate.textContent = `${analyzer.analysisSampleRate} Hz`;
-    this.#detailsSampleRate.textContent = formatNumber(settings.sampleRate, " Hz");
+    this.#detailsSampleRate.textContent = formatNumber(
+      settings.sampleRate,
+      " Hz",
+    );
     this.#detailsChannelCount.textContent = formatNumber(settings.channelCount);
     this.#detailsEchoCancellation.textContent = formatBoolean(
       settings.echoCancellation,

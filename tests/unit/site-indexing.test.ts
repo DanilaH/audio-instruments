@@ -34,7 +34,9 @@ describe("site indexing gate", () => {
         },
         false,
       ),
-    ).toThrow(/blocked until the production sitemap\/indexing artifacts are ready/i);
+    ).toThrow(
+      /blocked until the production sitemap\/indexing artifacts are ready/i,
+    );
   });
 
   it.each([

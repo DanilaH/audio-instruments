@@ -87,7 +87,9 @@ export function calculateMeterReading(
     throw new RangeError("windowSamples must be a positive integer");
   }
   if (windowSamples > samples.length) {
-    throw new RangeError("windowSamples cannot exceed the available PCM buffer");
+    throw new RangeError(
+      "windowSamples cannot exceed the available PCM buffer",
+    );
   }
 
   const startIndex = samples.length - windowSamples;
@@ -191,7 +193,9 @@ export class AudioAnalyzer implements SessionResource {
     if (configuration.smoothingTimeConstant !== undefined) {
       const smoothing = configuration.smoothingTimeConstant;
       if (!Number.isFinite(smoothing) || smoothing < 0 || smoothing > 1) {
-        throw new RangeError("smoothingTimeConstant must be in the range [0, 1]");
+        throw new RangeError(
+          "smoothingTimeConstant must be in the range [0, 1]",
+        );
       }
       this.#spectrumAnalyser.smoothingTimeConstant = smoothing;
     }
@@ -224,7 +228,9 @@ export class AudioAnalyzer implements SessionResource {
     }
 
     this.#meterAnalyser.getFloatTimeDomainData(this.#meterSamples);
-    target.set(this.#meterSamples.subarray(this.#meterSamples.length - target.length));
+    target.set(
+      this.#meterSamples.subarray(this.#meterSamples.length - target.length),
+    );
     return target;
   }
 
@@ -264,7 +270,9 @@ export class AudioAnalyzer implements SessionResource {
       index < 0 ||
       index >= this.#spectrumAnalyser.frequencyBinCount
     ) {
-      throw new RangeError("Frequency-bin index is outside the current FFT range");
+      throw new RangeError(
+        "Frequency-bin index is outside the current FFT range",
+      );
     }
     return index * this.frequencyBinWidthHz;
   }

@@ -232,9 +232,9 @@ describe("AudioAnalyzer service", () => {
     const context = new FakeAudioContext();
     const analyzer = new AudioAnalyzer(context as unknown as AudioContext);
 
-    expect(() =>
-      analyzer.configureSpectrum({ fftSize: 512 as 1_024 }),
-    ).toThrow("Unsupported Spectrum Analyzer fftSize");
+    expect(() => analyzer.configureSpectrum({ fftSize: 512 as 1_024 })).toThrow(
+      "Unsupported Spectrum Analyzer fftSize",
+    );
     expect(() =>
       analyzer.configureSpectrum({ smoothingTimeConstant: 1.1 }),
     ).toThrow("smoothingTimeConstant must be in the range [0, 1]");

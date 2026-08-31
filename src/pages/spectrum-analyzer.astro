@@ -5,8 +5,11 @@ import RelatedTools from "../components/navigation/RelatedTools.astro";
 import SpectrumAnalyzer from "../tools/spectrum-analyzer/SpectrumAnalyzer.astro";
 import { getPublicTools, toolRegistry } from "../registry/tools";
 
-const spectrumTool = toolRegistry.find((tool) => tool.id === "spectrum-analyzer");
-if (!spectrumTool) throw new Error("Spectrum Analyzer registry entry is missing");
+const spectrumTool = toolRegistry.find(
+  (tool) => tool.id === "spectrum-analyzer",
+);
+if (!spectrumTool)
+  throw new Error("Spectrum Analyzer registry entry is missing");
 const publicTools = getPublicTools();
 const publicToolsById = new Map(publicTools.map((tool) => [tool.id, tool]));
 const relatedTools = spectrumTool.relatedToolIds.flatMap((id) => {
@@ -31,18 +34,20 @@ const relatedTools = spectrumTool.relatedToolIds.flatMap((id) => {
     <section class="spectrum-content" aria-labelledby="spectrum-about-title">
       <div>
         <p class="eyebrow">Relative FFT analysis</p>
-        <h2 id="spectrum-about-title">See what the browser audio stream contains</h2>
+        <h2 id="spectrum-about-title">
+          See what the browser audio stream contains
+        </h2>
       </div>
       <div class="spectrum-content__copy">
         <p>
           Spectrum mode uses Web Audio float frequency-bin data on a logarithmic
-          20 Hz to 20 kHz-or-Nyquist axis. The selectable FFT size changes frequency
-          resolution while the baseline smoothing remains 0.8.
+          20 Hz to 20 kHz-or-Nyquist axis. The selectable FFT size changes
+          frequency resolution while the baseline smoothing remains 0.8.
         </p>
         <p>
-          The dominant readout is only the strongest displayed FFT bin at or above
-          40 Hz. It is not a musical-pitch estimate and should not be interpreted as
-          one.
+          The dominant readout is only the strongest displayed FFT bin at or
+          above 40 Hz. It is not a musical-pitch estimate and should not be
+          interpreted as one.
         </p>
       </div>
     </section>
@@ -51,14 +56,14 @@ const relatedTools = spectrumTool.relatedToolIds.flatMap((id) => {
       <h2 id="spectrum-help-title">What the views mean</h2>
       <div class="spectrum-help__grid">
         <p>
-          Waveform shows the current time-domain signal. Spectrogram keeps at most
-          10 seconds of timestamped frequency columns, sampled at no more than 30
-          columns per second and capped at 300 retained columns.
+          Waveform shows the current time-domain signal. Spectrogram keeps at
+          most 10 seconds of timestamped frequency columns, sampled at no more
+          than 30 columns per second and capped at 300 retained columns.
         </p>
         <p>
-          These are relative browser-stream visualizations. They do not calibrate
-          the microphone, measure acoustic SPL, determine physical frequency
-          response, or automatically diagnose a microphone or room.
+          These are relative browser-stream visualizations. They do not
+          calibrate the microphone, measure acoustic SPL, determine physical
+          frequency response, or automatically diagnose a microphone or room.
         </p>
       </div>
     </section>

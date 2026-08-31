@@ -7,9 +7,9 @@ async function expectInsideViewport(
   await expect(locator).toBeVisible();
   const box = await locator.boundingBox();
   expect(box).not.toBeNull();
-  expect(
-    (box?.y ?? viewportHeight) + (box?.height ?? 0),
-  ).toBeLessThanOrEqual(viewportHeight);
+  expect((box?.y ?? viewportHeight) + (box?.height ?? 0)).toBeLessThanOrEqual(
+    viewportHeight,
+  );
 }
 
 test("Sound Test keeps channel controls inside the 390x844 primary viewport", async ({
@@ -23,7 +23,9 @@ test("Sound Test keeps channel controls inside the 390x844 primary viewport", as
   await expectInsideViewport(page.getByRole("button", { name: "Right" }), 844);
   expect(
     await page.evaluate(
-      () => document.documentElement.scrollWidth <= document.documentElement.clientWidth,
+      () =>
+        document.documentElement.scrollWidth <=
+        document.documentElement.clientWidth,
     ),
   ).toBe(true);
 });
@@ -34,6 +36,9 @@ test("Sound Test keeps guided Run and Stop actions inside the 1366x768 primary v
   await page.setViewportSize({ width: 1366, height: 768 });
   await page.goto("/sound-test");
 
-  await expectInsideViewport(page.getByRole("button", { name: "Run sequence" }), 768);
+  await expectInsideViewport(
+    page.getByRole("button", { name: "Run sequence" }),
+    768,
+  );
   await expectInsideViewport(page.getByRole("button", { name: "Stop" }), 768);
 });

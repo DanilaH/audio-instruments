@@ -8,7 +8,10 @@ type ParamEvent = {
   time: number;
 };
 
-async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Promise<void> {
+async function installHeadphoneProbe(
+  page: Page,
+  options: ProbeOptions = {},
+): Promise<void> {
   await page.addInitScript(
     ({ sampleRate }) => {
       type ProbeEvent = {
@@ -107,14 +110,23 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
         constructor() {
           super();
           const frequencyEvents: ProbeEvent[] = [];
-          this.record = { frequency: 0, frequencyEvents, starts: [], stops: [] };
+          this.record = {
+            frequency: 0,
+            frequencyEvents,
+            starts: [],
+            stops: [],
+          };
           oscillators.push(this.record);
           this.frequency = new FakeAudioParam(frequencyEvents, (value) => {
             this.record.frequency = value;
           });
         }
-        start(time = 0) { this.record.starts.push(time); }
-        stop(time = 0) { this.record.stops.push(time); }
+        start(time = 0) {
+          this.record.starts.push(time);
+        }
+        stop(time = 0) {
+          this.record.stops.push(time);
+        }
         addEventListener() {}
       }
 
@@ -139,12 +151,16 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
           this.record.bufferLength = value?.length ?? 0;
           this.record.bufferSampleRate = value?.sampleRate ?? 0;
         }
-        get buffer() { return this._buffer; }
+        get buffer() {
+          return this._buffer;
+        }
         start(time = 0, offset = 0) {
           this.record.loop = this.loop;
           this.record.starts.push({ time, offset });
         }
-        stop(time = 0) { this.record.stops.push(time); }
+        stop(time = 0) {
+          this.record.stops.push(time);
+        }
         addEventListener() {}
       }
 
@@ -176,15 +192,25 @@ async function installHeadphoneProbe(page: Page, options: ProbeOptions = {}): Pr
         state = "suspended";
         destination = new FakeNode();
 
-        constructor() { increment("__headphoneContextCount"); }
-        async resume() { this.state = "running"; }
+        constructor() {
+          increment("__headphoneContextCount");
+        }
+        async resume() {
+          this.state = "running";
+        }
         async close() {
           this.state = "closed";
           increment("__headphoneClosedContextCount");
         }
-        createGain() { return new FakeGainNode(); }
-        createOscillator() { return new FakeOscillatorNode(); }
-        createBufferSource() { return new FakeBufferSourceNode(); }
+        createGain() {
+          return new FakeGainNode();
+        }
+        createOscillator() {
+          return new FakeOscillatorNode();
+        }
+        createBufferSource() {
+          return new FakeBufferSourceNode();
+        }
         createChannelMerger(numberOfInputs = 2) {
           void numberOfInputs;
           return new FakeNode();
@@ -218,40 +244,64 @@ async function readCount(page: Page, key: string): Promise<number> {
   );
 }
 
-test("Headphone Test starts idle, safe and without an AudioContext", async ({ page }) => {
+test("Headphone Test starts idle, safe and without an AudioContext", async ({
+  page,
+}) => {
   await installHeadphoneProbe(page);
   await page.goto("/headphone-test");
 
-  expect(await page.evaluate(() => Reflect.get(window, "__headphoneProbeInstalled"))).toBe(true);
-  await expect(page.getByRole("heading", { name: "Headphone Test", level: 1 })).toBeVisible();
+  expect(
+    await page.evaluate(() => Reflect.get(window, "__headphoneProbeInstalled")),
+  ).toBe(true);
+  await expect(
+    page.getByRole("heading", { name: "Headphone Test", level: 1 }),
+  ).toBeVisible();
   await expect(page.locator("#headphone-status")).toContainText("Ready");
-  await expect(page.getByText("Start with your device/headphone volume low.")).toBeVisible();
-  for (const name of ["Left", "Right", "Both", "Phase", "Sweep", "Bass / rattle"]) {
+  await expect(
+    page.getByText("Start with your device/headphone volume low."),
+  ).toBeVisible();
+  for (const name of [
+    "Left",
+    "Right",
+    "Both",
+    "Phase",
+    "Sweep",
+    "Bass / rattle",
+  ]) {
     await expect(page.getByRole("button", { name, exact: true })).toBeVisible();
   }
   await expect(page.getByRole("button", { name: "Stop" })).toBeDisabled();
   expect(await readCount(page, "__headphoneContextCount")).toBe(0);
 });
 
-test("Headphone Left uses the canonical hard-routed 500 Hz / 700 ms burst", async ({ page }) => {
+test("Headphone Left uses the canonical hard-routed 500 Hz / 700 ms burst", async ({
+  page,
+}) => {
   await installHeadphoneProbe(page);
   await page.goto("/headphone-test");
   await page.getByRole("button", { name: "Left", exact: true }).click();
-  await expect(page.locator("#headphone-status")).toContainText("Playing Left ear");
-
-  const oscillators = await readProbe<Array<{ frequency: number; starts: number[]; stops: number[] }>>(
-    page,
-    "__headphoneProbeOscillators",
+  await expect(page.locator("#headphone-status")).toContainText(
+    "Playing Left ear",
   );
+
+  const oscillators = await readProbe<
+    Array<{ frequency: number; starts: number[]; stops: number[] }>
+  >(page, "__headphoneProbeOscillators");
   const gains = await readProbe<ParamEvent[][]>(page, "__headphoneProbeGains");
   expect(oscillators).toHaveLength(1);
-  expect(oscillators[0]).toMatchObject({ frequency: 500, starts: [10], stops: [10.7] });
+  expect(oscillators[0]).toMatchObject({
+    frequency: 500,
+    starts: [10],
+    stops: [10.7],
+  });
   expect(gains[2]?.at(-1)).toMatchObject({ kind: "set", value: 1 });
   expect(gains[3]?.at(-1)).toMatchObject({ kind: "set", value: 0 });
   await expect(page.getByRole("button", { name: "Stop" })).toBeEnabled();
 });
 
-test("Headphone Phase keeps one canonical correlated source across A/B", async ({ page }) => {
+test("Headphone Phase keeps one canonical correlated source across A/B", async ({
+  page,
+}) => {
   await installHeadphoneProbe(page);
   await page.goto("/headphone-test");
   await page.getByRole("button", { name: "Phase", exact: true }).click();
@@ -289,7 +339,9 @@ test("Headphone Sweep uses the shared 20 Hz to 20 kHz fifteen-second logarithmic
   await page.goto("/headphone-test");
   await page.getByRole("button", { name: "Sweep", exact: true }).click();
   await page.getByRole("button", { name: "Run headphone sweep" }).click();
-  await expect(page.locator("#headphone-status")).toContainText("Headphone sweep running");
+  await expect(page.locator("#headphone-status")).toContainText(
+    "Headphone sweep running",
+  );
 
   const oscillators = await readProbe<
     Array<{
@@ -299,7 +351,11 @@ test("Headphone Sweep uses the shared 20 Hz to 20 kHz fifteen-second logarithmic
       stops: number[];
     }>
   >(page, "__headphoneProbeOscillators");
-  expect(oscillators[0]).toMatchObject({ frequency: 20, starts: [10], stops: [25] });
+  expect(oscillators[0]).toMatchObject({
+    frequency: 20,
+    starts: [10],
+    stops: [25],
+  });
   expect(oscillators[0]?.frequencyEvents).toContainEqual({
     kind: "exponential",
     value: 20_000,
@@ -307,7 +363,9 @@ test("Headphone Sweep uses the shared 20 Hz to 20 kHz fifteen-second logarithmic
   });
 });
 
-test("Headphone runtime cap clamps Sweep and Bass generation", async ({ page }) => {
+test("Headphone runtime cap clamps Sweep and Bass generation", async ({
+  page,
+}) => {
   await installHeadphoneProbe(page, { sampleRate: 200 });
   await page.goto("/headphone-test");
 
@@ -325,7 +383,9 @@ test("Headphone runtime cap clamps Sweep and Bass generation", async ({ page }) 
     time: 25,
   });
 
-  await page.getByRole("button", { name: "Bass / rattle", exact: true }).click();
+  await page
+    .getByRole("button", { name: "Bass / rattle", exact: true })
+    .click();
   await page.getByRole("button", { name: "Run bass / rattle sweep" }).click();
   oscillators = await readProbe(page, "__headphoneProbeOscillators");
   expect(oscillators[1]?.frequencyEvents).toContainEqual({
@@ -354,10 +414,14 @@ test("Headphone mode switching stops active playback and pagehide closes its Aud
   await page.getByRole("button", { name: "In phase" }).click();
   expect(await readCount(page, "__headphoneContextCount")).toBe(1);
   await page.evaluate(() => window.dispatchEvent(new Event("pagehide")));
-  await expect.poll(() => readCount(page, "__headphoneClosedContextCount")).toBe(1);
+  await expect
+    .poll(() => readCount(page, "__headphoneClosedContextCount"))
+    .toBe(1);
 });
 
-test("Headphone related tools are live-only and claims avoid burn-in/quality scoring", async ({ page }) => {
+test("Headphone related tools are live-only and claims avoid burn-in/quality scoring", async ({
+  page,
+}) => {
   await page.goto("/headphone-test");
   for (const route of [
     "/speaker-test",

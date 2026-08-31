@@ -78,13 +78,15 @@ const categories: readonly {
   {
     id: "signal-frequency",
     label: "Signal and frequency",
-    description: "Reference tones, sweeps, noise, bass and hearing exploration.",
+    description:
+      "Reference tones, sweeps, noise, bass and hearing exploration.",
     icon: "ph-wave-sine",
   },
   {
     id: "input-analysis",
     label: "Input and analysis",
-    description: "Microphone capture, spectrum, pitch and relative level tools.",
+    description:
+      "Microphone capture, spectrum, pitch and relative level tools.",
     icon: "ph-waveform",
   },
   {
@@ -314,12 +316,15 @@ const liveCategories = categories
             <h2 id="all-tools-title">Audio tools by job.</h2>
           </div>
           <p class="directory-summary">
-            {publicTools.length} focused browser tools, grouped by the job they help
-            you inspect.
+            {publicTools.length} focused browser tools, grouped by the job they
+            help you inspect.
           </p>
         </div>
 
-        <div class="tool-categories" data-category-count={liveCategories.length}>
+        <div
+          class="tool-categories"
+          data-category-count={liveCategories.length}
+        >
           {liveCategories.map(({ id, label, description, icon, tools }) => (
             <section
               class="tool-category"
@@ -334,7 +339,9 @@ const liveCategories = categories
                 <div>
                   <div class="tool-category__title-row">
                     <h3 id={`category-${id}`}>{label}</h3>
-                    <span aria-label={`${tools.length} tools`}>{tools.length}</span>
+                    <span aria-label={`${tools.length} tools`}>
+                      {tools.length}
+                    </span>
                   </div>
                   <p>{description}</p>
                 </div>
@@ -435,19 +442,31 @@ const liveCategories = categories
 
   .featured-card--speaker {
     background:
-      radial-gradient(circle at 94% 12%, rgb(255 181 141 / 0.3), transparent 38%),
+      radial-gradient(
+        circle at 94% 12%,
+        rgb(255 181 141 / 0.3),
+        transparent 38%
+      ),
       var(--color-surface);
   }
 
   .featured-card--microphone {
     background:
-      radial-gradient(circle at 90% 8%, rgb(118 205 228 / 0.28), transparent 38%),
+      radial-gradient(
+        circle at 90% 8%,
+        rgb(118 205 228 / 0.28),
+        transparent 38%
+      ),
       var(--color-surface);
   }
 
   .featured-card--headphone {
     background:
-      radial-gradient(circle at 90% 8%, rgb(103 167 255 / 0.24), transparent 34%),
+      radial-gradient(
+        circle at 90% 8%,
+        rgb(103 167 255 / 0.24),
+        transparent 34%
+      ),
       linear-gradient(145deg, var(--color-surface), rgb(241 247 255 / 0.86));
   }
 

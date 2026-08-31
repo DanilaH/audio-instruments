@@ -60,13 +60,18 @@ export class AnalyzerWaveformCanvas {
     pixelRatio: number;
   } {
     const rect = this.#canvas.getBoundingClientRect();
-    const pixelRatio = getWaveformCanvasPixelRatio(window.devicePixelRatio || 1);
+    const pixelRatio = getWaveformCanvasPixelRatio(
+      window.devicePixelRatio || 1,
+    );
     const cssWidth = Math.max(1, rect.width);
     const cssHeight = Math.max(1, rect.height);
     const pixelWidth = Math.max(1, Math.round(cssWidth * pixelRatio));
     const pixelHeight = Math.max(1, Math.round(cssHeight * pixelRatio));
 
-    if (this.#canvas.width !== pixelWidth || this.#canvas.height !== pixelHeight) {
+    if (
+      this.#canvas.width !== pixelWidth ||
+      this.#canvas.height !== pixelHeight
+    ) {
       this.#canvas.width = pixelWidth;
       this.#canvas.height = pixelHeight;
     }

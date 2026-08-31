@@ -28,16 +28,9 @@ const TRANSITION_WAIT_MS =
 
 type SurroundMode = MultichannelMode | "stereo-preview" | "unknown";
 type StereoAction =
-  | "left"
-  | "center"
-  | "right"
-  | "left-to-right"
-  | "right-to-left";
+  "left" | "center" | "right" | "left-to-right" | "right-to-left";
 type CapabilityState =
-  | "unavailable"
-  | "candidate"
-  | "confirmed"
-  | "unsupported";
+  "unavailable" | "candidate" | "confirmed" | "unsupported";
 type SurroundCapabilities = {
   readonly maxChannelCount: number;
   fiveOne: CapabilityState;
@@ -75,10 +68,15 @@ const EIGHT_CHANNELS: readonly ChannelDefinition[] = Array.from(
   }),
 );
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
-    throw new Error(`Surround Sound Test is missing required element: ${selector}`);
+    throw new Error(
+      `Surround Sound Test is missing required element: ${selector}`,
+    );
   }
   return element;
 }
@@ -203,7 +201,10 @@ export class SurroundSoundTestController {
     this.#levelInput = requireElement(root, "#surround-level");
     this.#status = requireElement(root, "#surround-status");
     this.#statusLabel = requireElement(this.#status, "[data-status-label]");
-    this.#capabilitySummary = requireElement(root, "[data-surround-capability]");
+    this.#capabilitySummary = requireElement(
+      root,
+      "[data-surround-capability]",
+    );
     this.#visualLabel = requireElement(root, "[data-surround-visual-label]");
     this.#errorMessage = requireElement(root, "[data-surround-error]");
     this.#modeSelector = requireElement(root, "[data-surround-mode-selector]");
@@ -312,8 +313,7 @@ export class SurroundSoundTestController {
         "click",
         () => {
           const action = button.dataset.surroundStereo as
-            | StereoAction
-            | undefined;
+            StereoAction | undefined;
           if (!action) return;
           if (action === "left-to-right" || action === "right-to-left") {
             void this.#runStereoPan(action);
@@ -650,10 +650,8 @@ export class SurroundSoundTestController {
       const totalSeconds =
         (channels.length - 1) * CHANNEL_SEQUENCE_STEP_SECONDS +
         CHANNEL_TEST_DURATION_SECONDS;
-      this.#schedule(
-        totalSeconds * MILLISECONDS_PER_SECOND,
-        token,
-        () => this.#finishRun(),
+      this.#schedule(totalSeconds * MILLISECONDS_PER_SECOND, token, () =>
+        this.#finishRun(),
       );
     } catch (error) {
       multichannel.stop();
@@ -679,10 +677,9 @@ export class SurroundSoundTestController {
     return { context, engine: this.#stereoEngine };
   }
 
-  async #runStereoStatic(
-    action: "left" | "center" | "right",
-  ): Promise<void> {
-    if (this.#mode !== "stereo-preview" || this.isActive || this.#disposed) return;
+  async #runStereoStatic(action: "left" | "center" | "right"): Promise<void> {
+    if (this.#mode !== "stereo-preview" || this.isActive || this.#disposed)
+      return;
     const token = this.#beginStart(`Starting ${stereoActionLabel(action)}…`);
 
     try {
@@ -711,8 +708,11 @@ export class SurroundSoundTestController {
   async #runStereoPan(
     action: "left-to-right" | "right-to-left",
   ): Promise<void> {
-    if (this.#mode !== "stereo-preview" || this.isActive || this.#disposed) return;
-    const token = this.#beginStart(`Starting ${stereoActionLabel(action)} pan…`);
+    if (this.#mode !== "stereo-preview" || this.isActive || this.#disposed)
+      return;
+    const token = this.#beginStart(
+      `Starting ${stereoActionLabel(action)} pan…`,
+    );
 
     try {
       const { context, engine } = await this.#getStereoEngine();
@@ -736,10 +736,8 @@ export class SurroundSoundTestController {
       this.#setControlsActive(true);
       this.#setVisual(stereoActionLabel(action));
       this.#setStatus("playing", `Panning ${stereoActionLabel(action)}`);
-      this.#schedule(
-        STEREO_PAN_SECONDS * MILLISECONDS_PER_SECOND,
-        token,
-        () => this.#finishRun(),
+      this.#schedule(STEREO_PAN_SECONDS * MILLISECONDS_PER_SECOND, token, () =>
+        this.#finishRun(),
       );
     } catch (error) {
       this.#handleError(error, token);
@@ -818,7 +816,7 @@ export class SurroundSoundTestController {
         (mode === "experimental-eight" &&
           Boolean(
             capabilities &&
-              isSelectableCapability(capabilities.experimentalEight),
+            isSelectableCapability(capabilities.experimentalEight),
           ));
       button.hidden = !available;
       button.setAttribute("aria-pressed", String(mode === this.#mode));
@@ -881,7 +879,10 @@ export class SurroundSoundTestController {
     try {
       await previousSession.dispose();
     } catch (error) {
-      console.error("Surround Test failed to dispose uncertain AudioSession", error);
+      console.error(
+        "Surround Test failed to dispose uncertain AudioSession",
+        error,
+      );
     }
   }
 

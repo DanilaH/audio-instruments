@@ -31,7 +31,9 @@ const relatedTools = noiseTool.relatedToolIds.flatMap((id) => {
     <section class="noise-content" aria-labelledby="noise-about-title">
       <div>
         <p class="eyebrow">Reference signal</p>
-        <h2 id="noise-about-title">Deterministic local noise, not a spectral measurement</h2>
+        <h2 id="noise-about-title">
+          Deterministic local noise, not a spectral measurement
+        </h2>
       </div>
       <div class="noise-content__copy">
         <p>
@@ -41,10 +43,10 @@ const relatedTools = noiseTool.relatedToolIds.flatMap((id) => {
           0.8, and condition the loop boundary before playback.
         </p>
         <p>
-          Each generated source is an 8 second mono buffer that loops locally and
-          is duplicated identically to Left and Right through the shared output
-          engine. Web Audio may resample that reference buffer to the current
-          AudioContext rate during playback.
+          Each generated source is an 8 second mono buffer that loops locally
+          and is duplicated identically to Left and Right through the shared
+          output engine. Web Audio may resample that reference buffer to the
+          current AudioContext rate during playback.
         </p>
       </div>
     </section>
@@ -53,14 +55,14 @@ const relatedTools = noiseTool.relatedToolIds.flatMap((id) => {
       <h2 id="noise-help-title">What the result means</h2>
       <div class="noise-help__grid">
         <p>
-          These are practical reference-noise generators, not laboratory spectral
-          standards. The page generates known digital PCM but does not measure the
-          acoustic spectrum, speaker response or room response.
+          These are practical reference-noise generators, not laboratory
+          spectral standards. The page generates known digital PCM but does not
+          measure the acoustic spectrum, speaker response or room response.
         </p>
         <p>
           Keep device/headphone volume comfortable throughout playback. Timed
-          modes add a visible long-playback reminder; Stop remains available while
-          the noise is active.
+          modes add a visible long-playback reminder; Stop remains available
+          while the noise is active.
         </p>
       </div>
     </section>

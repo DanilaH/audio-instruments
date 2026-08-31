@@ -9,7 +9,10 @@ for (const viewport of [
   test(`${viewport.name} keeps the primary microphone action reachable without horizontal overflow`, async ({
     page,
   }) => {
-    await page.setViewportSize({ width: viewport.width, height: viewport.height });
+    await page.setViewportSize({
+      width: viewport.width,
+      height: viewport.height,
+    });
     await page.goto("/microphone-test");
 
     const start = page.locator("[data-mic-start]");
@@ -20,7 +23,9 @@ for (const viewport of [
     expect(startBox!.y + startBox!.height).toBeLessThanOrEqual(viewport.height);
 
     const overflow = await page.evaluate(
-      () => document.documentElement.scrollWidth - document.documentElement.clientWidth,
+      () =>
+        document.documentElement.scrollWidth -
+        document.documentElement.clientWidth,
     );
     expect(overflow).toBeLessThanOrEqual(1);
   });

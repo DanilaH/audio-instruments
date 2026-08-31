@@ -14,7 +14,10 @@ import {
   type MicrophoneInputDevice,
 } from "../../browser/microphone/MicrophoneService";
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
     throw new Error(`Pitch Detector is missing required element: ${selector}`);
@@ -27,7 +30,10 @@ function captureErrorMessage(error: unknown): string {
     if (error.name === "NotAllowedError") {
       return "Microphone permission was denied. Allow microphone access for this site, then try again.";
     }
-    if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+    if (
+      error.name === "NotFoundError" ||
+      error.name === "DevicesNotFoundError"
+    ) {
       return "No microphone input was found. Connect or enable an input device, then try again.";
     }
     if (error.name === "NotReadableError" || error.name === "TrackStartError") {
@@ -107,7 +113,10 @@ export class PitchDetectorController {
     this.#stabilityValue = requireElement(root, "[data-pitch-stability]");
     this.#resultMessage = requireElement(root, "[data-pitch-message]");
     this.#needle = requireElement(root, "[data-pitch-needle]");
-    this.#analysisRateValue = requireElement(root, "[data-pitch-analysis-rate]");
+    this.#analysisRateValue = requireElement(
+      root,
+      "[data-pitch-analysis-rate]",
+    );
     this.#downsampleValue = requireElement(root, "[data-pitch-downsample]");
     this.#frameSizeValue = requireElement(root, "[data-pitch-frame-size]");
     this.#errorMessage = requireElement(root, "[data-pitch-error]");
@@ -140,9 +149,13 @@ export class PitchDetectorController {
 
   #bindEvents(): void {
     const signal = this.#listeners.signal;
-    this.#startButton.addEventListener("click", () => void this.#startMicrophone(), {
-      signal,
-    });
+    this.#startButton.addEventListener(
+      "click",
+      () => void this.#startMicrophone(),
+      {
+        signal,
+      },
+    );
     this.#stopButton.addEventListener("click", () => void this.#stopTool(), {
       signal,
     });
@@ -195,7 +208,8 @@ export class PitchDetectorController {
   }
 
   async #startMicrophone(): Promise<void> {
-    if (this.#disposed || this.#starting || this.isActive || this.#stopping) return;
+    if (this.#disposed || this.#starting || this.isActive || this.#stopping)
+      return;
     const token = ++this.#runToken;
     this.#starting = true;
     this.#hideErrors();
@@ -445,8 +459,8 @@ export class PitchDetectorController {
 
   #renderDevices(
     devices: readonly MicrophoneInputDevice[],
-    selectedDeviceId: string | undefined =
-      this.#microphone?.activeSettings()?.deviceId,
+    selectedDeviceId: string | undefined = this.#microphone?.activeSettings()
+      ?.deviceId,
   ): void {
     this.#devices = devices;
     this.#inputSelect.replaceChildren();
@@ -483,7 +497,10 @@ export class PitchDetectorController {
     this.#inputField.hidden = !this.isActive || !hasAlternativeInput;
 
     if (this.isActive) {
-      this.#activeInputLabel.textContent = deviceLabel(devices, selectedDeviceId);
+      this.#activeInputLabel.textContent = deviceLabel(
+        devices,
+        selectedDeviceId,
+      );
     }
     this.#renderControls();
   }

@@ -22,10 +22,15 @@ interface ScheduledClick {
   readonly targetContextSec: number;
 }
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
-    throw new Error(`Audio Latency tool is missing required element: ${selector}`);
+    throw new Error(
+      `Audio Latency tool is missing required element: ${selector}`,
+    );
   }
   return element;
 }
@@ -36,7 +41,9 @@ function requireElements<T extends Element>(
 ): readonly T[] {
   const elements = [...root.querySelectorAll<T>(selector)];
   if (elements.length === 0) {
-    throw new Error(`Audio Latency tool is missing required elements: ${selector}`);
+    throw new Error(
+      `Audio Latency tool is missing required elements: ${selector}`,
+    );
   }
   return elements;
 }
@@ -136,9 +143,13 @@ export class AudioLatencyController {
     this.#stopButton.addEventListener("click", () => this.#stop("Stopped"), {
       signal,
     });
-    this.#offsetInput.addEventListener("input", () => this.#handleOffsetChange(), {
-      signal,
-    });
+    this.#offsetInput.addEventListener(
+      "input",
+      () => this.#handleOffsetChange(),
+      {
+        signal,
+      },
+    );
     document.addEventListener(
       "visibilitychange",
       () => {
@@ -168,7 +179,10 @@ export class AudioLatencyController {
 
       if (!this.#isCurrent(token)) {
         await session.dispose();
-        throw new DOMException("Audio Latency Start was superseded", "AbortError");
+        throw new DOMException(
+          "Audio Latency Start was superseded",
+          "AbortError",
+        );
       }
 
       this.#session = session;
@@ -178,7 +192,10 @@ export class AudioLatencyController {
       return { context, output };
     } catch (error) {
       await session.dispose().catch((disposeError) => {
-        console.error("Audio Latency failed-session cleanup failed", disposeError);
+        console.error(
+          "Audio Latency failed-session cleanup failed",
+          disposeError,
+        );
       });
       throw error;
     }
@@ -415,7 +432,8 @@ export class AudioLatencyController {
   }
 
   #renderControls(): void {
-    this.#startButton.disabled = this.#active || this.#starting || this.#disposed;
+    this.#startButton.disabled =
+      this.#active || this.#starting || this.#disposed;
     this.#stopButton.disabled = !this.#active && !this.#starting;
     this.#root.dataset.latencyState = this.#active ? "playing" : "idle";
   }

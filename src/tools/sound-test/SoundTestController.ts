@@ -12,9 +12,12 @@ import {
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 
 const MILLISECONDS_PER_SECOND = 1_000;
-const BURST_DURATION_MS = CHANNEL_TEST_DURATION_SECONDS * MILLISECONDS_PER_SECOND;
-const SEQUENCE_STEP_MS = CHANNEL_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
-const SEQUENCE_TOTAL_MS = CHANNEL_SEQUENCE_TOTAL_SECONDS * MILLISECONDS_PER_SECOND;
+const BURST_DURATION_MS =
+  CHANNEL_TEST_DURATION_SECONDS * MILLISECONDS_PER_SECOND;
+const SEQUENCE_STEP_MS =
+  CHANNEL_SEQUENCE_STEP_SECONDS * MILLISECONDS_PER_SECOND;
+const SEQUENCE_TOTAL_MS =
+  CHANNEL_SEQUENCE_TOTAL_SECONDS * MILLISECONDS_PER_SECOND;
 
 type ActiveChannel = StereoChannelMode | "none";
 
@@ -82,7 +85,10 @@ export class SoundTestController {
     this.#stopButton = requireElement(root, "[data-sound-stop]");
     this.#status = requireElement(root, "#sound-status");
     this.#statusLabel = requireElement(this.#status, "[data-status-label]");
-    this.#activeChannelLabel = requireElement(root, "[data-active-channel-label]");
+    this.#activeChannelLabel = requireElement(
+      root,
+      "[data-active-channel-label]",
+    );
     this.#errorMessage = requireElement(root, "[data-sound-error]");
 
     this.#bindEvents();
@@ -139,7 +145,9 @@ export class SoundTestController {
     }
 
     if (!this.#engine) {
-      this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
+      this.#engine = new AudioOutputEngine(context, {
+        levelProfile: "general",
+      });
       this.#session.register(this.#engine);
     }
 
@@ -202,7 +210,9 @@ export class SoundTestController {
       this.#setActiveChannel("left");
 
       this.#schedule(BURST_DURATION_MS, token, () => this.#setSequenceGap());
-      this.#schedule(SEQUENCE_STEP_MS, token, () => this.#setSequenceChannel("both"));
+      this.#schedule(SEQUENCE_STEP_MS, token, () =>
+        this.#setSequenceChannel("both"),
+      );
       this.#schedule(SEQUENCE_STEP_MS + BURST_DURATION_MS, token, () =>
         this.#setSequenceGap(),
       );

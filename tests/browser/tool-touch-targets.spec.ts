@@ -102,7 +102,9 @@ test("tool-local controls keep a 44px touch target", async ({ page }) => {
   }
 });
 
-test("native microphone playback keeps a 44px outer height", async ({ page }) => {
+test("native microphone playback keeps a 44px outer height", async ({
+  page,
+}) => {
   for (const viewport of targetViewports) {
     await page.setViewportSize(viewport);
     await page.goto("/microphone-test");

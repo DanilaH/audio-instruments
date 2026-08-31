@@ -89,7 +89,10 @@ async function installHearingHarness(
     class FakeGainNode extends FakeNode {
       readonly gain: FakeAudioParam;
 
-      constructor(context: BaseAudioContext, onValue?: (value: number) => void) {
+      constructor(
+        context: BaseAudioContext,
+        onValue?: (value: number) => void,
+      ) {
         super(context);
         this.gain = new FakeAudioParam(onValue);
       }
@@ -215,7 +218,10 @@ async function harnessState(page: Page): Promise<HearingHarnessState> {
   );
 }
 
-async function selectMode(page: Page, mode: "guided" | "manual"): Promise<void> {
+async function selectMode(
+  page: Page,
+  mode: "guided" | "manual",
+): Promise<void> {
   await page
     .locator("label.mode-pill")
     .filter({ hasText: mode === "guided" ? "Guided" : "Manual" })
@@ -256,8 +262,12 @@ test("keeps high-frequency playback locked behind a fresh 1 kHz / -36 dB listeni
   await expect(page.locator("[data-hearing-result]")).toHaveText("—");
   await expect(page.locator("[data-hearing-guided-start]")).toBeDisabled();
   await expect(page.locator("[data-hearing-stop]")).toBeDisabled();
-  await expect(page.getByRole("link", { name: "Tone Generator" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Headphone Test" })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Tone Generator" })).toHaveCount(
+    1,
+  );
+  await expect(page.getByRole("link", { name: "Headphone Test" })).toHaveCount(
+    1,
+  );
 
   await selectMode(page, "manual");
   await expect(page.locator("[data-hearing-manual-play]")).toBeDisabled();
@@ -347,7 +357,9 @@ test("capability filtering removes unavailable Guided and Manual frequencies wit
   await playSetupReference(page);
 
   await expect(page.locator("#hearing-frequency-cap")).toBeVisible();
-  await expect(page.locator("#hearing-frequency-cap")).toContainText("15.2 kHz");
+  await expect(page.locator("#hearing-frequency-cap")).toContainText(
+    "15.2 kHz",
+  );
   await expect(page.locator("[data-hearing-result]")).toHaveText("—");
 
   await selectMode(page, "manual");
@@ -470,7 +482,9 @@ test("hidden-tab Stop and BFCache restoration leave a fresh idle session", async
   ).toHaveText("Stopped while tab was hidden");
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
   await expect
     .poll(async () => (await harnessState(page)).closedContextCount)
@@ -481,7 +495,9 @@ test("hidden-tab Stop and BFCache restoration leave a fresh idle session", async
       configurable: true,
       get: () => false,
     });
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
   await expect(
     page.locator("#hearing-frequency-status [data-status-label]"),

@@ -73,7 +73,9 @@ describe("tool registry", () => {
     const registryIds = new Set(toolRegistry.map((tool) => tool.id));
 
     for (const tool of toolRegistry) {
-      expect(new Set(tool.relatedToolIds).size).toBe(tool.relatedToolIds.length);
+      expect(new Set(tool.relatedToolIds).size).toBe(
+        tool.relatedToolIds.length,
+      );
 
       for (const relatedId of tool.relatedToolIds) {
         expect(registryIds.has(relatedId)).toBe(true);

@@ -28,7 +28,10 @@ const GENERAL_LEVEL_MAX_DB = -12;
 const GENERAL_LEVEL_DEFAULT_DB = -24;
 const MILLISECONDS_PER_SECOND = 1_000;
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
     throw new Error(`Frequency Sweep is missing required element: ${selector}`);
@@ -103,7 +106,10 @@ export class FrequencySweepController {
     this.#lowSlider = requireElement(root, "#frequency-sweep-low-slider");
     this.#highSlider = requireElement(root, "#frequency-sweep-high-slider");
     this.#durationInput = requireElement(root, "#frequency-sweep-duration");
-    this.#durationOutput = requireElement(root, "#frequency-sweep-duration-output");
+    this.#durationOutput = requireElement(
+      root,
+      "#frequency-sweep-duration-output",
+    );
     this.#scaleButtons = [
       ...root.querySelectorAll<HTMLButtonElement>("[data-sweep-scale]"),
     ];
@@ -117,7 +123,10 @@ export class FrequencySweepController {
     this.#statusLabel = requireElement(this.#status, "[data-status-label]");
     this.#fromReadout = requireElement(root, "[data-sweep-from]");
     this.#toReadout = requireElement(root, "[data-sweep-to]");
-    this.#durationReadout = requireElement(root, "[data-sweep-duration-readout]");
+    this.#durationReadout = requireElement(
+      root,
+      "[data-sweep-duration-readout]",
+    );
     this.#scaleReadout = requireElement(root, "[data-sweep-scale-readout]");
     this.#capabilityNotice = requireElement(root, "#frequency-sweep-cap");
     this.#capabilityMessage = requireElement(
@@ -126,7 +135,10 @@ export class FrequencySweepController {
     );
     this.#errorMessage = requireElement(root, "[data-sweep-error]");
 
-    if (this.#scaleButtons.length !== 2 || this.#directionButtons.length !== 2) {
+    if (
+      this.#scaleButtons.length !== 2 ||
+      this.#directionButtons.length !== 2
+    ) {
       throw new Error("Frequency Sweep selector topology is incomplete");
     }
 
@@ -236,7 +248,9 @@ export class FrequencySweepController {
     }
 
     if (!this.#engine) {
-      this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
+      this.#engine = new AudioOutputEngine(context, {
+        levelProfile: "general",
+      });
       this.#engine.setLevelDb(this.#levelDb);
       this.#session.register(this.#engine);
     }
@@ -341,7 +355,10 @@ export class FrequencySweepController {
     else this.#hideError();
     this.#renderReadouts();
     this.#setControlsActive(false);
-    this.#setStatus(error ? "error" : "idle", error ? "Check settings" : "Ready");
+    this.#setStatus(
+      error ? "error" : "idle",
+      error ? "Check settings" : "Ready",
+    );
   }
 
   #renderReadouts(definition = this.#readDefinition()): void {
@@ -460,7 +477,10 @@ export class FrequencySweepController {
     try {
       this.#engine?.stop();
     } catch (stopError) {
-      console.error("Frequency Sweep cleanup after start failure failed", stopError);
+      console.error(
+        "Frequency Sweep cleanup after start failure failed",
+        stopError,
+      );
     }
 
     this.#starting = false;
@@ -544,7 +564,9 @@ export class FrequencySweepController {
     this.#highInput.max = String(FREQUENCY_SWEEP_MAX_HZ);
     this.#setFrequencyInput(this.#lowInput, FREQUENCY_SWEEP_DEFAULT_LOW_HZ);
     this.#setFrequencyInput(this.#highInput, FREQUENCY_SWEEP_DEFAULT_HIGH_HZ);
-    this.#durationInput.value = String(FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS);
+    this.#durationInput.value = String(
+      FREQUENCY_SWEEP_DEFAULT_DURATION_SECONDS,
+    );
     this.#capabilityMessage.textContent = "";
     this.#capabilityNotice.hidden = true;
     this.#capabilityNotice.removeAttribute("role");

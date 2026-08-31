@@ -187,14 +187,18 @@ async function installSpectrumHarness(page: Page): Promise<void> {
         };
       }
 
-      async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
+      async getUserMedia(
+        constraints: MediaStreamConstraints,
+      ): Promise<MediaStream> {
         state.getUserMediaCalls.push(constraints);
         const audio = constraints.audio as MediaTrackConstraints;
         const exact =
           typeof audio === "object" &&
           audio.deviceId &&
           typeof audio.deviceId === "object"
-            ? String((audio.deviceId as ConstrainDOMStringParameters).exact ?? "")
+            ? String(
+                (audio.deviceId as ConstrainDOMStringParameters).exact ?? "",
+              )
             : "";
         const deviceId = exact || "mic-1";
         state.lifecycle.push(`gum:${deviceId}`);
@@ -257,7 +261,9 @@ async function installSpectrumHarness(page: Page): Promise<void> {
 
 async function harnessState(page: Page): Promise<SpectrumHarnessState> {
   return page.evaluate(() =>
-    structuredClone(Reflect.get(window, "__spectrumHarness") as SpectrumHarnessState),
+    structuredClone(
+      Reflect.get(window, "__spectrumHarness") as SpectrumHarnessState,
+    ),
   );
 }
 
@@ -273,8 +279,12 @@ test("stays idle until Start, then applies documented FFT defaults and raw-ish c
   await expect(page.locator("[data-spectrum-fft]")).toHaveValue("2048");
   await expect(page.locator("[data-spectrum-dominant]")).toHaveText("—");
   await expect(page.locator("[data-spectrum-stop]")).toBeDisabled();
-  await expect(page.getByRole("link", { name: "Microphone Test" })).toHaveCount(1);
-  await expect(page.getByRole("link", { name: "Pitch Detector" })).toHaveCount(1);
+  await expect(page.getByRole("link", { name: "Microphone Test" })).toHaveCount(
+    1,
+  );
+  await expect(page.getByRole("link", { name: "Pitch Detector" })).toHaveCount(
+    1,
+  );
 
   await page.locator("[data-spectrum-start]").click();
   await expect(
@@ -284,7 +294,9 @@ test("stays idle until Start, then applies documented FFT defaults and raw-ish c
   await expect(page.locator("[data-spectrum-input-field]")).toBeVisible();
   await expect(page.locator("[data-spectrum-input] option")).toHaveCount(3);
   await expect(page.locator("[data-spectrum-dominant]")).not.toHaveText("—");
-  await expect(page.locator("[data-spectrum-analysis-rate]")).toHaveText("48000 Hz");
+  await expect(page.locator("[data-spectrum-analysis-rate]")).toHaveText(
+    "48000 Hz",
+  );
   await expect(page.locator("[data-spectrum-fft-value]")).toHaveText("2048");
   await expect(page.locator("[data-spectrum-bin-width]")).toHaveText("23.4 Hz");
   await expect(page.locator("[data-spectrum-range]")).toHaveText(
@@ -326,19 +338,21 @@ test("switches Spectrum, Waveform and Spectrogram without another capture", asyn
     .toBeGreaterThan(0);
   await expect(page.locator("[data-spectrum-dominant]")).toHaveText("—");
 
-  const frequencyReadsBeforeSpectrogram = (await harnessState(page)).frequencyReads;
+  const frequencyReadsBeforeSpectrogram = (await harnessState(page))
+    .frequencyReads;
   await page.locator('[data-spectrum-view="spectrogram"]').click();
-  await expect(page.locator('[data-spectrum-view="spectrogram"]')).toHaveAttribute(
-    "aria-pressed",
-    "true",
-  );
+  await expect(
+    page.locator('[data-spectrum-view="spectrogram"]'),
+  ).toHaveAttribute("aria-pressed", "true");
   await expect
     .poll(async () => (await harnessState(page)).frequencyReads)
     .toBeGreaterThan(frequencyReadsBeforeSpectrogram);
 
   await page.locator('[data-spectrum-view="spectrum"]').click();
   await expect(page.locator("[data-spectrum-dominant]")).not.toHaveText("—");
-  expect((await harnessState(page)).getUserMediaCalls).toHaveLength(callsAfterStart);
+  expect((await harnessState(page)).getUserMediaCalls).toHaveLength(
+    callsAfterStart,
+  );
 });
 
 test("failed exact input selection preserves the previous live microphone", async ({
@@ -412,7 +426,10 @@ test("Stop cancels rendering, restart resumes one live analysis flow, and track 
   expect((await harnessState(page)).getUserMediaCalls).toHaveLength(2);
 
   await page.evaluate(() => {
-    const endTrack = Reflect.get(window, "__spectrumEndActiveTrack") as () => boolean;
+    const endTrack = Reflect.get(
+      window,
+      "__spectrumEndActiveTrack",
+    ) as () => boolean;
     endTrack();
   });
   await expect(
@@ -432,14 +449,18 @@ test("BFCache restoration is idle and the next Start creates a fresh AudioContex
   expect((await harnessState(page)).audioContextCount).toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pagehide", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pagehide", { persisted: true }),
+    );
   });
   await expect
     .poll(async () => (await harnessState(page)).closedContextCount)
     .toBe(1);
 
   await page.evaluate(() => {
-    window.dispatchEvent(new PageTransitionEvent("pageshow", { persisted: true }));
+    window.dispatchEvent(
+      new PageTransitionEvent("pageshow", { persisted: true }),
+    );
   });
   await expect(
     page.locator("#spectrum-analyzer-status [data-status-label]"),

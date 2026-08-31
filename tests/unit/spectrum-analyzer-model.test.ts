@@ -75,12 +75,12 @@ describe("SpectrogramHistory", () => {
     const values = new Float32Array([-80, -60]);
 
     expect(history.ingest(0, values)).toBe(true);
-    expect(history.ingest(SPECTROGRAM_MIN_COLUMN_INTERVAL_MS - 0.1, values)).toBe(
-      false,
-    );
-    expect(history.ingest(SPECTROGRAM_MIN_COLUMN_INTERVAL_MS + 0.1, values)).toBe(
-      true,
-    );
+    expect(
+      history.ingest(SPECTROGRAM_MIN_COLUMN_INTERVAL_MS - 0.1, values),
+    ).toBe(false);
+    expect(
+      history.ingest(SPECTROGRAM_MIN_COLUMN_INTERVAL_MS + 0.1, values),
+    ).toBe(true);
 
     values[0] = -20;
     const columns = history.columnsForRender(100);
@@ -96,7 +96,9 @@ describe("SpectrogramHistory", () => {
     history.ingest(9_000, values);
 
     const columns = history.columnsForRender(10_000);
-    expect(columns.map((column) => column.timestampMs)).toEqual([0, 1_000, 9_000]);
+    expect(columns.map((column) => column.timestampMs)).toEqual([
+      0, 1_000, 9_000,
+    ]);
     expect(spectrogramTimestampToRatio(0, 10_000)).toBe(0);
     expect(spectrogramTimestampToRatio(1_000, 10_000)).toBeCloseTo(0.1, 8);
     expect(spectrogramTimestampToRatio(9_000, 10_000)).toBeCloseTo(0.9, 8);

@@ -90,7 +90,9 @@ class FakeMediaDevices extends EventTarget {
     return { ...this.supported };
   }
 
-  async getUserMedia(constraints: MediaStreamConstraints): Promise<MediaStream> {
+  async getUserMedia(
+    constraints: MediaStreamConstraints,
+  ): Promise<MediaStream> {
     this.getUserMediaCalls.push(constraints);
     const next = this.queue.shift();
     if (!next) throw new Error("No deterministic stream queued");
@@ -168,7 +170,9 @@ describe("MicrophoneService", () => {
     const { context, service } = createService();
 
     expect(() =>
-      service.connectAnalysisTarget(context.destination as unknown as AudioNode),
+      service.connectAnalysisTarget(
+        context.destination as unknown as AudioNode,
+      ),
     ).toThrow(
       "Live microphone monitoring to AudioContext.destination is prohibited",
     );
@@ -182,7 +186,9 @@ describe("MicrophoneService", () => {
       service.connectAnalysisTarget(
         analysisTarget(foreignContext) as unknown as AudioNode,
       ),
-    ).toThrow("Microphone analysis targets must belong to the same AudioContext");
+    ).toThrow(
+      "Microphone analysis targets must belong to the same AudioContext",
+    );
 
     const validTarget = analysisTarget(context);
     service.connectAnalysisTarget(validTarget as unknown as AudioNode);
@@ -371,7 +377,9 @@ describe("MicrophoneService", () => {
         { deviceId: "mic-2", groupId: "group", label: "New input" },
       ]),
     );
-    expect(mediaDevices.getUserMediaCalls).toHaveLength(callsBeforeDeviceChange);
+    expect(mediaDevices.getUserMediaCalls).toHaveLength(
+      callsBeforeDeviceChange,
+    );
   });
 
   it("cancels a pending acquisition on Stop and deterministically stops the late stream", async () => {

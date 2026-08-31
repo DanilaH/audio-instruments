@@ -42,7 +42,8 @@ function getBrowserMediaDevices(): MediaDevices {
 }
 
 function copySettings(settings: MediaTrackSettings): MicrophoneCaptureSettings {
-  const { autoGainControl, noiseSuppression, echoCancellation, ...rest } = settings;
+  const { autoGainControl, noiseSuppression, echoCancellation, ...rest } =
+    settings;
 
   return {
     ...rest,
@@ -106,7 +107,9 @@ export class MicrophoneService implements SessionResource {
   }
 
   get isActive(): boolean {
-    return this.#stream !== null && this.#track !== null && this.#source !== null;
+    return (
+      this.#stream !== null && this.#track !== null && this.#source !== null
+    );
   }
 
   get activeStream(): MediaStream | null {
@@ -243,7 +246,10 @@ export class MicrophoneService implements SessionResource {
 
     if (!this.#isCurrent(token)) {
       stopStreamTracks(stream);
-      throw new DOMException("Microphone acquisition was cancelled", "AbortError");
+      throw new DOMException(
+        "Microphone acquisition was cancelled",
+        "AbortError",
+      );
     }
 
     const track = stream.getAudioTracks()[0];
@@ -263,7 +269,10 @@ export class MicrophoneService implements SessionResource {
     if (!this.#isCurrent(token)) {
       source.disconnect();
       stopStreamTracks(stream);
-      throw new DOMException("Microphone acquisition was cancelled", "AbortError");
+      throw new DOMException(
+        "Microphone acquisition was cancelled",
+        "AbortError",
+      );
     }
 
     try {

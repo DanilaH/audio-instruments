@@ -3,10 +3,7 @@ import {
   type BufferPlayback,
 } from "../../browser/audio-output/AudioOutputEngine";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
-import {
-  NoiseEngine,
-  type NoiseKind,
-} from "../../browser/noise/NoiseEngine";
+import { NoiseEngine, type NoiseKind } from "../../browser/noise/NoiseEngine";
 import { clamp } from "../../utils/audio";
 import {
   NOISE_GENERATOR_INITIAL_KIND,
@@ -20,7 +17,10 @@ const GENERAL_LEVEL_MIN_DB = -60;
 const GENERAL_LEVEL_MAX_DB = -12;
 const GENERAL_LEVEL_DEFAULT_DB = -24;
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
     throw new Error(`Noise Generator is missing required element: ${selector}`);
@@ -85,7 +85,10 @@ export class NoiseGeneratorController {
     this.#statusLabel = requireElement(this.#status, "[data-status-label]");
     this.#kindReadout = requireElement(root, "[data-noise-kind-readout]");
     this.#timerReadout = requireElement(root, "[data-noise-timer-readout]");
-    this.#longPlaybackReminder = requireElement(root, "[data-noise-long-reminder]");
+    this.#longPlaybackReminder = requireElement(
+      root,
+      "[data-noise-long-reminder]",
+    );
     this.#errorMessage = requireElement(root, "[data-noise-error]");
 
     if (this.#kindButtons.length !== 3 || this.#timerButtons.length !== 4) {
@@ -192,7 +195,9 @@ export class NoiseGeneratorController {
     }
 
     if (!this.#engine) {
-      this.#engine = new AudioOutputEngine(context, { levelProfile: "general" });
+      this.#engine = new AudioOutputEngine(context, {
+        levelProfile: "general",
+      });
       this.#engine.setLevelDb(this.#levelDb);
       this.#session.register(this.#engine);
     }
@@ -269,7 +274,10 @@ export class NoiseGeneratorController {
     try {
       this.#engine?.stop();
     } catch (stopError) {
-      console.error("Noise Generator cleanup after start failure failed", stopError);
+      console.error(
+        "Noise Generator cleanup after start failure failed",
+        stopError,
+      );
     }
 
     this.#starting = false;

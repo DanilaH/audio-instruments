@@ -15,7 +15,10 @@ import {
 } from "../../browser/recording/AudioRecorder";
 import { WaveformCanvas } from "../../components/visualizations/WaveformCanvas";
 
-function requireElement<T extends Element>(root: ParentNode, selector: string): T {
+function requireElement<T extends Element>(
+  root: ParentNode,
+  selector: string,
+): T {
   const element = root.querySelector<T>(selector);
   if (!element) {
     throw new Error(`Microphone Test is missing required element: ${selector}`);
@@ -41,7 +44,10 @@ function captureErrorMessage(error: unknown): string {
     if (error.name === "NotAllowedError") {
       return "Microphone permission was denied. Allow microphone access for this site, then try again.";
     }
-    if (error.name === "NotFoundError" || error.name === "DevicesNotFoundError") {
+    if (
+      error.name === "NotFoundError" ||
+      error.name === "DevicesNotFoundError"
+    ) {
       return "No microphone input was found. Connect or enable an input device, then try again.";
     }
     if (error.name === "NotReadableError" || error.name === "TrackStartError") {
@@ -122,8 +128,14 @@ export class MicrophoneTestController {
       root,
       "[data-mic-detail-analysis-rate]",
     );
-    this.#detailsSampleRate = requireElement(root, "[data-mic-detail-sample-rate]");
-    this.#detailsChannelCount = requireElement(root, "[data-mic-detail-channel-count]");
+    this.#detailsSampleRate = requireElement(
+      root,
+      "[data-mic-detail-sample-rate]",
+    );
+    this.#detailsChannelCount = requireElement(
+      root,
+      "[data-mic-detail-channel-count]",
+    );
     this.#detailsEchoCancellation = requireElement(
       root,
       "[data-mic-detail-echo-cancellation]",
@@ -180,9 +192,13 @@ export class MicrophoneTestController {
 
   #bindEvents(): void {
     const signal = this.#listeners.signal;
-    this.#startButton.addEventListener("click", () => void this.#startMicrophone(), {
-      signal,
-    });
+    this.#startButton.addEventListener(
+      "click",
+      () => void this.#startMicrophone(),
+      {
+        signal,
+      },
+    );
     this.#stopButton.addEventListener("click", () => void this.#stopTool(), {
       signal,
     });
@@ -217,7 +233,8 @@ export class MicrophoneTestController {
     const session = new AudioSession();
     this.#session = session;
     const context = await session.getContext();
-    if (this.#disposed) throw new Error("Microphone Test was disposed during Start");
+    if (this.#disposed)
+      throw new Error("Microphone Test was disposed during Start");
 
     const recorder = new AudioRecorder();
     session.register(recorder);
@@ -242,7 +259,8 @@ export class MicrophoneTestController {
   }
 
   async #startMicrophone(): Promise<void> {
-    if (this.#disposed || this.#starting || this.isActive || this.#stopping) return;
+    if (this.#disposed || this.#starting || this.isActive || this.#stopping)
+      return;
     const token = ++this.#runToken;
     this.#starting = true;
     this.#hideErrors();
@@ -403,7 +421,11 @@ export class MicrophoneTestController {
   }
 
   async #stopTool(): Promise<void> {
-    if ((!this.isActive && !this.isRecording) || this.#stopping || this.#disposed) {
+    if (
+      (!this.isActive && !this.isRecording) ||
+      this.#stopping ||
+      this.#disposed
+    ) {
       return;
     }
 
@@ -450,7 +472,10 @@ export class MicrophoneTestController {
     try {
       await this.#recorder?.stopForToolTeardown();
     } catch (error) {
-      console.error("Microphone Test recorder cleanup after disconnect failed", error);
+      console.error(
+        "Microphone Test recorder cleanup after disconnect failed",
+        error,
+      );
     }
 
     if (!this.#isCurrent(token)) return;
@@ -518,8 +543,8 @@ export class MicrophoneTestController {
 
   #renderDevices(
     devices: readonly MicrophoneInputDevice[],
-    selectedDeviceId: string | undefined =
-      this.#microphone?.activeSettings()?.deviceId,
+    selectedDeviceId: string | undefined = this.#microphone?.activeSettings()
+      ?.deviceId,
   ): void {
     this.#devices = devices;
     this.#inputSelect.replaceChildren();
@@ -556,7 +581,10 @@ export class MicrophoneTestController {
     this.#inputField.hidden = !this.isActive || !hasAlternativeInput;
 
     if (this.isActive) {
-      this.#activeInputLabel.textContent = deviceLabel(devices, selectedDeviceId);
+      this.#activeInputLabel.textContent = deviceLabel(
+        devices,
+        selectedDeviceId,
+      );
     }
     this.#renderControls();
   }
@@ -571,11 +599,20 @@ export class MicrophoneTestController {
 
     this.#detailsDeviceId.textContent = settings.deviceId || "Not reported";
     this.#detailsAnalysisSampleRate.textContent = `${analyzer.analysisSampleRate} Hz`;
-    this.#detailsSampleRate.textContent = formatNumber(settings.sampleRate, " Hz");
+    this.#detailsSampleRate.textContent = formatNumber(
+      settings.sampleRate,
+      " Hz",
+    );
     this.#detailsChannelCount.textContent = formatNumber(settings.channelCount);
-    this.#detailsEchoCancellation.textContent = formatBoolean(settings.echoCancellation);
-    this.#detailsNoiseSuppression.textContent = formatBoolean(settings.noiseSuppression);
-    this.#detailsAutoGainControl.textContent = formatBoolean(settings.autoGainControl);
+    this.#detailsEchoCancellation.textContent = formatBoolean(
+      settings.echoCancellation,
+    );
+    this.#detailsNoiseSuppression.textContent = formatBoolean(
+      settings.noiseSuppression,
+    );
+    this.#detailsAutoGainControl.textContent = formatBoolean(
+      settings.autoGainControl,
+    );
   }
 
   #clearCaptureDetails(): void {

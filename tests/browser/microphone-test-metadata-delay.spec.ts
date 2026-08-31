@@ -1,6 +1,8 @@
 import { expect, test } from "@playwright/test";
 
-test("slow device enumeration never blocks active capture state or Stop", async ({ page }) => {
+test("slow device enumeration never blocks active capture state or Stop", async ({
+  page,
+}) => {
   await page.addInitScript(() => {
     const state = {
       enumerateStarted: 0,
@@ -151,9 +153,9 @@ test("slow device enumeration never blocks active capture state or Stop", async 
   await page.goto("/microphone-test");
   await page.locator("[data-mic-start]").click();
 
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Microphone active",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Microphone active");
   await expect(page.locator("[data-mic-stop]")).toBeEnabled();
   await expect(page.locator("[data-mic-detail-device-id]")).toHaveText("mic-1");
 
@@ -163,19 +165,22 @@ test("slow device enumeration never blocks active capture state or Stop", async 
   expect(beforeStop).toEqual({ enumerateStarted: 1, trackStopCount: 0 });
 
   await page.locator("[data-mic-stop]").click();
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Stopped",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Stopped");
 
   await page.evaluate(() => {
-    const resolve = Reflect.get(window, "__resolveMicEnumeration") as () => void;
+    const resolve = Reflect.get(
+      window,
+      "__resolveMicEnumeration",
+    ) as () => void;
     resolve();
   });
   await page.waitForTimeout(0);
 
-  await expect(page.locator("#microphone-test-status [data-status-label]")).toHaveText(
-    "Stopped",
-  );
+  await expect(
+    page.locator("#microphone-test-status [data-status-label]"),
+  ).toHaveText("Stopped");
   await expect(page.locator("[data-mic-input-field]")).toBeHidden();
 
   const afterStop = await page.evaluate(() =>

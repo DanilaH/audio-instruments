@@ -23,8 +23,7 @@ describe("AV sync timeline", () => {
 
     expect(createAvSyncCycleTiming(anchors, 2, 0)).toEqual({
       cycleIndex: 2,
-      visualTargetPerfMs:
-        10_000 + AV_SYNC_LEAD_IN_MS + 2 * AV_SYNC_PERIOD_MS,
+      visualTargetPerfMs: 10_000 + AV_SYNC_LEAD_IN_MS + 2 * AV_SYNC_PERIOD_MS,
       audioTargetContextSec:
         20 + (AV_SYNC_LEAD_IN_MS + 2 * AV_SYNC_PERIOD_MS) / 1_000,
     });
