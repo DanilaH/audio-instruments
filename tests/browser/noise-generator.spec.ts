@@ -128,7 +128,7 @@ async function installDeterministicAudioContext(
 
       class FakeBufferSourceNode extends FakeAudioNode {
         readonly record: NoiseSourceRecord;
-        #buffer: FakeAudioBuffer | null = null;
+        _buffer: FakeAudioBuffer | null = null;
 
         constructor(record: NoiseSourceRecord) {
           super();
@@ -136,13 +136,13 @@ async function installDeterministicAudioContext(
         }
 
         get buffer() {
-          return this.#buffer as unknown as AudioBuffer | null;
+          return this._buffer as unknown as AudioBuffer | null;
         }
 
         set buffer(value: AudioBuffer | null) {
-          this.#buffer = value as unknown as FakeAudioBuffer | null;
-          this.record.bufferSampleRate = this.#buffer?.sampleRate ?? null;
-          this.record.bufferLength = this.#buffer?.length ?? null;
+          this._buffer = value as unknown as FakeAudioBuffer | null;
+          this.record.bufferSampleRate = this._buffer?.sampleRate ?? null;
+          this.record.bufferLength = this._buffer?.length ?? null;
         }
 
         get loop() {
