@@ -23,6 +23,19 @@ jobs:
           install: false
 
       - run: pnpm install --frozen-lockfile
+      - name: Apply staged consistency fixes
+        run: python scripts/temp-runtime-consistency-fixes.py
+      - name: Format staged product changes
+        run: |
+          pnpm exec prettier --write \
+            src/tools/speaker-test/SpeakerTest.astro \
+            src/tools/headphone-test/HeadphoneTest.astro \
+            src/tools/bass-test/BassTest.astro \
+            src/tools/noise-generator/NoiseGenerator.astro \
+            src/tools/frequency-sweep/FrequencySweep.astro \
+            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+      - run: git diff --check
+      - run: pnpm check
       - run: pnpm build
       - run: node scripts/runtime-wiring-audit.mjs
       - run: pnpm exec playwright install --with-deps chromium
