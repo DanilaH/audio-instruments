@@ -27,6 +27,36 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
+      - name: Patch prototype static paths for isolated render
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("src/pages/prototypes/audio-identity/[direction]/[tool].astro")
+          text = path.read_text(encoding="utf-8")
+          old = '''export function getStaticPaths() {
+            return directions.flatMap((direction) =>
+              tools.map((tool) => ({ params: { direction, tool } })),
+            );
+          }'''
+          # Handle both source and Prettier indentation shapes.
+          if old not in text:
+              old = '''export function getStaticPaths() {
+            return directions.flatMap((direction) =>
+              tools.map((tool) => ({ params: { direction, tool } })),
+            );
+          }'''.replace("          ", "")
+          new = '''export function getStaticPaths() {
+            const staticDirections = ["stereo-field", "temporal-score", "acoustic-map"] as const;
+            const staticTools = ["headphone", "spectrum", "hearing"] as const;
+            return staticDirections.flatMap((direction) =>
+              staticTools.map((tool) => ({ params: { direction, tool } })),
+            );
+          }'''
+          if old not in text:
+              raise SystemExit("getStaticPaths target not found")
+          path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+
       - name: Validate prototype
         run: |
           pnpm exec prettier --write src/pages/prototypes/audio-identity/[direction]/[tool].astro
