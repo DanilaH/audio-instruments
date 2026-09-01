@@ -1,0 +1,37 @@
+name: Temporary Sonic Field prettier fix
+
+on:
+  push:
+    branches:
+      - feat/sonic-field-foundation-stress-trio
+    paths:
+      - .github/workflows/tmp-sonic-prettier-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prettier-fix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write tests/browser/sonic-field-production-layout.spec.ts
+      - name: Commit formatted file
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/browser/sonic-field-production-layout.spec.ts
+          git commit -m "chore: format Sonic Field layout contract"
+          git push origin HEAD:feat/sonic-field-foundation-stress-trio
