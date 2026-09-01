@@ -22,13 +22,17 @@ for (const viewport of viewports) {
 
     const reference = page.locator("[data-hearing-reference]");
     const stop = page.locator("[data-hearing-stop]");
-    const readout = page.locator(".hearing-frequency-display");
-    const result = page.locator(".hearing-result-card");
+    const field = page.locator(".hearing-field");
+    const readout = page.locator(".hearing-current");
+    const result = page.locator(".hearing-observation");
+    const decisionSlot = page.locator(".hearing-decision-slot");
 
     await expect(reference).toBeVisible();
     await expect(stop).toBeVisible();
+    await expect(field).toBeVisible();
     await expect(readout).toBeVisible();
     await expect(result).toBeVisible();
+    await expect(decisionSlot).toBeVisible();
 
     const referenceBox = await reference.boundingBox();
     expect(referenceBox).not.toBeNull();
