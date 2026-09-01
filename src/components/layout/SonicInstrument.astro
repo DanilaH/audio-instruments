@@ -1,0 +1,57 @@
+---
+interface Props {
+  label: string;
+  class?: string;
+}
+
+const { label, class: className } = Astro.props;
+---
+
+<section
+  class:list={["sonic-instrument", className]}
+  aria-label={label}
+  data-sonic-instrument
+>
+  <slot />
+</section>
+
+<style>
+  .sonic-instrument {
+    --sonic-sheet: #eeeae0;
+    --sonic-field: #d9e1de;
+    --sonic-field-deep: #183841;
+    --sonic-ink: #18343b;
+    --sonic-muted: #687a7d;
+    --sonic-border: #9eaaa8;
+    --sonic-border-soft: #c3c8c2;
+    --sonic-signal: #277f8a;
+    --sonic-current: #b37b1f;
+    --sonic-opposing: #95503b;
+    --sonic-focus: #0a6570;
+
+    position: relative;
+    overflow: hidden;
+    border: 1px solid var(--sonic-border);
+    border-radius: 10px;
+    background: var(--sonic-sheet);
+    color: var(--sonic-ink);
+    box-shadow: 0 14px 36px rgb(24 52 59 / 0.07);
+  }
+
+  .sonic-instrument :global(:focus-visible) {
+    outline: 3px solid var(--sonic-focus);
+    outline-offset: 3px;
+  }
+
+  .sonic-instrument :global(button),
+  .sonic-instrument :global(input),
+  .sonic-instrument :global(select) {
+    accent-color: var(--sonic-signal);
+  }
+
+  @media (max-width: 520px) {
+    .sonic-instrument {
+      border-radius: 8px;
+    }
+  }
+</style>

@@ -2,229 +2,254 @@
 
 ## Art direction
 
-> **Soft Sonic Studio**
+> **Sonic Field**
+
+Browser Audio Lab should look like **audio relationships made visible**, not a generic utility shell with audio-themed decoration.
 
 Desired:
 
 ```text
-warm
-friendly
-musical
-soft
-rounded
-dynamic
-pleasant
-alive
-slightly playful
+audio-native
+calm
+precise
+spatial
+data-first
+compact
+alive only where signal/state is alive
 ```
 
 Avoid:
 
 ```text
-clinical
-enterprise
-hard-edged
-RGB gaming
-generic SaaS
-generic grey utility
+AI-SaaS pastel cards
+Hardware Testing lookalike
+DAW/plugin cosplay
+retro hi-fi skeuomorphism
+anti-AI brutalism
+per-tool rainbow branding
+fake measurement graphics
 ```
 
 ## Core identity
 
-The site must not collapse into:
+The working tool is a single coherent **instrument sheet**.
+
+Its visual hierarchy is:
 
 ```text
-grey background
-white rectangular card
-black text
-blue CTA
+field
+→ signal / spatial / frequency / time relationship
+
+rail
+→ compact controls + metrics
+
+state strip
+→ safety / capability / operational context
 ```
 
-The instrument itself should carry much of the visual identity.
+Do not default to a detached “visual card on the left + settings card on the right” dashboard.
 
-## Core motif
+## Audio-native rule
 
-Dynamic audio signal / waveform.
+A distinctive graphic must correspond to real audio semantics.
 
-Use audio-derived visuals where they represent real state.
-
-## Signature trail
-
-Approved:
+Good:
 
 ```text
-slight blur
-short disappearing trail
-soft decay
+stereo/channel position
+frequency path
+sweep/playhead position
+waveform
+spectrum / spectrogram
+meter level
+guided listening progression
 ```
 
-Target:
+Not acceptable:
 
 ```text
-elegant
-alive
-controlled
+fake waveform decoration
+synthetic energy contours presented like live data
+random oscilloscope lines
+color fields with no state/data meaning
 ```
 
-Not:
+Structural grids/rulers/guides are allowed when they do not imply a measurement.
+
+## Production palette
+
+Sonic Field uses a predominantly low-chroma neutral base.
+
+Semantic families:
 
 ```text
-smudgy
-neon
-particle-heavy
-game-like
+signal / observed       teal / blue-green
+current / playhead      amber
+warning / opposing      rust / red
+keyboard focus          dedicated high-contrast non-purple token
 ```
 
-## Initial palette
+Keyboard focus is not the same semantic as “current signal”.
 
-```text
---color-bg:          #FAF7F2
---color-surface:     #FFFDFC
---color-surface-alt: #F4F0FF
---color-ink:         #1F2430
---color-ink-muted:   #5F6675
---color-border:      #E8E3DC
---color-lavender:    #8F7CFF
---color-blue:        #67A7FF
---color-mint:        #66D1B2
---color-peach:       #FFB58D
---color-yellow:      #FFD76A
-```
+Exact production values are validated in rendered context. Do not choose a color merely because it fits a palette trend.
 
-Fine tuning later is allowed.
+No new migrated tool should use lavender/purple branding or a separate pastel accent just to differentiate itself.
 
-## Tool accent mapping
+## Transitional legacy tokens
 
-```text
-Tone        lavender
-Speaker     peach/coral
-Headphone   blue
-Microphone  sky/cyan
-Bass        mint + warm accent
-Spectrum    spectral multi-accent
-Stereo      lavender + blue
-Noise       warm muted neutral
-```
+The old Soft Sonic Studio tokens/components may remain temporarily in source **only for tools that have not yet migrated**.
 
-Accent color alone is not enough to differentiate tools.
+They are implementation debt during the staged rollout, not an approved alternative visual system.
+
+Do not use legacy `lavender / blue / mint / peach / yellow` tool accents in new Sonic Field work.
+
+`InstrumentSurface` remains a legacy primitive until its remaining consumers migrate. New migrated tools use the Sonic Field instrument primitive.
 
 ## Typography
 
-Choose one during P0:
+Primary UI typography remains a neutral sans-serif.
+
+Rules:
 
 ```text
-Manrope
-or
-Plus Jakarta Sans
+tool title desktop      ~36–48px
+measurements             tabular numerals
+micro labels             sparse uppercase metadata
+body copy                normal readable sentence case
 ```
 
-Metrics use one clean monospace family.
+Do not introduce serif or monospace merely to make the site feel “human” or “technical”.
 
-Do not add multiple decorative fonts.
+## Geometry
 
-## Radius scale
+Target production scale:
 
 ```text
-small controls   12px
-buttons          14–18px
-cards            20–28px
-instruments      24–32px
+instrument sheet         8–12px
+control groups           4–8px
+ordinary controls        modest radius
+true spatial nodes       circular where semantics require it
 ```
+
+Prefer structural rules/dividers to nested rounded cards.
+
+Avoid 24–32px work-panel radii and pills everywhere.
 
 ## Surfaces
 
 Prefer:
 
 ```text
-soft tinted surfaces
-subtle shadows
-light separators
-soft inner highlights
+one coherent working plane
+low-chroma neutral surfaces
+clear field/rail/state hierarchy
+thin structural separators
+strong data hierarchy
 ```
 
-Avoid hard dark borders around every control.
+Avoid:
 
-## Tool-specific visual grammar
+```text
+ambient lavender glow
+soft pastel split panels
+nested cards
+large decorative shadows
+gradients that do not encode signal/state
+```
+
+## Tool archetypes
+
+### Spatial output / channel relationship
+
+```text
+Headphone
+Speaker
+Stereo
+Surround
+Phase
+```
+
+Use listener/channel/spatial relationships. Visual L/R/Both or channel nodes may be the actual accessible playback controls where the target maps exactly to the audio action.
+
+### Frequency / generated signal
 
 ```text
 Tone
-→ central waveform
-
-Speaker
-→ speaker cones + pressure rings
-
-Headphone
-→ earcup activation
-
-Microphone
-→ mic capsule + halo + waveform
-
+Frequency Sweep
 Bass
-→ woofer + expanding rings
-
-Stereo
-→ travelling signal
-
-Spectrum
-→ spectral landscape
-
 Noise
-→ subtle animated texture
+Sound Test
 ```
+
+Use frequency/time/current-signal state. Sweep motion represents the scheduled signal progression.
+
+### Input / analysis / measurement
+
+```text
+Microphone
+Spectrum Analyzer
+Decibel Meter
+Pitch Detector
+```
+
+Live data is the interface. Secondary capture/device/calibration metadata is disclosed rather than visually dominant.
+
+### Guided temporal task
+
+```text
+Hearing Frequency Test
+Audio Latency Test
+```
+
+Use a stable path/timeline/current step and attach decisions/results to it.
 
 ## Motion
 
-Allowed:
+Allowed when it communicates the product state:
 
 ```text
-waveform morph
-soft halo
-pulse
-trail
-button press spring
-selected-state motion
-small hover lift
-result reveal
+waveform / spectrum updates
+meter attack and decay
+sweep/playhead motion
+stereo/spatial motion
+signal path
+short deterministic return-to-centre
 ```
 
-Do not animate everything continuously.
+Remove generic website motion from working tools:
+
+```text
+hover lift
+card translation
+shadow bloom
+node movement just to show “active”
+decorative result reveals that reflow the tool
+```
+
+A mode switch must not move stable visual anchors unless the movement itself represents audio position/state.
 
 ## Reduced motion
 
-Reduce/remove:
+`prefers-reduced-motion` removes or simplifies nonessential interpolation.
 
-```text
-decorative drift
-trails
-large spring movement
-nonessential pulses
-```
+Core state/data remains visible.
 
-Core data remains readable.
+A reduced-motion preference may make a visual return-to-centre immediate after audio playback has already stopped.
 
-## Graphics bootstrap
+## Graphics implementation
 
-Baseline:
+Baseline remains:
 
 ```text
 Canvas
-SVG
-Motion
-Phosphor
+SVG / semantic HTML/CSS
+Motion where justified
+Phosphor Regular where reliable
 ```
 
-Not installed at bootstrap:
+Do not add a graphics engine/design-system dependency for this migration.
 
-```text
-Rive
-OGL
-Three.js
-other realtime graphics engines
-```
-
-Rive remains a later explicit polish decision.
-
-## Realtime visualization budget
+Realtime budget remains:
 
 ```text
 requestAnimationFrame
@@ -234,76 +259,47 @@ bounded history only
 deterministic teardown
 ```
 
-Trail implementation:
-
-```text
-alpha persistence fade
-or small fixed-size history buffer
-```
-
-Never store unbounded prior frames.
-
 ## CSS ownership
 
 Global CSS owns:
 
 ```text
-tokens
-reset/base
-typography
-shared layout primitives
-shared control primitives
+legacy global tokens during transition
+base/reset/typography
+site shell
+shared generic control behaviour
 ```
 
-Tool-specific composition remains local to the tool/component layer.
+Sonic Field shared components own their semantic visual tokens and working-sheet primitives until the migration is complete.
 
-## Semantic contrast rule
+Tool-specific audio composition remains local to the tool/component layer.
 
-Bright accent colors are primarily for surface fills, illustrations and non-text signal decoration.
+Do not globally recolor all unmigrated tools as a side effect of a staged migration PR.
 
-They are not automatically valid as body text, focus rings or the only semantic state indicator.
+## Accessibility and contrast
 
-Dedicated focus token:
-
-```text
---color-focus: #5D4AE8
-```
-
-Requirements:
+Requirements remain:
 
 ```text
 normal text >= 4.5:1
 large text >= 3:1
 focus indicator / essential UI boundary >= 3:1 against adjacent colors
+visible keyboard focus
+state not communicated by color alone
 ```
 
-If an accent fails the threshold, use `--color-ink` or `--color-focus` for semantic information and keep the bright accent decorative.
+Signal color is not automatically valid for text/focus.
 
-Never communicate active/error/success state by color alone.
+Direct visual playback targets must use semantic button behaviour, keyboard access, visible focus and descriptive accessible names.
 
 ## Phosphor payload budget
 
-Global shell loads:
+Global shell continues to load:
 
 ```text
 Regular
 ```
 
-Additional weights:
+Do not add global icon weights to solve a single transport icon.
 
-```text
-Fill
-Duotone
-```
-
-are route-local exceptions when they provide real state/illustration value.
-
-Do not globally load all Phosphor weights.
-
-Normal route budget:
-
-```text
-<= 2 weights
-```
-
-Exceeding it requires visual/performance review.
+If a primary transport glyph proves unreliable across browsers, prefer a robust inline/CSS transport mark while retaining the text label.

@@ -11,7 +11,7 @@ The core interaction belongs in the first meaningful viewport.
 ```text
 site header
 title + concise intro
-main instrument surface
+main instrument sheet
 primary controls/results
 important limitation/status
 related tools
@@ -19,83 +19,129 @@ explanation/troubleshooting
 FAQ/content
 ```
 
-## Desktop gate
+Supporting content below the core instrument is not part of the first-screen fit budget.
 
-Review especially at:
+## Desktop gates
+
+Primary review viewports:
 
 ```text
 1366×768
+1440×900
 ```
 
-The primary job should be substantially usable without unnecessary scrolling.
+For the default/representative active workflow, the complete core instrument sheet should fit with at least 24px visible bottom breathing room.
 
-## Mobile gate
+Compact-desktop stress viewport:
+
+```text
+1280×720
+```
+
+Target full primary-sheet fit with at least 16px bottom air while user-opened secondary disclosures are closed. Never crush controls below practical readability/accessibility merely to pass the stress viewport. A justified per-tool exception must be documented before merge.
+
+Viewport height should be handled continuously. Do not create a discontinuous “special layout below 900px / giant layout above 900px” breakpoint.
+
+## Mobile gates
 
 Review at:
 
 ```text
+320×844
 390×844
 ```
 
-No horizontal overflow.
+Mobile does not require every complete tool state to fit one screen.
 
-Controls remain touch-friendly.
+Required:
 
-Visualizations resize deliberately.
+- no horizontal overflow;
+- controls remain touch-friendly;
+- visualizations resize deliberately;
+- the primary field appears early;
+- relevant primary controls remain close enough to the output/state that the user does not repeatedly scroll back and forth.
 
-## Main instrument surface
+Secondary details may continue below.
 
-Each tool should have one visually dominant functional surface.
+## Main instrument sheet
+
+Each migrated tool has one visually dominant functional sheet.
+
+Sonic Field hierarchy:
+
+```text
+FieldZone
+→ spatial / frequency / time / live-data relationship
+
+ControlRail
+→ compact primary controls + metrics
+
+StateStrip
+→ safety / capability / concise operational context
+```
 
 Avoid fragmenting the core interaction into many unrelated cards.
 
-## Shared component inventory
+Do not force every tool into the same drawing; share primitives, not fake sameness.
 
-The implementation should provide reusable semantic primitives for repeated UI jobs.
+## Shared component inventory
 
 Names may vary, responsibilities may not.
 
-### Required shared primitives
+### Production Sonic Field primitives
 
 ```text
 ToolShell
-→ common page/tool framing
+→ common page framing + compact tool header
 
-InstrumentSurface
-→ primary functional visual surface
+SonicInstrument / InstrumentSheet
+→ migrated primary working sheet + Sonic tokens
 
-MetricReadout
-→ Hz / dBFS / ms / note values
+FieldZone
+→ stable audio-native visualization/relationship area
 
-ModePills
-→ compact mutually exclusive mode selection
+ControlRail
+→ compact contextual controls/metrics
 
-PlayStopControl
-→ shared start/stop semantics
+StateStrip
+→ concise safety/capability/operational context
 
-FrequencyControl
-→ numeric + logarithmic slider behavior
+SignalNode
+→ semantic interactive channel/spatial target
 
-LevelControl
-→ app-level digital gain control
+MetricReadout / Metric
+→ Hz / dBFS / ms / note values with tabular numerals
 
-ToolStatus
-→ idle/playing/listening/recording/etc
-
-PermissionPanel
-→ microphone permission flow
-
-CapabilityNotice
-→ unsupported/limited feature state
-
-RelatedTools
-→ related-tool navigation
-
-WaveformCanvas
-→ reusable realtime waveform renderer
+Disclosure
+→ secondary technical/calibration/device details
 ```
 
-Do not force unique tool visuals into one generic visualization component when their behavior differs.
+Existing behavioural primitives remain valid where useful:
+
+```text
+PlayStopControl
+FrequencyControl
+LevelControl
+ToolStatus
+PermissionPanel
+CapabilityNotice
+RelatedTools
+WaveformCanvas
+```
+
+`InstrumentSurface` is legacy during the staged migration. Do not use it for newly migrated Sonic Field tools.
+
+Do not force unique tool visuals into one generic visualization component when their behaviour differs.
+
+## Behaviour hooks during visual migration
+
+Preserve existing controller/test IDs and `data-*` hooks by default.
+
+Visual class names may change freely.
+
+If a behaviour selector must change, update the controller and affected tests deliberately in the same reviewed unit.
+
+Do not duplicate a hook when a controller expects an exact element count. Prefer moving the existing hook onto the new semantic control.
 
 ## State vocabulary
 
@@ -114,6 +160,23 @@ error
 ```
 
 Do not communicate state only through color.
+
+## Stable-state composition
+
+Outer-height stability alone is not sufficient.
+
+For spatial tools, stable visual anchors (speaker/headphone/channel positions, listener centre, field bounds) should not move across mode/state changes unless the movement represents actual audio position.
+
+For conditional UI, reserve stable regions where practical for:
+
+```text
+mode-specific controls
+hearing answer actions
+recording/playback controls
+capability results
+```
+
+Changing content inside a reserved region should not jerk the field or whole sheet.
 
 ## Permissions
 
@@ -150,11 +213,16 @@ technical settings
 track settings
 advanced display settings
 API details
+optional calibration
 ```
+
+Secondary disclosures may extend below the first viewport when the user opens them.
 
 ## Related tools
 
 Use real workflow relationships, not random cross-promotion.
+
+Supporting/SEO content should be visually quieter than the main instrument sheet.
 
 ## Accessibility
 
@@ -172,6 +240,10 @@ touch targets
 ```
 
 Audio feedback must not be the only feedback.
+
+Keyboard focus uses a dedicated high-contrast semantic treatment. Do not reuse an audio-state color blindly as the focus indicator.
+
+Visual L/R/Both or surround-channel targets that trigger playback must be real accessible controls with clear text/accessible names and state beyond color.
 
 ## Ads
 
@@ -210,6 +282,14 @@ waveform amplitude
 
 Those values remain accessible as normally labelled text/control output without repeated live announcements.
 
+## Data-visualization honesty
+
+Production graphics that look measured must derive from actual tool state/data.
+
+Synthetic analyser/signal frames are acceptable in tests and prototypes. They must not appear as unlabeled production measurements.
+
+Structural guides/rulers are allowed when they do not imply measured energy.
+
 ## Level control presentation
 
 Generated-audio tools show:
@@ -225,9 +305,11 @@ Do not show the master gain as an acoustic loudness percentage.
 
 ## Stop control
 
-While a tool has active continuous playback, sweep, multi-step sequence, microphone capture, recording, live analysis or AV-sync loop, an obvious Stop control remains in the primary surface.
+While a tool has active continuous playback, sweep, multi-step sequence, microphone capture, recording, live analysis or AV-sync loop, an obvious Stop control remains in the primary sheet.
 
 Do not hide Stop in advanced/overflow UI.
+
+The text label remains present. A transport icon is supplementary and must render reliably across supported browsers.
 
 ## Calibration copy
 
@@ -239,6 +321,8 @@ Recalibrate after changing microphone, input gain, processing, position or refer
 ```
 
 Do not imply persisted calibration survives system/hardware gain changes the browser cannot detect.
+
+Optional calibration should not visually dominate an uncalibrated measurement tool before the user asks for it.
 
 ## Generated-audio first-play safety
 
