@@ -69,6 +69,10 @@ textarea {
   padding: 20px 0;
 }
 
+body:has(.tool-shell) .site-header {
+  padding-block: 10px;
+}
+
 .site-header__inner,
 .site-footer__inner {
   display: flex;
