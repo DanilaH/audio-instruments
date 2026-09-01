@@ -385,7 +385,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
   .spectrum-stop,
   .spectrum-view-switch button {
     display: inline-flex;
-    min-height: 42px;
+    min-height: 44px;
     align-items: center;
     justify-content: center;
     gap: 7px;
@@ -446,7 +446,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 
   .spectrum-control-field select {
     min-width: 0;
-    min-height: 38px;
+    min-height: 44px;
     padding: 0 28px 0 8px;
     border: 1px solid var(--sonic-border);
     border-radius: 4px;
@@ -569,7 +569,11 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     }
 
     .spectrum-rail {
-      min-height: 142px;
+      min-height: 140px;
+    }
+
+    .spectrum-rail > * {
+      padding-block: 11px;
     }
   }
 
@@ -660,7 +664,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 
     .spectrum-view-switch button {
       min-width: 0;
-      padding-inline: 4px;
+      padding-inline: 2px;
       font-size: 0.68rem;
     }
   }

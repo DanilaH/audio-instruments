@@ -23,7 +23,7 @@ async function nextLayout(page: Page): Promise<void> {
 async function layoutMetrics(page: Page) {
   return page.evaluate(() => {
     const surface = document
-      .querySelector(".instrument-surface")
+      .querySelector(".instrument-surface, [data-sonic-instrument]")
       ?.getBoundingClientRect();
     return {
       surfaceHeight: surface?.height ?? null,
