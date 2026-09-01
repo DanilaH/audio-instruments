@@ -14,3 +14,24 @@ export const prerender = true;
     <SonicFieldPrototype tool="spectrum" />
   </body>
 </html>
+
+<style>
+  @media (max-width: 760px) {
+    :global(.sonic--spectrum .spectrum-rail) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    :global(.sonic--spectrum .spectrum-rail > .mode-group),
+    :global(.sonic--spectrum .spectrum-rail > .action-group) {
+      grid-column: 1 / -1;
+    }
+
+    :global(.sonic--spectrum .spectrum-rail > .rail-group:nth-child(2)) {
+      border-right: 1px solid #c2c7c3;
+    }
+
+    :global(.sonic--spectrum .spectrum-rail > .rail-group:nth-child(4)) {
+      border-right: 0;
+    }
+  }
+</style>
