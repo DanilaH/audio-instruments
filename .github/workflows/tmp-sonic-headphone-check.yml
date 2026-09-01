@@ -6,6 +6,7 @@ on:
       - feat/sonic-field-foundation-stress-trio
     paths:
       - .github/workflows/tmp-sonic-headphone-check.yml
+      - src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
 
 permissions:
   contents: read
