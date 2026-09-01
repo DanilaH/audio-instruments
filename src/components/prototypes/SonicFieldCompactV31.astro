@@ -1,0 +1,266 @@
+<style is:global>
+  /*
+   * Sonic Field v3.1 compact pass.
+   *
+   * This is intentionally an override layer on top of v3 so the viewport-budget
+   * experiment can be accepted or rejected without rewriting the base prototype.
+   */
+
+  .sonic .sitebar {
+    min-height: 50px;
+  }
+
+  .sonic .intro {
+    min-height: 104px;
+    gap: 30px;
+    padding: 14px 0;
+  }
+
+  .sonic h1 {
+    font-size: clamp(34px, 3.3vw, 46px);
+    line-height: 0.98;
+  }
+
+  .sonic .description {
+    margin-top: 7px;
+    font-size: 12px;
+  }
+
+  .sonic .intro-state {
+    min-width: 220px;
+  }
+
+  .sonic .sheet-bar {
+    min-height: 40px;
+  }
+
+  .sonic .rail-group {
+    min-height: 64px;
+    padding: 10px 12px;
+  }
+
+  .sonic .rail-group > small {
+    margin-bottom: 6px;
+  }
+
+  .sonic .segmented button {
+    min-height: 32px;
+  }
+
+  .sonic .run,
+  .sonic .stop,
+  .sonic .answer {
+    min-height: 36px;
+  }
+
+  .sonic .safety-strip {
+    min-height: 32px;
+    padding: 6px 12px;
+  }
+
+  .sonic .decision-band {
+    min-height: 84px;
+    padding: 11px 14px;
+  }
+
+  .sonic .decision-band h2 {
+    font-size: 17px;
+  }
+
+  .sonic .prototype-footer {
+    display: none;
+  }
+
+  /*
+   * Desktop is budgeted from viewport height rather than a fixed screenshot.
+   * At low desktop heights the complete sheet keeps at least ~36 px below it;
+   * taller displays give the audio field more room up to a sensible ceiling.
+   */
+  @media (min-width: 761px) {
+    .sonic .canvas,
+    .sonic .headphone-canvas,
+    .sonic .spectrum-canvas,
+    .sonic .hearing-canvas {
+      min-height: 0;
+      height: clamp(420px, calc(100vh - 326px), 560px);
+    }
+
+    .sonic .hearing-current {
+      top: 15%;
+    }
+
+    .sonic .frequency-path {
+      top: 50%;
+    }
+  }
+
+  @media (max-width: 760px) {
+    .sonic .sitebar {
+      min-height: 46px;
+    }
+
+    .sonic .intro {
+      min-height: 0;
+      gap: 6px;
+      padding: 12px 0 10px;
+    }
+
+    .sonic h1 {
+      font-size: 31px;
+      line-height: 1;
+    }
+
+    .sonic .description {
+      margin-top: 5px;
+      font-size: 10.5px;
+      line-height: 1.35;
+    }
+
+    .sonic .intro-state {
+      min-width: 0;
+      display: flex;
+      align-items: center;
+      gap: 7px;
+      text-align: left;
+    }
+
+    .sonic .intro-state small {
+      display: none;
+    }
+
+    .sonic .intro-state strong {
+      font-size: 12px;
+    }
+
+    .sonic .intro-state span {
+      font-size: 9px;
+    }
+
+    .sonic .sheet-bar {
+      min-height: 38px;
+    }
+
+    .sonic .canvas {
+      min-height: 0;
+    }
+
+    .sonic .headphone-canvas,
+    .sonic .spectrum-canvas {
+      min-height: 0;
+      height: 350px;
+    }
+
+    .sonic .hearing-canvas {
+      min-height: 0;
+      height: 360px;
+    }
+
+    .sonic .rail-group {
+      min-height: 58px;
+      padding: 8px 10px;
+    }
+
+    .sonic .spectrum-rail,
+    .sonic .hearing-rail {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .sonic .spectrum-rail > .mode-group,
+    .sonic .spectrum-rail > .action-group,
+    .sonic .hearing-rail > .setup-group,
+    .sonic .hearing-rail > .action-group {
+      grid-column: 1 / -1;
+    }
+
+    .sonic .spectrum-rail > .rail-group:nth-child(2),
+    .sonic .hearing-rail > .rail-group:nth-child(2) {
+      border-right: 1px solid #c2c7c3;
+    }
+
+    .sonic .spectrum-rail > .rail-group:nth-child(4),
+    .sonic .hearing-rail > .rail-group:nth-child(4) {
+      border-right: 0;
+    }
+
+    .sonic .safety-strip {
+      min-height: 34px;
+      align-items: center;
+      flex-direction: row;
+      gap: 8px;
+      padding: 6px 10px;
+      font-size: 8px;
+    }
+
+    .sonic .current-frequency {
+      top: 12%;
+    }
+
+    .sonic .current-frequency strong {
+      font-size: 42px;
+    }
+
+    .sonic .spectrogram {
+      inset: 36px 10px 38px 38px;
+    }
+
+    .sonic .spectrum-y {
+      left: 7px;
+      top: 40px;
+      bottom: 43px;
+    }
+
+    .sonic .spectrum-x {
+      left: 38px;
+      right: 10px;
+      bottom: 20px;
+    }
+
+    .sonic .spectrum-callout {
+      top: 49px;
+      left: 50px;
+      padding: 7px 8px;
+    }
+
+    .sonic .hearing-current {
+      top: 40px;
+      left: 63%;
+    }
+
+    .sonic .hearing-current strong {
+      font-size: 50px;
+    }
+
+    .sonic .frequency-path {
+      top: 145px;
+    }
+
+    .sonic .observation-line {
+      bottom: 110px;
+    }
+
+    .sonic .decision-band {
+      left: 0;
+      grid-template-columns: 1fr;
+      gap: 7px;
+      min-height: 100px;
+      padding: 9px 11px;
+    }
+  }
+
+  @media (max-width: 390px) {
+    .sonic h1 {
+      font-size: 30px;
+    }
+
+    .sonic .intro-state span {
+      display: none;
+    }
+
+    .sonic .canvas,
+    .sonic .headphone-canvas,
+    .sonic .spectrum-canvas,
+    .sonic .hearing-canvas {
+      min-height: 0;
+    }
+  }
+</style>
