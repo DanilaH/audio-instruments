@@ -1,4 +1,4 @@
-name: Temporary Sonic Field spatial slice 1
+name: Temporary Sonic Field spatial slice 2
 
 on:
   push:
@@ -23,17 +23,17 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Apply Speaker and Stereo Sonic Field migration
+      - name: Apply Surround and Phase Sonic Field migration
         run: python .github/tmp-sonic-spatial-slice1.py
-      - run: pnpm exec prettier --write src/tools/speaker-test/SpeakerTest.astro src/tools/speaker-test/SpeakerTestController.ts src/tools/stereo-test/StereoTest.astro src/tools/stereo-test/StereoTestController.ts tests/browser/speaker-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
+      - run: pnpm exec prettier --write src/tools/surround-sound-test/SurroundSoundTest.astro src/tools/phase-test/PhaseTest.astro tests/browser/surround-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
-      - name: Verify Speaker and Stereo migration
-        run: pnpm exec playwright test tests/browser/speaker-layout.spec.ts tests/browser/speaker-test.spec.ts tests/browser/stereo-phase-layout.spec.ts tests/browser/stereo-phase.spec.ts --project=chromium --project=firefox --project=webkit
+      - name: Verify Surround and Phase migration
+        run: pnpm exec playwright test tests/browser/surround-layout.spec.ts tests/browser/surround-test.spec.ts tests/browser/stereo-phase-layout.spec.ts tests/browser/stereo-phase.spec.ts --project=chromium --project=firefox --project=webkit
       - name: Commit verified spatial slice
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/tools/speaker-test/SpeakerTest.astro src/tools/speaker-test/SpeakerTestController.ts src/tools/stereo-test/StereoTest.astro src/tools/stereo-test/StereoTestController.ts tests/browser/speaker-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
-          git commit -m "feat: migrate Speaker and Stereo to Sonic Field"
+          git add src/tools/surround-sound-test/SurroundSoundTest.astro src/tools/phase-test/PhaseTest.astro tests/browser/surround-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
+          git commit -m "feat: migrate Surround and Phase to Sonic Field"
           git push origin HEAD:feat/sonic-field-spatial-output-family
