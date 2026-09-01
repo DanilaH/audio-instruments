@@ -22,387 +22,343 @@ def replace_component(
     target.write_text(front + markup.strip() + "\n\n" + script + "\n\n" + style.strip() + "\n")
 
 
-def replace_once(text: str, old: str, new: str, label: str) -> str:
-    if old not in text:
-        raise SystemExit(f"{label} anchor not found")
-    return text.replace(old, new, 1)
-
-
-speaker_markup = r'''
-<div data-speaker-test data-speaker-mode="channel" data-speaker-visual="idle">
-  <SonicInstrument label="Speaker Test controls" class="speaker-sheet">
-    <div class="speaker-sheet__bar">
-      <ToolStatus id="speaker-status" label="Ready" state="idle" />
-      <div class="speaker-sheet__state">
-        <span>Requested target</span>
-        <strong data-speaker-visual-label>Ready</strong>
+surround_markup = r'''
+<div data-surround-test data-surround-mode="unknown">
+  <SonicInstrument label="Surround Sound Test controls" class="surround-sheet">
+    <div class="surround-sheet__bar">
+      <ToolStatus id="surround-status" label="Capability not checked" state="idle" />
+      <div class="surround-sheet__state">
+        <span>Requested route</span>
+        <strong data-surround-visual-label>Not checked</strong>
       </div>
     </div>
 
-    <section class="speaker-field" aria-label="Speaker stereo field">
-      <div class="speaker-field__heading">
+    <section class="surround-field" aria-label="Output channel field">
+      <div class="surround-field__heading">
         <div>
-          <span>Stereo field</span>
-          <strong>Choose the output path you want to verify</strong>
+          <span>Spatial routing field</span>
+          <strong>Test the digital channel target directly in the map</strong>
         </div>
-        <span class="speaker-field__reference">500 Hz · 700 ms reference</span>
+        <span class="surround-field__reference">Requested routing · not physical verification</span>
       </div>
 
-      <div class="speaker-stage" data-speaker-stage>
-        <span class="speaker-stage__axis" aria-hidden="true"></span>
-        <button type="button" class="speaker-node speaker-node--left" data-speaker-channel="left" data-speaker-anchor="left" aria-pressed="false" aria-label="Left">
-          <span class="speaker-node__driver" aria-hidden="true"></span>
-          <strong>L</strong><small>Left</small>
-        </button>
-        <button type="button" class="speaker-node speaker-node--both" data-speaker-channel="both" data-speaker-anchor="center" aria-pressed="false" aria-label="Both">
-          <span class="speaker-node__signal" aria-hidden="true">∿</span>
-          <strong>Both</strong><small>Centered</small>
-        </button>
-        <button type="button" class="speaker-node speaker-node--right" data-speaker-channel="right" data-speaker-anchor="right" aria-pressed="false" aria-label="Right">
-          <span class="speaker-node__driver" aria-hidden="true"></span>
-          <strong>R</strong><small>Right</small>
-        </button>
+      <div class="surround-stage" data-surround-stage>
+        <span class="surround-ring" aria-hidden="true"></span>
+        <span class="surround-seat" aria-hidden="true">LISTENER</span>
+        <span class="surround-stage__idle">Check output capability to choose a verified route.</span>
+
+        <div class="surround-map surround-map--five-one" aria-label="5.1 channel targets">
+          <button type="button" class="surround-node surround-node--fl" data-surround-51-channel="0" aria-label="Front Left">FL</button>
+          <button type="button" class="surround-node surround-node--fr" data-surround-51-channel="1" aria-label="Front Right">FR</button>
+          <button type="button" class="surround-node surround-node--c" data-surround-51-channel="2" aria-label="Center">C</button>
+          <button type="button" class="surround-node surround-node--lfe" data-surround-51-channel="3" aria-label="LFE · 80 Hz">LFE</button>
+          <button type="button" class="surround-node surround-node--sl" data-surround-51-channel="4" aria-label="Surround Left">SL</button>
+          <button type="button" class="surround-node surround-node--sr" data-surround-51-channel="5" aria-label="Surround Right">SR</button>
+        </div>
+
+        <div class="surround-map surround-map--eight" aria-label="Experimental eight-channel targets">
+          <button type="button" class="surround-node surround-node--raw-1" data-surround-8-channel="0" aria-label="Channel 1">1</button>
+          <button type="button" class="surround-node surround-node--raw-2" data-surround-8-channel="1" aria-label="Channel 2">2</button>
+          <button type="button" class="surround-node surround-node--raw-3" data-surround-8-channel="2" aria-label="Channel 3">3</button>
+          <button type="button" class="surround-node surround-node--raw-4" data-surround-8-channel="3" aria-label="Channel 4">4</button>
+          <button type="button" class="surround-node surround-node--raw-5" data-surround-8-channel="4" aria-label="Channel 5">5</button>
+          <button type="button" class="surround-node surround-node--raw-6" data-surround-8-channel="5" aria-label="Channel 6">6</button>
+          <button type="button" class="surround-node surround-node--raw-7" data-surround-8-channel="6" aria-label="Channel 7">7</button>
+          <button type="button" class="surround-node surround-node--raw-8" data-surround-8-channel="7" aria-label="Channel 8">8</button>
+        </div>
+
+        <div class="surround-map surround-map--stereo" aria-label="Stereo preview targets">
+          <span class="surround-stereo-rail" aria-hidden="true"></span>
+          <button type="button" class="surround-node surround-node--left" data-surround-stereo="left">Left</button>
+          <button type="button" class="surround-node surround-node--center" data-surround-stereo="center">Center</button>
+          <button type="button" class="surround-node surround-node--right" data-surround-stereo="right">Right</button>
+        </div>
       </div>
 
-      <div class="speaker-meter" aria-hidden="true">
-        <span></span><span></span><span></span><span></span><span></span>
-      </div>
-      <p class="speaker-field__note">
-        Requested digital routing only. Confirm missing output, distortion,
-        rattle, imbalance or phase-image changes by listening.
+      <p class="surround-field__note">
+        These are requested digital routing targets. A confirmed browser graph
+        does not prove physical speaker placement, wiring, or acoustic output.
       </p>
     </section>
 
-    <section class="speaker-rail" aria-label="Speaker Test actions">
-      <div class="speaker-rail__modes">
-        <span class="speaker-rail__label">Mode</span>
-        <div class="speaker-mode-switcher" aria-label="Speaker Test mode">
-          <button type="button" data-speaker-mode="channel" aria-pressed="true">Channel</button>
-          <button type="button" data-speaker-mode="phase" aria-pressed="false">Phase</button>
-          <button type="button" data-speaker-mode="sweep" aria-pressed="false">Sweep</button>
-          <button type="button" data-speaker-mode="bass" aria-pressed="false">Bass / rattle</button>
+    <section class="surround-rail" aria-label="Surround Sound Test actions">
+      <div class="surround-capability-zone">
+        <div class="surround-check-panel">
+          <div>
+            <span>Capability</span>
+            <strong>Confirm browser output first</strong>
+            <p>maxChannelCount is only a ceiling; 5.1 requires exact destination readback.</p>
+          </div>
+          <button type="button" class="surround-primary" data-surround-check>Check surround support</button>
+        </div>
+        <div class="surround-capability-slot">
+          <p class="surround-capability" data-surround-capability role="status" hidden></p>
+        </div>
+        <div class="surround-mode-slot">
+          <div class="surround-mode-selector" data-surround-mode-selector hidden>
+            <button type="button" data-surround-mode="five-one" aria-pressed="false" hidden>5.1</button>
+            <button type="button" data-surround-mode="experimental-eight" aria-pressed="false" hidden>Experimental 8-channel</button>
+            <button type="button" data-surround-mode="stereo-preview" aria-pressed="false" hidden>Stereo spatial preview</button>
+          </div>
         </div>
       </div>
 
-      <div class="speaker-mode-slot">
-        <div class="speaker-panel" data-speaker-panel="channel">
-          <div class="speaker-panel__heading">
-            <span>Channel check</span>
-            <strong>Direct L / Both / R targets live in the field</strong>
-            <p>Run the automatic sequence when you want a hands-off comparison.</p>
+      <div class="surround-action-slot">
+        <div class="surround-panel" data-surround-panel="five-one" hidden>
+          <div class="surround-panel__heading">
+            <span>Standardized 5.1</span>
+            <strong>FL · FR · Center · LFE · SL · SR</strong>
+            <p>Use the map for individual channels or run the deterministic sequence.</p>
           </div>
-          <button type="button" class="speaker-primary" data-speaker-sequence>Run Left → Both → Right</button>
+          <button type="button" class="surround-primary" data-surround-51-all>Test all 5.1 channels</button>
         </div>
-        <div class="speaker-panel" data-speaker-panel="phase" hidden>
-          <div class="speaker-panel__heading">
-            <span>Phase comparison</span><strong>Correlated pink noise</strong>
-            <p>Same source and playback position; only right-channel polarity changes.</p>
+
+        <div class="surround-panel" data-surround-panel="experimental-eight" hidden>
+          <div class="surround-panel__heading">
+            <span>Experimental 8-channel</span>
+            <strong>Raw discrete outputs only</strong>
+            <p>Not labeled or claimed as universal 7.1.</p>
           </div>
-          <div class="speaker-actions speaker-actions--two">
-            <button type="button" data-speaker-phase-in aria-pressed="false">In phase</button>
-            <button type="button" data-speaker-phase-inverted aria-pressed="false">Inverted</button>
-          </div>
-          <button type="button" class="speaker-primary" data-speaker-phase-toggle disabled>A/B toggle</button>
+          <button type="button" class="surround-primary" data-surround-8-all>Test all 8 channels</button>
         </div>
-        <div class="speaker-panel" data-speaker-panel="sweep" hidden>
-          <div class="speaker-panel__heading">
-            <span>Frequency sweep</span><strong>10 s logarithmic sweep</strong>
-            <p>Default 100 → 10,000 Hz.</p>
+
+        <div class="surround-panel" data-surround-panel="stereo-preview" hidden>
+          <div class="surround-panel__heading">
+            <span>Stereo spatial preview</span>
+            <strong>Ordinary stereo routing/panning</strong>
+            <p>This mode is not surround verification.</p>
           </div>
-          <div class="speaker-sweep-fields">
-            <label><span>Low</span><span class="speaker-field-input"><input id="speaker-sweep-low" type="number" min="20" max="20000" step="1" value="100" inputmode="decimal" /> Hz</span></label>
-            <label><span>High</span><span class="speaker-field-input"><input id="speaker-sweep-high" type="number" min="20" max="20000" step="1" value="10000" inputmode="decimal" /> Hz</span></label>
+          <div class="surround-pan-actions">
+            <button type="button" data-surround-stereo="left-to-right">L → R</button>
+            <button type="button" data-surround-stereo="right-to-left">R → L</button>
           </div>
-          <button type="button" class="speaker-primary" data-speaker-sweep>Run speaker sweep</button>
-        </div>
-        <div class="speaker-panel" data-speaker-panel="bass" hidden>
-          <div class="speaker-panel__heading">
-            <span>Bass / rattle</span><strong>40 → 120 Hz · 12 s</strong>
-            <p>Listen for buzzing, rattles or resonances at moderate volume.</p>
-          </div>
-          <button type="button" class="speaker-primary" data-speaker-bass>Run bass / rattle sweep</button>
         </div>
       </div>
 
-      <div class="speaker-level"><LevelControl id="speaker-level" valueDb={-24} /></div>
-      <button type="button" class="speaker-stop" data-speaker-stop disabled><span class="transport-stop-shape" aria-hidden="true"></span>Stop</button>
+      <div class="surround-level"><LevelControl id="surround-level" valueDb={-24} /></div>
+      <button type="button" class="surround-stop" data-surround-stop disabled><span class="transport-stop-shape" aria-hidden="true"></span>Stop</button>
     </section>
 
-    <div class="speaker-state-strip">
+    <div class="surround-state-strip">
       <strong>Low volume</strong>
       <p>Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.</p>
     </div>
-    <CapabilityNotice id="speaker-frequency-cap" message="" />
-    <p class="speaker-error" data-speaker-error role="alert" hidden></p>
+    <p class="surround-error" data-surround-error role="alert" hidden></p>
   </SonicInstrument>
 </div>
 '''
 
-speaker_style = r'''
+surround_style = r'''
 <style>
-  .speaker-sheet__bar { display:flex; min-height:48px; align-items:center; justify-content:space-between; gap:18px; padding:6px 18px; border-bottom:1px solid var(--sonic-border-soft); }
-  .speaker-sheet__state { display:grid; justify-items:end; gap:1px; min-width:0; text-align:right; }
-  .speaker-sheet__state span,.speaker-field__heading>div>span,.speaker-rail__label,.speaker-panel__heading>span { color:var(--sonic-muted); font-size:.67rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
-  .speaker-sheet__state strong { max-width:280px; overflow:hidden; font-size:.82rem; text-overflow:ellipsis; white-space:nowrap; }
-  .speaker-field { display:grid; gap:8px; min-height:244px; padding:16px 22px 14px; border-bottom:1px solid var(--sonic-border); background:var(--sonic-field); }
-  .speaker-field__heading { display:flex; align-items:end; justify-content:space-between; gap:20px; }
-  .speaker-field__heading>div { display:grid; gap:2px; }
-  .speaker-field__heading strong { font-size:.88rem; }
-  .speaker-field__reference { color:var(--sonic-muted); font-size:.72rem; font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .speaker-stage { position:relative; display:grid; grid-template-columns:minmax(118px,1fr) minmax(96px,.74fr) minmax(118px,1fr); align-items:center; gap:clamp(18px,5vw,72px); width:min(100%,720px); min-height:126px; margin-inline:auto; }
-  .speaker-stage__axis { position:absolute; z-index:0; top:50%; right:8%; left:8%; height:1px; background:var(--sonic-border); }
-  .speaker-node { position:relative; z-index:2; display:grid; min-width:0; min-height:100px; place-items:center; align-content:center; gap:2px; padding:10px; border:1px solid var(--sonic-border); border-radius:8px; background:rgb(238 234 224 / .88); color:var(--sonic-ink); cursor:pointer; transition:border-color 120ms ease,background-color 120ms ease,color 120ms ease; }
-  .speaker-node strong { position:relative; z-index:2; font-size:1.55rem; }
-  .speaker-node small { position:relative; z-index:2; color:var(--sonic-muted); font-size:.67rem; font-weight:750; letter-spacing:.05em; text-transform:uppercase; }
-  .speaker-node__driver { position:absolute; width:48px; height:48px; border:1px solid currentColor; border-radius:50%; opacity:.24; }
-  .speaker-node__driver::after { position:absolute; inset:9px; border:1px solid currentColor; border-radius:50%; content:""; }
-  .speaker-node__signal { position:absolute; top:8px; color:var(--sonic-muted); font-size:1.15rem; }
-  .speaker-node[aria-pressed="true"] { border-color:var(--sonic-signal); background:#eef0e7; color:var(--sonic-signal); }
-  [data-speaker-visual="left"] .speaker-node--left,[data-speaker-visual="both"] .speaker-node,[data-speaker-visual="right"] .speaker-node--right,[data-speaker-visual="phase-in"] .speaker-node,[data-speaker-visual="phase-inverted"] .speaker-node,[data-speaker-visual="sweep"] .speaker-node,[data-speaker-visual="bass"] .speaker-node { border-color:var(--sonic-signal); }
-  [data-speaker-visual="phase-inverted"] .speaker-node--right { border-style:dashed; color:var(--sonic-opposing); }
-  .speaker-meter { display:flex; min-height:24px; align-items:end; justify-content:center; gap:5px; }
-  .speaker-meter span { width:5px; height:7px; border-radius:1px; background:rgb(39 127 138 / .28); transition:height 160ms ease,opacity 160ms ease; }
-  [data-speaker-visual="sweep"] .speaker-meter span:nth-child(1),[data-speaker-visual="bass"] .speaker-meter span:nth-child(5) { height:22px; }
-  [data-speaker-visual="sweep"] .speaker-meter span:nth-child(2),[data-speaker-visual="bass"] .speaker-meter span:nth-child(4) { height:16px; }
-  [data-speaker-visual="sweep"] .speaker-meter span:nth-child(3),[data-speaker-visual="bass"] .speaker-meter span:nth-child(3) { height:12px; }
-  .speaker-field__note { margin:0; color:var(--sonic-muted); font-size:.71rem; line-height:1.35; }
-  .speaker-rail { display:grid; grid-template-columns:minmax(220px,.78fr) minmax(350px,1.35fr) minmax(180px,.65fr) 110px; min-height:178px; align-items:stretch; border-bottom:1px solid var(--sonic-border-soft); }
-  .speaker-rail>* { min-width:0; padding:12px 14px; }
-  .speaker-rail>*+* { border-left:1px solid var(--sonic-border-soft); }
-  .speaker-rail__modes { display:grid; align-content:start; gap:7px; }
-  .speaker-mode-switcher { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:6px; }
-  .speaker-rail button,.speaker-panel button,.speaker-stop { min-height:44px; border:1px solid var(--sonic-border); border-radius:5px; background:transparent; color:var(--sonic-ink); cursor:pointer; font-weight:800; }
-  .speaker-rail button[aria-pressed="true"],.speaker-panel button[aria-pressed="true"] { border-color:var(--sonic-signal); background:rgb(39 127 138 / .07); color:#0b6570; }
-  .speaker-mode-slot { position:relative; min-height:176px; overflow:hidden; }
-  .speaker-panel { position:absolute; inset:12px 14px; display:grid; align-content:start; gap:7px; }
-  .speaker-panel[hidden] { display:none; }
-  .speaker-panel__heading { display:grid; gap:1px; }
-  .speaker-panel__heading strong { font-size:.86rem; }
-  .speaker-panel__heading p { margin:0; color:var(--sonic-muted); font-size:.7rem; line-height:1.35; }
-  .speaker-actions { display:grid; gap:6px; }
-  .speaker-actions--two { grid-template-columns:repeat(2,minmax(0,1fr)); }
-  .speaker-primary { width:100%; border-color:var(--sonic-ink)!important; background:var(--sonic-ink)!important; color:#f7f6ef!important; }
-  .speaker-sweep-fields { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:8px; }
-  .speaker-sweep-fields label { display:grid; gap:3px; min-width:0; color:var(--sonic-muted); font-size:.67rem; font-weight:800; }
-  .speaker-field-input { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:5px; }
-  .speaker-field-input input { width:100%; min-width:0; min-height:44px; padding:0 9px; border:1px solid var(--sonic-border); border-radius:5px; background:#f7f6ef; color:var(--sonic-ink); font-weight:800; }
-  .speaker-level { display:flex; align-items:center; }
-  .speaker-level :global(.level-control) { width:100%; }
-  .speaker-stop { align-self:center; margin:12px; padding:0 10px; }
-  .transport-stop-shape { display:inline-block; width:9px; height:9px; margin-right:7px; border-radius:1px; background:currentColor; }
-  .speaker-stop:disabled { color:#8a9695; cursor:not-allowed; }
-  .speaker-state-strip { display:grid; grid-template-columns:92px minmax(0,1fr); gap:12px; padding:8px 18px; color:var(--sonic-muted); }
-  .speaker-state-strip strong { color:var(--sonic-current); font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; }
-  .speaker-state-strip p,.speaker-error { margin:0; font-size:.7rem; line-height:1.35; }
-  .speaker-error { padding:8px 18px 10px; color:var(--sonic-opposing); }
-  .speaker-error[hidden] { display:none; }
+  .surround-sheet__bar { display:flex; min-height:48px; align-items:center; justify-content:space-between; gap:18px; padding:6px 18px; border-bottom:1px solid var(--sonic-border-soft); }
+  .surround-sheet__state { display:grid; justify-items:end; gap:1px; min-width:0; text-align:right; }
+  .surround-sheet__state span,.surround-field__heading>div>span,.surround-check-panel span,.surround-panel__heading>span { color:var(--sonic-muted); font-size:.67rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
+  .surround-sheet__state strong { max-width:310px; overflow:hidden; font-size:.82rem; text-overflow:ellipsis; white-space:nowrap; }
+  .surround-field { display:grid; gap:8px; min-height:286px; padding:14px 22px 12px; border-bottom:1px solid var(--sonic-border); background:var(--sonic-field); }
+  .surround-field__heading { display:flex; align-items:end; justify-content:space-between; gap:18px; }
+  .surround-field__heading>div { display:grid; gap:2px; }
+  .surround-field__heading strong { font-size:.88rem; }
+  .surround-field__reference { color:var(--sonic-muted); font-size:.69rem; white-space:nowrap; }
+  .surround-stage { position:relative; width:min(100%,650px); height:196px; min-height:196px; margin-inline:auto; }
+  .surround-ring { position:absolute; inset:8px 64px; border:1px dashed var(--sonic-border); border-radius:50%; opacity:.82; }
+  .surround-seat { position:absolute; z-index:2; top:50%; left:50%; display:grid; width:72px; height:38px; place-items:center; border:1px solid var(--sonic-border); border-radius:5px; background:var(--sonic-sheet); color:var(--sonic-muted); font-size:.57rem; font-weight:850; letter-spacing:.08em; transform:translate(-50%,-50%); }
+  .surround-stage__idle { position:absolute; z-index:3; left:50%; bottom:4px; width:max-content; max-width:90%; color:var(--sonic-muted); font-size:.7rem; font-weight:750; text-align:center; transform:translateX(-50%); }
+  [data-surround-mode]:not([data-surround-mode="unknown"]) .surround-stage__idle { visibility:hidden; }
+  .surround-map { position:absolute; inset:0; display:none; }
+  [data-surround-mode="five-one"] .surround-map--five-one,[data-surround-mode="experimental-eight"] .surround-map--eight,[data-surround-mode="stereo-preview"] .surround-map--stereo { display:block; }
+  .surround-node { position:absolute; z-index:4; display:grid; min-width:48px; min-height:48px; place-items:center; padding:5px 8px; border:1px solid var(--sonic-border); border-radius:7px; background:rgb(238 234 224 / .94); color:var(--sonic-ink); font-size:.72rem; font-weight:850; cursor:pointer; transition:border-color 120ms ease,background-color 120ms ease,color 120ms ease; }
+  .surround-node:hover:not(:disabled),.surround-node:focus-visible { border-color:var(--sonic-signal); }
+  .surround-node--fl { top:18px; left:15%; } .surround-node--fr { top:18px; right:15%; } .surround-node--c { top:0; left:50%; transform:translateX(-50%); } .surround-node--lfe { right:4%; bottom:58px; } .surround-node--sl { bottom:5px; left:17%; } .surround-node--sr { right:17%; bottom:5px; }
+  .surround-node--raw-1 { top:0; left:50%; transform:translateX(-50%); } .surround-node--raw-2 { top:22px; right:15%; } .surround-node--raw-3 { top:74px; right:5%; } .surround-node--raw-4 { right:18%; bottom:4px; } .surround-node--raw-5 { bottom:0; left:50%; transform:translateX(-50%); } .surround-node--raw-6 { bottom:4px; left:18%; } .surround-node--raw-7 { top:74px; left:5%; } .surround-node--raw-8 { top:22px; left:15%; }
+  .surround-stereo-rail { position:absolute; top:50%; right:12%; left:12%; height:1px; background:var(--sonic-border); }
+  .surround-node--left { top:50%; left:9%; transform:translateY(-50%); } .surround-node--center { top:50%; left:50%; transform:translate(-50%,-50%); } .surround-node--right { top:50%; right:9%; transform:translateY(-50%); }
+  .surround-field__note { margin:0; color:var(--sonic-muted); font-size:.7rem; line-height:1.35; }
+  .surround-rail { display:grid; grid-template-columns:minmax(320px,1.15fr) minmax(300px,1fr) minmax(180px,.65fr) 110px; min-height:186px; border-bottom:1px solid var(--sonic-border-soft); }
+  .surround-rail>* { min-width:0; padding:10px 14px; } .surround-rail>*+* { border-left:1px solid var(--sonic-border-soft); }
+  .surround-capability-zone { display:grid; align-content:start; gap:5px; }
+  .surround-check-panel { display:grid; grid-template-columns:minmax(0,1fr) auto; align-items:center; gap:9px; }
+  .surround-check-panel>div,.surround-panel__heading { display:grid; gap:1px; }
+  .surround-check-panel strong,.surround-panel__heading strong { font-size:.82rem; }
+  .surround-check-panel p,.surround-panel__heading p,.surround-capability { margin:0; color:var(--sonic-muted); font-size:.66rem; line-height:1.3; }
+  .surround-capability-slot { min-height:34px; }
+  .surround-capability { padding:4px 0; }
+  .surround-capability[hidden] { display:none; }
+  .surround-mode-slot { min-height:46px; }
+  .surround-mode-selector { display:grid; grid-template-columns:repeat(3,minmax(0,1fr)); gap:5px; }
+  .surround-mode-selector[hidden] { display:none; }
+  .surround-action-slot { position:relative; min-height:166px; overflow:hidden; }
+  .surround-panel { position:absolute; inset:10px 14px; display:grid; align-content:start; gap:8px; }
+  .surround-panel[hidden] { display:none; }
+  .surround-pan-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); gap:7px; }
+  .surround-rail button,.surround-stop { min-height:44px; border:1px solid var(--sonic-border); border-radius:5px; background:transparent; color:var(--sonic-ink); font-weight:800; cursor:pointer; }
+  .surround-primary { border-color:var(--sonic-ink)!important; background:var(--sonic-ink)!important; color:#f7f6ef!important; }
+  .surround-mode-selector button[aria-pressed="true"] { border-color:var(--sonic-signal); background:rgb(39 127 138 / .07); color:#0b6570; }
+  .surround-level { display:flex; align-items:center; } .surround-level :global(.level-control) { width:100%; }
+  .surround-stop { align-self:center; margin:10px; padding:0 9px; } .transport-stop-shape { display:inline-block; width:9px; height:9px; margin-right:7px; border-radius:1px; background:currentColor; }
   button:disabled { cursor:not-allowed; opacity:.5; }
-  @media (min-width:981px) and (max-height:920px) {
-    .speaker-field { min-height:218px; padding-block:12px 10px; }
-    .speaker-stage { min-height:108px; }
-    .speaker-node { min-height:88px; }
-    .speaker-rail { min-height:162px; }
-    .speaker-rail>* { padding-block:10px; }
-    .speaker-mode-slot { min-height:158px; }
-    .speaker-panel { inset-block:10px; }
-  }
-  @media (max-width:980px) {
-    .speaker-rail { grid-template-columns:1fr 1.25fr; }
-    .speaker-rail>*:nth-child(3) { border-left:0; border-top:1px solid var(--sonic-border-soft); }
-    .speaker-rail>*:nth-child(4) { border-top:1px solid var(--sonic-border-soft); }
-  }
-  @media (max-width:620px) {
-    .speaker-sheet__bar { padding-inline:14px; }
-    .speaker-field { min-height:220px; padding:13px 14px 11px; }
-    .speaker-field__heading { align-items:start; }
-    .speaker-field__reference { display:none; }
-    .speaker-stage { grid-template-columns:repeat(3,minmax(0,1fr)); gap:8px; min-height:94px; }
-    .speaker-node { min-height:82px; padding:7px 4px; }
-    .speaker-node strong { font-size:1.2rem; }
-    .speaker-node__driver { width:38px; height:38px; }
-    .speaker-node small { font-size:.6rem; }
-    .speaker-rail { grid-template-columns:1fr; }
-    .speaker-rail>*+* { border-left:0; border-top:1px solid var(--sonic-border-soft); }
-    .speaker-mode-slot { min-height:174px; }
-    .speaker-state-strip { grid-template-columns:1fr; gap:4px; padding-inline:14px; }
-  }
-  @media (prefers-reduced-motion:reduce) { .speaker-node,.speaker-meter span { transition:none; } }
+  .surround-state-strip { display:grid; grid-template-columns:92px minmax(0,1fr); gap:12px; padding:8px 18px; color:var(--sonic-muted); }
+  .surround-state-strip strong { color:var(--sonic-current); font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; }
+  .surround-state-strip p,.surround-error { margin:0; font-size:.7rem; line-height:1.35; } .surround-error { padding:8px 18px 10px; color:var(--sonic-opposing); } .surround-error[hidden] { display:none; }
+  @media (min-width:981px) and (max-height:920px) { .surround-field { min-height:256px; padding-block:10px 9px; } .surround-stage { height:174px; min-height:174px; } .surround-ring { inset-block:5px; } .surround-rail { min-height:170px; } .surround-action-slot { min-height:150px; } .surround-panel { inset-block:8px; } }
+  @media (max-width:1040px) { .surround-rail { grid-template-columns:1.15fr 1fr; } .surround-rail>*:nth-child(3) { border-left:0; border-top:1px solid var(--sonic-border-soft); } .surround-rail>*:nth-child(4) { border-top:1px solid var(--sonic-border-soft); } }
+  @media (max-width:660px) { .surround-sheet__bar { padding-inline:14px; } .surround-field { min-height:268px; padding:12px 12px 10px; } .surround-field__heading { align-items:start; } .surround-field__reference { display:none; } .surround-stage { height:182px; min-height:182px; } .surround-ring { inset-inline:34px; } .surround-node { min-width:44px; min-height:44px; padding:4px 6px; font-size:.65rem; } .surround-node--fl { left:10%; } .surround-node--fr { right:10%; } .surround-node--sl { left:11%; } .surround-node--sr { right:11%; } .surround-rail { grid-template-columns:1fr; } .surround-rail>*+* { border-left:0; border-top:1px solid var(--sonic-border-soft); } .surround-check-panel { grid-template-columns:1fr; } .surround-action-slot { min-height:146px; } .surround-state-strip { grid-template-columns:1fr; gap:4px; padding-inline:14px; } }
+  @media (max-width:360px) { .surround-node { min-width:42px; padding-inline:4px; } .surround-node--fl,.surround-node--sl { left:5%; } .surround-node--fr,.surround-node--sr { right:5%; } }
+  @media (prefers-reduced-motion:reduce) { .surround-node { transition:none; } }
 </style>
 '''
 
-stereo_markup = r'''
-<div data-stereo-test data-stereo-visual="center">
-  <SonicInstrument label="Stereo Test output controls" class="stereo-sheet">
-    <div class="stereo-sheet__bar">
-      <ToolStatus id="stereo-status" label="Ready" state="idle" />
-      <div class="stereo-sheet__state"><span>Digital target</span><strong data-stereo-position-label>None</strong></div>
+phase_markup = r'''
+<div data-phase-test data-phase-mode="idle">
+  <SonicInstrument label="Phase Test output controls" class="phase-sheet">
+    <div class="phase-sheet__bar">
+      <ToolStatus id="phase-status" label="Ready" state="idle" />
+      <div class="phase-reference">
+        <span>Reference</span>
+        <strong>Correlated pink noise</strong>
+        <small>same source · same playback position</small>
+      </div>
     </div>
 
-    <section class="stereo-field" aria-label="Stereo position field">
-      <div class="stereo-field__heading">
-        <div><span>Stereo position</span><strong>Choose a fixed target or run a pan across the field</strong></div>
-        <span class="stereo-field__reference">500 Hz · 700 ms static · 4 s pan</span>
+    <section class="phase-field" aria-label="Phase relationship visualization">
+      <div class="phase-field__heading">
+        <div><span>Channel relationship</span><strong>Compare polarity without moving the visual stage</strong></div>
+        <p class="phase-mode">Relationship: <strong data-phase-mode-label>None</strong></p>
       </div>
-      <div class="stereo-track" data-stereo-track>
-        <span class="stereo-track__rail" aria-hidden="true"></span>
-        <span class="stereo-track__trail stereo-track__trail--one" aria-hidden="true"></span>
-        <span class="stereo-track__trail stereo-track__trail--two" aria-hidden="true"></span>
-        <span class="stereo-track__signal" aria-hidden="true">∿</span>
-        <button type="button" class="stereo-track__target stereo-track__target--left" data-stereo-action="left" aria-pressed="false">Left</button>
-        <button type="button" class="stereo-track__target stereo-track__target--center" data-stereo-action="center" aria-pressed="false">Center</button>
-        <button type="button" class="stereo-track__target stereo-track__target--right" data-stereo-action="right" aria-pressed="false">Right</button>
+      <div class="phase-waveforms" data-phase-stage aria-hidden="true">
+        <div class="phase-waveform-row">
+          <span>L</span>
+          <svg viewBox="0 0 420 92" preserveAspectRatio="none"><path d="M0 46 C28 18 48 74 78 46 S130 20 160 46 S214 72 244 46 S296 18 326 46 S382 74 420 46"></path></svg>
+        </div>
+        <div class="phase-waveform-row phase-waveform-row--right">
+          <span>R</span>
+          <svg viewBox="0 0 420 92" preserveAspectRatio="none"><path d="M0 46 C28 18 48 74 78 46 S130 20 160 46 S214 72 244 46 S296 18 326 46 S382 74 420 46"></path></svg>
+        </div>
       </div>
-      <p class="stereo-field__note">Static Center uses explicit equal Left + Right routing. Pan sweeps use continuous stereo panning and do not verify physical speaker placement.</p>
+      <p class="phase-field__note">Relationship cue only — not a measured waveform or a physical wiring diagnosis.</p>
     </section>
 
-    <section class="stereo-rail" aria-label="Stereo Test actions">
-      <div class="stereo-pan-copy"><span>Pan sweep</span><strong>Linear movement over four seconds</strong><p>Natural completion returns the marker to centre after playback has already stopped.</p></div>
-      <div class="stereo-pan-actions">
-        <button type="button" data-stereo-action="left-to-right" aria-pressed="false">L → R</button>
-        <button type="button" data-stereo-action="right-to-left" aria-pressed="false">R → L</button>
+    <section class="phase-rail" aria-label="Phase Test actions">
+      <div class="phase-copy"><span>Compare relationship</span><strong>One deterministic source stays running</strong><p>Switching changes only the requested right-channel sign.</p></div>
+      <div class="phase-actions phase-actions--modes">
+        <button type="button" data-phase-in-phase aria-pressed="false">In phase</button>
+        <button type="button" data-phase-inverted aria-pressed="false">Inverted</button>
       </div>
-      <button type="button" class="stereo-stop" data-stereo-stop disabled><span class="transport-stop-shape" aria-hidden="true"></span>Stop</button>
+      <div class="phase-actions phase-actions--utility">
+        <button type="button" class="phase-toggle" data-phase-toggle disabled>A/B toggle</button>
+        <button type="button" class="phase-stop" data-phase-stop disabled><span class="transport-stop-shape" aria-hidden="true"></span>Stop</button>
+      </div>
     </section>
 
-    <div class="stereo-state-strip"><strong>Low volume</strong><p>Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.</p></div>
-    <p class="stereo-error" data-stereo-error role="alert" hidden></p>
+    <div class="phase-state-strip"><strong>Low volume</strong><p>Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.</p></div>
+    <p class="phase-error" data-phase-error role="alert" hidden></p>
   </SonicInstrument>
 </div>
 '''
 
-stereo_style = r'''
+phase_style = r'''
 <style>
-  .stereo-sheet__bar { display:flex; min-height:48px; align-items:center; justify-content:space-between; gap:18px; padding:6px 18px; border-bottom:1px solid var(--sonic-border-soft); }
-  .stereo-sheet__state { display:grid; justify-items:end; gap:1px; text-align:right; }
-  .stereo-sheet__state span,.stereo-field__heading>div>span,.stereo-pan-copy>span { color:var(--sonic-muted); font-size:.67rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; }
-  .stereo-sheet__state strong { font-size:.82rem; }
-  .stereo-field { display:grid; gap:9px; min-height:252px; padding:16px 22px 14px; border-bottom:1px solid var(--sonic-border); background:var(--sonic-field); }
-  .stereo-field__heading { display:flex; align-items:end; justify-content:space-between; gap:20px; }
-  .stereo-field__heading>div { display:grid; gap:2px; }
-  .stereo-field__heading strong { font-size:.88rem; }
-  .stereo-field__reference { color:var(--sonic-muted); font-size:.72rem; font-variant-numeric:tabular-nums; white-space:nowrap; }
-  .stereo-track { position:relative; width:min(100%,760px); min-height:146px; margin-inline:auto; }
-  .stereo-track__rail { position:absolute; top:50%; right:7%; left:7%; height:1px; background:var(--sonic-border); }
-  .stereo-track__rail::before,.stereo-track__rail::after { position:absolute; top:-3px; width:7px; height:7px; border:1px solid var(--sonic-border); border-radius:50%; background:var(--sonic-field); content:""; }
-  .stereo-track__rail::before { left:0; } .stereo-track__rail::after { right:0; }
-  .stereo-track__signal,.stereo-track__trail { position:absolute; z-index:2; top:50%; left:50%; width:48px; height:48px; border-radius:50%; transform:translate(-50%,-50%); }
-  .stereo-track__signal { display:grid; place-items:center; border:1px solid var(--sonic-signal); background:var(--sonic-field-deep); color:#f7f6ef; font-size:1.1rem; transition:left 180ms ease; }
-  .stereo-track__trail { z-index:1; border:1px solid rgb(39 127 138 / .32); opacity:0; }
-  .stereo-track__target { position:absolute; z-index:3; bottom:2px; min-width:72px; min-height:44px; padding:0 10px; border:1px solid var(--sonic-border); border-radius:5px; background:rgb(238 234 224 / .9); color:var(--sonic-ink); font-weight:800; cursor:pointer; }
-  .stereo-track__target--left { left:0; } .stereo-track__target--center { left:50%; transform:translateX(-50%); } .stereo-track__target--right { right:0; }
-  .stereo-track__target[aria-pressed="true"] { border-color:var(--sonic-signal); background:#eef0e7; color:var(--sonic-signal); }
-  [data-stereo-visual="left"] .stereo-track__signal { left:7%; } [data-stereo-visual="center"] .stereo-track__signal { left:50%; } [data-stereo-visual="right"] .stereo-track__signal { left:93%; }
-  [data-stereo-visual="left-to-right"] .stereo-track__signal,[data-stereo-visual="left-to-right"] .stereo-track__trail { animation:stereo-left-to-right 4s linear both; }
-  [data-stereo-visual="right-to-left"] .stereo-track__signal,[data-stereo-visual="right-to-left"] .stereo-track__trail { animation:stereo-right-to-left 4s linear both; }
-  [data-stereo-visual*="to"] .stereo-track__trail { opacity:1; }
-  [data-stereo-visual*="to"] .stereo-track__trail--one { animation-delay:.08s; opacity:.48; } [data-stereo-visual*="to"] .stereo-track__trail--two { animation-delay:.16s; opacity:.22; }
-  [data-stereo-visual="return-from-right"] .stereo-track__signal { animation:stereo-return-right 240ms ease-out both; } [data-stereo-visual="return-from-left"] .stereo-track__signal { animation:stereo-return-left 240ms ease-out both; }
-  @keyframes stereo-left-to-right { from { left:7%; } to { left:93%; } } @keyframes stereo-right-to-left { from { left:93%; } to { left:7%; } }
-  @keyframes stereo-return-right { from { left:93%; } to { left:50%; } } @keyframes stereo-return-left { from { left:7%; } to { left:50%; } }
-  .stereo-field__note { margin:0; color:var(--sonic-muted); font-size:.71rem; line-height:1.35; }
-  .stereo-rail { display:grid; grid-template-columns:minmax(300px,1fr) minmax(260px,.9fr) 120px; min-height:132px; border-bottom:1px solid var(--sonic-border-soft); }
-  .stereo-rail>* { min-width:0; padding:14px 16px; } .stereo-rail>*+* { border-left:1px solid var(--sonic-border-soft); }
-  .stereo-pan-copy { display:grid; align-content:center; gap:2px; } .stereo-pan-copy strong { font-size:.86rem; } .stereo-pan-copy p { margin:0; color:var(--sonic-muted); font-size:.7rem; line-height:1.35; }
-  .stereo-pan-actions { display:grid; grid-template-columns:repeat(2,minmax(0,1fr)); align-content:center; gap:8px; }
-  .stereo-pan-actions button,.stereo-stop { min-height:44px; border:1px solid var(--sonic-border); border-radius:5px; background:transparent; color:var(--sonic-ink); font-weight:800; cursor:pointer; }
-  .stereo-pan-actions button[aria-pressed="true"] { border-color:var(--sonic-signal); background:rgb(39 127 138 / .07); color:#0b6570; }
-  .stereo-stop { align-self:center; margin:14px; padding:0 10px; } .transport-stop-shape { display:inline-block; width:9px; height:9px; margin-right:7px; border-radius:1px; background:currentColor; }
+  .phase-sheet__bar { display:flex; min-height:48px; align-items:center; justify-content:space-between; gap:18px; padding:6px 18px; border-bottom:1px solid var(--sonic-border-soft); }
+  .phase-reference { display:grid; justify-items:end; gap:1px; text-align:right; } .phase-reference span,.phase-field__heading>div>span,.phase-copy>span { color:var(--sonic-muted); font-size:.67rem; font-weight:800; letter-spacing:.09em; text-transform:uppercase; } .phase-reference strong { font-size:.82rem; } .phase-reference small { color:var(--sonic-muted); font-size:.65rem; }
+  .phase-field { display:grid; gap:8px; min-height:272px; padding:15px 22px 12px; border-bottom:1px solid var(--sonic-border); background:var(--sonic-field); }
+  .phase-field__heading { display:flex; align-items:end; justify-content:space-between; gap:18px; } .phase-field__heading>div { display:grid; gap:2px; } .phase-field__heading strong { font-size:.88rem; }
+  .phase-mode { margin:0; color:var(--sonic-muted); font-size:.76rem; } .phase-mode strong { color:var(--sonic-ink); }
+  .phase-waveforms { display:grid; align-content:center; gap:6px; width:min(100%,760px); min-height:176px; margin-inline:auto; }
+  .phase-waveform-row { display:grid; grid-template-columns:26px 1fr; align-items:center; gap:10px; } .phase-waveform-row>span { color:var(--sonic-muted); font-weight:850; }
+  .phase-waveform-row svg { width:100%; height:72px; overflow:visible; } .phase-waveform-row path { fill:none; stroke:var(--sonic-signal); stroke-width:4; stroke-linecap:round; vector-effect:non-scaling-stroke; opacity:.48; transition:opacity 120ms ease,transform 60ms linear; transform-origin:50% 50%; }
+  [data-phase-mode="in-phase"] .phase-waveform-row path { opacity:.95; } [data-phase-mode="inverted"] .phase-waveform-row path { opacity:.72; } [data-phase-mode="inverted"] .phase-waveform-row--right path { stroke:var(--sonic-opposing); transform:scaleY(-1); opacity:1; }
+  .phase-field__note { margin:0; color:var(--sonic-muted); font-size:.7rem; line-height:1.35; text-align:center; }
+  .phase-rail { display:grid; grid-template-columns:minmax(300px,1.1fr) minmax(220px,.8fr) minmax(250px,.9fr); min-height:128px; border-bottom:1px solid var(--sonic-border-soft); }
+  .phase-rail>* { min-width:0; padding:13px 15px; } .phase-rail>*+* { border-left:1px solid var(--sonic-border-soft); }
+  .phase-copy { display:grid; align-content:center; gap:2px; } .phase-copy strong { font-size:.84rem; } .phase-copy p { margin:0; color:var(--sonic-muted); font-size:.7rem; line-height:1.35; }
+  .phase-actions { display:grid; align-content:center; gap:7px; } .phase-actions--modes,.phase-actions--utility { grid-template-columns:repeat(2,minmax(0,1fr)); }
+  .phase-actions button { min-height:44px; border:1px solid var(--sonic-border); border-radius:5px; background:transparent; color:var(--sonic-ink); font-weight:800; cursor:pointer; }
+  .phase-actions--modes button[aria-pressed="true"] { border-color:var(--sonic-signal); background:rgb(39 127 138 / .07); color:#0b6570; }
+  .phase-toggle { border-color:var(--sonic-ink)!important; background:var(--sonic-ink)!important; color:#f7f6ef!important; }
+  .transport-stop-shape { display:inline-block; width:9px; height:9px; margin-right:7px; border-radius:1px; background:currentColor; }
   button:disabled { cursor:not-allowed; opacity:.5; }
-  .stereo-state-strip { display:grid; grid-template-columns:92px minmax(0,1fr); gap:12px; padding:8px 18px; color:var(--sonic-muted); }
-  .stereo-state-strip strong { color:var(--sonic-current); font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; }
-  .stereo-state-strip p,.stereo-error { margin:0; font-size:.7rem; line-height:1.35; } .stereo-error { padding:8px 18px 10px; color:var(--sonic-opposing); } .stereo-error[hidden] { display:none; }
-  @media (min-width:981px) and (max-height:920px) { .stereo-field { min-height:222px; padding-block:12px 10px; } .stereo-track { min-height:118px; } .stereo-rail { min-height:112px; } .stereo-rail>* { padding-block:10px; } }
-  @media (max-width:760px) { .stereo-sheet__bar { padding-inline:14px; } .stereo-field { min-height:224px; padding:13px 14px 11px; } .stereo-field__reference { display:none; } .stereo-track { min-height:126px; } .stereo-track__target { min-width:66px; padding-inline:8px; } .stereo-rail { grid-template-columns:1fr; } .stereo-rail>*+* { border-left:0; border-top:1px solid var(--sonic-border-soft); } .stereo-state-strip { grid-template-columns:1fr; gap:4px; padding-inline:14px; } }
-  @media (prefers-reduced-motion:reduce) { .stereo-track__signal,.stereo-track__trail { animation:none!important; transition:none; } [data-stereo-visual="left-to-right"] .stereo-track__signal,[data-stereo-visual="right-to-left"] .stereo-track__signal,[data-stereo-visual="return-from-right"] .stereo-track__signal,[data-stereo-visual="return-from-left"] .stereo-track__signal { left:50%; } .stereo-track__trail { display:none; } }
+  .phase-state-strip { display:grid; grid-template-columns:92px minmax(0,1fr); gap:12px; padding:8px 18px; color:var(--sonic-muted); } .phase-state-strip strong { color:var(--sonic-current); font-size:.68rem; letter-spacing:.06em; text-transform:uppercase; } .phase-state-strip p,.phase-error { margin:0; font-size:.7rem; line-height:1.35; } .phase-error { padding:8px 18px 10px; color:var(--sonic-opposing); } .phase-error[hidden] { display:none; }
+  @media (min-width:981px) and (max-height:920px) { .phase-field { min-height:238px; padding-block:11px 9px; } .phase-waveforms { min-height:148px; } .phase-waveform-row svg { height:60px; } .phase-rail { min-height:112px; } .phase-rail>* { padding-block:10px; } }
+  @media (max-width:760px) { .phase-sheet__bar { padding-inline:14px; } .phase-reference small { display:none; } .phase-field { min-height:244px; padding:12px 14px 10px; } .phase-field__heading { align-items:start; } .phase-mode { text-align:right; } .phase-waveforms { min-height:148px; } .phase-waveform-row svg { height:62px; } .phase-rail { grid-template-columns:1fr; } .phase-rail>*+* { border-left:0; border-top:1px solid var(--sonic-border-soft); } .phase-state-strip { grid-template-columns:1fr; gap:4px; padding-inline:14px; } }
+  @media (prefers-reduced-motion:reduce) { .phase-waveform-row path { transition:none; } }
 </style>
 '''
 
 replace_component(
-    "src/tools/speaker-test/SpeakerTest.astro",
-    "<div data-speaker-test",
+    "src/tools/surround-sound-test/SurroundSoundTest.astro",
+    "<div data-surround-test",
     'import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";',
     'import SonicInstrument from "../../components/layout/SonicInstrument.astro";',
-    speaker_markup,
-    speaker_style,
+    surround_markup,
+    surround_style,
 )
 replace_component(
-    "src/tools/stereo-test/StereoTest.astro",
-    "<div data-stereo-test",
+    "src/tools/phase-test/PhaseTest.astro",
+    "<div data-phase-test",
     'import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";',
     'import SonicInstrument from "../../components/layout/SonicInstrument.astro";',
-    stereo_markup,
-    stereo_style,
+    phase_markup,
+    phase_style,
 )
 
-speaker_controller = Path("src/tools/speaker-test/SpeakerTestController.ts")
-text = speaker_controller.read_text()
-text = replace_once(
-    text,
-    '''  #setVisual(state: SpeakerVisualState, label: string): void {\n    this.#root.dataset.speakerVisual = state;\n    this.#visualLabel.textContent = label;\n  }''',
-    '''  #setVisual(state: SpeakerVisualState, label: string): void {\n    this.#root.dataset.speakerVisual = state;\n    this.#visualLabel.textContent = label;\n    for (const button of this.#channelButtons) {\n      button.setAttribute(\n        "aria-pressed",\n        String(button.dataset.speakerChannel === state),\n      );\n    }\n  }''',
-    "speaker visual state",
-)
-speaker_controller.write_text(text)
-
-stereo_controller = Path("src/tools/stereo-test/StereoTestController.ts")
-text = stereo_controller.read_text()
-text = replace_once(text, "const PAN_SWEEP_SECONDS = 4;", "const PAN_SWEEP_SECONDS = 4;\nconst PAN_RETURN_MS = 240;", "stereo return constant")
-text = replace_once(text, "  #finishTimer: number | null = null;\n  #starting = false;", "  #finishTimer: number | null = null;\n  #returnTimer: number | null = null;\n  #activeAction: StereoAction | null = null;\n  #starting = false;", "stereo state fields")
-text = replace_once(text, "    this.#clearFinishTimer();\n    this.#runToken += 1;\n    this.#playback = null;", "    this.#clearFinishTimer();\n    this.#clearReturnTimer();\n    this.#runToken += 1;\n    this.#activeAction = null;\n    this.#playback = null;", "stereo dispose state")
-text = replace_once(text, "      this.#starting = false;\n      this.#setControlsActive(true);\n      this.#setVisual(action, actionLabel(action));", "      this.#starting = false;\n      this.#activeAction = action;\n      this.#setControlsActive(true);\n      this.#setVisual(action, actionLabel(action));", "stereo static active action")
-text = replace_once(text, "      this.#playback = playback;\n      this.#starting = false;\n      this.#setControlsActive(true);", "      this.#playback = playback;\n      this.#starting = false;\n      this.#activeAction = action;\n      this.#setControlsActive(true);", "stereo pan active action")
-text = replace_once(text, "  #beginStart(): number {\n    this.#runToken += 1;", "  #beginStart(): number {\n    this.#clearReturnTimer();\n    this.#runToken += 1;", "stereo begin start")
-text = replace_once(text, "    this.#starting = false;\n    this.#playback = null;\n    this.#clearFinishTimer();", "    this.#starting = false;\n    this.#activeAction = null;\n    this.#playback = null;\n    this.#clearFinishTimer();\n    this.#clearReturnTimer();", "stereo start error reset")
-text = replace_once(text, "    this.#starting = false;\n    this.#clearFinishTimer();\n    this.#playback?.stop();\n    this.#playback = null;", "    this.#starting = false;\n    this.#clearFinishTimer();\n    this.#clearReturnTimer();\n    this.#activeAction = null;\n    this.#playback?.stop();\n    this.#playback = null;", "stereo stop reset")
-text = replace_once(
-    text,
-    '''  #finishRun(): void {\n    this.#finishTimer = null;\n    this.#starting = false;\n    this.#playback = null;\n    this.#setControlsActive(false);\n    this.#setVisual("center", "None");\n    this.#setStatus("idle", "Ready for another check");\n  }''',
-    '''  #finishRun(): void {\n    const finishedAction = this.#activeAction;\n    this.#finishTimer = null;\n    this.#starting = false;\n    this.#activeAction = null;\n    this.#playback = null;\n    this.#setControlsActive(false);\n    if (\n      finishedAction === "left-to-right" ||\n      finishedAction === "right-to-left"\n    ) {\n      this.#returnPanVisual(finishedAction);\n    } else {\n      this.#setVisual("center", "None");\n    }\n    this.#setStatus("idle", "Ready for another check");\n  }\n\n  #returnPanVisual(\n    action: "left-to-right" | "right-to-left",\n  ): void {\n    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {\n      this.#setVisual("center", "None");\n      return;\n    }\n    this.#root.dataset.stereoVisual =\n      action === "left-to-right" ? "return-from-right" : "return-from-left";\n    this.#positionLabel.textContent = "Returning to center";\n    this.#returnTimer = window.setTimeout(() => {\n      this.#returnTimer = null;\n      if (!this.#disposed) this.#setVisual("center", "None");\n    }, PAN_RETURN_MS);\n  }''',
-    "stereo finish return",
-)
-text = replace_once(text, "  #clearFinishTimer(): void {\n    if (this.#finishTimer === null) return;\n    window.clearTimeout(this.#finishTimer);\n    this.#finishTimer = null;\n  }", "  #clearFinishTimer(): void {\n    if (this.#finishTimer === null) return;\n    window.clearTimeout(this.#finishTimer);\n    this.#finishTimer = null;\n  }\n\n  #clearReturnTimer(): void {\n    if (this.#returnTimer === null) return;\n    window.clearTimeout(this.#returnTimer);\n    this.#returnTimer = null;\n  }", "stereo clear return timer")
-text = replace_once(text, "  #setVisual(action: StereoAction | \"center\", label: string): void {\n    this.#root.dataset.stereoVisual = action;\n    this.#positionLabel.textContent = label;\n  }", "  #setVisual(action: StereoAction | \"center\", label: string): void {\n    this.#root.dataset.stereoVisual = action;\n    this.#positionLabel.textContent = label;\n    for (const button of this.#actionButtons) {\n      button.setAttribute(\n        \"aria-pressed\",\n        String(button.dataset.stereoAction === action),\n      );\n    }\n  }", "stereo visual pressed state")
-stereo_controller.write_text(text)
-
-speaker_layout = Path("tests/browser/speaker-layout.spec.ts")
-text = speaker_layout.read_text()
+surround_layout = Path("tests/browser/surround-layout.spec.ts")
+text = surround_layout.read_text()
 text += r'''
 
-test("Speaker spatial anchors stay fixed across mode changes", async ({ page }) => {
-  await page.setViewportSize({ width: 1366, height: 768 });
-  await page.goto("/speaker-test");
-  const anchors = page.locator("[data-speaker-anchor]");
-  const before = await anchors.evaluateAll((elements) => elements.map((element) => {
+async function readStageBox(page: Page) {
+  return page.locator("[data-surround-stage]").evaluate((element) => {
     const box = element.getBoundingClientRect();
-    return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-  }));
-  for (const name of ["Phase", "Sweep", "Bass / rattle", "Channel"]) {
-    await page.getByRole("button", { name, exact: true }).click();
-    const after = await anchors.evaluateAll((elements) => elements.map((element) => {
-      const box = element.getBoundingClientRect();
-      return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
-    }));
-    expect(after).toEqual(before);
+    return { x: box.x, y: box.y, width: box.width, height: box.height };
+  });
+}
+
+test("Surround keeps its spatial stage footprint fixed through capability negotiation and mode changes", async ({ page }) => {
+  await installExactFiveOneContext(page);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/surround-sound-test");
+
+  const before = await readStageBox(page);
+  await page.getByRole("button", { name: "Check surround support" }).click();
+  const afterCapability = await readStageBox(page);
+
+  for (const key of ["x", "y", "width", "height"] as const) {
+    expect(afterCapability[key]).toBeCloseTo(before[key], 1);
+  }
+
+  await expect(page.locator("[data-surround-51-channel]")).toHaveCount(6);
+  await expect(page.locator("[data-surround-stereo]")).toHaveCount(5);
+
+  const stereoMode = page.getByRole("button", { name: "Stereo spatial preview" });
+  if (await stereoMode.isVisible()) {
+    await stereoMode.click();
+    const afterMode = await readStageBox(page);
+    for (const key of ["x", "y", "width", "height"] as const) {
+      expect(afterMode[key]).toBeCloseTo(before[key], 1);
+    }
   }
 });
 '''
-speaker_layout.write_text(text)
+surround_layout.write_text(text)
 
-stereo_layout = Path("tests/browser/stereo-phase-layout.spec.ts")
-text = stereo_layout.read_text()
+stereo_phase_layout = Path("tests/browser/stereo-phase-layout.spec.ts")
+text = stereo_phase_layout.read_text()
 text += r'''
 
-test("Stereo exposes direct field targets and a deterministic natural return animation", async ({ page }) => {
+test("Phase uses one stable Sonic Field relationship stage across polarity changes", async ({ page }) => {
   await page.setViewportSize({ width: 1366, height: 768 });
-  await page.goto("/stereo-test");
+  await page.goto("/phase-test");
   await expect(page.locator("[data-sonic-instrument]")).toHaveCount(1);
-  await expect(page.locator("[data-stereo-action]")).toHaveCount(5);
-  await page.locator("[data-stereo-test]").evaluate((element) => {
-    element.setAttribute("data-stereo-visual", "return-from-right");
-  });
-  await expect(page.locator(".stereo-track__signal")).toHaveCSS("animation-name", "stereo-return-right");
-  await page.emulateMedia({ reducedMotion: "reduce" });
-  await expect(page.locator(".stereo-track__signal")).toHaveCSS("animation-name", "none");
+  const stage = page.locator("[data-phase-stage]");
+  const before = await stage.boundingBox();
+  expect(before).not.toBeNull();
+
+  await page.getByRole("button", { name: "In phase" }).click();
+  const inPhase = await stage.boundingBox();
+  await page.getByRole("button", { name: "Inverted" }).click();
+  const inverted = await stage.boundingBox();
+
+  expect(inPhase).toEqual(before);
+  expect(inverted).toEqual(before);
+  await expect(page.getByText("Relationship cue only — not a measured waveform or a physical wiring diagnosis.")).toBeVisible();
 });
 '''
-stereo_layout.write_text(text)
+stereo_phase_layout.write_text(text)
