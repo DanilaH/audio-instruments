@@ -1,0 +1,137 @@
+name: Temporary Sonic Field v3 fix and render
+
+on:
+  push:
+    branches:
+      - prototype/audio-identity-v3-sonic-field
+    paths:
+      - .github/workflows/tmp-sonic-field-v3-fix-render.yml
+
+permissions:
+  contents: write
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Apply mobile QA corrections
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("src/components/prototypes/SonicFieldPrototype.astro")
+          text = path.read_text(encoding="utf-8")
+
+          old_grid = '''    .headphone-rail,
+              .spectrum-rail,
+              .hearing-rail {
+                grid-template-columns: 1fr 1fr;
+              }
+'''
+          if old_grid not in text:
+              old_grid = '''    .headphone-rail,
+    .spectrum-rail,
+    .hearing-rail {
+      grid-template-columns: 1fr 1fr;
+    }
+'''
+          new_grid = old_grid + '''
+    .spectrum-rail,
+    .hearing-rail {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    .spectrum-rail > .rail-group:nth-child(2),
+    .hearing-rail > .rail-group:nth-child(2) {
+      border-right: 1px solid #c2c7c3;
+    }
+
+    .spectrum-rail > .rail-group:nth-child(4),
+    .hearing-rail > .rail-group:nth-child(4) {
+      border-right: 0;
+    }
+'''
+          if old_grid not in text:
+              raise SystemExit("mobile rail grid target not found")
+          text = text.replace(old_grid, new_grid, 1)
+
+          old_path = '''    .frequency-path {
+      left: 4%;
+      right: 4%;
+      top: 196px;
+    }
+'''
+          new_path = '''    .frequency-path {
+      left: 4%;
+      right: 4%;
+      top: 178px;
+    }
+'''
+          if old_path not in text:
+              raise SystemExit("mobile frequency path target not found")
+          text = text.replace(old_path, new_path, 1)
+          path.write_text(text, encoding="utf-8")
+          PY
+
+          pnpm exec prettier --write src/components/prototypes/SonicFieldPrototype.astro src/pages/prototypes/audio-identity-v3/*.astro docs/16_AUDIO_IDENTITY_V3_SONIC_FIELD.md
+          git diff --check
+          pnpm check
+          pnpm build
+
+      - name: Persist clean prototype source
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/components/prototypes/SonicFieldPrototype.astro src/pages/prototypes/audio-identity-v3 docs/16_AUDIO_IDENTITY_V3_SONIC_FIELD.md
+          if ! git diff --cached --quiet; then
+            git commit -m "prototype: refine Sonic Field v3 after visual QA"
+            git push origin HEAD:prototype/audio-identity-v3-sonic-field
+          fi
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Capture corrected desktop and mobile prototypes
+        run: |
+          mkdir -p sonic-field-v3-final
+          cat > tests/browser/tmp-sonic-field-v3-final.spec.ts <<'EOF'
+          import { test } from "@playwright/test";
+
+          const tools = ["headphone", "spectrum", "hearing"] as const;
+          const viewports = [
+            { width: 1366, height: 768 },
+            { width: 390, height: 844 },
+          ] as const;
+
+          for (const tool of tools) {
+            for (const viewport of viewports) {
+              test(`${tool}-${viewport.width}`, async ({ page }) => {
+                await page.setViewportSize(viewport);
+                await page.goto(`/prototypes/audio-identity-v3/${tool}`);
+                await page.screenshot({
+                  path: `sonic-field-v3-final/${tool}-${viewport.width}x${viewport.height}.png`,
+                  fullPage: false,
+                });
+              });
+            }
+          }
+          EOF
+          pnpm exec playwright test tests/browser/tmp-sonic-field-v3-final.spec.ts --project=chromium --workers=1 --reporter=line
+          rm tests/browser/tmp-sonic-field-v3-final.spec.ts
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: sonic-field-v3-final-${{ github.run_id }}
+          path: sonic-field-v3-final
+          if-no-files-found: error
+          retention-days: 14
