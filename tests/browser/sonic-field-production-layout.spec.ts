@@ -134,6 +134,20 @@ test("Headphone spatial anchors stay fixed across advanced modes", async ({
   }
 });
 
+test("Headphone advanced panels replace the channel hint", async ({ page }) => {
+  await page.setViewportSize({ width: 1_366, height: 768 });
+  await page.goto("/headphone-test");
+
+  const channelHint = page.locator("[data-headphone-channel-hint]");
+  await expect(channelHint).toBeVisible();
+
+  for (const mode of ["phase", "sweep", "bass"] as const) {
+    await page.locator(`[data-headphone-mode="${mode}"]`).click();
+    await expect(channelHint).toBeHidden();
+    await expect(page.locator(`[data-headphone-panel="${mode}"]`)).toBeVisible();
+  }
+});
+
 for (const viewport of [...primaryDesktopViewports, compactDesktopViewport]) {
   test(`Headphone Sweep challenge fits ${viewport.width}x${viewport.height}`, async ({
     page,
