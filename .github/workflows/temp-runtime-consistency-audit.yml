@@ -24,7 +24,9 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
       - name: Apply staged consistency fixes
-        run: python scripts/temp-runtime-consistency-fixes.py
+        run: |
+          python scripts/temp-runtime-consistency-fixes.py
+          python scripts/temp-audio-latency-layout-fix.py
       - name: Format staged product changes
         run: |
           pnpm exec prettier --write \
@@ -33,7 +35,8 @@ jobs:
             src/tools/bass-test/BassTest.astro \
             src/tools/noise-generator/NoiseGenerator.astro \
             src/tools/frequency-sweep/FrequencySweep.astro \
-            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro \
+            src/tools/audio-latency/AudioLatency.astro
       - run: git diff --check
       - run: pnpm check
       - run: pnpm build
@@ -62,5 +65,6 @@ jobs:
             src/tools/noise-generator/NoiseGenerator.astro
             src/tools/frequency-sweep/FrequencySweep.astro
             src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+            src/tools/audio-latency/AudioLatency.astro
           if-no-files-found: error
           retention-days: 7
