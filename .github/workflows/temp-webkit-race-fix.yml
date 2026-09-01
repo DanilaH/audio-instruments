@@ -20,159 +20,24 @@ jobs:
           runtime: node@24
           cache: true
           install: false
-
-      - name: Apply test-only race fix
-        run: |
-          python <<'PY'
-          from pathlib import Path
-
-          p = Path("tests/browser/audio-latency.spec.ts")
-          text = p.read_text()
-
-          old = '''async function contextCurrentTime(page: Page): Promise<number> {
-            return page.evaluate(() => {
-              const currentTime = Reflect.get(
-                window,
-                "__latencyCurrentTime",
-              ) as () => number;
-              return currentTime();
-            });
-          }
-
-          async function setOffset(page: Page, value: number): Promise<void> {
-            await page.locator("[data-latency-offset]").evaluate((element, nextValue) => {
-              const input = element as HTMLInputElement;
-              input.value = String(nextValue);
-              input.dispatchEvent(new Event("input", { bubbles: true }));
-            }, value);
-          }
-'''
-          new = '''interface OffsetChangeSnapshot {
-            readonly oscillatorCount: number;
-            readonly contextTime: number;
-          }
-
-          async function setOffset(
-            page: Page,
-            value: number,
-          ): Promise<OffsetChangeSnapshot> {
-            return page
-              .locator("[data-latency-offset]")
-              .evaluate((element, nextValue) => {
-                const state = Reflect.get(
-                  window,
-                  "__latencyHarness",
-                ) as LatencyHarnessState;
-                const currentTime = Reflect.get(
-                  window,
-                  "__latencyCurrentTime",
-                ) as () => number;
-                const snapshot: OffsetChangeSnapshot = {
-                  oscillatorCount: state.oscillators.length,
-                  contextTime: currentTime(),
-                };
-
-                const input = element as HTMLInputElement;
-                input.value = String(nextValue);
-                input.dispatchEvent(new Event("input", { bubbles: true }));
-                return snapshot;
-              }, value);
-          }
-'''
-          if text.count(old) != 1:
-              raise SystemExit(f"helper replacement target count={text.count(old)}")
-          text = text.replace(old, new, 1)
-
-          old = '''  const beforePositiveState = await harnessState(page);
-            const oldCount = beforePositiveState.oscillators.length;
-            const beforePositiveTime = await contextCurrentTime(page);
-            await setOffset(page, 50);
-'''
-          new = '''  const positiveChange = await setOffset(page, 50);
-'''
-          if text.count(old) != 1:
-              raise SystemExit(f"positive setup replacement target count={text.count(old)}")
-          text = text.replace(old, new, 1)
-
-          text = text.replace(
-              ".toBeGreaterThan(oldCount);",
-              ".toBeGreaterThan(positiveChange.oscillatorCount);",
-              1,
-          )
-          text = text.replace(
-              "const firstPositiveStart = positiveState.oscillators[oldCount]?.startTime;",
-              "const firstPositiveStart =\n    positiveState.oscillators[positiveChange.oscillatorCount]?.startTime;",
-              1,
-          )
-          text = text.replace(
-              "expect((firstPositiveStart ?? 0) - beforePositiveTime).toBeGreaterThan(0.5);",
-              "expect((firstPositiveStart ?? 0) - positiveChange.contextTime).toBeGreaterThan(0.5);",
-              1,
-          )
-          text = text.replace(
-              "expect((firstPositiveStart ?? 0) - beforePositiveTime).toBeLessThan(0.65);",
-              "expect((firstPositiveStart ?? 0) - positiveChange.contextTime).toBeLessThan(0.65);",
-              1,
-          )
-          text = text.replace(
-              "for (const oscillator of positiveState.oscillators.slice(0, oldCount)) {",
-              "for (const oscillator of positiveState.oscillators.slice(\n    0,\n    positiveChange.oscillatorCount,\n  )) {",
-              1,
-          )
-
-          old = '''  const beforeNegativeCount = positiveState.oscillators.length;
-            const beforeNegativeTime = await contextCurrentTime(page);
-            await setOffset(page, -50);
-'''
-          new = '''  const negativeChange = await setOffset(page, -50);
-'''
-          if text.count(old) != 1:
-              raise SystemExit(f"negative setup replacement target count={text.count(old)}")
-          text = text.replace(old, new, 1)
-          text = text.replace(
-              ".toBeGreaterThan(beforeNegativeCount);",
-              ".toBeGreaterThan(negativeChange.oscillatorCount);",
-              1,
-          )
-          text = text.replace(
-              "negativeState.oscillators[beforeNegativeCount]?.startTime;",
-              "negativeState.oscillators[negativeChange.oscillatorCount]?.startTime;",
-              1,
-          )
-          text = text.replace(
-              "expect((firstNegativeStart ?? 0) - beforeNegativeTime).toBeGreaterThan(0.38);",
-              "expect((firstNegativeStart ?? 0) - negativeChange.contextTime).toBeGreaterThan(0.38);",
-              1,
-          )
-          text = text.replace(
-              "expect((firstNegativeStart ?? 0) - beforeNegativeTime).toBeLessThan(0.55);",
-              "expect((firstNegativeStart ?? 0) - negativeChange.contextTime).toBeLessThan(0.55);",
-              1,
-          )
-
-          p.write_text(text)
-          PY
-
+      - name: Apply race fix
+        run: python scripts/temp-fix-latency-race.py
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
-
       - name: Static checks
         run: |
           pnpm exec prettier --check tests/browser/audio-latency.spec.ts
           pnpm exec eslint tests/browser/audio-latency.spec.ts
           pnpm check
-
-      - name: Build preview
+      - name: Build
         run: pnpm build
-
       - name: Install WebKit
         run: pnpm exec playwright install --with-deps webkit
-
-      - name: Repeat failing WebKit scenario
-        run: pnpm exec playwright test tests/browser/audio-latency.spec.ts --project=webkit --grep "reanchors on offset changes" --repeat-each=30
-
-      - name: Commit validated test fix and remove temporary workflow
+      - name: Repeat WebKit scenario
+        run: pnpm exec playwright test tests/browser/audio-latency.spec.ts --project=webkit --grep reanchors --repeat-each=30
+      - name: Commit validated fix
         run: |
+          rm scripts/temp-fix-latency-race.py
           rm .github/workflows/temp-webkit-race-fix.yml
           git diff --check
           git config user.name "github-actions[bot]"
