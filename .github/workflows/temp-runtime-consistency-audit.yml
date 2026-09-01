@@ -53,5 +53,11 @@ jobs:
           path: |
             audit-output
             test-results
-          if-no-files-found: warn
+            src/tools/speaker-test/SpeakerTest.astro
+            src/tools/headphone-test/HeadphoneTest.astro
+            src/tools/bass-test/BassTest.astro
+            src/tools/noise-generator/NoiseGenerator.astro
+            src/tools/frequency-sweep/FrequencySweep.astro
+            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+          if-no-files-found: error
           retention-days: 7
