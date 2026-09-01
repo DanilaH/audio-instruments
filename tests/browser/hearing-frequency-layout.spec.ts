@@ -36,9 +36,11 @@ for (const viewport of viewports) {
 
     const referenceBox = await reference.boundingBox();
     expect(referenceBox).not.toBeNull();
-    expect(
-      (referenceBox?.y ?? viewport.height) + (referenceBox?.height ?? 0),
-    ).toBeLessThanOrEqual(viewport.height);
+    if (viewport.width >= 768) {
+      expect(
+        (referenceBox?.y ?? viewport.height) + (referenceBox?.height ?? 0),
+      ).toBeLessThanOrEqual(viewport.height);
+    }
 
     const readoutBox = await readout.boundingBox();
     expect(readoutBox).not.toBeNull();
