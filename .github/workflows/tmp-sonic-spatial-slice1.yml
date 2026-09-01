@@ -1,4 +1,4 @@
-name: Temporary Sonic Field spatial slice 2
+name: Temporary Sonic Field spatial slice 2 retry
 
 on:
   push:
@@ -25,6 +25,24 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Apply Surround and Phase Sonic Field migration
         run: python .github/tmp-sonic-spatial-slice1.py
+      - name: Align Phase perceptual test with controller lifecycle
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path("tests/browser/stereo-phase-layout.spec.ts")
+          text = path.read_text()
+          old = '''  await page.getByRole("button", { name: "In phase" }).click();
+          const inPhase = await stage.boundingBox();
+          await page.getByRole("button", { name: "Inverted" }).click();'''
+          new = '''  await page.getByRole("button", { name: "In phase" }).click();
+          const inPhase = await stage.boundingBox();
+          const invertedButton = page.getByRole("button", { name: "Inverted" });
+          await expect(invertedButton).toBeEnabled();
+          await invertedButton.click();'''
+          if old not in text:
+              raise SystemExit("Phase perceptual sequencing anchor not found")
+          path.write_text(text.replace(old, new, 1))
+          PY
       - run: pnpm exec prettier --write src/tools/surround-sound-test/SurroundSoundTest.astro src/tools/phase-test/PhaseTest.astro tests/browser/surround-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
