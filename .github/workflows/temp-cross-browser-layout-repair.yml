@@ -1,0 +1,138 @@
+name: Temporary cross-browser layout repair
+
+on:
+  push:
+    branches:
+      - fix/runtime-layout-stability
+
+permissions:
+  contents: write
+
+jobs:
+  repair-and-verify:
+    if: ${{ github.event.head_commit.message == 'chore: stage cross-browser layout repair' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v7
+        with:
+          ref: fix/runtime-layout-stability
+
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply targeted layout repairs
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          noise_path = Path('src/tools/noise-generator/NoiseGenerator.astro')
+          noise = noise_path.read_text()
+
+          replacements = [
+              (
+                  'Long playback: keep device/headphone volume at a comfortable level.',
+                  'Long playback: keep device/headphone volume comfortable.',
+              ),
+              (
+                  '''    .noise-controls {
+      gap: 8px;
+    }''',
+                  '''    .noise-controls {
+      gap: 6px;
+    }''',
+              ),
+              (
+                  '''    .noise-long-reminder-slot {
+      min-height: 48px;
+      padding-top: 5px;
+    }
+
+    .noise-long-reminder {
+      padding: 6px 8px;
+    }''',
+                  '''    .noise-long-reminder-slot {
+      min-height: 27px;
+      padding-top: 3px;
+    }
+
+    .noise-long-reminder {
+      padding: 4px 8px;
+      line-height: 1.25;
+    }''',
+              ),
+              (
+                  '''  @media (prefers-reduced-motion: reduce) {
+    .noise-field__layer {''',
+                  '''  @media (max-width: 340px) {
+    .noise-long-reminder-slot {
+      min-height: 41px;
+    }
+  }
+
+  @media (prefers-reduced-motion: reduce) {
+    .noise-field__layer {''',
+              ),
+          ]
+
+          for old, new in replacements:
+              count = noise.count(old)
+              if count != 1:
+                  raise SystemExit(f'Noise replacement expected once, found {count}: {old[:80]!r}')
+              noise = noise.replace(old, new, 1)
+          noise_path.write_text(noise)
+
+          spectrum_path = Path('src/tools/spectrum-analyzer/SpectrumAnalyzer.astro')
+          spectrum = spectrum_path.read_text()
+          old = '''  @media (max-width: 340px) {
+    .spectrum-view-switch button {
+      padding-inline: 2px;
+      font-size: 0.68rem;
+      letter-spacing: -0.01em;
+    }
+  }'''
+          new = '''  @media (max-width: 340px) {
+    .spectrum-view-switch button {
+      padding-inline: 0;
+      font-size: 0.68rem;
+      letter-spacing: -0.01em;
+    }
+  }'''
+          count = spectrum.count(old)
+          if count != 1:
+              raise SystemExit(f'Spectrum replacement expected once, found {count}')
+          spectrum_path.write_text(spectrum.replace(old, new, 1))
+          PY
+
+      - name: Format repaired files
+        run: pnpm exec prettier --write src/tools/noise-generator/NoiseGenerator.astro src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+
+      - name: Astro and TypeScript check
+        run: pnpm check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Run targeted cross-browser regressions
+        run: pnpm exec playwright test tests/browser/noise-generator-layout.spec.ts tests/browser/runtime-layout-stability.spec.ts
+
+      - name: Remove temporary workflow and commit repair
+        run: |
+          git rm .github/workflows/temp-cross-browser-layout-repair.yml
+          git add src/tools/noise-generator/NoiseGenerator.astro src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "fix: resolve cross-browser layout regressions"
+          git push origin HEAD:fix/runtime-layout-stability
