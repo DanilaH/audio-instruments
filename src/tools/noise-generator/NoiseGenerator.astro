@@ -84,7 +84,7 @@ const timerLabel = (minutes: number) =>
           </div>
         </fieldset>
 
-        <fieldset class="noise-group">
+        <fieldset class="noise-group noise-group--timer">
           <legend>Timer</legend>
           <div class="noise-selector noise-selector--timer">
             {
@@ -101,10 +101,12 @@ const timerLabel = (minutes: number) =>
               ))
             }
           </div>
-          <p class="noise-long-reminder" data-noise-long-reminder hidden>
-            <i class="ph ph-timer" aria-hidden="true"></i>
-            Long playback: keep device/headphone volume at a comfortable level.
-          </p>
+          <div class="noise-long-reminder-slot">
+            <p class="noise-long-reminder" data-noise-long-reminder hidden>
+              <i class="ph ph-timer" aria-hidden="true"></i>
+              Long playback: keep device/headphone volume at a comfortable level.
+            </p>
+          </div>
         </fieldset>
 
         <div class="noise-footer">
@@ -427,11 +429,17 @@ const timerLabel = (minutes: number) =>
     background: #9a7958;
   }
 
+  .noise-long-reminder-slot {
+    display: grid;
+    min-height: 41px;
+    padding-top: 7px;
+  }
+
   .noise-long-reminder {
     display: flex;
     align-items: center;
     gap: 7px;
-    margin-top: 7px;
+    margin: 0;
     padding: 8px 10px;
     border-radius: var(--radius-control);
     background: rgb(255 215 106 / 0.13);
@@ -587,8 +595,12 @@ const timerLabel = (minutes: number) =>
       display: none;
     }
 
+    .noise-long-reminder-slot {
+      min-height: 48px;
+      padding-top: 5px;
+    }
+
     .noise-long-reminder {
-      margin-top: 5px;
       padding: 6px 8px;
     }
 

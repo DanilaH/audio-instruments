@@ -59,9 +59,9 @@ for (const modeCase of modeCases) {
       expect(
         Math.abs((after.surfaceHeight ?? 0) - (before.surfaceHeight ?? 0)),
       ).toBeLessThanOrEqual(1);
-      expect(Math.abs(after.documentHeight - before.documentHeight)).toBeLessThanOrEqual(
-        1,
-      );
+      expect(
+        Math.abs(after.documentHeight - before.documentHeight),
+      ).toBeLessThanOrEqual(1);
 
       const buttonMetrics = await button.evaluate((element) => {
         const rect = element.getBoundingClientRect();
@@ -74,7 +74,9 @@ for (const modeCase of modeCases) {
         };
       });
       expect(buttonMetrics.left).toBeGreaterThanOrEqual(0);
-      expect(buttonMetrics.right).toBeLessThanOrEqual(buttonMetrics.viewportWidth);
+      expect(buttonMetrics.right).toBeLessThanOrEqual(
+        buttonMetrics.viewportWidth,
+      );
       expect(buttonMetrics.scrollWidth).toBeLessThanOrEqual(
         buttonMetrics.clientWidth + 1,
       );
@@ -107,7 +109,7 @@ test("Audio Latency offset extremes do not reflow the 320px instrument", async (
   expect(
     Math.abs((after.surfaceHeight ?? 0) - (before.surfaceHeight ?? 0)),
   ).toBeLessThanOrEqual(1);
-  expect(Math.abs(after.documentHeight - before.documentHeight)).toBeLessThanOrEqual(
-    1,
-  );
+  expect(
+    Math.abs(after.documentHeight - before.documentHeight),
+  ).toBeLessThanOrEqual(1);
 });
