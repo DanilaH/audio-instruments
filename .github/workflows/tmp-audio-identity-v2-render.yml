@@ -29,7 +29,8 @@ jobs:
 
       - name: Validate prototype
         run: |
-          pnpm exec prettier --check src/pages/prototypes/audio-identity/[direction]/[tool].astro
+          pnpm exec prettier --write src/pages/prototypes/audio-identity/[direction]/[tool].astro
+          git diff --check
           pnpm check
           pnpm build
 
