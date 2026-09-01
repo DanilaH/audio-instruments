@@ -29,6 +29,21 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
+      - name: Apply surgical Surround compact buffer
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path("src/tools/surround-sound-test/SurroundSoundTest.astro")
+          text = path.read_text()
+          old = """    .surround-stage {\n      height: 174px;\n      min-height: 174px;\n    }"""
+          new = """    .surround-stage {\n      height: 164px;\n      min-height: 164px;\n    }"""
+          if new in text:
+              raise SystemExit(0)
+          if old not in text:
+              raise SystemExit("Surround compact stage anchor not found")
+          path.write_text(text.replace(old, new, 1))
+          PY
       - name: Format PR2 QA specs
         run: pnpm exec prettier --write tests/browser/sonic-field-spatial-output-production-layout.spec.ts tests/browser/tmp-sonic-spatial-screenshot-qa.spec.ts
       - run: pnpm build
@@ -42,13 +57,13 @@ jobs:
           name: sonic-field-pr2-screenshot-qa
           path: artifacts/spatial-output-screenshots
           if-no-files-found: error
-      - name: Persist formatter output after green QA
+      - name: Persist verified acceptance fixes
         run: |
-          if git diff --quiet -- tests/browser/sonic-field-spatial-output-production-layout.spec.ts tests/browser/tmp-sonic-spatial-screenshot-qa.spec.ts; then
+          if git diff --quiet -- src/tools/surround-sound-test/SurroundSoundTest.astro tests/browser/sonic-field-spatial-output-production-layout.spec.ts tests/browser/tmp-sonic-spatial-screenshot-qa.spec.ts; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add tests/browser/sonic-field-spatial-output-production-layout.spec.ts tests/browser/tmp-sonic-spatial-screenshot-qa.spec.ts
-          git commit -m "chore: format PR2 QA specs"
+          git add src/tools/surround-sound-test/SurroundSoundTest.astro tests/browser/sonic-field-spatial-output-production-layout.spec.ts tests/browser/tmp-sonic-spatial-screenshot-qa.spec.ts
+          git commit -m "fix: add Surround compact viewport buffer"
           git push origin HEAD:feat/sonic-field-spatial-output-family
