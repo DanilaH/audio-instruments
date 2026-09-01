@@ -104,7 +104,7 @@ const timerLabel = (minutes: number) =>
           <div class="noise-long-reminder-slot">
             <p class="noise-long-reminder" data-noise-long-reminder hidden>
               <i class="ph ph-timer" aria-hidden="true"></i>
-              Long playback: keep device/headphone volume at a comfortable level.
+              Long playback: keep device/headphone volume comfortable.
             </p>
           </div>
         </fieldset>
@@ -562,7 +562,7 @@ const timerLabel = (minutes: number) =>
     }
 
     .noise-controls {
-      gap: 8px;
+      gap: 6px;
     }
 
     .noise-safety {
@@ -596,12 +596,13 @@ const timerLabel = (minutes: number) =>
     }
 
     .noise-long-reminder-slot {
-      min-height: 48px;
-      padding-top: 5px;
+      min-height: 27px;
+      padding-top: 3px;
     }
 
     .noise-long-reminder {
-      padding: 6px 8px;
+      padding: 4px 8px;
+      line-height: 1.25;
     }
 
     .noise-footer {
@@ -627,6 +628,12 @@ const timerLabel = (minutes: number) =>
     .noise-stop {
       min-height: 44px;
       padding-inline: 10px;
+    }
+  }
+
+  @media (max-width: 340px) {
+    .noise-long-reminder-slot {
+      min-height: 41px;
     }
   }
 
