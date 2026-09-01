@@ -103,7 +103,6 @@ replace(
 )
 replace(
     "src/tools/spectrum-analyzer/SpectrumAnalyzer.astro",
-    """  </style>""" if False else "__never__",
-    "__never__",
-    count=0,
+    """    .spectrum-canvas-meta {\n      display: none;\n    }\n  }\n</style>""",
+    """    .spectrum-canvas-meta {\n      display: none;\n    }\n  }\n\n  @media (max-width: 340px) {\n    .spectrum-view-switch button {\n      padding-inline: 2px;\n      font-size: 0.68rem;\n      letter-spacing: -0.01em;\n    }\n  }\n</style>""",
 )
