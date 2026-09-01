@@ -122,3 +122,32 @@ test("Stereo exposes direct field targets and a deterministic natural return ani
     "none",
   );
 });
+
+test("Phase visual polarity states keep one stable Sonic Field relationship stage", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/phase-test");
+  await expect(page.locator("[data-sonic-instrument]")).toHaveCount(1);
+  const stage = page.locator("[data-phase-stage]");
+  const before = await stage.boundingBox();
+  expect(before).not.toBeNull();
+
+  const phaseRoot = page.locator("[data-phase-test]");
+  await phaseRoot.evaluate((element) => {
+    element.setAttribute("data-phase-mode", "in-phase");
+  });
+  const inPhase = await stage.boundingBox();
+  await phaseRoot.evaluate((element) => {
+    element.setAttribute("data-phase-mode", "inverted");
+  });
+  const inverted = await stage.boundingBox();
+
+  expect(inPhase).toEqual(before);
+  expect(inverted).toEqual(before);
+  await expect(
+    page.getByText(
+      "Relationship cue only — not a measured waveform or a physical wiring diagnosis.",
+    ),
+  ).toBeVisible();
+});
