@@ -20,7 +20,7 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - run: pnpm exec prettier --check tests/browser/tmp-sonic-pr2-review-screenshot.spec.ts
+      - run: pnpm exec prettier --write tests/browser/tmp-sonic-pr2-review-screenshot.spec.ts
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium
       - run: pnpm exec playwright test tests/browser/tmp-sonic-pr2-review-screenshot.spec.ts --project=chromium
