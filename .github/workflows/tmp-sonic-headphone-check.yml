@@ -1,4 +1,4 @@
-name: Temporary Sonic Field visual QA
+name: Temporary Sonic Field cross-engine QA
 
 on:
   push:
@@ -11,9 +11,9 @@ permissions:
   contents: read
 
 jobs:
-  capture:
+  cross-engine:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/setup@v2
@@ -24,143 +24,20 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
-      - name: Create temporary visual QA test
+      - run: pnpm exec playwright install --with-deps firefox webkit
+      - name: Firefox stress-trio layout contracts
         run: |
-          cat > tests/browser/tmp-sonic-visual-qa.spec.ts <<'TS'
-          import { mkdir } from "node:fs/promises";
-          import { test, type Page } from "@playwright/test";
-
-          const evidenceDir = "visual-evidence";
-
-          async function spectrumChallenge(page: Page): Promise<void> {
-            await page.locator('[data-spectrum-view="spectrogram"]').click();
-            await page.locator("[data-spectrum-input-field]").evaluate((element) => {
-              const field = element as HTMLElement;
-              field.hidden = false;
-              const select = field.querySelector("select");
-              if (select && select.options.length === 0) {
-                select.append(new Option("Built-in microphone", "visual-qa"));
-              }
-            });
-            await page.locator("[data-spectrum-active-input]").evaluate((element) => {
-              element.textContent = "Built-in microphone";
-            });
-            await page.locator("[data-spectrum-analyzer]").evaluate((element) => {
-              (element as HTMLElement).dataset.spectrumState = "running";
-            });
-          }
-
-          async function hearingChallenge(page: Page): Promise<void> {
-            await page.locator("[data-hearing-answer-panel]").evaluate((element) => {
-              const panel = element as HTMLElement;
-              panel.hidden = false;
-              for (const button of panel.querySelectorAll<HTMLButtonElement>("button")) {
-                button.disabled = false;
-              }
-            });
-            await page.locator("[data-hearing-current-frequency]").evaluate((element) => {
-              element.textContent = "14 kHz";
-            });
-            await page.locator("[data-hearing-progress]").evaluate((element) => {
-              element.textContent = "Step 7 of 10";
-            });
-            await page.locator("[data-hearing-result]").evaluate((element) => {
-              element.textContent = "12 kHz";
-            });
-            await page.locator("[data-hearing-frequency]").evaluate((element) => {
-              (element as HTMLElement).dataset.hearingState = "awaiting-answer";
-            });
-          }
-
-          async function capture(
-            page: Page,
-            route: string,
-            width: number,
-            height: number,
-            name: string,
-            prepare?: (page: Page) => Promise<void>,
-          ): Promise<void> {
-            await page.setViewportSize({ width, height });
-            await page.emulateMedia({ reducedMotion: "reduce" });
-            await page.goto(route);
-            if (prepare) await prepare(page);
-            await page.screenshot({
-              path: `${evidenceDir}/${name}-${width}x${height}.png`,
-              fullPage: false,
-            });
-          }
-
-          test.beforeAll(async () => {
-            await mkdir(evidenceDir, { recursive: true });
-          });
-
-          test("capture production challenge states", async ({ page }) => {
-            for (const [width, height] of [
-              [1366, 768],
-              [1280, 720],
-            ] as const) {
-              await capture(
-                page,
-                "/headphone-test",
-                width,
-                height,
-                "headphone-sweep",
-                async (currentPage) => {
-                  await currentPage.locator('[data-headphone-mode="sweep"]').click();
-                },
-              );
-              await capture(
-                page,
-                "/spectrum-analyzer",
-                width,
-                height,
-                "spectrum-spectrogram",
-                spectrumChallenge,
-              );
-              await capture(
-                page,
-                "/hearing-frequency-test",
-                width,
-                height,
-                "hearing-answer",
-                hearingChallenge,
-              );
-            }
-
-            await capture(
-              page,
-              "/headphone-test",
-              390,
-              844,
-              "headphone-mobile-sweep",
-              async (currentPage) => {
-                await currentPage.locator('[data-headphone-mode="sweep"]').click();
-              },
-            );
-            await capture(
-              page,
-              "/spectrum-analyzer",
-              390,
-              844,
-              "spectrum-mobile-spectrogram",
-              spectrumChallenge,
-            );
-            await capture(
-              page,
-              "/hearing-frequency-test",
-              390,
-              844,
-              "hearing-mobile-answer",
-              hearingChallenge,
-            );
-          });
-          TS
-      - name: Capture screenshots
-        run: pnpm exec playwright test tests/browser/tmp-sonic-visual-qa.spec.ts --project=chromium
-      - uses: actions/upload-artifact@v4
-        with:
-          name: sonic-field-visual-evidence
-          path: visual-evidence/*.png
-          if-no-files-found: error
-          retention-days: 3
+          pnpm exec playwright test \
+            tests/browser/headphone-layout.spec.ts \
+            tests/browser/spectrum-analyzer-layout.spec.ts \
+            tests/browser/hearing-frequency-layout.spec.ts \
+            tests/browser/sonic-field-production-layout.spec.ts \
+            --project=firefox
+      - name: WebKit stress-trio layout contracts
+        run: |
+          pnpm exec playwright test \
+            tests/browser/headphone-layout.spec.ts \
+            tests/browser/spectrum-analyzer-layout.spec.ts \
+            tests/browser/hearing-frequency-layout.spec.ts \
+            tests/browser/sonic-field-production-layout.spec.ts \
+            --project=webkit
