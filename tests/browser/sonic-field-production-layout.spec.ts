@@ -144,7 +144,9 @@ test("Headphone advanced panels replace the channel hint", async ({ page }) => {
   for (const mode of ["phase", "sweep", "bass"] as const) {
     await page.locator(`[data-headphone-mode="${mode}"]`).click();
     await expect(channelHint).toBeHidden();
-    await expect(page.locator(`[data-headphone-panel="${mode}"]`)).toBeVisible();
+    await expect(
+      page.locator(`[data-headphone-panel="${mode}"]`),
+    ).toBeVisible();
   }
 });
 
