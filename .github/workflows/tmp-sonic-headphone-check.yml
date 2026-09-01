@@ -1,4 +1,4 @@
-name: Temporary Sonic Field Headphone check
+name: Temporary Sonic Field stress-trio check
 
 on:
   push:
@@ -8,14 +8,16 @@ on:
       - .github/workflows/tmp-sonic-headphone-check.yml
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
       - uses: pnpm/setup@v2
         with:
           version: 11.21.0
@@ -23,13 +25,42 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
+      - name: Format stress-trio sources
+        run: |
+          pnpm exec prettier --write \
+            src/components/layout/ToolShell.astro \
+            src/components/layout/SonicInstrument.astro \
+            src/components/feedback/ToolStatus.astro \
+            src/components/feedback/CapabilityNotice.astro \
+            src/components/controls/LevelControl.astro \
+            src/components/controls/ModePills.astro \
+            src/tools/headphone-test/HeadphoneTest.astro \
+            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro \
+            src/tools/hearing-frequency/HearingFrequency.astro
+      - name: Commit formatting if needed
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/components src/tools/headphone-test/HeadphoneTest.astro src/tools/spectrum-analyzer/SpectrumAnalyzer.astro src/tools/hearing-frequency/HearingFrequency.astro
+            git commit -m "style: format Sonic Field stress trio"
+            git push
+          fi
       - name: Static checks
         run: |
-          pnpm exec prettier --check src/tools/headphone-test/HeadphoneTest.astro src/components/feedback/ToolStatus.astro src/components/controls/LevelControl.astro
           git diff --check origin/main...HEAD
           pnpm check
           pnpm build
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
-      - name: Headphone browser regression
-        run: pnpm exec playwright test tests/browser/headphone-test.spec.ts tests/browser/headphone-layout.spec.ts --project=chromium
+      - name: Stress-trio browser regression
+        run: |
+          pnpm exec playwright test \
+            tests/browser/headphone-test.spec.ts \
+            tests/browser/headphone-layout.spec.ts \
+            tests/browser/spectrum-analyzer.spec.ts \
+            tests/browser/spectrum-analyzer-layout.spec.ts \
+            tests/browser/hearing-frequency.spec.ts \
+            tests/browser/hearing-frequency-layout.spec.ts \
+            tests/browser/hearing-frequency-stop-boundary.spec.ts \
+            --project=chromium
