@@ -1,0 +1,41 @@
+name: Temporary runtime consistency audit
+
+on:
+  push:
+    branches:
+      - audit/runtime-consistency-2026-09-01
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: node scripts/runtime-wiring-audit.mjs
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Run geometry and interaction audit
+        run: pnpm exec playwright test tests/browser/runtime-consistency-audit.spec.ts --project=chromium --workers=1 --reporter=line
+
+      - name: Upload audit output
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: runtime-consistency-audit-${{ github.run_id }}
+          path: |
+            audit-output
+            test-results
+          if-no-files-found: warn
+          retention-days: 7
