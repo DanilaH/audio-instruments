@@ -1,0 +1,111 @@
+name: Temporary Reference Instrument Mobile Fix
+
+on:
+  push:
+    branches:
+      - prototype/reference-instrument-v1
+    paths:
+      - .github/workflows/tmp-reference-instrument-mobile-fix.yml
+
+permissions:
+  contents: write
+
+jobs:
+  mobile-fix:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: prototype/reference-instrument-v1
+          fetch-depth: 0
+
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Restore responsive one-column composition
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          fixes = {
+              "src/tools/headphone-test/HeadphoneTest.astro": (
+                  "@media (max-width: 940px) {\n    .headphone-instrument {\n      min-height: 0;\n    }\n  }",
+                  "@media (max-width: 940px) {\n    .headphone-instrument {\n      grid-template-columns: 1fr;\n      min-height: 0;\n    }\n  }",
+              ),
+              "src/tools/decibel-meter/DecibelMeter.astro": (
+                  "@media (max-width: 900px) {\n    .db-instrument {\n      min-height: 0;\n    }\n  }",
+                  "@media (max-width: 900px) {\n    .db-instrument {\n      grid-template-columns: 1fr;\n      min-height: 0;\n    }\n  }",
+              ),
+              "src/tools/spectrum-analyzer/SpectrumAnalyzer.astro": (
+                  "@media (max-width: 900px) {\n    .spectrum-instrument {\n      min-height: 0;\n    }\n  }",
+                  "@media (max-width: 900px) {\n    .spectrum-instrument {\n      grid-template-columns: 1fr;\n      min-height: 0;\n    }\n  }",
+              ),
+          }
+
+          for path_str, (old, new) in fixes.items():
+              path = Path(path_str)
+              text = path.read_text(encoding="utf-8")
+              if old not in text:
+                  raise SystemExit(f"responsive prototype target missing: {path_str}")
+              path.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Validate
+        run: |
+          pnpm exec prettier --write \
+            src/tools/headphone-test/HeadphoneTest.astro \
+            src/tools/decibel-meter/DecibelMeter.astro \
+            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+          git diff --check
+          pnpm check
+          pnpm build
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Capture corrected mobile screenshots
+        run: |
+          cat > tests/browser/tmp-reference-instrument-mobile.spec.ts <<'EOF'
+          import { test } from "@playwright/test";
+          import { mkdir } from "node:fs/promises";
+
+          test.beforeAll(async () => mkdir("prototype-mobile-fixed", { recursive: true }));
+
+          for (const [name, route] of [
+            ["headphone", "/headphone-test"],
+            ["decibel", "/decibel-meter"],
+            ["spectrum", "/spectrum-analyzer"],
+          ] as const) {
+            test(name, async ({ page }) => {
+              await page.setViewportSize({ width: 390, height: 844 });
+              await page.goto(route);
+              await page.screenshot({ path: `prototype-mobile-fixed/${name}-390x844.png`, fullPage: false });
+            });
+          }
+          EOF
+          pnpm exec playwright test tests/browser/tmp-reference-instrument-mobile.spec.ts --project=chromium --workers=1 --reporter=line
+          rm tests/browser/tmp-reference-instrument-mobile.spec.ts
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: reference-instrument-mobile-fixed-${{ github.run_id }}
+          path: prototype-mobile-fixed
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit responsive prototype fix
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/tools/headphone-test/HeadphoneTest.astro \
+            src/tools/decibel-meter/DecibelMeter.astro \
+            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+          git commit -m "prototype: restore mobile Reference Instrument layout"
+          git push origin HEAD:prototype/reference-instrument-v1
