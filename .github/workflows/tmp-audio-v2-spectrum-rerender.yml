@@ -24,41 +24,17 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
 
-      - name: Apply visible synthetic spectrum texture for screenshot comparison
+      - name: Apply screenshot-only synthetic spectrogram textures
         run: |
           python - <<'PY'
           from pathlib import Path
-          p=Path('src/pages/prototypes/audio-identity/[direction]/[tool].astro')
-          s=p.read_text(encoding='utf-8')
-          css=r'''
-  /* Screenshot-only synthetic spectrogram texture correction. */
-  .prototype--stereo-field .spectrogram i,
-  .prototype--temporal-score .spectrogram i,
-  .prototype--acoustic-map .spectrogram i { opacity: .78; }
-
-  .prototype--stereo-field .spectrogram i:nth-child(6n+1) { background: radial-gradient(ellipse at 50% 23%, rgb(69 197 208 / .9), transparent 22%), radial-gradient(ellipse at 50% 63%, rgb(244 211 94 / .68), transparent 27%); }
-  .prototype--stereo-field .spectrogram i:nth-child(6n+2) { background: radial-gradient(ellipse at 50% 31%, rgb(69 197 208 / .72), transparent 20%), radial-gradient(ellipse at 50% 57%, rgb(255 112 100 / .58), transparent 24%); }
-  .prototype--stereo-field .spectrogram i:nth-child(6n+3) { background: radial-gradient(ellipse at 50% 41%, rgb(244 211 94 / .74), transparent 20%), radial-gradient(ellipse at 50% 72%, rgb(69 197 208 / .58), transparent 23%); }
-  .prototype--stereo-field .spectrogram i:nth-child(6n+4) { background: radial-gradient(ellipse at 50% 28%, rgb(255 112 100 / .68), transparent 19%), radial-gradient(ellipse at 50% 52%, rgb(69 197 208 / .8), transparent 24%); }
-  .prototype--stereo-field .spectrogram i:nth-child(6n+5) { background: radial-gradient(ellipse at 50% 35%, rgb(69 197 208 / .72), transparent 24%), radial-gradient(ellipse at 50% 67%, rgb(244 211 94 / .62), transparent 27%); }
-  .prototype--stereo-field .spectrogram i:nth-child(6n) { background: radial-gradient(ellipse at 50% 47%, rgb(244 211 94 / .7), transparent 23%), radial-gradient(ellipse at 50% 76%, rgb(255 112 100 / .52), transparent 22%); }
-
-  .prototype--temporal-score .spectrogram i:nth-child(5n+1) { background: linear-gradient(to bottom, transparent 0 21%, #171715 21% 22%, transparent 22% 61%, #3556d8 61% 63%, transparent 63%); }
-  .prototype--temporal-score .spectrogram i:nth-child(5n+2) { background: linear-gradient(to bottom, transparent 0 30%, #171715 30% 31%, transparent 31% 54%, #3556d8 54% 56%, transparent 56%); }
-  .prototype--temporal-score .spectrogram i:nth-child(5n+3) { background: linear-gradient(to bottom, transparent 0 38%, #171715 38% 39%, transparent 39% 48%, #3556d8 48% 50%, transparent 50%); }
-  .prototype--temporal-score .spectrogram i:nth-child(5n+4) { background: linear-gradient(to bottom, transparent 0 27%, #171715 27% 28%, transparent 28% 57%, #3556d8 57% 59%, transparent 59%); }
-  .prototype--temporal-score .spectrogram i:nth-child(5n) { background: linear-gradient(to bottom, transparent 0 34%, #171715 34% 35%, transparent 35% 67%, #3556d8 67% 69%, transparent 69%); }
-
-  .prototype--acoustic-map .spectrogram i:nth-child(6n+1) { background: radial-gradient(ellipse at 50% 22%, rgb(224 176 74 / .95), transparent 24%), radial-gradient(ellipse at 50% 62%, rgb(69 179 174 / .86), transparent 30%), radial-gradient(ellipse at 50% 82%, rgb(172 77 56 / .55), transparent 24%); }
-  .prototype--acoustic-map .spectrogram i:nth-child(6n+2) { background: radial-gradient(ellipse at 50% 29%, rgb(224 176 74 / .82), transparent 22%), radial-gradient(ellipse at 50% 55%, rgb(69 179 174 / .75), transparent 27%), radial-gradient(ellipse at 50% 76%, rgb(172 77 56 / .48), transparent 22%); }
-  .prototype--acoustic-map .spectrogram i:nth-child(6n+3) { background: radial-gradient(ellipse at 50% 36%, rgb(224 176 74 / .72), transparent 23%), radial-gradient(ellipse at 50% 48%, rgb(69 179 174 / .9), transparent 31%), radial-gradient(ellipse at 50% 71%, rgb(172 77 56 / .54), transparent 23%); }
-  .prototype--acoustic-map .spectrogram i:nth-child(6n+4) { background: radial-gradient(ellipse at 50% 26%, rgb(224 176 74 / .86), transparent 23%), radial-gradient(ellipse at 50% 66%, rgb(69 179 174 / .68), transparent 29%), radial-gradient(ellipse at 50% 84%, rgb(172 77 56 / .5), transparent 22%); }
-  .prototype--acoustic-map .spectrogram i:nth-child(6n+5) { background: radial-gradient(ellipse at 50% 42%, rgb(224 176 74 / .7), transparent 23%), radial-gradient(ellipse at 50% 58%, rgb(69 179 174 / .84), transparent 30%), radial-gradient(ellipse at 50% 78%, rgb(172 77 56 / .48), transparent 23%); }
-  .prototype--acoustic-map .spectrogram i:nth-child(6n) { background: radial-gradient(ellipse at 50% 32%, rgb(224 176 74 / .88), transparent 25%), radial-gradient(ellipse at 50% 51%, rgb(69 179 174 / .72), transparent 27%), radial-gradient(ellipse at 50% 69%, rgb(172 77 56 / .58), transparent 24%); }
-'''
-          head, sep, tail=s.rpartition('</style>')
-          if not sep: raise SystemExit('style close not found')
-          p.write_text(head+css+'\n</style>'+tail,encoding='utf-8')
+          p = Path("src/pages/prototypes/audio-identity/[direction]/[tool].astro")
+          s = p.read_text(encoding="utf-8")
+          css = "\n  /* Screenshot-only synthetic spectrogram texture correction. */\n  .prototype--stereo-field .spectrogram { background: radial-gradient(ellipse at 22% 28%, rgb(69 197 208 / .76), transparent 10%), radial-gradient(ellipse at 39% 58%, rgb(244 211 94 / .58), transparent 13%), radial-gradient(ellipse at 58% 35%, rgb(255 112 100 / .5), transparent 11%), radial-gradient(ellipse at 76% 65%, rgb(69 197 208 / .6), transparent 14%), repeating-linear-gradient(0deg, transparent 0 44px, rgb(244 239 230 / .06) 45px), #0a0d12; }\n  .prototype--temporal-score .spectrogram { background: linear-gradient(115deg, transparent 0 16%, rgb(53 86 216 / .28) 16.2% 17%, transparent 17.2% 31%, rgb(23 23 21 / .28) 31.2% 32%, transparent 32.2% 51%, rgb(217 76 53 / .22) 51.2% 52%, transparent 52.2% 72%, rgb(53 86 216 / .24) 72.2% 73%, transparent 73.2%), repeating-linear-gradient(90deg, transparent 0 79px, rgb(23 23 21 / .11) 80px), repeating-linear-gradient(0deg, transparent 0 52px, rgb(23 23 21 / .08) 53px), #efeee8; }\n  .prototype--acoustic-map .spectrogram { background: radial-gradient(ellipse at 18% 24%, rgb(224 176 74 / .88), transparent 10%), radial-gradient(ellipse at 31% 61%, rgb(69 179 174 / .78), transparent 13%), radial-gradient(ellipse at 47% 38%, rgb(224 176 74 / .7), transparent 11%), radial-gradient(ellipse at 61% 70%, rgb(172 77 56 / .52), transparent 12%), radial-gradient(ellipse at 76% 48%, rgb(69 179 174 / .75), transparent 14%), radial-gradient(ellipse at 88% 27%, rgb(224 176 74 / .72), transparent 9%), repeating-linear-gradient(0deg, transparent 0 39px, rgb(246 240 231 / .08) 40px), #173844; }\n"
+          head, sep, tail = s.rpartition("</style>")
+          if not sep:
+              raise SystemExit("style close not found")
+          p.write_text(head + css + "\n</style>" + tail, encoding="utf-8")
           PY
           pnpm exec prettier --write src/pages/prototypes/audio-identity/[direction]/[tool].astro
           pnpm check
