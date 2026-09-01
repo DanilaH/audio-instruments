@@ -615,4 +615,120 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
       transform: none;
     }
   }
+
+  /* Reference Instrument prototype */
+  .headphone-instrument {
+    grid-template-columns: minmax(0, 0.98fr) minmax(430px, 1.02fr);
+    min-height: 390px;
+  }
+  .headphone-visual,
+  .headphone-controls {
+    padding: 20px 22px;
+  }
+  .headphone-visual {
+    background: #e9ebe7;
+    border-color: var(--color-border);
+  }
+  .headphone-controls {
+    gap: 8px;
+    background: #fbfbf8;
+  }
+  .headphone-stage {
+    margin: 10px auto 5px;
+  }
+  .headphone-band {
+    border-color: #c5cbc6;
+  }
+  .headphone-cup {
+    border-radius: 12px;
+    background: #f7f8f4;
+    box-shadow: none;
+    transition:
+      border-color 140ms ease,
+      background-color 140ms ease,
+      color 140ms ease;
+  }
+  [data-headphone-visual="left"] .headphone-cup--left,
+  [data-headphone-visual="right"] .headphone-cup--right,
+  [data-headphone-visual="both"] .headphone-cup,
+  [data-headphone-visual="phase-in"] .headphone-cup,
+  [data-headphone-visual="phase-inverted"] .headphone-cup,
+  [data-headphone-visual="sweep"] .headphone-cup,
+  [data-headphone-visual="bass"] .headphone-cup {
+    transform: none;
+    border-color: var(--color-signal);
+    background: #eef5f5;
+    color: #115f68;
+  }
+  [data-headphone-visual="phase-inverted"] .headphone-cup--right {
+    transform: none;
+    outline: 2px dashed var(--color-danger);
+    outline-offset: -5px;
+  }
+  .headphone-signal {
+    background: var(--color-signal);
+    color: #fff;
+  }
+  .headphone-range i {
+    border-radius: 0;
+    background: #aeb8b3;
+  }
+  .headphone-modes {
+    gap: 1px;
+    padding: 2px;
+    border-radius: 6px;
+    background: #dfe2dd;
+  }
+  .headphone-modes button {
+    min-height: 42px;
+    border-radius: 4px;
+    font-weight: 720;
+  }
+  .headphone-modes button[aria-pressed="true"] {
+    background: #fff;
+    box-shadow: inset 0 -2px 0 var(--color-signal);
+  }
+  .headphone-safety {
+    padding: 7px 0;
+    border-top: 1px solid #d8c79c;
+    border-bottom: 1px solid #d8c79c;
+    border-radius: 0;
+    background: transparent;
+  }
+  .headphone-safety > i {
+    color: var(--color-caution);
+  }
+  .headphone-channel-hint,
+  .headphone-panel {
+    min-height: 150px;
+    padding: 10px 0;
+  }
+  .headphone-actions button,
+  .headphone-primary,
+  .headphone-stop,
+  .headphone-field input {
+    border-radius: 4px;
+  }
+  .headphone-actions button[aria-pressed="true"] {
+    border-color: var(--color-signal);
+    background: var(--color-signal-soft);
+  }
+  .headphone-footer {
+    padding-top: 7px;
+  }
+  @media (max-width: 940px) {
+    .headphone-instrument {
+      min-height: 0;
+    }
+  }
+  @media (max-width: 560px) {
+    .headphone-cup {
+      border-radius: 8px;
+    }
+    .headphone-channel-hint,
+    .headphone-panel {
+      min-height: 170px;
+      padding-block: 8px;
+    }
+  }
 </style>

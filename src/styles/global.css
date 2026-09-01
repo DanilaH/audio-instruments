@@ -1,22 +1,28 @@
 :root {
   color-scheme: light;
-  --color-bg: #faf7f2;
-  --color-surface: #fffdfc;
-  --color-surface-alt: #f4f0ff;
-  --color-ink: #1f2430;
-  --color-ink-muted: #5f6675;
-  --color-border: #e8e3dc;
-  --color-lavender: #8f7cff;
-  --color-blue: #67a7ff;
-  --color-mint: #66d1b2;
-  --color-peach: #ffb58d;
-  --color-yellow: #ffd76a;
-  --color-focus: #5d4ae8;
+  --color-bg: #f1f0eb;
+  --color-surface: #fbfbf8;
+  --color-surface-alt: #e9ebe7;
+  --color-ink: #20231f;
+  --color-ink-muted: #626760;
+  --color-border: #cfd2cc;
+  --color-border-strong: #9fa59f;
+  --color-lavender: #167a86;
+  --color-blue: #167a86;
+  --color-mint: #4d7d68;
+  --color-peach: #9a6748;
+  --color-yellow: #a57824;
+  --color-focus: #0f6670;
+  --color-signal: #167a86;
+  --color-signal-soft: #dcebed;
+  --color-caution: #8e651b;
+  --color-caution-soft: #f2e8cf;
+  --color-danger: #a54238;
   --page-width: 1180px;
-  --radius-control: 12px;
-  --radius-button: 16px;
-  --radius-card: 24px;
-  --shadow-soft: 0 24px 70px rgb(31 36 48 / 0.08);
+  --radius-control: 6px;
+  --radius-button: 6px;
+  --radius-card: 12px;
+  --shadow-soft: 0 8px 22px rgb(32 35 31 / 0.05);
   font-family:
     Manrope,
     ui-sans-serif,
@@ -812,4 +818,16 @@ h3 {
   .tool-link:hover {
     transform: none;
   }
+}
+
+/* Reference Instrument prototype */
+.site-header {
+  padding: 12px 0 8px;
+}
+.brand__mark {
+  border-radius: 6px;
+  background: #e4e7e2;
+}
+.eyebrow {
+  color: var(--color-ink-muted);
 }

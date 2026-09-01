@@ -55,12 +55,8 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         <div class="db-permission">
           <i class="ph ph-microphone" aria-hidden="true"></i>
           <div>
-            <strong>Microphone permission is requested only after Start.</strong
-            >
-            <p>
-              Audio stays local to this browser session. The live microphone is
-              never connected to speaker output.
-            </p>
+            <strong>Microphone access starts only after Start.</strong>
+            <p>Audio stays local and is never routed to speaker output.</p>
           </div>
         </div>
 
@@ -82,71 +78,78 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
         </label>
         <p class="db-error" data-db-selection-error role="alert" hidden></p>
 
-        <section class="db-calibration" aria-labelledby="db-calibration-title">
-          <div class="db-calibration__heading">
-            <div>
-              <p class="db-eyebrow">Optional</p>
-              <h3 id="db-calibration-title">One-point reference calibration</h3>
-            </div>
-            <span data-db-estimate-badge>Uncalibrated</span>
-          </div>
-
-          <p
-            class="db-calibration__eligibility"
-            data-db-calibration-eligibility
-          >
-            Start the microphone to check whether reference calibration is
-            eligible.
-          </p>
-
-          <label class="db-field db-field--stacked">
-            <span>External reference reading</span>
-            <div class="db-reference-input">
-              <input
-                type="number"
-                step="0.1"
-                inputmode="decimal"
-                placeholder="72.0"
-                data-db-reference
-              />
-              <span>dB SPL reference</span>
-            </div>
-          </label>
-
-          <label class="db-weighting-confirm">
-            <input type="checkbox" data-db-weighting-confirm />
+        <details class="db-calibration">
+          <summary class="db-calibration__summary">
             <span>
-              I confirm the external reference meter is set to Z / Flat / Linear
-              weighting. A- or C-weighted references are not accepted in v1.
+              <span class="db-eyebrow">Optional</span>
+              <strong id="db-calibration-title">Reference calibration</strong>
             </span>
-          </label>
-
-          <button type="button" class="db-calibrate" data-db-calibrate disabled>
-            Capture 3-second reference
-          </button>
-
-          <p class="db-calibration__status" data-db-calibration-status>
-            Uncalibrated
-          </p>
-          <p
-            class="sr-only"
-            data-db-calibration-live-status
-            role="status"
-            aria-live="polite"
-          >
-          </p>
-
-          <div class="db-calibration__limit">
-            <i class="ph ph-info" aria-hidden="true"></i>
-            <p>
-              One-point reference calibration. This does not calibrate
-              microphone frequency response. Recalibrate after changing
-              microphone, system input gain, processing, position or reference
-              conditions. The browser measurement chain is not claimed to be
-              true Z-weighted or unweighted.
+            <span data-db-estimate-badge>Uncalibrated</span>
+          </summary>
+          <div class="db-calibration__body">
+            <p
+              class="db-calibration__eligibility"
+              data-db-calibration-eligibility
+            >
+              Start the microphone to check whether reference calibration is
+              eligible.
             </p>
+
+            <label class="db-field db-field--stacked">
+              <span>External reference reading</span>
+              <div class="db-reference-input">
+                <input
+                  type="number"
+                  step="0.1"
+                  inputmode="decimal"
+                  placeholder="72.0"
+                  data-db-reference
+                />
+                <span>dB SPL reference</span>
+              </div>
+            </label>
+
+            <label class="db-weighting-confirm">
+              <input type="checkbox" data-db-weighting-confirm />
+              <span>
+                I confirm the external reference meter is set to Z / Flat /
+                Linear weighting. A- or C-weighted references are not accepted
+                in v1.
+              </span>
+            </label>
+
+            <button
+              type="button"
+              class="db-calibrate"
+              data-db-calibrate
+              disabled
+            >
+              Capture 3-second reference
+            </button>
+
+            <p class="db-calibration__status" data-db-calibration-status>
+              Uncalibrated
+            </p>
+            <p
+              class="sr-only"
+              data-db-calibration-live-status
+              role="status"
+              aria-live="polite"
+            >
+            </p>
+
+            <div class="db-calibration__limit">
+              <i class="ph ph-info" aria-hidden="true"></i>
+              <p>
+                One-point reference calibration. This does not calibrate
+                microphone frequency response. Recalibrate after changing
+                microphone, system input gain, processing, position or reference
+                conditions. The browser measurement chain is not claimed to be
+                true Z-weighted or unweighted.
+              </p>
+            </div>
           </div>
-        </section>
+        </details>
 
         <details class="db-details">
           <summary>Capture details</summary>
@@ -693,6 +696,110 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
     .db-details dl {
       grid-template-columns: 1fr;
+    }
+  }
+
+  /* Reference Instrument prototype */
+  .db-instrument {
+    grid-template-columns: minmax(0, 1.14fr) minmax(360px, 0.86fr);
+    min-height: 470px;
+  }
+  .db-monitor,
+  .db-controls {
+    padding: 20px 22px;
+  }
+  .db-monitor {
+    gap: 12px;
+    background: #e9ebe7;
+    border-color: var(--color-border);
+  }
+  .db-controls {
+    gap: 10px;
+    background: #fbfbf8;
+  }
+  .db-primary-readout {
+    min-height: 172px;
+    padding: 18px;
+    border-color: var(--color-border-strong);
+    border-radius: 6px;
+    background: #f7f8f4;
+  }
+  .db-primary-readout strong {
+    font-size: clamp(3.2rem, 5vw, 4.7rem);
+  }
+  .db-meter__track {
+    height: 14px;
+    border-radius: 3px;
+    background: #f8f9f5;
+  }
+  .db-meter__fill {
+    border-radius: 2px;
+    background: var(--color-signal);
+  }
+  .db-secondary-readout {
+    border-radius: 4px;
+    background: transparent;
+  }
+  .db-permission {
+    padding: 8px 0;
+    border-top: 1px solid var(--color-border);
+    border-bottom: 1px solid var(--color-border);
+    border-radius: 0;
+    background: transparent;
+  }
+  .db-permission > i {
+    color: var(--color-signal);
+  }
+  .db-start,
+  .db-stop,
+  .db-calibrate,
+  .db-field select,
+  .db-reference-input input {
+    border-radius: 4px;
+  }
+  .db-calibration {
+    padding: 0;
+    overflow: hidden;
+    border-radius: 6px;
+    background: #f4f5f1;
+  }
+  .db-calibration__summary {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding: 11px 12px;
+    cursor: pointer;
+    list-style: none;
+  }
+  .db-calibration__summary::-webkit-details-marker {
+    display: none;
+  }
+  .db-calibration__summary > span:first-child {
+    display: grid;
+    gap: 2px;
+  }
+  .db-calibration__summary strong {
+    font-size: 0.88rem;
+  }
+  .db-calibration__body {
+    display: grid;
+    gap: 10px;
+    padding: 11px 12px 12px;
+    border-top: 1px solid var(--color-border);
+  }
+  .db-calibration__limit {
+    padding: 9px 0 0;
+    border-top: 1px solid var(--color-border);
+    border-radius: 0;
+    background: transparent;
+  }
+  .db-details {
+    border-radius: 5px;
+  }
+  @media (max-width: 900px) {
+    .db-instrument {
+      min-height: 0;
     }
   }
 </style>

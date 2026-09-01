@@ -21,24 +21,25 @@ const { eyebrow, title, description, accent = "lavender" } = Astro.props;
 
 <style>
   .tool-shell {
-    padding: clamp(34px, 5vw, 64px) 0 88px;
+    padding: 18px 0 64px;
   }
 
   .tool-shell__header {
-    max-width: 780px;
-    margin-bottom: clamp(24px, 4vw, 40px);
+    max-width: 920px;
+    margin-bottom: 18px;
   }
 
   .tool-shell__header h1 {
-    font-size: clamp(2.8rem, 6.5vw, 5.6rem);
+    font-size: clamp(2.25rem, 3.8vw, 3.4rem);
+    letter-spacing: -0.035em;
   }
 
   .tool-shell__lede {
     max-width: 680px;
-    margin: 20px 0 0;
+    margin: 8px 0 0;
     color: var(--color-ink-muted);
-    font-size: clamp(1rem, 1.5vw, 1.18rem);
-    line-height: 1.65;
+    font-size: clamp(0.94rem, 1.2vw, 1.04rem);
+    line-height: 1.5;
   }
 
   @media (min-width: 821px) and (max-height: 900px) {
@@ -53,7 +54,7 @@ const { eyebrow, title, description, accent = "lavender" } = Astro.props;
 
     .tool-shell__header h1 {
       max-width: 900px;
-      font-size: 3rem;
+      font-size: 2.65rem;
     }
 
     .tool-shell__header .eyebrow {
@@ -78,7 +79,7 @@ const { eyebrow, title, description, accent = "lavender" } = Astro.props;
     }
 
     .tool-shell__header h1 {
-      font-size: 2.2rem;
+      font-size: 2rem;
       line-height: 1.02;
     }
 
@@ -91,5 +92,13 @@ const { eyebrow, title, description, accent = "lavender" } = Astro.props;
       font-size: 0.9rem;
       line-height: 1.45;
     }
+  }
+
+  /* Reference Instrument prototype */
+  .tool-shell__header .eyebrow {
+    margin-bottom: 7px;
+    color: var(--color-ink-muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.08em;
   }
 </style>
