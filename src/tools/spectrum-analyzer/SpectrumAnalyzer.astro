@@ -157,26 +157,22 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       </dl>
     </section>
 
-    <div class="spectrum-state-strip">
-      <strong>Local input</strong>
-      <p>
-        Microphone permission is requested only after Start. The live input is
-        analyzed locally in the browser and is never connected to speaker
-        output.
-      </p>
-    </div>
-
-    <div class="spectrum-claim-note">
-      <strong>Relative data</strong>
-      <p>
-        Frequency values are relative FFT-bin data from the browser stream. This
-        tool does not measure calibrated frequency response, acoustic SPL, or
-        musical pitch.
-      </p>
-    </div>
-
     <p class="spectrum-error" data-spectrum-error role="alert" hidden></p>
   </SonicInstrument>
+
+  <aside
+    class="spectrum-reference-notes"
+    aria-label="Spectrum Analyzer reference notes"
+  >
+    <p>
+      <strong>Local input.</strong> Microphone permission is requested only after
+      Start; live input is analyzed locally and is never connected to speaker output.
+    </p>
+    <p>
+      <strong>Relative data.</strong> FFT-bin values are not calibrated frequency
+      response, acoustic SPL, or musical pitch.
+    </p>
+  </aside>
 </div>
 
 <script>
@@ -526,39 +522,24 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     white-space: nowrap;
   }
 
-  .spectrum-state-strip,
-  .spectrum-claim-note {
+  .spectrum-reference-notes {
     display: grid;
-    grid-template-columns: 92px minmax(0, 1fr);
-    gap: 12px;
-    padding: 8px 18px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 12px 24px;
+    margin-top: 10px;
+    padding: 0 2px;
+    color: var(--color-ink-muted);
   }
 
-  .spectrum-state-strip {
-    border-bottom: 1px solid var(--sonic-border-soft);
-  }
-
-  .spectrum-state-strip strong,
-  .spectrum-claim-note strong {
-    font-size: 0.68rem;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-  }
-
-  .spectrum-state-strip strong {
-    color: var(--sonic-signal);
-  }
-
-  .spectrum-claim-note strong {
-    color: var(--sonic-current);
-  }
-
-  .spectrum-state-strip p,
-  .spectrum-claim-note p {
+  .spectrum-reference-notes p {
     margin: 0;
-    color: var(--sonic-muted);
-    font-size: 0.7rem;
-    line-height: 1.35;
+    font-size: 0.72rem;
+    line-height: 1.4;
+  }
+
+  .spectrum-reference-notes strong {
+    color: var(--color-ink);
+    font-weight: 800;
   }
 
   .spectrum-error {
@@ -589,11 +570,6 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 
     .spectrum-rail {
       min-height: 142px;
-    }
-
-    .spectrum-state-strip,
-    .spectrum-claim-note {
-      padding-block: 6px;
     }
   }
 
@@ -657,11 +633,10 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    .spectrum-state-strip,
-    .spectrum-claim-note {
+    .spectrum-reference-notes {
       grid-template-columns: 1fr;
-      gap: 2px;
-      padding-inline: 14px;
+      gap: 5px;
+      margin-top: 8px;
     }
   }
 
