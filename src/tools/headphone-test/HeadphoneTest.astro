@@ -25,7 +25,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
           <span>Stereo field</span>
           <strong>Choose the output you want to verify</strong>
         </div>
-        <span class="headphone-field__reference">500 Hz · 700 ms reference</span>
+        <span class="headphone-field__reference">500 Hz · 700 ms reference</span
+        >
       </div>
 
       <div class="headphone-stage">
@@ -102,11 +103,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
           >
             Sweep
           </button>
-          <button
-            type="button"
-            data-headphone-mode="bass"
-            aria-pressed="false"
-          >
+          <button type="button" data-headphone-mode="bass" aria-pressed="false">
             Bass / rattle
           </button>
         </div>
@@ -209,12 +206,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         <LevelControl id="headphone-level" valueDb={-24} />
       </div>
 
-      <button
-        type="button"
-        class="headphone-stop"
-        data-headphone-stop
-        disabled
-      >
+      <button type="button" class="headphone-stop" data-headphone-stop disabled>
         <span class="transport-stop-shape" aria-hidden="true"></span>
         Stop
       </button>
@@ -512,10 +504,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 
   .headphone-rail {
     display: grid;
-    grid-template-columns: minmax(210px, 0.72fr) minmax(330px, 1.35fr) minmax(
-        180px,
-        0.65fr
-      ) 110px;
+    grid-template-columns:
+      minmax(210px, 0.72fr) minmax(330px, 1.35fr) minmax(180px, 0.65fr)
+      110px;
     min-height: 178px;
     align-items: stretch;
     border-bottom: 1px solid var(--sonic-border-soft);

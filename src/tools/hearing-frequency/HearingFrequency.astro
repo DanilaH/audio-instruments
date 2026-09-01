@@ -32,11 +32,7 @@ const modeOptions = [
     class="hearing-sheet"
   >
     <div class="hearing-sheet__bar">
-      <ToolStatus
-        id="hearing-frequency-status"
-        label="Ready"
-        state="idle"
-      />
+      <ToolStatus id="hearing-frequency-status" label="Ready" state="idle" />
       <div class="hearing-fixed-level">
         <span>Guided app level</span>
         <strong>{HEARING_GUIDED_LEVEL_DB} dB</strong>
@@ -66,7 +62,7 @@ const modeOptions = [
               class="hearing-frequency-step"
               title={formatHearingFrequency(frequencyHz)}
             >
-              <i></i>
+              <i />
               <small>{frequencyHz / 1_000}k</small>
             </span>
           ))
@@ -93,7 +89,8 @@ const modeOptions = [
             </p>
           </div>
           <div class="hearing-answer__actions">
-            <button type="button" data-hearing-heard disabled>I heard it</button>
+            <button type="button" data-hearing-heard disabled>I heard it</button
+            >
             <button type="button" data-hearing-not-heard disabled>
               I didn't hear it
             </button>

@@ -9,11 +9,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     class="spectrum-sheet"
   >
     <div class="spectrum-sheet__bar">
-      <ToolStatus
-        id="spectrum-analyzer-status"
-        label="Ready"
-        state="idle"
-      />
+      <ToolStatus id="spectrum-analyzer-status" label="Ready" state="idle" />
       <div class="spectrum-input-readout">
         <span>Input</span>
         <strong data-spectrum-active-input>No active input</strong>
@@ -119,7 +115,11 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         </label>
 
         <div class="spectrum-input-slot">
-          <label class="spectrum-control-field" data-spectrum-input-field hidden>
+          <label
+            class="spectrum-control-field"
+            data-spectrum-input-field
+            hidden
+          >
             <span>Input device</span>
             <select
               data-spectrum-input
@@ -355,10 +355,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 
   .spectrum-rail {
     display: grid;
-    grid-template-columns: minmax(190px, 0.7fr) minmax(250px, 0.9fr) minmax(
-        250px,
-        1fr
-      ) minmax(260px, 1fr);
+    grid-template-columns:
+      minmax(190px, 0.7fr) minmax(250px, 0.9fr) minmax(250px, 1fr)
+      minmax(260px, 1fr);
     min-height: 150px;
     align-items: stretch;
     border-bottom: 1px solid var(--sonic-border-soft);
