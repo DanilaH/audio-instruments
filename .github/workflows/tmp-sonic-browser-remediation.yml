@@ -69,7 +69,7 @@ jobs:
               ),
               (
                   '''    .spectrum-rail {\n      min-height: 142px;\n    }''',
-                  '''    .spectrum-rail {\n      min-height: 140px;\n    }''',
+                  '''    .spectrum-rail {\n      min-height: 140px;\n    }\n\n    .spectrum-rail > * {\n      padding-block: 11px;\n    }''',
                   'compact spectrum rail height block',
               ),
               (
