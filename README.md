@@ -14,7 +14,7 @@ The working visual direction is **Soft Sonic Studio**: a warm, friendly, express
 
 ## Documentation status
 
-Documentation baseline: **v1.17**
+Documentation baseline: **v1.19**
 
 Implementation status:
 
@@ -47,7 +47,7 @@ The repository is now public. Current branch metadata reports `main` as `protect
 
 A GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`.
 
-Automated P8 release validation is now recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: exact-head full Chromium/Firefox/WebKit validation is green, visual QA across the homepage + all 16 tool routes at the required viewport matrix is complete, and runtime axe audit reports zero WCAG A/AA violations on 34 desktop/mobile surfaces for that same 17-page scope, and cross-engine visual spot-checks found no material rendering regression. Remaining P8 work is real-device/browser smoke QA, production domain/deployment, Cloudflare Web Analytics enablement plus privacy/consent review, Search Console and explicit final indexing activation.
+Automated P8 release validation is now recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: exact-head full Chromium/Firefox/WebKit validation is green, historical visual QA across the homepage + all 16 tool routes at 1440×900, 1366×768, 1024×768 and 390×844 is complete; the separate 2026-09-01 adversarial audit adds validated 320×844 browser/state/geometry coverage, and runtime axe audit reports zero WCAG A/AA violations on 34 desktop/mobile surfaces for that same 17-page scope, and cross-engine visual spot-checks found no material rendering regression. Remaining P8 work is real-device/browser smoke QA, production domain/deployment, Cloudflare Web Analytics enablement plus privacy/consent review, Search Console and explicit final indexing activation.
 
 ## Stack
 
@@ -117,7 +117,8 @@ docs/
     ├── P7_AUDIO_EVIDENCE_2026-08-30.md
     ├── P8_STATIC_RELEASE_AUDIT_2026-08-30.md
     ├── P8_INDEXING_VALIDATION_2026-08-30.md
-    └── P8_RELEASE_VALIDATION_2026-08-31.md
+    ├── P8_RELEASE_VALIDATION_2026-08-31.md
+    └── P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md
 ```
 
 Each concern has one authoritative home. Do not recreate a second master specification.
@@ -254,11 +255,11 @@ full-validation runs
 → merge-gate passes only if full-validation succeeds
 ```
 
-Current private-plan/manual-gate limitations and the recorded no-runner incident do not change the normative CI contract.
+The current public-repository/manual-gate state and the recorded no-runner incident do not change the normative CI contract.
 
 ## Documentation freeze rule
 
-v1.17 records completed automated P8 release evidence: green hosted full validation including Chromium/Firefox/WebKit, required-viewport visual QA, runtime accessibility audit, cross-engine visual spot-checks, public-repository gate state and the selected-but-not-enabled Cloudflare Web Analytics rollout decision. It still does not claim real-device QA, production deployment, Search Console or final production indexing activation are complete.
+v1.19 records completed automated P8 release evidence: green hosted full validation including Chromium/Firefox/WebKit, the historical 1440×900 / 1366×768 / 1024×768 / 390×844 visual matrix, the separate validated 320×844 browser/state/geometry audit, runtime accessibility audit, cross-engine visual spot-checks, public-repository manual-gate state and the selected-but-not-enabled Cloudflare Web Analytics rollout decision. It still does not claim real-device QA, production deployment, Search Console or final production indexing activation are complete.
 
 Current rule:
 
