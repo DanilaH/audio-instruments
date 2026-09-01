@@ -3,7 +3,7 @@ import LevelControl from "../../components/controls/LevelControl.astro";
 import ModePills from "../../components/controls/ModePills.astro";
 import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
-import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 import {
   HEARING_LEVEL_DEFAULT_DB,
   HEARING_LEVEL_MAX_DB,
@@ -27,127 +27,145 @@ const modeOptions = [
   data-hearing-mode="guided"
   data-hearing-state="idle"
 >
-  <InstrumentSurface
+  <SonicInstrument
     label="Hearing Frequency Test high-frequency exploration"
-    accent="yellow"
+    class="hearing-sheet"
   >
-    <div class="hearing-instrument">
-      <section class="hearing-stage" aria-label="Hearing frequency session">
-        <div class="hearing-stage__header">
-          <ToolStatus
-            id="hearing-frequency-status"
-            label="Ready"
-            state="idle"
-          />
-          <div class="hearing-fixed-level">
-            <span>Guided level</span>
-            <strong>{HEARING_GUIDED_LEVEL_DB} dB</strong>
-            <small>relative to unity</small>
-          </div>
-        </div>
+    <div class="hearing-sheet__bar">
+      <ToolStatus
+        id="hearing-frequency-status"
+        label="Ready"
+        state="idle"
+      />
+      <div class="hearing-fixed-level">
+        <span>Guided app level</span>
+        <strong>{HEARING_GUIDED_LEVEL_DB} dB</strong>
+      </div>
+    </div>
 
-        <div class="hearing-frequency-display">
-          <p>Current guided frequency</p>
-          <strong data-hearing-current-frequency>—</strong>
-          <span data-hearing-progress>Not started</span>
+    <section class="hearing-field" aria-label="Hearing frequency session">
+      <div class="hearing-field__heading">
+        <div>
+          <span>Guided frequency path</span>
+          <strong>Fixed app level · session observation only</strong>
         </div>
+        <span>2 → 20 kHz nominal sequence</span>
+      </div>
 
-        <div class="hearing-result-card">
-          <p>Highest frequency you reported hearing in this session</p>
-          <strong data-hearing-result>—</strong>
-          <span>
-            Guided answers only. This is not a diagnosis, audiogram, hearing age
-            or normal/abnormal assessment.
-          </span>
-        </div>
+      <div class="hearing-current">
+        <span>Current guided frequency</span>
+        <strong data-hearing-current-frequency>—</strong>
+        <small data-hearing-progress>Not started</small>
+      </div>
 
-        <div class="hearing-frequency-track" aria-hidden="true">
-          {
-            HEARING_GUIDED_FREQUENCIES_HZ.map((frequencyHz) => (
-              <span title={formatHearingFrequency(frequencyHz)} />
-            ))
-          }
-        </div>
-      </section>
+      <div class="hearing-frequency-path" aria-hidden="true">
+        <span class="hearing-frequency-path__line"></span>
+        {
+          HEARING_GUIDED_FREQUENCIES_HZ.map((frequencyHz) => (
+            <span
+              class="hearing-frequency-step"
+              title={formatHearingFrequency(frequencyHz)}
+            >
+              <i></i>
+              <small>{frequencyHz / 1_000}k</small>
+            </span>
+          ))
+        }
+      </div>
 
-      <section
-        class="hearing-controls"
-        aria-label="Hearing Frequency Test controls"
-      >
-        <div class="hearing-safety">
-          <i class="ph ph-shield-check" aria-hidden="true"></i>
-          <p>
-            Start with your device/headphone volume low. While the 1 kHz setup
-            tone is audible, set system/device volume only to a low comfortable
-            level. Then keep it unchanged. Do not turn it up to hear higher
-            tones.
-          </p>
-        </div>
+      <div class="hearing-observation">
+        <span>Highest reported heard this session</span>
+        <strong data-hearing-result>—</strong>
+        <small>
+          Guided answers only · not a diagnosis, audiogram, hearing age or
+          normal/abnormal assessment.
+        </small>
+      </div>
 
-        <section class="hearing-setup" aria-labelledby="hearing-setup-title">
-          <div class="hearing-section-heading">
-            <div>
-              <p class="hearing-eyebrow">Required before high frequencies</p>
-              <h3 id="hearing-setup-title">Listening setup</h3>
-            </div>
-            <span>{HEARING_GUIDED_LEVEL_DB} dB</span>
-          </div>
+      <div class="hearing-decision-slot">
+        <div class="hearing-answer" data-hearing-answer-panel hidden>
           <div>
-            <strong>Set a low comfortable system/device volume</strong>
+            <span>Listening decision</span>
+            <strong>Did you hear the tone?</strong>
             <p>
-              Play the {HEARING_REFERENCE_FREQUENCY_HZ / 1_000} kHz reference. Adjust
-              system/device volume while the 1-second tone is audible. Replay it if
-              you need another adjustment pass.
+              Records only this session observation. It does not classify your
+              hearing as normal or abnormal.
             </p>
           </div>
-          <button
-            type="button"
-            class="hearing-secondary"
-            data-hearing-reference
-          >
-            <i class="ph ph-speaker-high" aria-hidden="true"></i>
-            Play 1 kHz setup tone
-          </button>
-          <p data-hearing-setup-status>
-            Complete this setup before any Guided or Manual high-frequency tone.
-          </p>
-          <label class="hearing-confirm">
-            <input type="checkbox" data-hearing-setup-confirm disabled />
-            <span>
-              System/device volume is low and comfortable, and I will keep it
-              unchanged for high-frequency playback.
-            </span>
-          </label>
-        </section>
+          <div class="hearing-answer__actions">
+            <button type="button" data-hearing-heard disabled>I heard it</button>
+            <button type="button" data-hearing-not-heard disabled>
+              I didn't hear it
+            </button>
+          </div>
+        </div>
+        <p class="hearing-decision-placeholder">
+          After each guided tone, the answer controls appear in this reserved
+          decision band without moving the instrument.
+        </p>
+      </div>
+    </section>
 
-        <div class="hearing-control-header">
-          <ModePills
-            legend="Mode"
-            name="hearing-mode"
-            options={modeOptions}
-            value="guided"
-          />
-          <button type="button" class="hearing-stop" data-hearing-stop disabled>
-            <i class="ph ph-stop" aria-hidden="true"></i>
-            Stop
-          </button>
+    <section class="hearing-rail" aria-label="Hearing Frequency Test controls">
+      <section class="hearing-setup" aria-labelledby="hearing-setup-title">
+        <div class="hearing-section-heading">
+          <div>
+            <span>Required setup</span>
+            <h3 id="hearing-setup-title">Listening setup</h3>
+          </div>
+          <strong>{HEARING_REFERENCE_FREQUENCY_HZ / 1_000} kHz</strong>
         </div>
 
+        <p class="hearing-setup__copy">
+          Set a low comfortable system/device volume while the 1-second
+          reference is audible. Replay it if another adjustment pass is needed.
+        </p>
+
+        <button type="button" class="hearing-secondary" data-hearing-reference>
+          Play 1 kHz setup tone
+        </button>
+
+        <p class="hearing-setup__status" data-hearing-setup-status>
+          Complete this setup before any Guided or Manual high-frequency tone.
+        </p>
+
+        <label class="hearing-confirm">
+          <input type="checkbox" data-hearing-setup-confirm disabled />
+          <span>
+            System/device volume is low and comfortable, and I will keep it
+            unchanged for high-frequency playback.
+          </span>
+        </label>
+      </section>
+
+      <div class="hearing-mode-control">
+        <ModePills
+          legend="Mode"
+          name="hearing-mode"
+          options={modeOptions}
+          value="guided"
+        />
+        <button type="button" class="hearing-stop" data-hearing-stop disabled>
+          <span class="transport-stop-shape" aria-hidden="true"></span>
+          Stop
+        </button>
+      </div>
+
+      <div class="hearing-mode-slot">
         <section
           data-hearing-guided-panel
           aria-labelledby="hearing-guided-title"
         >
           <div class="hearing-section-heading">
             <div>
-              <p class="hearing-eyebrow">Fixed-level sequence</p>
+              <span>Fixed-level sequence</span>
               <h3 id="hearing-guided-title">Guided mode</h3>
             </div>
-            <span>{HEARING_GUIDED_LEVEL_DB} dB</span>
+            <strong>{HEARING_GUIDED_LEVEL_DB} dB</strong>
           </div>
-
           <p class="hearing-mode-note">
-            Guided mode uses the nominal 2–20 kHz sequence at one fixed app
-            Level. Steps above this session's generated-frequency capability are
+            Guided uses the nominal 2–20 kHz sequence at one fixed app Level.
+            Steps above this session's generated-frequency capability are
             removed.
           </p>
           <button
@@ -158,22 +176,6 @@ const modeOptions = [
           >
             Start Guided mode
           </button>
-
-          <div class="hearing-answer" data-hearing-answer-panel hidden>
-            <strong>Did you hear the tone?</strong>
-            <div>
-              <button type="button" data-hearing-heard disabled
-                >I heard it</button
-              >
-              <button type="button" data-hearing-not-heard disabled>
-                I didn't hear it
-              </button>
-            </div>
-            <p>
-              Your answer records only this session observation. It does not
-              classify your hearing as normal or abnormal.
-            </p>
-          </div>
         </section>
 
         <section
@@ -183,7 +185,7 @@ const modeOptions = [
         >
           <div class="hearing-section-heading">
             <div>
-              <p class="hearing-eyebrow">Exploration only</p>
+              <span>Exploration only</span>
               <h3 id="hearing-manual-title">Manual mode</h3>
             </div>
           </div>
@@ -221,12 +223,21 @@ const modeOptions = [
             fixed-level Guided session result.
           </p>
         </section>
+      </div>
+    </section>
 
-        <CapabilityNotice id="hearing-frequency-cap" />
-        <p class="hearing-error" data-hearing-error role="alert" hidden></p>
-      </section>
+    <div class="hearing-safety-strip">
+      <strong>Low volume</strong>
+      <p>
+        Start with your device/headphone volume low. While the 1 kHz setup tone
+        is audible, set system/device volume only to a low comfortable level.
+        Then keep it unchanged. Do not turn it up to hear higher tones.
+      </p>
     </div>
-  </InstrumentSurface>
+
+    <CapabilityNotice id="hearing-frequency-cap" />
+    <p class="hearing-error" data-hearing-error role="alert" hidden></p>
+  </SonicInstrument>
 </div>
 
 <script>
@@ -255,342 +266,582 @@ const modeOptions = [
 </script>
 
 <style>
-  .hearing-instrument {
-    display: grid;
-    grid-template-columns: minmax(0, 0.92fr) minmax(440px, 1.08fr);
-    min-height: 570px;
-  }
-
-  .hearing-stage,
-  .hearing-controls {
-    min-width: 0;
-    padding: clamp(20px, 2.6vw, 32px);
-  }
-
-  .hearing-stage {
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    gap: 18px;
-    border-right: 1px solid var(--color-border);
-    background:
-      radial-gradient(
-        circle at 50% 38%,
-        rgb(246 205 93 / 0.22),
-        transparent 30%
-      ),
-      linear-gradient(150deg, rgb(255 253 244 / 0.98), rgb(251 246 229 / 0.9));
-  }
-
-  .hearing-stage__header,
-  .hearing-control-header,
-  .hearing-section-heading {
+  .hearing-sheet__bar {
     display: flex;
-    align-items: flex-start;
+    min-height: 48px;
+    align-items: center;
     justify-content: space-between;
-    gap: 14px;
+    gap: 18px;
+    padding: 6px 18px;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
 
   .hearing-fixed-level {
     display: grid;
     justify-items: end;
-    gap: 2px;
-    color: var(--color-ink-muted);
-    font-size: 0.7rem;
+    gap: 1px;
     text-align: right;
   }
 
-  .hearing-fixed-level strong {
-    color: var(--color-ink);
-    font-size: 1rem;
-  }
-
-  .hearing-frequency-display {
-    display: grid;
-    align-self: center;
-    justify-items: center;
-    gap: 6px;
-    min-height: 230px;
-    align-content: center;
-    padding: 24px;
-    border: 1px solid rgb(156 119 35 / 0.12);
-    border-radius: 28px;
-    background: rgb(255 255 255 / 0.62);
-    text-align: center;
-  }
-
-  .hearing-frequency-display p,
-  .hearing-frequency-display span,
-  .hearing-result-card p,
-  .hearing-result-card span {
-    margin: 0;
-    color: var(--color-ink-muted);
-    font-size: 0.76rem;
-    line-height: 1.45;
-  }
-
-  .hearing-frequency-display strong {
-    font-size: clamp(3rem, 6vw, 5rem);
-    letter-spacing: -0.055em;
-    line-height: 0.95;
-  }
-
-  .hearing-result-card {
-    display: grid;
-    gap: 5px;
-    padding: 14px 15px;
-    border: 1px solid rgb(156 119 35 / 0.14);
-    border-radius: 16px;
-    background: rgb(255 255 255 / 0.58);
-  }
-
-  .hearing-result-card strong {
-    font-size: 1.45rem;
-  }
-
-  .hearing-frequency-track {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 4px;
-  }
-
-  .hearing-frequency-track span {
-    height: 6px;
-    border-radius: 999px;
-    background: rgb(188 146 52 / 0.2);
-  }
-
-  .hearing-controls {
-    display: grid;
-    align-content: start;
-    gap: 14px;
-  }
-
-  .hearing-safety {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 11px 13px;
-    border: 1px solid rgb(199 151 46 / 0.18);
-    border-radius: 14px;
-    background: rgb(255 249 226 / 0.74);
-  }
-
-  .hearing-safety i {
-    margin-top: 2px;
-  }
-
-  .hearing-safety p,
-  .hearing-setup p,
-  .hearing-answer p,
-  .hearing-mode-note,
-  .hearing-manual-status {
-    margin: 0;
-    color: var(--color-ink-muted);
-    font-size: 0.76rem;
-    line-height: 1.48;
-  }
-
-  .hearing-stop,
-  .hearing-primary,
-  .hearing-secondary,
-  .hearing-answer button {
-    display: inline-flex;
-    min-height: 44px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    padding: 0 15px;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    font: inherit;
-    font-size: 0.82rem;
-    font-weight: 750;
-    cursor: pointer;
-  }
-
-  .hearing-primary {
-    border-color: rgb(159 112 16 / 0.4);
-    background: rgb(230 181 75);
-    color: rgb(49 35 8);
-  }
-
-  .hearing-stop,
-  .hearing-secondary,
-  .hearing-answer button {
-    background: var(--color-surface);
-    color: var(--color-ink);
-  }
-
-  button:disabled,
-  select:disabled,
-  input:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
-  }
-
-  .hearing-setup,
-  [data-hearing-guided-panel],
-  [data-hearing-manual-panel] {
-    display: grid;
-    gap: 11px;
-    padding: 14px;
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: rgb(255 255 255 / 0.58);
-  }
-
-  [data-hearing-guided-panel][hidden],
-  [data-hearing-manual-panel][hidden],
-  .hearing-answer[hidden] {
-    display: none;
-  }
-
-  .hearing-section-heading h3,
-  .hearing-section-heading p {
-    margin: 0;
-  }
-
-  .hearing-section-heading h3 {
-    margin-top: 2px;
-    font-size: 1rem;
-  }
-
-  .hearing-section-heading > span {
-    color: var(--color-ink-muted);
-    font-size: 0.72rem;
-    font-weight: 700;
-  }
-
-  .hearing-eyebrow {
-    color: var(--color-ink-muted);
+  .hearing-fixed-level span,
+  .hearing-field__heading > div > span,
+  .hearing-current > span,
+  .hearing-observation > span,
+  .hearing-answer > div > span,
+  .hearing-section-heading span {
+    color: var(--sonic-muted);
     font-size: 0.66rem;
-    font-weight: 720;
-    letter-spacing: 0.075em;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
-  .hearing-setup > div:not(.hearing-section-heading) {
-    display: grid;
-    gap: 4px;
+  .hearing-fixed-level strong {
+    font-size: 0.82rem;
+    font-variant-numeric: tabular-nums;
   }
 
-  .hearing-confirm {
+  .hearing-field {
     display: grid;
-    grid-template-columns: auto 1fr;
-    align-items: start;
-    gap: 9px;
-    color: var(--color-ink-muted);
-    font-size: 0.76rem;
-    line-height: 1.45;
+    grid-template-columns: minmax(180px, 0.36fr) minmax(0, 1fr) minmax(
+        190px,
+        0.38fr
+      );
+    grid-template-rows: auto minmax(112px, 1fr) auto;
+    gap: 10px 18px;
+    min-height: 280px;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--sonic-border);
+    background: var(--sonic-field);
   }
 
-  .hearing-confirm input {
-    width: 18px;
-    height: 18px;
-    margin: 1px 0 0;
+  .hearing-field__heading {
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 18px;
+  }
+
+  .hearing-field__heading > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .hearing-field__heading strong {
+    font-size: 0.88rem;
+  }
+
+  .hearing-field__heading > span {
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+  }
+
+  .hearing-current,
+  .hearing-observation {
+    display: grid;
+    align-content: center;
+    gap: 3px;
+    min-width: 0;
+    padding: 12px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 5px;
+    background: rgb(238 234 224 / 0.62);
+  }
+
+  .hearing-current {
+    grid-column: 1;
+  }
+
+  .hearing-current strong {
+    font-size: clamp(2rem, 4vw, 3.4rem);
+    letter-spacing: -0.04em;
+    line-height: 0.95;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hearing-current small,
+  .hearing-observation small {
+    color: var(--sonic-muted);
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+
+  .hearing-frequency-path {
+    position: relative;
+    grid-column: 2;
+    display: grid;
+    grid-template-columns: repeat(10, minmax(0, 1fr));
+    align-items: center;
+    min-height: 112px;
+    padding: 0 8px;
+  }
+
+  .hearing-frequency-path__line {
+    position: absolute;
+    right: 8px;
+    left: 8px;
+    top: 50%;
+    height: 1px;
+    background: var(--sonic-border);
+  }
+
+  .hearing-frequency-step {
+    position: relative;
+    z-index: 1;
+    display: grid;
+    justify-items: center;
+    gap: 7px;
+    color: var(--sonic-muted);
+  }
+
+  .hearing-frequency-step i {
+    width: 9px;
+    height: 9px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 50%;
+    background: var(--sonic-field);
+  }
+
+  .hearing-frequency-step:nth-child(8) i {
+    border-color: var(--sonic-current);
+  }
+
+  .hearing-frequency-step small {
+    font-size: 0.6rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hearing-observation {
+    grid-column: 3;
+  }
+
+  .hearing-observation strong {
+    font-size: 1.55rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hearing-decision-slot {
+    position: relative;
+    grid-column: 1 / -1;
+    min-height: 76px;
+    border-top: 1px solid var(--sonic-border-soft);
+  }
+
+  .hearing-answer,
+  .hearing-decision-placeholder {
+    position: absolute;
+    inset: 8px 0 0;
   }
 
   .hearing-answer {
     display: grid;
-    gap: 9px;
-    padding: 12px;
-    border-radius: 14px;
-    background: rgb(248 243 226 / 0.8);
+    grid-template-columns: minmax(0, 1fr) auto;
+    align-items: center;
+    gap: 18px;
   }
 
-  .hearing-answer > div {
+  .hearing-answer[hidden] {
+    display: none;
+  }
+
+  .hearing-answer > div:first-child {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    gap: 2px;
+  }
+
+  .hearing-answer strong {
+    font-size: 0.95rem;
+  }
+
+  .hearing-answer p,
+  .hearing-decision-placeholder {
+    margin: 0;
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+    line-height: 1.32;
+  }
+
+  .hearing-answer__actions {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(116px, 1fr));
+    gap: 6px;
+  }
+
+  .hearing-answer__actions button,
+  .hearing-primary,
+  .hearing-secondary,
+  .hearing-stop {
+    min-height: 42px;
+    padding: 0 12px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--sonic-ink);
+    font: inherit;
+    font-size: 0.74rem;
+    font-weight: 780;
+    cursor: pointer;
+  }
+
+  .hearing-answer__actions button:first-child {
+    border-color: var(--sonic-signal);
+    color: #155f68;
+  }
+
+  .hearing-answer__actions button:last-child {
+    border-color: var(--sonic-opposing);
+    color: var(--sonic-opposing);
+  }
+
+  .hearing-answer:not([hidden]) + .hearing-decision-placeholder {
+    display: none;
+  }
+
+  .hearing-decision-placeholder {
+    display: grid;
+    align-items: center;
+  }
+
+  .hearing-rail {
+    display: grid;
+    grid-template-columns: minmax(360px, 1.2fr) minmax(160px, 0.52fr) minmax(
+        360px,
+        1.28fr
+      );
+    min-height: 194px;
+    border-bottom: 1px solid var(--sonic-border-soft);
+  }
+
+  .hearing-rail > * {
+    min-width: 0;
+    padding: 12px 14px;
+  }
+
+  .hearing-rail > * + * {
+    border-left: 1px solid var(--sonic-border-soft);
+  }
+
+  .hearing-setup {
+    display: grid;
+    align-content: start;
+    gap: 7px;
+  }
+
+  .hearing-section-heading {
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 12px;
+  }
+
+  .hearing-section-heading > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .hearing-section-heading h3 {
+    font-size: 0.9rem;
+  }
+
+  .hearing-section-heading > strong {
+    font-size: 0.76rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .hearing-setup__copy,
+  .hearing-setup__status,
+  .hearing-mode-note,
+  .hearing-manual-status {
+    margin: 0;
+    color: var(--sonic-muted);
+    font-size: 0.69rem;
+    line-height: 1.32;
+  }
+
+  .hearing-secondary,
+  .hearing-primary {
+    justify-self: start;
+  }
+
+  .hearing-primary {
+    border-color: var(--sonic-ink);
+    background: var(--sonic-ink);
+    color: var(--sonic-sheet);
+  }
+
+  .hearing-confirm {
+    display: grid;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 7px;
+    color: var(--sonic-muted);
+    font-size: 0.67rem;
+    line-height: 1.3;
+  }
+
+  .hearing-confirm input {
+    margin-top: 2px;
+  }
+
+  .hearing-mode-control {
+    display: grid;
+    align-content: start;
+    gap: 16px;
+  }
+
+  .hearing-mode-control :global(.mode-pills legend) {
+    margin-bottom: 6px;
+    color: var(--sonic-muted);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .hearing-mode-control :global(.mode-pills__options) {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px;
+  }
+
+  .hearing-mode-control :global(.mode-pill span) {
+    width: 100%;
+    min-height: 40px;
+    padding-inline: 8px;
+    font-size: 0.72rem;
+  }
+
+  .hearing-stop {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    width: 100%;
+  }
+
+  .transport-stop-shape {
+    width: 9px;
+    height: 9px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+
+  .hearing-mode-slot {
+    position: relative;
+    min-height: 194px;
+  }
+
+  .hearing-mode-slot > section {
+    position: absolute;
+    inset: 12px 14px;
+    display: grid;
+    align-content: start;
     gap: 8px;
+  }
+
+  .hearing-mode-slot > section[hidden] {
+    display: none;
   }
 
   .hearing-manual-frequency {
     display: grid;
-    gap: 7px;
-  }
-
-  .hearing-manual-frequency > span {
-    font-size: 0.84rem;
-    font-weight: 750;
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: center;
+    gap: 8px;
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+    font-weight: 720;
   }
 
   .hearing-manual-frequency select {
-    min-height: 44px;
-    padding: 0 36px 0 11px;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
-    background: var(--color-surface);
-    color: var(--color-ink);
+    min-width: 0;
+    min-height: 36px;
+    padding: 0 28px 0 8px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 4px;
+    background: var(--sonic-control-bg);
+    color: var(--sonic-ink);
     font: inherit;
   }
 
-  .hearing-error {
-    margin: 0;
-    color: var(--color-danger, #9a3434);
-    font-size: 0.78rem;
-    line-height: 1.45;
+  .hearing-mode-slot :global(.level-control) {
+    gap: 4px;
   }
 
-  @media (max-width: 900px) {
-    .hearing-instrument {
+  .hearing-mode-slot :global(.level-control__hint) {
+    display: none;
+  }
+
+  .hearing-mode-slot :global(.level-control__header) {
+    font-size: 0.72rem;
+  }
+
+  .hearing-mode-slot :global(.level-control input) {
+    min-height: 32px;
+  }
+
+  .hearing-safety-strip {
+    display: grid;
+    grid-template-columns: 90px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 18px;
+  }
+
+  .hearing-safety-strip strong {
+    color: var(--sonic-current);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .hearing-safety-strip p,
+  .hearing-error {
+    margin: 0;
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
+
+  .hearing-safety-strip p {
+    color: var(--sonic-muted);
+  }
+
+  .hearing-error {
+    padding: 8px 18px;
+    color: var(--sonic-opposing);
+  }
+
+  .hearing-error[hidden] {
+    display: none;
+  }
+
+  button:disabled,
+  input:disabled,
+  select:disabled {
+    cursor: not-allowed;
+    opacity: 0.45;
+  }
+
+  @media (max-width: 980px) {
+    .hearing-field {
+      grid-template-columns: minmax(150px, 0.4fr) minmax(0, 1fr);
+    }
+
+    .hearing-current {
+      grid-column: 1;
+    }
+
+    .hearing-frequency-path {
+      grid-column: 2;
+    }
+
+    .hearing-observation {
+      grid-column: 1 / -1;
+      grid-template-columns: auto auto 1fr;
+      align-items: baseline;
+      gap: 10px;
+    }
+
+    .hearing-decision-slot {
+      grid-column: 1 / -1;
+    }
+
+    .hearing-rail {
+      grid-template-columns: minmax(320px, 1fr) minmax(150px, 0.46fr);
+    }
+
+    .hearing-mode-slot {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--sonic-border-soft);
+      border-left: 0 !important;
+    }
+  }
+
+  @media (max-width: 700px) {
+    .hearing-sheet__bar {
+      padding-inline: 14px;
+    }
+
+    .hearing-field {
+      grid-template-columns: 1fr;
+      grid-template-rows: auto auto auto auto auto;
+      padding: 12px 14px;
+    }
+
+    .hearing-field__heading,
+    .hearing-current,
+    .hearing-frequency-path,
+    .hearing-observation,
+    .hearing-decision-slot {
+      grid-column: 1;
+    }
+
+    .hearing-field__heading > span {
+      display: none;
+    }
+
+    .hearing-current {
+      min-height: 104px;
+    }
+
+    .hearing-frequency-path {
+      min-height: 76px;
+    }
+
+    .hearing-observation {
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 2px;
+    }
+
+    .hearing-decision-slot {
+      min-height: 128px;
+    }
+
+    .hearing-answer {
+      grid-template-columns: 1fr;
+      gap: 8px;
+    }
+
+    .hearing-answer__actions {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hearing-rail {
       grid-template-columns: 1fr;
     }
 
-    .hearing-stage {
-      border-right: 0;
-      border-bottom: 1px solid var(--color-border);
+    .hearing-rail > * + *,
+    .hearing-mode-slot {
+      border-top: 1px solid var(--sonic-border-soft);
+      border-left: 0;
     }
 
-    .hearing-frequency-display {
-      min-height: 170px;
+    .hearing-mode-control :global(.mode-pills__options) {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .hearing-safety-strip {
+      grid-template-columns: 1fr;
+      gap: 2px;
+      padding-inline: 14px;
     }
   }
 
-  @media (max-width: 520px) {
-    .hearing-stage,
-    .hearing-controls {
-      padding: 14px 16px;
+  @media (max-width: 380px) {
+    .hearing-fixed-level span {
+      display: none;
     }
 
-    .hearing-stage {
-      gap: 10px;
+    .hearing-frequency-step small {
+      font-size: 0.53rem;
     }
 
-    .hearing-frequency-display {
-      min-height: 116px;
-      padding: 12px;
-      border-radius: 22px;
+    .hearing-answer__actions {
+      grid-template-columns: 1fr;
     }
 
-    .hearing-frequency-display strong {
-      font-size: clamp(2.6rem, 12vw, 3.5rem);
-    }
-
-    .hearing-result-card {
-      padding: 10px 11px;
-    }
-
-    .hearing-result-card strong {
-      font-size: 1.15rem;
-    }
-
-    .hearing-controls {
-      gap: 10px;
-    }
-
-    .hearing-safety,
-    .hearing-setup,
-    [data-hearing-guided-panel],
-    [data-hearing-manual-panel] {
-      padding: 9px 10px;
-    }
-
-    .hearing-control-header {
-      align-items: end;
-    }
-
-    .hearing-stop {
-      flex: 0 0 auto;
+    .hearing-decision-slot {
+      min-height: 174px;
     }
   }
 </style>
