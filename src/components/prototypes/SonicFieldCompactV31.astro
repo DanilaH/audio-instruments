@@ -75,7 +75,7 @@
 
   /*
    * Desktop is budgeted from viewport height rather than a fixed screenshot.
-   * At low desktop heights the complete sheet keeps at least ~36 px below it;
+   * At low desktop heights the complete sheet keeps deliberate air below it;
    * taller displays give the audio field more room up to a sensible ceiling.
    */
   @media (min-width: 761px) {
@@ -84,7 +84,7 @@
     body .sonic .spectrum-canvas,
     body .sonic .hearing-canvas {
       min-height: 0;
-      height: clamp(420px, calc(100vh - 326px), 560px);
+      height: clamp(420px, calc(100vh - 338px), 560px);
     }
 
     body .sonic .hearing-current {
