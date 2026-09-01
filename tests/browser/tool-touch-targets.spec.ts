@@ -21,7 +21,35 @@ const touchTargetCases = [
     ],
   },
   { path: "/noise-generator", selectors: [".noise-selector button"] },
-  { path: "/speaker-test", selectors: [".speaker-field input"] },
+  {
+    path: "/speaker-test",
+    selectors: [
+      ".speaker-node",
+      ".speaker-mode-switcher button",
+      ".speaker-panel button",
+      ".speaker-field-input input",
+      ".speaker-stop",
+    ],
+  },
+  {
+    path: "/stereo-test",
+    selectors: [
+      ".stereo-track__target",
+      ".stereo-pan-actions button",
+      ".stereo-stop",
+    ],
+  },
+  {
+    path: "/surround-sound-test",
+    selectors: [
+      ".surround-node",
+      ".surround-mode-selector button",
+      ".surround-primary",
+      ".surround-pan-actions button",
+      ".surround-stop",
+    ],
+  },
+  { path: "/phase-test", selectors: [".phase-actions button"] },
   {
     path: "/microphone-test",
     selectors: [".mic-input-field select", ".mic-details summary"],
