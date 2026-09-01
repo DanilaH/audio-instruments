@@ -115,6 +115,16 @@ replace(
 )
 replace(
     "tests/browser/runtime-consistency-audit.spec.ts",
+    """        x: rect.x,\n        y: rect.y,""",
+    """        x: rect.x + window.scrollX,\n        y: rect.y + window.scrollY,""",
+)
+replace(
+    "tests/browser/runtime-consistency-audit.spec.ts",
+    """        changes.push(record);\n\n        expect(after.scrollWidth).toBeLessThanOrEqual(after.clientWidth);""",
+    """        changes.push(record);\n        writeRecord({ kind: \"input-change\", route, viewport, ...record });\n\n        expect(after.scrollWidth).toBeLessThanOrEqual(after.clientWidth);""",
+)
+replace(
+    "tests/browser/runtime-consistency-audit.spec.ts",
     "expect(Math.abs(surfaceDelta.height)).toBeLessThanOrEqual(4);",
     "expect(Math.abs(surfaceDelta.height)).toBeLessThanOrEqual(1);",
 )
