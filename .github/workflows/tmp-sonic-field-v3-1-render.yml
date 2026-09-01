@@ -1,12 +1,12 @@
 name: Temporary Sonic Field v3.1 render
 
-# Rerun after v3.1 override specificity fix.
 on:
   push:
     branches:
       - prototype/audio-identity-v3-sonic-field
     paths:
       - .github/workflows/tmp-sonic-field-v3-1-render.yml
+      - src/components/prototypes/SonicFieldCompactV31.astro
 
 permissions:
   contents: read
@@ -79,8 +79,13 @@ jobs:
                 });
 
                 metrics.push({ tool, viewport: `${viewport.width}x${viewport.height}`, kind: viewport.kind, ...result });
-                expect(result.bodyScrollWidth).toBeLessThanOrEqual(viewport.width + 1);
 
+                await page.screenshot({
+                  path: `sonic-field-v3-1-renders/${tool}-${viewport.width}x${viewport.height}.png`,
+                  fullPage: false,
+                });
+
+                expect(result.bodyScrollWidth).toBeLessThanOrEqual(viewport.width + 1);
                 if (viewport.kind === "desktop") {
                   expect(result.sheetTop).toBeLessThan(175);
                   expect(result.bottomAir).toBeGreaterThanOrEqual(24);
@@ -90,11 +95,6 @@ jobs:
                     expect(result.canvasToAction).toBeLessThanOrEqual(190);
                   }
                 }
-
-                await page.screenshot({
-                  path: `sonic-field-v3-1-renders/${tool}-${viewport.width}x${viewport.height}.png`,
-                  fullPage: false,
-                });
               });
             }
           }
@@ -108,6 +108,7 @@ jobs:
           rm tests/browser/tmp-sonic-field-v3-1.spec.ts
 
       - uses: actions/upload-artifact@v7
+        if: always()
         with:
           name: sonic-field-v3-1-renders-${{ github.run_id }}
           path: sonic-field-v3-1-renders
