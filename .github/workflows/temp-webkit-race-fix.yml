@@ -26,6 +26,7 @@ jobs:
         run: pnpm install --frozen-lockfile
       - name: Static checks
         run: |
+          pnpm exec prettier --write tests/browser/audio-latency.spec.ts
           pnpm exec prettier --check tests/browser/audio-latency.spec.ts
           pnpm exec eslint tests/browser/audio-latency.spec.ts
           pnpm check
