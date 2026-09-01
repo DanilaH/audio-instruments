@@ -27,7 +27,7 @@ const { id, label = "Idle", state = "idle" } = Astro.props;
     align-items: center;
     gap: 8px;
     margin: 0;
-    color: var(--color-ink-muted);
+    color: var(--sonic-muted, var(--color-ink-muted));
     font-size: 0.9rem;
     font-weight: 750;
   }
@@ -41,7 +41,7 @@ const { id, label = "Idle", state = "idle" } = Astro.props;
   }
 
   .tool-status[data-state="playing"] {
-    color: var(--color-focus);
+    color: var(--sonic-signal, var(--color-focus));
   }
 
   .tool-status[data-state="playing"] .tool-status__dot {
@@ -49,6 +49,6 @@ const { id, label = "Idle", state = "idle" } = Astro.props;
   }
 
   .tool-status[data-state="error"] {
-    color: #9b2f2f;
+    color: var(--sonic-opposing, #9b2f2f);
   }
 </style>
