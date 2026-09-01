@@ -1,0 +1,35 @@
+name: Temporary Sonic Field Headphone check
+
+on:
+  push:
+    branches:
+      - feat/sonic-field-foundation-stress-trio
+    paths:
+      - .github/workflows/tmp-sonic-headphone-check.yml
+
+permissions:
+  contents: read
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Static checks
+        run: |
+          pnpm exec prettier --check src/tools/headphone-test/HeadphoneTest.astro src/components/feedback/ToolStatus.astro src/components/controls/LevelControl.astro
+          git diff --check origin/main...HEAD
+          pnpm check
+          pnpm build
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+      - name: Headphone browser regression
+        run: pnpm exec playwright test tests/browser/headphone-test.spec.ts tests/browser/headphone-layout.spec.ts --project=chromium
