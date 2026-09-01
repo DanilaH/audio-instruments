@@ -26,6 +26,8 @@ jobs:
       - run: pnpm build
       - run: node scripts/runtime-wiring-audit.mjs
       - run: pnpm exec playwright install --with-deps chromium
+      - name: Collect exact mode deltas
+        run: pnpm exec playwright test tests/browser/runtime-mode-delta-collector.spec.ts --project=chromium --workers=1 --reporter=line
       - name: Run geometry and interaction audit
         run: pnpm exec playwright test tests/browser/runtime-consistency-audit.spec.ts --project=chromium --workers=1 --reporter=line
 
