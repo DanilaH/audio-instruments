@@ -25,21 +25,22 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Remove synthetic Hearing ruler state
+      - name: Replace superseded purple focus token
         run: |
           python - <<'PY'
           from pathlib import Path
-          path = Path('src/tools/hearing-frequency/HearingFrequency.astro')
+          path = Path('src/styles/global.css')
           text = path.read_text()
-          synthetic = '''\n  .hearing-frequency-step:nth-child(8) i {\n    border-color: var(--sonic-current);\n  }\n'''
-          if synthetic not in text:
-              raise SystemExit('expected synthetic ruler-state block not found')
-          path.write_text(text.replace(synthetic, '\n'))
+          old = '--color-focus: #5d4ae8;'
+          new = '--color-focus: #0a6570;'
+          if old not in text:
+              raise SystemExit('expected legacy purple focus token not found')
+          path.write_text(text.replace(old, new, 1))
           PY
       - name: Format changed production sources and tests
         run: |
           pnpm exec prettier --write \
-            src/tools/hearing-frequency/HearingFrequency.astro \
+            src/styles/global.css \
             tests/browser/hearing-frequency-layout.spec.ts \
             tests/browser/sonic-field-production-layout.spec.ts
       - name: Commit deterministic cleanup if needed
@@ -47,8 +48,8 @@ jobs:
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add src/tools/hearing-frequency/HearingFrequency.astro tests/browser/hearing-frequency-layout.spec.ts tests/browser/sonic-field-production-layout.spec.ts
-            git commit -m "test: harden Sonic Field layout contracts"
+            git add src/styles/global.css tests/browser/hearing-frequency-layout.spec.ts tests/browser/sonic-field-production-layout.spec.ts
+            git commit -m "style: finalize Sonic Field foundation tokens"
             git push
           fi
       - name: Static checks
