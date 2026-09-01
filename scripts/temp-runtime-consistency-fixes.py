@@ -24,7 +24,7 @@ replace(
 replace(
     "src/tools/speaker-test/SpeakerTest.astro",
     """    .speaker-panel {\n      min-height: 118px;\n    }""",
-    """    .speaker-panel {\n      min-height: 168px;\n    }\n  }\n\n  @media (max-width: 340px) {\n    .speaker-panel {\n      min-height: 185px;\n    }""",
+    """    .speaker-panel {\n      min-height: 168px;\n    }\n  }\n\n  @media (max-width: 340px) {\n    .speaker-panel {\n      min-height: 194px;\n    }""",
 )
 
 # Headphone: reserve the actual mode-content area and tighten redundant bass copy.
@@ -41,7 +41,7 @@ replace(
 replace(
     "src/tools/headphone-test/HeadphoneTest.astro",
     """    .headphone-channel-hint,\n    .headphone-panel {\n      min-height: 112px;\n    }""",
-    """    .headphone-channel-hint,\n    .headphone-panel {\n      min-height: 170px;\n    }\n  }\n\n  @media (max-width: 340px) {\n    .headphone-channel-hint,\n    .headphone-panel {\n      min-height: 185px;\n    }""",
+    """    .headphone-channel-hint,\n    .headphone-panel {\n      min-height: 170px;\n    }\n  }\n\n  @media (max-width: 340px) {\n    .headphone-channel-hint,\n    .headphone-panel {\n      min-height: 194px;\n    }""",
 )
 
 # Bass: single-tone is already the tallest state; preserve that footprint for other modes.
@@ -75,7 +75,7 @@ replace(
 replace(
     "src/tools/noise-generator/NoiseGenerator.astro",
     """  .noise-long-reminder {\n    display: flex;\n    align-items: center;\n    gap: 7px;\n    margin-top: 7px;\n    padding: 8px 10px;""",
-    """  .noise-long-reminder-slot {\n    display: grid;\n    min-height: 31px;\n    padding-top: 7px;\n  }\n\n  .noise-long-reminder {\n    display: flex;\n    align-items: center;\n    gap: 7px;\n    margin: 0;\n    padding: 8px 10px;""",
+    """  .noise-long-reminder-slot {\n    display: grid;\n    min-height: 41px;\n    padding-top: 7px;\n  }\n\n  .noise-long-reminder {\n    display: flex;\n    align-items: center;\n    gap: 7px;\n    margin: 0;\n    padding: 8px 10px;""",
 )
 replace(
     "src/tools/noise-generator/NoiseGenerator.astro",
