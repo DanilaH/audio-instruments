@@ -1,0 +1,216 @@
+name: Temporary Reference Instrument Prototype
+
+on:
+  push:
+    branches:
+      - prototype/reference-instrument-v1
+    paths:
+      - .github/workflows/tmp-reference-instrument-prototype.yml
+
+permissions:
+  contents: write
+
+jobs:
+  prototype:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - name: Checkout prototype branch
+        uses: actions/checkout@v7
+        with:
+          ref: prototype/reference-instrument-v1
+          fetch-depth: 0
+
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Apply Reference Instrument prototype
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace(path_str, old, new):
+              path = Path(path_str)
+              text = path.read_text(encoding="utf-8")
+              if old not in text:
+                  raise SystemExit(f"target missing in {path_str}: {old[:80]!r}")
+              path.write_text(text.replace(old, new, 1), encoding="utf-8")
+
+          def append_before_last_style(path_str, css):
+              path = Path(path_str)
+              text = path.read_text(encoding="utf-8")
+              marker = "  /* Reference Instrument prototype */"
+              if marker in text:
+                  return
+              head, sep, tail = text.rpartition("</style>")
+              if not sep:
+                  raise SystemExit(f"style close missing in {path_str}")
+              path.write_text(head + "\n" + css.rstrip() + "\n</style>" + tail, encoding="utf-8")
+
+          # Shared palette and geometry: neutral chassis, sparse functional color.
+          replace(
+              "src/styles/global.css",
+              """  --color-bg: #faf7f2;\n  --color-surface: #fffdfc;\n  --color-surface-alt: #f4f0ff;\n  --color-ink: #1f2430;\n  --color-ink-muted: #5f6675;\n  --color-border: #e8e3dc;\n  --color-lavender: #8f7cff;\n  --color-blue: #67a7ff;\n  --color-mint: #66d1b2;\n  --color-peach: #ffb58d;\n  --color-yellow: #ffd76a;\n  --color-focus: #5d4ae8;\n  --page-width: 1180px;\n  --radius-control: 12px;\n  --radius-button: 16px;\n  --radius-card: 24px;\n  --shadow-soft: 0 24px 70px rgb(31 36 48 / 0.08);""",
+              """  --color-bg: #f1f0eb;\n  --color-surface: #fbfbf8;\n  --color-surface-alt: #e9ebe7;\n  --color-ink: #20231f;\n  --color-ink-muted: #626760;\n  --color-border: #cfd2cc;\n  --color-border-strong: #9fa59f;\n  --color-lavender: #167a86;\n  --color-blue: #167a86;\n  --color-mint: #4d7d68;\n  --color-peach: #9a6748;\n  --color-yellow: #a57824;\n  --color-focus: #0f6670;\n  --color-signal: #167a86;\n  --color-signal-soft: #dcebed;\n  --color-caution: #8e651b;\n  --color-caution-soft: #f2e8cf;\n  --color-danger: #a54238;\n  --page-width: 1180px;\n  --radius-control: 6px;\n  --radius-button: 6px;\n  --radius-card: 12px;\n  --shadow-soft: 0 8px 22px rgb(32 35 31 / 0.05);""",
+          )
+          append_before_last_style = append_before_last_style
+          global_path = Path("src/styles/global.css")
+          global_text = global_path.read_text(encoding="utf-8")
+          global_text += """\n\n/* Reference Instrument prototype */\n.site-header { padding: 12px 0 8px; }\n.brand__mark { border-radius: 6px; background: #e4e7e2; }\n.eyebrow { color: var(--color-ink-muted); }\n"""
+          global_path.write_text(global_text, encoding="utf-8")
+
+          # Compact tool identity; the tool, not the marketing header, owns the viewport.
+          replace("src/components/layout/ToolShell.astro", "padding: clamp(34px, 5vw, 64px) 0 88px;", "padding: 18px 0 64px;")
+          replace("src/components/layout/ToolShell.astro", "max-width: 780px;\n    margin-bottom: clamp(24px, 4vw, 40px);", "max-width: 920px;\n    margin-bottom: 18px;")
+          replace("src/components/layout/ToolShell.astro", "font-size: clamp(2.8rem, 6.5vw, 5.6rem);", "font-size: clamp(2.25rem, 3.8vw, 3.4rem);\n    letter-spacing: -0.035em;")
+          replace("src/components/layout/ToolShell.astro", "margin: 20px 0 0;\n    color: var(--color-ink-muted);\n    font-size: clamp(1rem, 1.5vw, 1.18rem);\n    line-height: 1.65;", "margin: 8px 0 0;\n    color: var(--color-ink-muted);\n    font-size: clamp(0.94rem, 1.2vw, 1.04rem);\n    line-height: 1.5;")
+          replace("src/components/layout/ToolShell.astro", "font-size: 3rem;", "font-size: 2.65rem;")
+          replace("src/components/layout/ToolShell.astro", "font-size: 2.2rem;", "font-size: 2rem;")
+          append_before_last_style(
+              "src/components/layout/ToolShell.astro",
+              """  /* Reference Instrument prototype */\n  .tool-shell__header .eyebrow {\n    margin-bottom: 7px;\n    color: var(--color-ink-muted);\n    font-size: 0.68rem;\n    letter-spacing: 0.08em;\n  }""",
+          )
+
+          # Single neutral instrument chassis.
+          surface = Path("src/components/layout/InstrumentSurface.astro")
+          s = surface.read_text(encoding="utf-8")
+          start = s.index("<style>")
+          end = s.index("</style>", start) + len("</style>")
+          new_style = """<style>\n  .instrument-surface {\n    position: relative;\n    overflow: hidden;\n    border: 1px solid var(--color-border);\n    border-radius: 12px;\n    background: var(--color-surface);\n    box-shadow: var(--shadow-soft);\n  }\n\n  @media (max-width: 520px) {\n    .instrument-surface {\n      border-radius: 8px;\n    }\n  }\n</style>"""
+          surface.write_text(s[:start] + new_style + s[end:], encoding="utf-8")
+
+          # Smaller, quieter state marking.
+          replace("src/components/feedback/ToolStatus.astro", "min-height: 36px;", "min-height: 28px;")
+          replace("src/components/feedback/ToolStatus.astro", "font-size: 0.9rem;", "font-size: 0.78rem;")
+          replace("src/components/feedback/ToolStatus.astro", "width: 9px;\n    height: 9px;", "width: 7px;\n    height: 7px;")
+
+          # Decibel Meter: collapse optional calibration and make measurement the visual center.
+          replace(
+              "src/tools/decibel-meter/DecibelMeter.astro",
+              """        <section class=\"db-calibration\" aria-labelledby=\"db-calibration-title\">\n          <div class=\"db-calibration__heading\">\n            <div>\n              <p class=\"db-eyebrow\">Optional</p>\n              <h3 id=\"db-calibration-title\">One-point reference calibration</h3>\n            </div>\n            <span data-db-estimate-badge>Uncalibrated</span>\n          </div>\n""",
+              """        <details class=\"db-calibration\">\n          <summary class=\"db-calibration__summary\">\n            <span>\n              <span class=\"db-eyebrow\">Optional</span>\n              <strong id=\"db-calibration-title\">Reference calibration</strong>\n            </span>\n            <span data-db-estimate-badge>Uncalibrated</span>\n          </summary>\n          <div class=\"db-calibration__body\">\n""",
+          )
+          replace(
+              "src/tools/decibel-meter/DecibelMeter.astro",
+              """          <div class=\"db-calibration__limit\">\n            <i class=\"ph ph-info\" aria-hidden=\"true\"></i>\n            <p>\n              One-point reference calibration. This does not calibrate\n              microphone frequency response. Recalibrate after changing\n              microphone, system input gain, processing, position or reference\n              conditions. The browser measurement chain is not claimed to be\n              true Z-weighted or unweighted.\n            </p>\n          </div>\n        </section>\n""",
+              """          <div class=\"db-calibration__limit\">\n            <i class=\"ph ph-info\" aria-hidden=\"true\"></i>\n            <p>\n              One-point reference calibration. This does not calibrate\n              microphone frequency response. Recalibrate after changing\n              microphone, system input gain, processing, position or reference\n              conditions. The browser measurement chain is not claimed to be\n              true Z-weighted or unweighted.\n            </p>\n          </div>\n          </div>\n        </details>\n""",
+          )
+          replace(
+              "src/tools/decibel-meter/DecibelMeter.astro",
+              """            <strong>Microphone permission is requested only after Start.</strong\n            >\n            <p>\n              Audio stays local to this browser session. The live microphone is\n              never connected to speaker output.\n            </p>""",
+              """            <strong>Microphone access starts only after Start.</strong>\n            <p>Audio stays local and is never routed to speaker output.</p>""",
+          )
+          append_before_last_style(
+              "src/tools/decibel-meter/DecibelMeter.astro",
+              """  /* Reference Instrument prototype */\n  .db-instrument {\n    grid-template-columns: minmax(0, 1.14fr) minmax(360px, 0.86fr);\n    min-height: 470px;\n  }\n  .db-monitor, .db-controls { padding: 20px 22px; }\n  .db-monitor {\n    gap: 12px;\n    background: #e9ebe7;\n    border-color: var(--color-border);\n  }\n  .db-controls { gap: 10px; background: #fbfbf8; }\n  .db-primary-readout {\n    min-height: 172px;\n    padding: 18px;\n    border-color: var(--color-border-strong);\n    border-radius: 6px;\n    background: #f7f8f4;\n  }\n  .db-primary-readout strong { font-size: clamp(3.2rem, 5vw, 4.7rem); }\n  .db-meter__track { height: 14px; border-radius: 3px; background: #f8f9f5; }\n  .db-meter__fill { border-radius: 2px; background: var(--color-signal); }\n  .db-secondary-readout { border-radius: 4px; background: transparent; }\n  .db-permission {\n    padding: 8px 0;\n    border-top: 1px solid var(--color-border);\n    border-bottom: 1px solid var(--color-border);\n    border-radius: 0;\n    background: transparent;\n  }\n  .db-permission > i { color: var(--color-signal); }\n  .db-start, .db-stop, .db-calibrate,\n  .db-field select, .db-reference-input input { border-radius: 4px; }\n  .db-calibration {\n    padding: 0;\n    overflow: hidden;\n    border-radius: 6px;\n    background: #f4f5f1;\n  }\n  .db-calibration__summary {\n    display: flex;\n    align-items: center;\n    justify-content: space-between;\n    gap: 12px;\n    padding: 11px 12px;\n    cursor: pointer;\n    list-style: none;\n  }\n  .db-calibration__summary::-webkit-details-marker { display: none; }\n  .db-calibration__summary > span:first-child { display: grid; gap: 2px; }\n  .db-calibration__summary strong { font-size: 0.88rem; }\n  .db-calibration__body {\n    display: grid;\n    gap: 10px;\n    padding: 11px 12px 12px;\n    border-top: 1px solid var(--color-border);\n  }\n  .db-calibration__limit {\n    padding: 9px 0 0;\n    border-top: 1px solid var(--color-border);\n    border-radius: 0;\n    background: transparent;\n  }\n  .db-details { border-radius: 5px; }\n  @media (max-width: 900px) { .db-instrument { min-height: 0; } }""",
+          )
+
+          # Headphone: neutral spatial module, no animated cup jumping, restrained signal state.
+          append_before_last_style(
+              "src/tools/headphone-test/HeadphoneTest.astro",
+              """  /* Reference Instrument prototype */\n  .headphone-instrument {\n    grid-template-columns: minmax(0, 0.98fr) minmax(430px, 1.02fr);\n    min-height: 390px;\n  }\n  .headphone-visual, .headphone-controls { padding: 20px 22px; }\n  .headphone-visual { background: #e9ebe7; border-color: var(--color-border); }\n  .headphone-controls { gap: 8px; background: #fbfbf8; }\n  .headphone-stage { margin: 10px auto 5px; }\n  .headphone-band { border-color: #c5cbc6; }\n  .headphone-cup {\n    border-radius: 12px;\n    background: #f7f8f4;\n    box-shadow: none;\n    transition: border-color 140ms ease, background-color 140ms ease, color 140ms ease;\n  }\n  [data-headphone-visual=\"left\"] .headphone-cup--left,\n  [data-headphone-visual=\"right\"] .headphone-cup--right,\n  [data-headphone-visual=\"both\"] .headphone-cup,\n  [data-headphone-visual=\"phase-in\"] .headphone-cup,\n  [data-headphone-visual=\"phase-inverted\"] .headphone-cup,\n  [data-headphone-visual=\"sweep\"] .headphone-cup,\n  [data-headphone-visual=\"bass\"] .headphone-cup {\n    transform: none;\n    border-color: var(--color-signal);\n    background: #eef5f5;\n    color: #115f68;\n  }\n  [data-headphone-visual=\"phase-inverted\"] .headphone-cup--right {\n    transform: none;\n    outline: 2px dashed var(--color-danger);\n    outline-offset: -5px;\n  }\n  .headphone-signal { background: var(--color-signal); color: #fff; }\n  .headphone-range i { border-radius: 0; background: #aeb8b3; }\n  .headphone-modes {\n    gap: 1px;\n    padding: 2px;\n    border-radius: 6px;\n    background: #dfe2dd;\n  }\n  .headphone-modes button { min-height: 42px; border-radius: 4px; font-weight: 720; }\n  .headphone-modes button[aria-pressed=\"true\"] {\n    background: #fff;\n    box-shadow: inset 0 -2px 0 var(--color-signal);\n  }\n  .headphone-safety {\n    padding: 7px 0;\n    border-top: 1px solid #d8c79c;\n    border-bottom: 1px solid #d8c79c;\n    border-radius: 0;\n    background: transparent;\n  }\n  .headphone-safety > i { color: var(--color-caution); }\n  .headphone-channel-hint, .headphone-panel { min-height: 150px; padding: 10px 0; }\n  .headphone-actions button, .headphone-primary, .headphone-stop, .headphone-field input { border-radius: 4px; }\n  .headphone-actions button[aria-pressed=\"true\"] {\n    border-color: var(--color-signal);\n    background: var(--color-signal-soft);\n  }\n  .headphone-footer { padding-top: 7px; }\n  @media (max-width: 940px) { .headphone-instrument { min-height: 0; } }\n  @media (max-width: 560px) {\n    .headphone-cup { border-radius: 8px; }\n    .headphone-channel-hint, .headphone-panel { min-height: 170px; padding-block: 8px; }\n  }""",
+          )
+
+          # Spectrum Analyzer: data-first neutral display and quieter chrome.
+          replace(
+              "src/tools/spectrum-analyzer/SpectrumAnalyzer.astro",
+              """            <strong>Microphone permission is requested only after Start.</strong\n            >\n            <p>\n              The live input is analyzed locally in the browser. No microphone\n              branch is connected to speaker output.\n            </p>""",
+              """            <strong>Microphone access starts only after Start.</strong>\n            <p>Analysis stays local; microphone audio is not routed to speakers.</p>""",
+          )
+          append_before_last_style(
+              "src/tools/spectrum-analyzer/SpectrumAnalyzer.astro",
+              """  /* Reference Instrument prototype */\n  .spectrum-instrument {\n    grid-template-columns: minmax(0, 1.34fr) minmax(330px, 0.66fr);\n    min-height: 470px;\n  }\n  .spectrum-monitor, .spectrum-controls { padding: 20px 22px; }\n  .spectrum-monitor {\n    grid-template-rows: auto minmax(300px, 1fr) auto;\n    gap: 10px;\n    background: #e9ebe7;\n    border-color: var(--color-border);\n  }\n  .spectrum-controls { gap: 10px; background: #fbfbf8; }\n  .spectrum-canvas-wrap {\n    min-height: 300px;\n    border-color: var(--color-border-strong);\n    border-radius: 6px;\n    background:\n      repeating-linear-gradient(90deg, transparent 0 59px, rgb(32 35 31 / 0.055) 60px),\n      repeating-linear-gradient(0deg, transparent 0 39px, rgb(32 35 31 / 0.045) 40px),\n      #f5f6f2;\n    box-shadow: none;\n  }\n  .spectrum-readout { border-radius: 4px; background: transparent; }\n  .spectrum-permission, .spectrum-claim-note {\n    padding: 8px 0;\n    border-top: 1px solid var(--color-border);\n    border-bottom: 1px solid var(--color-border);\n    border-radius: 0;\n    background: transparent;\n  }\n  .spectrum-permission > i, .spectrum-claim-note > i { color: var(--color-signal); }\n  .spectrum-start, .spectrum-stop, .spectrum-view-switch button, .spectrum-field select { border-radius: 4px; }\n  .spectrum-view-switch { gap: 1px; padding: 2px; border: 1px solid var(--color-border); background: #dfe2dd; }\n  .spectrum-view-switch button { border-color: transparent; background: transparent; }\n  .spectrum-view-switch button[aria-pressed=\"true\"] {\n    border-color: transparent;\n    background: #fff;\n    box-shadow: inset 0 -2px 0 var(--color-signal);\n  }\n  .spectrum-details { border-radius: 4px; }\n  @media (max-width: 900px) { .spectrum-instrument { min-height: 0; } }""",
+          )
+          PY
+
+      - name: Format and validate prototype
+        run: |
+          pnpm exec prettier --write \
+            src/styles/global.css \
+            src/components/layout/ToolShell.astro \
+            src/components/layout/InstrumentSurface.astro \
+            src/components/feedback/ToolStatus.astro \
+            src/tools/headphone-test/HeadphoneTest.astro \
+            src/tools/decibel-meter/DecibelMeter.astro \
+            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+          git diff --check
+          pnpm check
+          pnpm build
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Capture prototype screenshots
+        run: |
+          cat > tests/browser/tmp-reference-instrument-screenshots.spec.ts <<'EOF'
+          import { test } from "@playwright/test";
+          import { mkdir } from "node:fs/promises";
+
+          const output = "prototype-screenshots";
+
+          test.beforeAll(async () => {
+            await mkdir(output, { recursive: true });
+          });
+
+          const desktop = { width: 1366, height: 768 };
+          const mobile = { width: 390, height: 844 };
+          const pages = [
+            ["headphone", "/headphone-test"],
+            ["decibel", "/decibel-meter"],
+            ["spectrum", "/spectrum-analyzer"],
+          ] as const;
+
+          for (const [name, route] of pages) {
+            test(`${name} desktop`, async ({ page }) => {
+              await page.setViewportSize(desktop);
+              await page.goto(route);
+              await page.screenshot({ path: `${output}/${name}-1366x768.png`, fullPage: false });
+            });
+
+            test(`${name} mobile`, async ({ page }) => {
+              await page.setViewportSize(mobile);
+              await page.goto(route);
+              await page.screenshot({ path: `${output}/${name}-390x844.png`, fullPage: false });
+            });
+          }
+
+          test("headphone sweep desktop", async ({ page }) => {
+            await page.setViewportSize(desktop);
+            await page.goto("/headphone-test");
+            await page.locator('[data-headphone-mode="sweep"]').click();
+            await page.screenshot({ path: `${output}/headphone-sweep-1366x768.png`, fullPage: false });
+          });
+          EOF
+          pnpm exec playwright test tests/browser/tmp-reference-instrument-screenshots.spec.ts --project=chromium --workers=1 --reporter=line
+          rm tests/browser/tmp-reference-instrument-screenshots.spec.ts
+
+      - name: Upload prototype screenshots
+        uses: actions/upload-artifact@v7
+        with:
+          name: reference-instrument-prototype-${{ github.run_id }}
+          path: prototype-screenshots
+          if-no-files-found: error
+          retention-days: 14
+
+      - name: Commit prototype files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/styles/global.css \
+            src/components/layout/ToolShell.astro \
+            src/components/layout/InstrumentSurface.astro \
+            src/components/feedback/ToolStatus.astro \
+            src/tools/headphone-test/HeadphoneTest.astro \
+            src/tools/decibel-meter/DecibelMeter.astro \
+            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
+          git commit -m "prototype: explore Reference Instrument visual system"
+          git push origin HEAD:prototype/reference-instrument-v1
