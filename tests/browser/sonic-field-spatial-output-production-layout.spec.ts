@@ -17,10 +17,7 @@ const mobileViewports = [
 ] as const;
 
 type SpatialRoute =
-  | "/speaker-test"
-  | "/stereo-test"
-  | "/surround-sound-test"
-  | "/phase-test";
+  "/speaker-test" | "/stereo-test" | "/surround-sound-test" | "/phase-test";
 
 async function expectNoHorizontalOverflow(page: Page): Promise<void> {
   const metrics = await page.evaluate(() => ({
@@ -109,7 +106,10 @@ async function installExactFiveOneContext(page: Page): Promise<void> {
   });
 }
 
-async function openChallengeState(page: Page, route: SpatialRoute): Promise<void> {
+async function openChallengeState(
+  page: Page,
+  route: SpatialRoute,
+): Promise<void> {
   if (route === "/surround-sound-test") {
     await installExactFiveOneContext(page);
   }
@@ -117,7 +117,9 @@ async function openChallengeState(page: Page, route: SpatialRoute): Promise<void
   await page.goto(route);
 
   if (route === "/speaker-test") {
-    await page.getByRole("button", { name: "Bass / rattle", exact: true }).click();
+    await page
+      .getByRole("button", { name: "Bass / rattle", exact: true })
+      .click();
     await expect(
       page.getByRole("button", { name: "Run bass / rattle sweep" }),
     ).toBeVisible();
@@ -133,7 +135,9 @@ async function openChallengeState(page: Page, route: SpatialRoute): Promise<void
 
   if (route === "/surround-sound-test") {
     await page.getByRole("button", { name: "Check surround support" }).click();
-    await expect(page.getByRole("button", { name: "Front Left" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Front Left" }),
+    ).toBeVisible();
     return;
   }
 
