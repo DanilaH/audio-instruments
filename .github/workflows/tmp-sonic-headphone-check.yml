@@ -25,25 +25,49 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Flatten Spectrum view rail
+      - name: Move secondary Spectrum notes outside chassis
         run: |
           python - <<'PY'
           from pathlib import Path
           path = Path('src/tools/spectrum-analyzer/SpectrumAnalyzer.astro')
           text = path.read_text()
-          old = '''  .spectrum-view-switch {\n    display: grid;\n    grid-template-columns: 1fr;\n    gap: 5px;\n    margin-top: 7px;\n  }'''
-          new = '''  .spectrum-view-switch {\n    display: grid;\n    grid-template-columns: repeat(3, minmax(0, 1fr));\n    gap: 5px;\n    margin-top: 7px;\n  }'''
-          if old not in text:
-              raise SystemExit('expected Spectrum view-switch block not found')
-          path.write_text(text.replace(old, new, 1))
+
+          old_markup = '''    <div class="spectrum-state-strip">\n      <strong>Local input</strong>\n      <p>\n        Microphone permission is requested only after Start. The live input is\n        analyzed locally in the browser and is never connected to speaker\n        output.\n      </p>\n    </div>\n\n    <div class="spectrum-claim-note">\n      <strong>Relative data</strong>\n      <p>\n        Frequency values are relative FFT-bin data from the browser stream. This\n        tool does not measure calibrated frequency response, acoustic SPL, or\n        musical pitch.\n      </p>\n    </div>\n\n    <p class="spectrum-error" data-spectrum-error role="alert" hidden></p>\n  </SonicInstrument>\n</div>'''
+
+          new_markup = '''    <p class="spectrum-error" data-spectrum-error role="alert" hidden></p>\n  </SonicInstrument>\n\n  <aside class="spectrum-reference-notes" aria-label="Spectrum Analyzer reference notes">\n    <p>\n      <strong>Local input.</strong> Microphone permission is requested only after\n      Start; live input is analyzed locally and is never connected to speaker\n      output.\n    </p>\n    <p>\n      <strong>Relative data.</strong> FFT-bin values are not calibrated frequency\n      response, acoustic SPL, or musical pitch.\n    </p>\n  </aside>\n</div>'''
+
+          if old_markup not in text:
+              raise SystemExit('expected Spectrum note markup not found')
+          text = text.replace(old_markup, new_markup, 1)
+
+          old_css = '''  .spectrum-state-strip,\n  .spectrum-claim-note {\n    display: grid;\n    grid-template-columns: 92px minmax(0, 1fr);\n    gap: 12px;\n    padding: 8px 18px;\n  }\n\n  .spectrum-state-strip {\n    border-bottom: 1px solid var(--sonic-border-soft);\n  }\n\n  .spectrum-state-strip strong,\n  .spectrum-claim-note strong {\n    font-size: 0.68rem;\n    letter-spacing: 0.06em;\n    text-transform: uppercase;\n  }\n\n  .spectrum-state-strip strong {\n    color: var(--sonic-signal);\n  }\n\n  .spectrum-claim-note strong {\n    color: var(--sonic-current);\n  }\n\n  .spectrum-state-strip p,\n  .spectrum-claim-note p {\n    margin: 0;\n    color: var(--sonic-muted);\n    font-size: 0.7rem;\n    line-height: 1.35;\n  }'''
+
+          new_css = '''  .spectrum-reference-notes {\n    display: grid;\n    grid-template-columns: repeat(2, minmax(0, 1fr));\n    gap: 12px 24px;\n    margin-top: 10px;\n    padding: 0 2px;\n    color: var(--color-ink-muted);\n  }\n\n  .spectrum-reference-notes p {\n    margin: 0;\n    font-size: 0.72rem;\n    line-height: 1.4;\n  }\n\n  .spectrum-reference-notes strong {\n    color: var(--color-ink);\n    font-weight: 800;\n  }'''
+
+          if old_css not in text:
+              raise SystemExit('expected Spectrum note CSS not found')
+          text = text.replace(old_css, new_css, 1)
+
+          compact_old = '''    .spectrum-state-strip,\n    .spectrum-claim-note {\n      padding-block: 6px;\n    }'''
+          if compact_old not in text:
+              raise SystemExit('expected compact Spectrum strip CSS not found')
+          text = text.replace(compact_old, '', 1)
+
+          mobile_old = '''    .spectrum-state-strip,\n    .spectrum-claim-note {\n      grid-template-columns: 1fr;\n      gap: 2px;\n      padding-inline: 14px;\n    }'''
+          mobile_new = '''    .spectrum-reference-notes {\n      grid-template-columns: 1fr;\n      gap: 5px;\n      margin-top: 8px;\n    }'''
+          if mobile_old not in text:
+              raise SystemExit('expected mobile Spectrum strip CSS not found')
+          text = text.replace(mobile_old, mobile_new, 1)
+
+          path.write_text(text)
           PY
       - run: pnpm exec prettier --write src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
-      - name: Commit Spectrum rail compaction
+      - name: Commit Spectrum hierarchy fix
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
-          git commit -m "fix: compact Spectrum view controls"
+          git commit -m "fix: move Spectrum reference notes below instrument"
           git push
       - name: Static checks
         run: |
