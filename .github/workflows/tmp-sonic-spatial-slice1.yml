@@ -1,4 +1,4 @@
-name: Temporary Sonic Field spatial slice 2 retry
+name: Temporary Sonic Field PR2 acceptance QA
 
 on:
   push:
@@ -6,12 +6,15 @@ on:
       - feat/sonic-field-spatial-output-family
     paths:
       - .github/workflows/tmp-sonic-spatial-slice1.yml
-
-permissions:
-  contents: write
+      - tests/browser/tmp-sonic-spatial-screenshot-qa.spec.ts
+      - tests/browser/sonic-field-spatial-output-production-layout.spec.ts
+      - src/tools/speaker-test/**
+      - src/tools/stereo-test/**
+      - src/tools/surround-sound-test/**
+      - src/tools/phase-test/**
 
 jobs:
-  migrate-and-verify:
+  acceptance-qa:
     runs-on: ubuntu-24.04
     timeout-minutes: 35
     steps:
@@ -23,48 +26,15 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Apply Surround and Phase Sonic Field migration
-        run: python .github/tmp-sonic-spatial-slice1.py
-      - name: Isolate Phase visual geometry contract from audio lifecycle
-        run: |
-          python - <<'PY'
-          from pathlib import Path
-          import re
-
-          path = Path("tests/browser/stereo-phase-layout.spec.ts")
-          text = path.read_text()
-          pattern = re.compile(
-              r'''await page\.getByRole\("button", \{ name: "In phase" \}\)\.click\(\);\s*'''
-              r'''const inPhase = await stage\.boundingBox\(\);\s*'''
-              r'''await page\.getByRole\("button", \{ name: "Inverted" \}\)\.click\(\);'''
-          )
-          replacement = '''const phaseRoot = page.locator("[data-phase-test]");
-            await phaseRoot.evaluate((element) => {
-              element.setAttribute("data-phase-mode", "in-phase");
-            });
-            const inPhase = await stage.boundingBox();
-            await phaseRoot.evaluate((element) => {
-              element.setAttribute("data-phase-mode", "inverted");
-            });'''
-          text, count = pattern.subn(replacement, text, count=1)
-          if count != 1:
-              raise SystemExit(f"Phase visual-state sequencing match count: {count}")
-          text = text.replace(
-              'test("Phase uses one stable Sonic Field relationship stage across polarity changes",',
-              'test("Phase visual polarity states keep one stable Sonic Field relationship stage",',
-              1,
-          )
-          path.write_text(text)
-          PY
-      - run: pnpm exec prettier --write src/tools/surround-sound-test/SurroundSoundTest.astro src/tools/phase-test/PhaseTest.astro tests/browser/surround-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
+      - run: pnpm exec prettier --check tests/browser/sonic-field-spatial-output-production-layout.spec.ts tests/browser/tmp-sonic-spatial-screenshot-qa.spec.ts
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
-      - name: Verify Surround and Phase migration
-        run: pnpm exec playwright test tests/browser/surround-layout.spec.ts tests/browser/surround-test.spec.ts tests/browser/stereo-phase-layout.spec.ts tests/browser/stereo-phase.spec.ts --project=chromium --project=firefox --project=webkit
-      - name: Commit verified spatial slice
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/tools/surround-sound-test/SurroundSoundTest.astro src/tools/phase-test/PhaseTest.astro tests/browser/surround-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
-          git commit -m "feat: migrate Surround and Phase to Sonic Field"
-          git push origin HEAD:feat/sonic-field-spatial-output-family
+      - name: Verify PR2 production viewport acceptance
+        run: pnpm exec playwright test tests/browser/sonic-field-spatial-output-production-layout.spec.ts --project=chromium --project=firefox --project=webkit
+      - name: Capture PR2 Chromium perceptual QA
+        run: pnpm exec playwright test tests/browser/tmp-sonic-spatial-screenshot-qa.spec.ts --project=chromium
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sonic-field-pr2-screenshot-qa
+          path: artifacts/spatial-output-screenshots
+          if-no-files-found: error
