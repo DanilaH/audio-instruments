@@ -29,19 +29,24 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
+          import re
+
           path = Path("tests/browser/stereo-phase-layout.spec.ts")
           text = path.read_text()
-          old = '''  await page.getByRole("button", { name: "In phase" }).click();
-          const inPhase = await stage.boundingBox();
-          await page.getByRole("button", { name: "Inverted" }).click();'''
-          new = '''  await page.getByRole("button", { name: "In phase" }).click();
-          const inPhase = await stage.boundingBox();
-          const invertedButton = page.getByRole("button", { name: "Inverted" });
-          await expect(invertedButton).toBeEnabled();
-          await invertedButton.click();'''
-          if old not in text:
-              raise SystemExit("Phase perceptual sequencing anchor not found")
-          path.write_text(text.replace(old, new, 1))
+          pattern = re.compile(
+              r'''await page\.getByRole\("button", \{ name: "In phase" \}\)\.click\(\);\s*'''
+              r'''const inPhase = await stage\.boundingBox\(\);\s*'''
+              r'''await page\.getByRole\("button", \{ name: "Inverted" \}\)\.click\(\);'''
+          )
+          replacement = '''await page.getByRole("button", { name: "In phase" }).click();
+            const inPhase = await stage.boundingBox();
+            const invertedButton = page.getByRole("button", { name: "Inverted" });
+            await expect(invertedButton).toBeEnabled();
+            await invertedButton.click();'''
+          text, count = pattern.subn(replacement, text, count=1)
+          if count != 1:
+              raise SystemExit(f"Phase perceptual sequencing match count: {count}")
+          path.write_text(text)
           PY
       - run: pnpm exec prettier --write src/tools/surround-sound-test/SurroundSoundTest.astro src/tools/phase-test/PhaseTest.astro tests/browser/surround-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
       - run: pnpm build
