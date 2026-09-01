@@ -1,4 +1,4 @@
-name: Temporary Sonic Field stress-trio check
+name: Temporary Sonic Field production layout check
 
 on:
   push:
@@ -13,7 +13,7 @@ permissions:
 jobs:
   validate:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@v7
         with:
@@ -25,25 +25,30 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Format stress-trio sources
+      - name: Remove synthetic Hearing ruler state
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+          path = Path('src/tools/hearing-frequency/HearingFrequency.astro')
+          text = path.read_text()
+          synthetic = '''\n  .hearing-frequency-step:nth-child(8) i {\n    border-color: var(--sonic-current);\n  }\n'''
+          if synthetic not in text:
+              raise SystemExit('expected synthetic ruler-state block not found')
+          path.write_text(text.replace(synthetic, '\n'))
+          PY
+      - name: Format changed production sources and tests
         run: |
           pnpm exec prettier --write \
-            src/components/layout/ToolShell.astro \
-            src/components/layout/SonicInstrument.astro \
-            src/components/feedback/ToolStatus.astro \
-            src/components/feedback/CapabilityNotice.astro \
-            src/components/controls/LevelControl.astro \
-            src/components/controls/ModePills.astro \
-            src/tools/headphone-test/HeadphoneTest.astro \
-            src/tools/spectrum-analyzer/SpectrumAnalyzer.astro \
-            src/tools/hearing-frequency/HearingFrequency.astro
-      - name: Commit formatting if needed
+            src/tools/hearing-frequency/HearingFrequency.astro \
+            tests/browser/hearing-frequency-layout.spec.ts \
+            tests/browser/sonic-field-production-layout.spec.ts
+      - name: Commit deterministic cleanup if needed
         run: |
           if ! git diff --quiet; then
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-            git add src/components src/tools/headphone-test/HeadphoneTest.astro src/tools/spectrum-analyzer/SpectrumAnalyzer.astro src/tools/hearing-frequency/HearingFrequency.astro
-            git commit -m "style: format Sonic Field stress trio"
+            git add src/tools/hearing-frequency/HearingFrequency.astro tests/browser/hearing-frequency-layout.spec.ts tests/browser/sonic-field-production-layout.spec.ts
+            git commit -m "test: harden Sonic Field layout contracts"
             git push
           fi
       - name: Static checks
@@ -53,7 +58,7 @@ jobs:
           pnpm build
       - name: Install Chromium
         run: pnpm exec playwright install --with-deps chromium
-      - name: Stress-trio browser regression
+      - name: Existing stress-trio behavior regressions
         run: |
           pnpm exec playwright test \
             tests/browser/headphone-test.spec.ts \
@@ -64,3 +69,5 @@ jobs:
             tests/browser/hearing-frequency-layout.spec.ts \
             tests/browser/hearing-frequency-stop-boundary.spec.ts \
             --project=chromium
+      - name: Sonic Field production layout gates
+        run: pnpm exec playwright test tests/browser/sonic-field-production-layout.spec.ts --project=chromium
