@@ -25,6 +25,19 @@ The production language is:
 
 The direction must remain visibly distinct from Hardware Testing. A design that can be transplanted to a mouse/keyboard tester with only label changes is a failure.
 
+### 1.1 Source-of-truth precedence during migration
+
+The current `docs/04_VISUAL_SYSTEM.md` still describes the superseded **Soft Sonic Studio** direction. It conflicts with this migration plan on palette, radii, motion, surfaces and per-tool accents.
+
+Until PR1 updates the canonical visual-system docs:
+
+1. this document is authoritative for Sonic Field migration decisions;
+2. existing measurement/safety/browser/architecture contracts remain authoritative where they do not conflict with visual styling;
+3. PR1 must update `04_VISUAL_SYSTEM.md` to the accepted Sonic Field direction;
+4. PR1 must update `05_UX_UI.md` where the viewport gates/shared primitive inventory changed.
+
+Do not leave two active visual systems in the merged production documentation.
+
 ## 2. Non-negotiable visual rules
 
 ### 2.1 Color
@@ -43,6 +56,8 @@ Do not restore:
 - per-tool pastel accent surfaces;
 - decorative gradients/glow blobs;
 - color merely to distinguish panels.
+
+The current purple focus token is not grandfathered in. PR1 must replace it with a non-purple focus treatment that remains clearly visible and meets the existing contrast/accessibility contract. Pick the final treatment by rendered contrast/visibility, not by palette fashion.
 
 ### 2.2 Geometry
 
@@ -86,6 +101,18 @@ Keep motion that communicates audio:
 
 A mode change must not move the stable visual stage unless the movement itself represents the audio state.
 
+### 2.5 Signal/data honesty in graphics
+
+The prototype was allowed to use synthetic data to explore composition. Production is not.
+
+Rules:
+
+- waveform/spectrum/spectrogram/meter shapes that look measured must derive from real tool state/data;
+- structural grids, rulers, channel geometry and idle guides are allowed when they do not imply a measurement;
+- synthetic/demo signal data belongs in tests/prototypes unless unmistakably labelled as demonstration data;
+- decorative contours/gradients must not masquerade as measured signal energy;
+- a prettier visualization is never a reason to invent data.
+
 ## 3. Viewport budget contract
 
 ### 3.1 Desktop
@@ -95,16 +122,28 @@ Primary target viewports:
 - 1366 × 768;
 - 1440 × 900.
 
-For ordinary active/representative states:
+Compact-desktop stress viewport:
+
+- 1280 × 720.
+
+For ordinary active/representative states at the primary targets:
 
 - the complete core instrument sheet should fit in the viewport;
 - target at least 24 px of visible bottom breathing room;
 - the sheet should start high enough that the user does not need to scroll to begin the task;
 - controls must not be shrunk below practical readability/touch requirements merely to satisfy fit.
 
+At 1280 × 720:
+
+- target complete primary-sheet fit with visible bottom air when user-opened secondary disclosures are closed;
+- 16 px is the minimum acceptable bottom breathing room for this stress viewport;
+- if a specific tool cannot meet this without harming readability/accessibility or its primary workflow, document the exception before merge rather than silently weakening the test.
+
 This is a layout budget, not a screenshot-specific pixel lock. Use viewport-responsive field height with sensible min/max bounds.
 
 A long secondary disclosure opened by the user may extend below the fold; the primary default/active workflow should not.
+
+The first-screen budget applies to the site/tool header plus **core instrument sheet**. Related Tools, explanation, troubleshooting, FAQ and other supporting content below the tool are not expected to fit in that viewport.
 
 ### 3.2 Mobile
 
@@ -127,7 +166,7 @@ Create a shared Sonic Field production layer with a small set of primitives, the
 
 Expected shared primitives:
 
-1. **ToolPageHeader** — compact page heading and description.
+1. **ToolPageHeader / revised ToolShell header** — compact page heading and description.
 2. **SonicInstrument / InstrumentSheet** — neutral working surface, stable viewport-budget shell.
 3. **FieldZone** — visualization / spatial / frequency / time area.
 4. **ControlRail** — compact primary controls and metrics on the same instrument plane.
@@ -137,6 +176,20 @@ Expected shared primitives:
 8. **Disclosure** — secondary metadata/calibration/details.
 
 Existing controllers and browser services should remain the source of product behaviour. Do not rewrite audio engines merely to implement the visual system.
+
+### 4.1 Behaviour-hook preservation
+
+Visual markup may change substantially, but behaviour contracts may not change accidentally.
+
+Default migration rule:
+
+- preserve existing IDs and `data-*` hooks used by controllers/tests;
+- visual class names may change freely;
+- if a behaviour hook must change, update the controller and affected tests deliberately in the same reviewed unit;
+- do not duplicate selector hooks when a controller expects an exact element count;
+- prefer moving an existing behaviour hook onto the new semantic control over inventing a parallel action.
+
+Example: `HeadphoneTestController` currently requires exactly six `[data-headphone-mode]` controls and three advanced panels. The production visual L / Both / R nodes should replace the old channel-mode buttons while Phase / Sweep / Bass remain the other three mode controls, preserving the six-control topology unless an explicitly reviewed controller change becomes necessary.
 
 ## 5. Tool archetypes
 
@@ -233,7 +286,9 @@ Production requirement:
 
 - reserve a stable local-recording region or replace hidden/show layout with a stable slot;
 - playback controls must not push the visualization/control relationship around;
-- mobile output-to-record controls remains short.
+- mobile output-to-record controls remain close;
+- size the reserved native-audio region against Chromium/Firefox/WebKit rather than assuming one engine’s controls height;
+- keep native audio controls unless replacing them has independently justified product value.
 
 ### QA-03 — Headphone Test mode switching shifts; headphone illustration moves vertically
 
@@ -246,8 +301,9 @@ Production requirement:
 - fixed L / Both / R anchors;
 - no decorative vertical movement on mode change;
 - phase may change orientation/relationship without moving the stage baseline;
-- Left / Both / Right should become accessible direct visual controls in the production field;
-- retain explicit text/shape/state so color is not the only cue.
+- Left / Both / Right become accessible direct visual controls in the production field;
+- retain explicit text/shape/state so color is not the only cue;
+- preserve the controller’s existing six-mode topology as described in 4.1.
 
 ### QA-04 — Stereo pan marker snaps back to centre after playback
 
@@ -347,8 +403,10 @@ Current tool controls use the Phosphor regular icon-font/CSS payload and `ph-sto
 
 Production requirement:
 
-- verify Stop rendering in Chromium/Firefox/WebKit;
-- for primary transport controls, prefer a rendering path that cannot silently become a missing icon glyph (for example an inline SVG or a simple CSS/HTML transport shape if consistent with accessibility/tooling policy);
+- PR1 verifies Stop rendering in Chromium/Firefox/WebKit on the first migrated tools;
+- if the issue reproduces, fix the transport-icon rendering in the shared foundation during PR1 rather than carrying a known defect forward;
+- if it does not reproduce, record the rendering path/browsers checked and perform the wider hardening pass with the remaining migrated transport controls;
+- for primary transport controls, prefer a rendering path that cannot silently become a missing icon glyph if a change is required (for example inline SVG or a simple CSS/HTML transport shape consistent with accessibility/tooling policy);
 - text labels remain present, so the icon is never the sole control label.
 
 Do not globally add additional icon weights just to fix one glyph.
@@ -387,7 +445,8 @@ Requirements:
 - visible focus;
 - descriptive accessible name;
 - state communicated by more than color;
-- controller behaviour remains the single playback source of truth.
+- controller behaviour remains the single playback source of truth;
+- preserve existing behaviour hooks/topology where possible.
 
 Do not duplicate the exact same primary action in both a visual node row and a separate button grid unless there is an accessibility/compact-layout reason.
 
@@ -407,27 +466,48 @@ The migration must follow the repository workflow in `15_DEVELOPMENT_WORKFLOW.md
 
 Scope:
 
+- add the reviewed migration plan/evidence to production docs;
+- update `04_VISUAL_SYSTEM.md` from Soft Sonic Studio to Sonic Field;
+- update the relevant viewport/shared-primitive rules in `05_UX_UI.md`;
 - shared production Sonic Field tokens/primitives;
+- replace the old purple focus treatment with a rendered/contrast-validated Sonic Field focus treatment;
 - compact `ToolShell` / page-header contract;
-- production viewport-budget browser test infrastructure;
+- production viewport-budget + perceptual-anchor browser test infrastructure;
 - Headphone Test migration;
 - Spectrum Analyzer visual migration (not the spectrogram-response algorithm change yet);
 - Hearing Frequency Test migration;
-- direct Headphone L / Both / R targets;
+- direct Headphone L / Both / R targets while preserving the six-mode controller topology;
 - remove internal decorative vertical movement;
-- preserve existing functional/browser contracts.
+- verify Stop control rendering in Chromium/Firefox/WebKit and fix in the foundation if reproducible;
+- preserve existing functional/browser contracts and behaviour selectors.
 
 Why first:
 
-These three tools were the successful prototype stress cases and exercise spatial playback, realtime analysis and guided sequence behaviour.
+These three tools were the successful prototype stress cases and exercise spatial playback, realtime analysis and guided sequence behaviour. Testing one shared system across three different archetypes before the remaining rollout is the reason this first PR is intentionally broader than later family PRs.
+
+PR1 stop condition:
+
+- do not absorb homepage/SEO/other-tool redesign;
+- do not rewrite shared audio engines/services for visual convenience;
+- if implementation requires broad controller/service rewrites or the diff stops being realistically cold-reviewable as one coherent unit, split the work before Review #1 rather than rationalizing a giant PR.
+
+Required challenge states:
+
+- **Headphone:** channel playback state and Sweep mode with sweep controls visible; verify fixed L/Both/R visual anchors across mode transitions;
+- **Spectrum:** active Spectrogram state with post-permission/input controls present using the repository’s existing mocked browser-testing strategy; verify the data canvas remains the primary field;
+- **Hearing:** Guided answer state with answer controls visible and populated current/session state; verify result/answer changes do not move the outer sheet.
 
 Acceptance:
 
-- 1366×768 and 1440×900 desktop fit with >=24 px bottom air in representative default/active states;
+- 1366×768 and 1440×900 fit with >=24 px bottom air in the required challenge states;
+- 1280×720 compact-desktop stress target follows section 3.1;
 - 320×844 and 390×844 no horizontal overflow;
 - mobile working field and primary control proximity remains practical;
 - mode/answer state changes do not change outer instrument footprint;
+- Headphone field anchors remain stable across mode changes;
+- no synthetic signal-looking data is introduced into production visuals;
 - no Hardware Testing visual clone;
+- canonical visual/UX docs no longer prescribe the superseded Soft Sonic Studio system;
 - all existing product behaviour tests for these tools remain green.
 
 ### PR 2 — Spatial output family
@@ -462,9 +542,9 @@ Scope:
 - Microphone Test;
 - Decibel Meter;
 - Pitch Detector;
-- stable local-recording/playback region;
+- stable local-recording/playback region validated against Chromium/Firefox/WebKit native audio controls;
 - Decibel text hierarchy/calibration disclosure;
-- Stop-icon hardening across migrated primary transport controls.
+- wider Stop-icon hardening across remaining migrated primary transport controls when still needed.
 
 Spectrum algorithm/display-response work is intentionally not hidden inside this visual PR unless review determines it is inseparable.
 
@@ -472,12 +552,14 @@ Spectrum algorithm/display-response work is intentionally not hidden inside this
 
 Scope:
 
-- reproduce the faint/insensitive spectrogram with controlled synthetic analyser frames;
+- reproduce the faint/insensitive spectrogram with controlled synthetic analyser frames in tests;
 - document current mapping;
 - choose/test revised amplitude-to-display mapping;
 - verify Spectrum, Waveform and Spectrogram readability;
 - add targeted unit/browser coverage;
 - no claim changes beyond what evidence supports.
+
+Synthetic frames in this PR are test fixtures and do not become unlabeled production data.
 
 ### PR 6 — Audio Latency + site-shell finishing pass
 
@@ -494,21 +576,25 @@ Do not redesign SEO copy/content structure without a separate reason.
 
 Existing layout tests stay valuable but are insufficient for the manual-QA class of bugs.
 
-Add production tests for:
-
 ### 9.1 Desktop viewport fit
 
 At minimum on migrated tools:
 
+Primary:
+
 - 1366×768;
 - 1440×900.
+
+Compact stress:
+
+- 1280×720.
 
 Measure:
 
 - tool sheet top/bottom;
 - bottom breathing room;
 - horizontal overflow;
-- representative active-state footprint.
+- required challenge-state footprint.
 
 ### 9.2 Perceptual anchor stability
 
@@ -535,9 +621,25 @@ The reserved region may change content but should not move the field or the whol
 
 At 390×844, measure the distance from the bottom of the primary field to the top of the relevant primary action/control region. Use the v3.1 prototype as a qualitative reference, not a hard universal pixel constant.
 
+Also verify 320 px horizontal fit because existing stability coverage already uses that width.
+
 ### 9.5 Reduced motion
 
 Stereo smooth-return and any other signal motion must respect `prefers-reduced-motion`.
+
+### 9.6 Transport icon rendering
+
+For migrated primary Stop controls:
+
+- verify the icon/shape is visibly rendered in Chromium/Firefox/WebKit;
+- keep a text label;
+- do not rely on an icon font glyph as the only semantic signal.
+
+### 9.7 Data-visualization honesty
+
+Tests/prototype fixtures may use synthetic analyser data.
+
+Production browser state must not render synthetic measurement-looking data as if it came from the user’s live signal.
 
 ## 10. Safety / honesty contracts that redesign must not weaken
 
@@ -578,6 +680,7 @@ The migration is complete when:
 
 - all 16 live tools use the shared production Sonic Field system;
 - no tool retains the old pastel split-panel identity as its primary working surface;
+- canonical visual/UX docs describe the production system rather than Soft Sonic Studio;
 - the manual-QA items QA-01 through QA-11 are either fixed or have a documented evidence-based resolution;
 - representative desktop active states fit the viewport budget;
 - mobile output/control proximity is acceptable without horizontal overflow;
