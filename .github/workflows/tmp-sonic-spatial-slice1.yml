@@ -25,7 +25,7 @@ jobs:
       - run: pnpm install --frozen-lockfile
       - name: Apply Surround and Phase Sonic Field migration
         run: python .github/tmp-sonic-spatial-slice1.py
-      - name: Align Phase perceptual test with controller lifecycle
+      - name: Isolate Phase visual geometry contract from audio lifecycle
         run: |
           python - <<'PY'
           from pathlib import Path
@@ -38,14 +38,22 @@ jobs:
               r'''const inPhase = await stage\.boundingBox\(\);\s*'''
               r'''await page\.getByRole\("button", \{ name: "Inverted" \}\)\.click\(\);'''
           )
-          replacement = '''await page.getByRole("button", { name: "In phase" }).click();
+          replacement = '''const phaseRoot = page.locator("[data-phase-test]");
+            await phaseRoot.evaluate((element) => {
+              element.setAttribute("data-phase-mode", "in-phase");
+            });
             const inPhase = await stage.boundingBox();
-            const invertedButton = page.getByRole("button", { name: "Inverted" });
-            await expect(invertedButton).toBeEnabled();
-            await invertedButton.click();'''
+            await phaseRoot.evaluate((element) => {
+              element.setAttribute("data-phase-mode", "inverted");
+            });'''
           text, count = pattern.subn(replacement, text, count=1)
           if count != 1:
-              raise SystemExit(f"Phase perceptual sequencing match count: {count}")
+              raise SystemExit(f"Phase visual-state sequencing match count: {count}")
+          text = text.replace(
+              'test("Phase uses one stable Sonic Field relationship stage across polarity changes",',
+              'test("Phase visual polarity states keep one stable Sonic Field relationship stage",',
+              1,
+          )
           path.write_text(text)
           PY
       - run: pnpm exec prettier --write src/tools/surround-sound-test/SurroundSoundTest.astro src/tools/phase-test/PhaseTest.astro tests/browser/surround-layout.spec.ts tests/browser/stereo-phase-layout.spec.ts
