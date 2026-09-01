@@ -1,0 +1,44 @@
+name: Temporary Sonic Field foundation format check
+
+on:
+  push:
+    branches:
+      - feat/sonic-field-foundation-stress-trio
+    paths:
+      - .github/workflows/tmp-sonic-foundation-format-check.yml
+
+permissions:
+  contents: write
+
+jobs:
+  validate:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Format foundation sources
+        run: pnpm exec prettier --write src/components/layout/ToolShell.astro src/components/layout/SonicInstrument.astro
+      - name: Commit formatting if needed
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/components/layout/ToolShell.astro src/components/layout/SonicInstrument.astro
+            git commit -m "style: format Sonic Field foundation"
+            git push
+          fi
+      - name: Validate formatted foundation
+        run: |
+          pnpm exec prettier --check src/components/layout/ToolShell.astro src/components/layout/SonicInstrument.astro
+          git diff --check origin/main...HEAD
+          pnpm check
+          pnpm build
