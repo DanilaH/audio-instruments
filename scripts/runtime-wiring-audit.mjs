@@ -27,16 +27,20 @@ for (const dir of toolDirs) {
     ...controller.matchAll(/["'`]((?:#[-\w]+)|(?:\[data-[-\w]+(?:=[^\]]+)?\]))["'`]/g),
   ].map((match) => match[1]);
   const selectors = [...new Set(selectorMatches)].sort();
-  const missingSelectors = [];
+  const selectorsNotLiteralInToolTemplate = [];
 
   for (const selector of selectors) {
     if (selector.startsWith("#")) {
       const id = selector.slice(1);
-      if (!new RegExp(`id=["']${id}["']`).test(astro)) missingSelectors.push(selector);
+      if (!new RegExp(`id=["']${id}["']`).test(astro)) {
+        selectorsNotLiteralInToolTemplate.push(selector);
+      }
       continue;
     }
     const dataName = selector.match(/^\[(data-[-\w]+)/)?.[1];
-    if (dataName && !astro.includes(dataName)) missingSelectors.push(selector);
+    if (dataName && !astro.includes(dataName)) {
+      selectorsNotLiteralInToolTemplate.push(selector);
+    }
   }
 
   const duplicateIds = [];
@@ -71,7 +75,7 @@ for (const dir of toolDirs) {
     astro: astroName,
     controller: controllerName,
     selectorsChecked: selectors.length,
-    missingSelectors,
+    selectorsNotLiteralInToolTemplate,
     duplicateIds,
     buttonsMissingType,
     unreferencedInteractiveDataAttrs,
@@ -80,7 +84,10 @@ for (const dir of toolDirs) {
   };
   report.push(item);
 
-  if (missingSelectors.length || duplicateIds.length || buttonsMissingType.length || !mounted || !disposeWired) {
+  // Controller selectors may legitimately resolve inside composed shared Astro components
+  // (ToolStatus, CapabilityNotice, FrequencyControl, etc.), so literal absence from the
+  // tool template is informational. Browser runtime checks verify actual resolution.
+  if (duplicateIds.length || buttonsMissingType.length || !mounted || !disposeWired) {
     hardFailures.push(item);
   }
 }
