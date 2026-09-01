@@ -669,6 +669,12 @@ export class SpeakerTestController {
   #setVisual(state: SpeakerVisualState, label: string): void {
     this.#root.dataset.speakerVisual = state;
     this.#visualLabel.textContent = label;
+    for (const button of this.#channelButtons) {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.speakerChannel === state),
+      );
+    }
   }
 
   #setStatus(state: string, label: string): void {

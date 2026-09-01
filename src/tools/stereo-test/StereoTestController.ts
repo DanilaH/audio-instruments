@@ -11,6 +11,7 @@ import {
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 
 const PAN_SWEEP_SECONDS = 4;
+const PAN_RETURN_MS = 240;
 
 type StereoAction =
   "left" | "center" | "right" | "left-to-right" | "right-to-left";
@@ -62,6 +63,8 @@ export class StereoTestController {
   #engine: AudioOutputEngine | null = null;
   #playback: StereoPlayback | null = null;
   #finishTimer: number | null = null;
+  #returnTimer: number | null = null;
+  #activeAction: StereoAction | null = null;
   #starting = false;
   #disposed = false;
   #runToken = 0;
@@ -89,7 +92,9 @@ export class StereoTestController {
     this.#disposed = true;
     this.#listeners.abort();
     this.#clearFinishTimer();
+    this.#clearReturnTimer();
     this.#runToken += 1;
+    this.#activeAction = null;
     this.#playback = null;
     this.#engine = null;
     await this.#session.dispose();
@@ -147,6 +152,7 @@ export class StereoTestController {
         durationSeconds: CHANNEL_TEST_DURATION_SECONDS,
       });
       this.#starting = false;
+      this.#activeAction = action;
       this.#setControlsActive(true);
       this.#setVisual(action, actionLabel(action));
       this.#setStatus("playing", `Playing ${actionLabel(action)}`);
@@ -174,6 +180,7 @@ export class StereoTestController {
       playback.schedulePanSweep(fromPan, toPan, PAN_SWEEP_SECONDS, startTime);
       this.#playback = playback;
       this.#starting = false;
+      this.#activeAction = action;
       this.#setControlsActive(true);
       this.#setVisual(action, actionLabel(action));
       this.#setStatus("playing", `Panning ${actionLabel(action)}`);
@@ -184,6 +191,7 @@ export class StereoTestController {
   }
 
   #beginStart(): number {
+    this.#clearReturnTimer();
     this.#runToken += 1;
     this.#starting = true;
     this.#hideError();
@@ -204,8 +212,10 @@ export class StereoTestController {
       );
     }
     this.#starting = false;
+    this.#activeAction = null;
     this.#playback = null;
     this.#clearFinishTimer();
+    this.#clearReturnTimer();
     this.#setControlsActive(false);
     this.#setVisual("center", "None");
     this.#setStatus("error", "Audio unavailable");
@@ -219,6 +229,8 @@ export class StereoTestController {
     this.#runToken += 1;
     this.#starting = false;
     this.#clearFinishTimer();
+    this.#clearReturnTimer();
+    this.#activeAction = null;
     this.#playback?.stop();
     this.#playback = null;
     this.#setControlsActive(false);
@@ -227,12 +239,35 @@ export class StereoTestController {
   }
 
   #finishRun(): void {
+    const finishedAction = this.#activeAction;
     this.#finishTimer = null;
     this.#starting = false;
+    this.#activeAction = null;
     this.#playback = null;
     this.#setControlsActive(false);
-    this.#setVisual("center", "None");
+    if (
+      finishedAction === "left-to-right" ||
+      finishedAction === "right-to-left"
+    ) {
+      this.#returnPanVisual(finishedAction);
+    } else {
+      this.#setVisual("center", "None");
+    }
     this.#setStatus("idle", "Ready for another check");
+  }
+
+  #returnPanVisual(action: "left-to-right" | "right-to-left"): void {
+    if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      this.#setVisual("center", "None");
+      return;
+    }
+    this.#root.dataset.stereoVisual =
+      action === "left-to-right" ? "return-from-right" : "return-from-left";
+    this.#positionLabel.textContent = "Returning to center";
+    this.#returnTimer = window.setTimeout(() => {
+      this.#returnTimer = null;
+      if (!this.#disposed) this.#setVisual("center", "None");
+    }, PAN_RETURN_MS);
   }
 
   #scheduleFinish(delayMs: number, token: number): void {
@@ -248,6 +283,12 @@ export class StereoTestController {
     this.#finishTimer = null;
   }
 
+  #clearReturnTimer(): void {
+    if (this.#returnTimer === null) return;
+    window.clearTimeout(this.#returnTimer);
+    this.#returnTimer = null;
+  }
+
   #isCurrentRun(token: number): boolean {
     return !this.#disposed && token === this.#runToken;
   }
@@ -260,6 +301,12 @@ export class StereoTestController {
   #setVisual(action: StereoAction | "center", label: string): void {
     this.#root.dataset.stereoVisual = action;
     this.#positionLabel.textContent = label;
+    for (const button of this.#actionButtons) {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.stereoAction === action),
+      );
+    }
   }
 
   #setStatus(state: string, label: string): void {

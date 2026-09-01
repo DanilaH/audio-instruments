@@ -101,3 +101,24 @@ test("Phase keeps A/B and Stop inside the 1366x768 viewport", async ({
   );
   await expectInsideViewport(page.getByRole("button", { name: "Stop" }), 768);
 });
+
+test("Stereo exposes direct field targets and a deterministic natural return animation", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/stereo-test");
+  await expect(page.locator("[data-sonic-instrument]")).toHaveCount(1);
+  await expect(page.locator("[data-stereo-action]")).toHaveCount(5);
+  await page.locator("[data-stereo-test]").evaluate((element) => {
+    element.setAttribute("data-stereo-visual", "return-from-right");
+  });
+  await expect(page.locator(".stereo-track__signal")).toHaveCSS(
+    "animation-name",
+    "stereo-return-right",
+  );
+  await page.emulateMedia({ reducedMotion: "reduce" });
+  await expect(page.locator(".stereo-track__signal")).toHaveCSS(
+    "animation-name",
+    "none",
+  );
+});
