@@ -1,0 +1,68 @@
+name: Temporary Audio Identity v2 render
+
+on:
+  push:
+    branches:
+      - prototype/audio-identity-v2-research
+    paths:
+      - .github/workflows/tmp-audio-identity-v2-render.yml
+      - src/pages/prototypes/audio-identity/**
+
+permissions:
+  contents: read
+
+jobs:
+  render:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+
+      - name: Validate prototype
+        run: |
+          pnpm exec prettier --check src/pages/prototypes/audio-identity/[direction]/[tool].astro
+          pnpm check
+          pnpm build
+
+      - run: pnpm exec playwright install --with-deps chromium
+
+      - name: Capture 9 comparative frames
+        run: |
+          mkdir -p audio-identity-v2-renders
+          cat > tests/browser/tmp-audio-identity-v2.spec.ts <<'EOF'
+          import { test } from "@playwright/test";
+
+          const directions = ["stereo-field", "temporal-score", "acoustic-map"] as const;
+          const tools = ["headphone", "spectrum", "hearing"] as const;
+
+          for (const direction of directions) {
+            for (const tool of tools) {
+              test(`${direction}-${tool}`, async ({ page }) => {
+                await page.setViewportSize({ width: 1366, height: 768 });
+                await page.goto(`/prototypes/audio-identity/${direction}/${tool}`);
+                await page.screenshot({
+                  path: `audio-identity-v2-renders/${direction}-${tool}-1366x768.png`,
+                  fullPage: false,
+                });
+              });
+            }
+          }
+          EOF
+          pnpm exec playwright test tests/browser/tmp-audio-identity-v2.spec.ts --project=chromium --workers=1 --reporter=line
+          rm tests/browser/tmp-audio-identity-v2.spec.ts
+
+      - uses: actions/upload-artifact@v7
+        with:
+          name: audio-identity-v2-renders-${{ github.run_id }}
+          path: audio-identity-v2-renders
+          if-no-files-found: error
+          retention-days: 14
