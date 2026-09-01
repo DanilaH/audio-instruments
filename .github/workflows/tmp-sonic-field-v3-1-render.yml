@@ -28,7 +28,7 @@ jobs:
 
       - name: Validate prototype source
         run: |
-          pnpm exec prettier --check src/components/prototypes/SonicFieldPrototype.astro src/components/prototypes/SonicFieldCompactV31.astro src/pages/prototypes/audio-identity-v3/*.astro docs/16_AUDIO_IDENTITY_V3_SONIC_FIELD.md
+          pnpm exec prettier --check src/components/prototypes/SonicFieldCompactV31.astro src/pages/prototypes/audio-identity-v3/*.astro docs/16_AUDIO_IDENTITY_V3_SONIC_FIELD.md
           git diff --check
           pnpm check
           pnpm build
