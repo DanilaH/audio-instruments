@@ -10,7 +10,7 @@ if old not in text:
 text = text.replace(old, new, 1)
 
 old = """    .latency-result {\n      padding: 8px 10px;\n      font-size: 0.8rem;\n    }"""
-new = """    .latency-result {\n      padding: 8px 10px;\n      font-size: 0.75rem;\n      white-space: nowrap;\n    }"""
+new = """    .latency-result {\n      padding: 8px 10px;\n      font-size: 0.75rem;\n      white-space: nowrap;\n    }\n\n    .latency-field-header {\n      gap: 6px;\n    }\n\n    .latency-field-header label {\n      flex: 0 0 auto;\n      font-size: 0.8rem;\n      white-space: nowrap;\n    }"""
 if old not in text:
     raise SystemExit("latency mobile result target missing")
 text = text.replace(old, new, 1)
