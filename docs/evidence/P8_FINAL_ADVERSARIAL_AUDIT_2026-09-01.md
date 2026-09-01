@@ -80,6 +80,34 @@ The 300-test Chromium run used 320×844 as its default viewport and included the
 
 The initial failure screenshot was reviewed to confirm the real homepage clipping. The post-fix 320 result is certified here by browser geometry/state tests, not misrepresented as part of the historical 102-screenshot visual matrix.
 
+## Finding 3 — WebKit release-CI harness race
+
+The first standard full-validation attempt for PR #74, workflow run `33469754486`, passed frozen install, formatting, lint, Astro/TypeScript checks, all 172 unit tests and the 18-route positive indexing verifier. The full Chromium/Firefox/WebKit browser stage then finished with:
+
+```text
+894 passed
+2 skipped
+1 failed
+```
+
+The only failure was the WebKit case `reanchors on offset changes, preserves the sign convention, and cancels old scheduled clicks` in `tests/browser/audio-latency.spec.ts`.
+
+The failure artifact and Playwright trace showed that product behavior was correct. The active loop had switched to `−50 ms`, previously scheduled clicks had received cancellation stop times, and the newly re-anchored negative-offset clicks were scheduled at the expected lead. The assertion failed because the test captured `oscillators.length` and `AudioContext.currentTime` in separate asynchronous operations before dispatching the offset change. During that gap, the controller's normal 100 ms lookahead scheduler appended one more old-offset oscillator. The later assertion therefore indexed that stale oscillator rather than the first oscillator created by the offset change.
+
+The fix is test-only. `setOffset()` now captures the oscillator count and context time atomically in the same page-context callback immediately before dispatching the `input` event, then returns that snapshot to the assertion. No production scheduler, timing constant, audio lifecycle or user-visible behavior was changed.
+
+Targeted WebKit validation on hosted CI then ran the corrected scenario 30 times:
+
+```text
+Prettier PASS
+ESLint PASS
+Astro/TypeScript check PASS — 0 errors, 0 warnings, 0 hints
+build PASS — 18 pages
+WebKit re-anchor scenario PASS — 30/30
+```
+
+This finding is classified as a release-test harness race exposed by adversarial full CI, not as a product audio-timing defect.
+
 ## What this audit does not certify
 
 This automated work does not simulate or certify:
