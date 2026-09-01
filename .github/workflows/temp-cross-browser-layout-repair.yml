@@ -36,53 +36,12 @@ jobs:
 
           noise_path = Path('src/tools/noise-generator/NoiseGenerator.astro')
           noise = noise_path.read_text()
-
           replacements = [
-              (
-                  'Long playback: keep device/headphone volume at a comfortable level.',
-                  'Long playback: keep device/headphone volume comfortable.',
-              ),
-              (
-                  '''    .noise-controls {
-      gap: 8px;
-    }''',
-                  '''    .noise-controls {
-      gap: 6px;
-    }''',
-              ),
-              (
-                  '''    .noise-long-reminder-slot {
-      min-height: 48px;
-      padding-top: 5px;
-    }
-
-    .noise-long-reminder {
-      padding: 6px 8px;
-    }''',
-                  '''    .noise-long-reminder-slot {
-      min-height: 27px;
-      padding-top: 3px;
-    }
-
-    .noise-long-reminder {
-      padding: 4px 8px;
-      line-height: 1.25;
-    }''',
-              ),
-              (
-                  '''  @media (prefers-reduced-motion: reduce) {
-    .noise-field__layer {''',
-                  '''  @media (max-width: 340px) {
-    .noise-long-reminder-slot {
-      min-height: 41px;
-    }
-  }
-
-  @media (prefers-reduced-motion: reduce) {
-    .noise-field__layer {''',
-              ),
+              ('Long playback: keep device/headphone volume at a comfortable level.', 'Long playback: keep device/headphone volume comfortable.'),
+              ('    .noise-controls {\n      gap: 8px;\n    }', '    .noise-controls {\n      gap: 6px;\n    }'),
+              ('    .noise-long-reminder-slot {\n      min-height: 48px;\n      padding-top: 5px;\n    }\n\n    .noise-long-reminder {\n      padding: 6px 8px;\n    }', '    .noise-long-reminder-slot {\n      min-height: 27px;\n      padding-top: 3px;\n    }\n\n    .noise-long-reminder {\n      padding: 4px 8px;\n      line-height: 1.25;\n    }'),
+              ('  @media (prefers-reduced-motion: reduce) {\n    .noise-field__layer {', '  @media (max-width: 340px) {\n    .noise-long-reminder-slot {\n      min-height: 41px;\n    }\n  }\n\n  @media (prefers-reduced-motion: reduce) {\n    .noise-field__layer {'),
           ]
-
           for old, new in replacements:
               count = noise.count(old)
               if count != 1:
@@ -92,20 +51,8 @@ jobs:
 
           spectrum_path = Path('src/tools/spectrum-analyzer/SpectrumAnalyzer.astro')
           spectrum = spectrum_path.read_text()
-          old = '''  @media (max-width: 340px) {
-    .spectrum-view-switch button {
-      padding-inline: 2px;
-      font-size: 0.68rem;
-      letter-spacing: -0.01em;
-    }
-  }'''
-          new = '''  @media (max-width: 340px) {
-    .spectrum-view-switch button {
-      padding-inline: 0;
-      font-size: 0.68rem;
-      letter-spacing: -0.01em;
-    }
-  }'''
+          old = '  @media (max-width: 340px) {\n    .spectrum-view-switch button {\n      padding-inline: 2px;\n      font-size: 0.68rem;\n      letter-spacing: -0.01em;\n    }\n  }'
+          new = '  @media (max-width: 340px) {\n    .spectrum-view-switch button {\n      padding-inline: 0;\n      font-size: 0.68rem;\n      letter-spacing: -0.01em;\n    }\n  }'
           count = spectrum.count(old)
           if count != 1:
               raise SystemExit(f'Spectrum replacement expected once, found {count}')
