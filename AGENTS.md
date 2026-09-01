@@ -102,7 +102,7 @@ P7 keeps all 16 routes, adds no synonym routes, makes no functional changes, and
 
 Do not reopen resolved choices because another implementation seems personally preferable.
 
-P8 is **in progress**.
+P8 automated release validation is **complete**; rollout gates remain open.
 
 P8.1 implements the fail-closed indexing foundation: centralized `SITE_INDEXING` / `SITE_ORIGIN` validation, default `noindex,nofollow`, no default canonical, and crawlable `/robots.txt`.
 
@@ -122,7 +122,7 @@ docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md
 
 `PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means the technical sitemap/indexing artifacts exist and have positive build evidence. It is **not** release authorization. Default builds still remain `noindex,nofollow` with no production canonical or sitemap. Do not invent a production domain and do not enable final production indexing before the remaining P8 release gates and an explicit real-domain deployment decision.
 
-Automated P8 release evidence is complete and recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: exact-head hosted full validation including Chromium/Firefox/WebKit is green; required-viewport visual QA, runtime accessibility audit and cross-engine visual spot-checks are complete. Cloudflare Web Analytics is selected for v1 rollout but is not enabled. Remaining P8 work is actual device/browser smoke QA, production domain/deployment, analytics privacy/consent activation review, Search Console and explicit production indexing activation.
+The 2026-08-31 automated P8 release evidence is recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: exact-head hosted Chromium/Firefox/WebKit validation is green; visual QA covered the then-required 1440×900, 1366×768, 1024×768 and 390×844 matrix; runtime accessibility and cross-engine visual spot-checks are complete. A separate final adversarial audit on 2026-09-01 added 320×844 to the required matrix, fixed the homepage overflow found there, and validated the narrow browser/state/geometry surface; see `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`. Cloudflare Web Analytics is selected for v1 rollout but is not enabled. Remaining P8 work is actual device/browser smoke QA, production domain/deployment, analytics privacy/consent activation review, Search Console and explicit production indexing activation.
 
 ## 4. Locked stack
 
@@ -505,7 +505,7 @@ P0 must verify the repository-plan/settings capability and record any limitation
 
 ## 29. Current repository-gate mode
 
-The repository intentionally remains private on the current free GitHub plan. Protected-branch/ruleset controls are unavailable for this setup, and the project owner has explicitly accepted **manual repository-gate enforcement** as the operating mode.
+The repository is public, but `main` currently has `protected=false` and no repository rulesets. The project owner has explicitly accepted **manual repository-gate enforcement** until those controls are configured.
 
 When `docs/MANIFEST.json` reports:
 
@@ -519,7 +519,7 @@ then:
 - `merge-gate` must be green before the assistant performs the merge;
 - do not direct-push roadmap implementation to `main`;
 - do not claim GitHub mechanically prevents an owner/admin bypass;
-- unavailable branch protection is **not** a P0 blocker and must not be raised again unless repository visibility/plan changes.
+- manual repository-gate enforcement is **not** a release blocker by itself; reopen this decision if branch protection, rulesets, plan, or enforcement state changes.
 
 The only direct-to-main exception remains the already-completed empty-repository baseline seed.
 

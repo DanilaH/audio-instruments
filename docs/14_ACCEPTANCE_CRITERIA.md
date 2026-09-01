@@ -77,6 +77,7 @@ not generic monochrome utility card
 1366×768
 1024×768
 390×844
+320×844
 ```
 
 ## P0 acceptance

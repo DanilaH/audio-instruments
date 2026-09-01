@@ -196,22 +196,36 @@ async function harnessState(page: Page): Promise<LatencyHarnessState> {
   );
 }
 
-async function contextCurrentTime(page: Page): Promise<number> {
-  return page.evaluate(() => {
-    const currentTime = Reflect.get(
-      window,
-      "__latencyCurrentTime",
-    ) as () => number;
-    return currentTime();
-  });
+interface OffsetChangeSnapshot {
+  readonly oscillatorCount: number;
+  readonly contextTime: number;
 }
 
-async function setOffset(page: Page, value: number): Promise<void> {
-  await page.locator("[data-latency-offset]").evaluate((element, nextValue) => {
-    const input = element as HTMLInputElement;
-    input.value = String(nextValue);
-    input.dispatchEvent(new Event("input", { bubbles: true }));
-  }, value);
+async function setOffset(
+  page: Page,
+  value: number,
+): Promise<OffsetChangeSnapshot> {
+  return page
+    .locator("[data-latency-offset]")
+    .evaluate((element, nextValue) => {
+      const state = Reflect.get(
+        window,
+        "__latencyHarness",
+      ) as LatencyHarnessState;
+      const currentTime = Reflect.get(
+        window,
+        "__latencyCurrentTime",
+      ) as () => number;
+      const snapshot: OffsetChangeSnapshot = {
+        oscillatorCount: state.oscillators.length,
+        contextTime: currentTime(),
+      };
+
+      const input = element as HTMLInputElement;
+      input.value = String(nextValue);
+      input.dispatchEvent(new Event("input", { bubbles: true }));
+      return snapshot;
+    }, value);
 }
 
 async function setOffsetAtContextLead(
@@ -337,10 +351,7 @@ test("reanchors on offset changes, preserves the sign convention, and cancels ol
     .poll(async () => (await harnessState(page)).oscillators.length)
     .toBeGreaterThanOrEqual(2);
 
-  const beforePositiveState = await harnessState(page);
-  const oldCount = beforePositiveState.oscillators.length;
-  const beforePositiveTime = await contextCurrentTime(page);
-  await setOffset(page, 50);
+  const positiveChange = await setOffset(page, 50);
   await expect(page.locator("[data-latency-offset-value]")).toHaveText([
     "+50 ms",
     "+50 ms",
@@ -350,34 +361,44 @@ test("reanchors on offset changes, preserves the sign convention, and cancels ol
   );
   await expect
     .poll(async () => (await harnessState(page)).oscillators.length)
-    .toBeGreaterThan(oldCount);
+    .toBeGreaterThan(positiveChange.oscillatorCount);
 
   const positiveState = await harnessState(page);
-  const firstPositiveStart = positiveState.oscillators[oldCount]?.startTime;
+  const firstPositiveStart =
+    positiveState.oscillators[positiveChange.oscillatorCount]?.startTime;
   expect(firstPositiveStart).not.toBeNull();
-  expect((firstPositiveStart ?? 0) - beforePositiveTime).toBeGreaterThan(0.5);
-  expect((firstPositiveStart ?? 0) - beforePositiveTime).toBeLessThan(0.65);
-  for (const oscillator of positiveState.oscillators.slice(0, oldCount)) {
+  expect(
+    (firstPositiveStart ?? 0) - positiveChange.contextTime,
+  ).toBeGreaterThan(0.5);
+  expect((firstPositiveStart ?? 0) - positiveChange.contextTime).toBeLessThan(
+    0.65,
+  );
+  for (const oscillator of positiveState.oscillators.slice(
+    0,
+    positiveChange.oscillatorCount,
+  )) {
     expect(oscillator.stopTimes.length).toBeGreaterThanOrEqual(2);
   }
 
-  const beforeNegativeCount = positiveState.oscillators.length;
-  const beforeNegativeTime = await contextCurrentTime(page);
-  await setOffset(page, -50);
+  const negativeChange = await setOffset(page, -50);
   await expect(page.locator("[data-latency-offset-value]")).toHaveText([
     "−50 ms",
     "−50 ms",
   ]);
   await expect
     .poll(async () => (await harnessState(page)).oscillators.length)
-    .toBeGreaterThan(beforeNegativeCount);
+    .toBeGreaterThan(negativeChange.oscillatorCount);
 
   const negativeState = await harnessState(page);
   const firstNegativeStart =
-    negativeState.oscillators[beforeNegativeCount]?.startTime;
+    negativeState.oscillators[negativeChange.oscillatorCount]?.startTime;
   expect(firstNegativeStart).not.toBeNull();
-  expect((firstNegativeStart ?? 0) - beforeNegativeTime).toBeGreaterThan(0.38);
-  expect((firstNegativeStart ?? 0) - beforeNegativeTime).toBeLessThan(0.55);
+  expect(
+    (firstNegativeStart ?? 0) - negativeChange.contextTime,
+  ).toBeGreaterThan(0.38);
+  expect((firstNegativeStart ?? 0) - negativeChange.contextTime).toBeLessThan(
+    0.55,
+  );
 });
 
 test("cancels a not-yet-started click immediately inside the shared fade window", async ({
