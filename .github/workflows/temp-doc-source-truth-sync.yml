@@ -1,0 +1,86 @@
+name: Temporary source-of-truth sync
+
+on:
+  push:
+    branches:
+      - docs/vps-rollout-source-truth
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Patch stale final-release wording
+        shell: bash
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          readme = Path("README.md")
+          text = readme.read_text(encoding="utf-8")
+          replacements = [
+              (
+                  "Documentation baseline: **v1.17**",
+                  "Documentation baseline: **v1.19**",
+              ),
+              (
+                  "visual QA across the homepage + all 16 tool routes at the required viewport matrix is complete",
+                  "historical visual QA across the homepage + all 16 tool routes at 1440×900, 1366×768, 1024×768 and 390×844 is complete; the separate 2026-09-01 adversarial audit adds validated 320×844 browser/state/geometry coverage",
+              ),
+              (
+                  "    └── P8_RELEASE_VALIDATION_2026-08-31.md",
+                  "    ├── P8_RELEASE_VALIDATION_2026-08-31.md\n    └── P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md",
+              ),
+              (
+                  "Current private-plan/manual-gate limitations and the recorded no-runner incident do not change the normative CI contract.",
+                  "The current public-repository/manual-gate state and the recorded no-runner incident do not change the normative CI contract.",
+              ),
+              (
+                  "v1.17 records completed automated P8 release evidence: green hosted full validation including Chromium/Firefox/WebKit, required-viewport visual QA, runtime accessibility audit, cross-engine visual spot-checks, public-repository gate state and the selected-but-not-enabled Cloudflare Web Analytics rollout decision.",
+                  "v1.19 records completed automated P8 release evidence: green hosted full validation including Chromium/Firefox/WebKit, the historical 1440×900 / 1366×768 / 1024×768 / 390×844 visual matrix, the separate validated 320×844 browser/state/geometry audit, runtime accessibility audit, cross-engine visual spot-checks, public-repository manual-gate state and the selected-but-not-enabled Cloudflare Web Analytics rollout decision.",
+              ),
+          ]
+          for old, new in replacements:
+              if old not in text:
+                  raise SystemExit(f"README replacement target missing: {old}")
+              text = text.replace(old, new, 1)
+          readme.write_text(text, encoding="utf-8")
+
+          release = Path("docs/11_RELEASE_AND_ANALYTICS.md")
+          text = release.read_text(encoding="utf-8")
+          old = """full hosted Chromium/Firefox/WebKit release suite PASS
+required-viewport visual QA complete
+runtime axe A/AA audit complete with zero violations on 34 surfaces
+cross-engine visual spot-check complete
+repository-wide format/lint/type/unit/indexing gates PASS
+```\n\nThese results do not replace actual-device QA or authorize production indexing."""
+          new = """full hosted Chromium/Firefox/WebKit release suite PASS
+2026-08-31 visual QA complete for 1440×900 / 1366×768 / 1024×768 / 390×844
+runtime axe A/AA audit complete with zero violations on 34 surfaces
+cross-engine visual spot-check complete
+repository-wide format/lint/type/unit/indexing gates PASS
+```\n\nThe later 320×844 adversarial check is recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; it supplements rather than rewrites the historical 2026-08-31 visual matrix.\n\nThese results do not replace actual-device QA or authorize production indexing."""
+          if old not in text:
+              raise SystemExit("release evidence block replacement target missing")
+          release.write_text(text.replace(old, new, 1), encoding="utf-8")
+          PY
+
+      - name: Validate diff
+        run: git diff --check
+
+      - name: Remove temporary workflow and commit
+        shell: bash
+        run: |
+          rm .github/workflows/temp-doc-source-truth-sync.yml
+          git config user.name "DanilaH"
+          git config user.email "41333602+DanilaH@users.noreply.github.com"
+          git add README.md docs/11_RELEASE_AND_ANALYTICS.md .github/workflows/temp-doc-source-truth-sync.yml
+          git commit -m "docs: align final release source of truth"
+          git push origin HEAD:docs/vps-rollout-source-truth
