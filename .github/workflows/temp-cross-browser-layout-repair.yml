@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   repair-and-verify:
-    if: ${{ github.event.head_commit.message == 'chore: stage cross-browser layout repair' }}
     runs-on: ubuntu-latest
     timeout-minutes: 20
     steps:
