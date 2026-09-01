@@ -28,11 +28,13 @@ P8.3 has implemented and positively build-tested the sitemap/canonical/robots ar
 
 ```text
 full hosted Chromium/Firefox/WebKit release suite PASS
-required-viewport visual QA complete
+2026-08-31 visual QA complete for 1440×900 / 1366×768 / 1024×768 / 390×844
 runtime axe A/AA audit complete with zero violations on 34 surfaces
 cross-engine visual spot-check complete
 repository-wide format/lint/type/unit/indexing gates PASS
 ```
+
+The later 320×844 adversarial check is recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; it supplements rather than rewrites the historical 2026-08-31 visual matrix.
 
 These results do not replace actual-device QA or authorize production indexing.
 
