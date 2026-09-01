@@ -76,21 +76,21 @@ const { legend, name, options, value, disabled = false } = Astro.props;
     align-items: center;
     justify-content: center;
     padding: 0 15px;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    background: var(--color-surface);
-    color: var(--color-ink-muted);
+    border: 1px solid var(--sonic-border, var(--color-border));
+    border-radius: var(--sonic-control-radius, 999px);
+    background: var(--sonic-control-bg, var(--color-surface));
+    color: var(--sonic-muted, var(--color-ink-muted));
     font-weight: 700;
   }
 
   .mode-pill input:checked + span {
-    border-color: var(--color-ink);
-    background: var(--color-ink);
-    color: var(--color-surface);
+    border-color: var(--sonic-ink, var(--color-ink));
+    background: var(--sonic-ink, var(--color-ink));
+    color: var(--sonic-sheet, var(--color-surface));
   }
 
   .mode-pill input:focus-visible + span {
-    outline: 3px solid var(--color-focus);
+    outline: 3px solid var(--sonic-focus, var(--color-focus));
     outline-offset: 3px;
   }
 
