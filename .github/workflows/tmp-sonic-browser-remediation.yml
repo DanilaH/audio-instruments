@@ -56,16 +56,33 @@ jobs:
 
           spectrum = Path('src/tools/spectrum-analyzer/SpectrumAnalyzer.astro')
           text = spectrum.read_text()
-          old = '''  .spectrum-start,\n  .spectrum-stop,\n  .spectrum-view-switch button {\n    display: inline-flex;\n    min-height: 42px;'''
-          new = '''  .spectrum-start,\n  .spectrum-stop,\n  .spectrum-view-switch button {\n    display: inline-flex;\n    min-height: 44px;'''
-          if old not in text:
-              raise SystemExit('spectrum button height block not found')
-          text = text.replace(old, new, 1)
-          old = '''  .spectrum-control-field select {\n    min-width: 0;\n    min-height: 38px;'''
-          new = '''  .spectrum-control-field select {\n    min-width: 0;\n    min-height: 44px;'''
-          if old not in text:
-              raise SystemExit('spectrum select height block not found')
-          spectrum.write_text(text.replace(old, new, 1))
+          replacements = [
+              (
+                  '''  .spectrum-start,\n  .spectrum-stop,\n  .spectrum-view-switch button {\n    display: inline-flex;\n    min-height: 42px;''',
+                  '''  .spectrum-start,\n  .spectrum-stop,\n  .spectrum-view-switch button {\n    display: inline-flex;\n    min-height: 44px;''',
+                  'spectrum button height block',
+              ),
+              (
+                  '''  .spectrum-control-field select {\n    min-width: 0;\n    min-height: 38px;''',
+                  '''  .spectrum-control-field select {\n    min-width: 0;\n    min-height: 44px;''',
+                  'spectrum select height block',
+              ),
+              (
+                  '''    .spectrum-rail {\n      min-height: 142px;\n    }''',
+                  '''    .spectrum-rail {\n      min-height: 140px;\n    }''',
+                  'compact spectrum rail height block',
+              ),
+              (
+                  '''    .spectrum-view-switch button {\n      min-width: 0;\n      padding-inline: 4px;\n      font-size: 0.68rem;\n    }''',
+                  '''    .spectrum-view-switch button {\n      min-width: 0;\n      padding-inline: 2px;\n      font-size: 0.68rem;\n    }''',
+                  'narrow spectrum view-switch block',
+              ),
+          ]
+          for old, new, label in replacements:
+              if old not in text:
+                  raise SystemExit(f'{label} not found')
+              text = text.replace(old, new, 1)
+          spectrum.write_text(text)
           PY
       - run: pnpm exec prettier --write tests/browser/runtime-layout-stability.spec.ts tests/browser/tool-touch-targets.spec.ts src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
       - run: pnpm build
