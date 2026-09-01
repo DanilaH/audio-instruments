@@ -8,8 +8,14 @@ type Direction = (typeof directions)[number];
 type Tool = (typeof tools)[number];
 
 export function getStaticPaths() {
-  return directions.flatMap((direction) =>
-    tools.map((tool) => ({ params: { direction, tool } })),
+  const staticDirections = [
+    "stereo-field",
+    "temporal-score",
+    "acoustic-map",
+  ] as const;
+  const staticTools = ["headphone", "spectrum", "hearing"] as const;
+  return staticDirections.flatMap((direction) =>
+    staticTools.map((tool) => ({ params: { direction, tool } })),
   );
 }
 
@@ -35,9 +41,11 @@ const titles: Record<Tool, string> = {
 };
 
 const subtitles: Record<Tool, string> = {
-  headphone: "Route reference audio, compare phase and sweep the audible range.",
+  headphone:
+    "Route reference audio, compare phase and sweep the audible range.",
   spectrum: "Inspect browser-stream energy across time and frequency.",
-  hearing: "Explore a fixed-level high-frequency sequence after a safe setup tone.",
+  hearing:
+    "Explore a fixed-level high-frequency sequence after a safe setup tone.",
 };
 
 const spectrumColumns = Array.from({ length: 36 }, (_, index) => index);
@@ -51,7 +59,13 @@ const hearingSteps = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
     <title>{directionNames[direction]} · {titles[tool]} prototype</title>
   </head>
   <body>
-    <main class:list={["prototype", `prototype--${direction}`, `prototype--${tool}`]}>
+    <main
+      class:list={[
+        "prototype",
+        `prototype--${direction}`,
+        `prototype--${tool}`,
+      ]}
+    >
       <header class="sitebar">
         <a href="#" class="brand" aria-label="Browser Audio Lab prototype home">
           <span class="brand-mark" aria-hidden="true">∿</span>
@@ -70,517 +84,2320 @@ const hearingSteps = [2, 4, 6, 8, 10, 12, 14, 16, 18, 20];
           <h1>{titles[tool]}</h1>
           <p class="subtitle">{subtitles[tool]}</p>
         </div>
-        <p class="prototype-note">Visual prototype · synthetic display data where shown</p>
+        <p class="prototype-note">
+          Visual prototype · synthetic display data where shown
+        </p>
       </section>
 
-      {tool === "headphone" && (
-        <section class="instrument headphone" aria-label="Headphone Test visual prototype">
-          <div class="headphone-field">
-            <div class="field-label field-label--top">STEREO FIELD · SWEEP</div>
-            <button class="channel channel--left" type="button" aria-label="Play left channel">
-              <span>L</span>
-              <small>LEFT</small>
-            </button>
-            <button class="channel channel--both" type="button" aria-label="Play both channels">
-              <span>∿</span>
-              <small>BOTH</small>
-            </button>
-            <button class="channel channel--right" type="button" aria-label="Play right channel">
-              <span>R</span>
-              <small>RIGHT</small>
-            </button>
-            <div class="field-axis field-axis--x"></div>
-            <div class="field-axis field-axis--y"></div>
-            <div class="field-orbit field-orbit--one"></div>
-            <div class="field-orbit field-orbit--two"></div>
-            <div class="field-trace" aria-hidden="true"></div>
-            <div class="frequency-marker">
-              <strong>7.2</strong><span>kHz</span>
+      {
+        tool === "headphone" && (
+          <section
+            class="instrument headphone"
+            aria-label="Headphone Test visual prototype"
+          >
+            <div class="headphone-field">
+              <div class="field-label field-label--top">
+                STEREO FIELD · SWEEP
+              </div>
+              <button
+                class="channel channel--left"
+                type="button"
+                aria-label="Play left channel"
+              >
+                <span>L</span>
+                <small>LEFT</small>
+              </button>
+              <button
+                class="channel channel--both"
+                type="button"
+                aria-label="Play both channels"
+              >
+                <span>∿</span>
+                <small>BOTH</small>
+              </button>
+              <button
+                class="channel channel--right"
+                type="button"
+                aria-label="Play right channel"
+              >
+                <span>R</span>
+                <small>RIGHT</small>
+              </button>
+              <div class="field-axis field-axis--x" />
+              <div class="field-axis field-axis--y" />
+              <div class="field-orbit field-orbit--one" />
+              <div class="field-orbit field-orbit--two" />
+              <div class="field-trace" aria-hidden="true" />
+              <div class="frequency-marker">
+                <>
+                  <strong>7.2</strong>
+                  <span>kHz</span>
+                </>
+              </div>
+              <div class="range-caption">
+                <>
+                  <span>20 Hz</span>
+                  <span>20 kHz</span>
+                </>
+              </div>
             </div>
-            <div class="range-caption"><span>20 Hz</span><span>20 kHz</span></div>
-          </div>
 
-          <div class="headphone-controls">
-            <nav class="mode-row" aria-label="Headphone mode prototype">
-              <button type="button">Phase</button>
-              <button type="button" class="is-active">Sweep</button>
-              <button type="button">Bass / rattle</button>
-            </nav>
-            <div class="safety-line"><strong>LOW VOLUME</strong><span>Keep device volume comfortable. Do not raise it to chase inaudible tones.</span></div>
-            <div class="control-grid">
-              <label><span>Low</span><strong>20 Hz</strong></label>
-              <label><span>High</span><strong>20,000 Hz</strong></label>
-              <label class="level-control"><span>Level</span><strong>−24 dB</strong><i><b></b></i></label>
+            <div class="headphone-controls">
+              <nav class="mode-row" aria-label="Headphone mode prototype">
+                <button type="button">Phase</button>
+                <button type="button" class="is-active">
+                  Sweep
+                </button>
+                <button type="button">Bass / rattle</button>
+              </nav>
+              <div class="safety-line">
+                <>
+                  <strong>LOW VOLUME</strong>
+                  <span>
+                    Keep device volume comfortable. Do not raise it to chase
+                    inaudible tones.
+                  </span>
+                </>
+              </div>
+              <div class="control-grid">
+                <label>
+                  <>
+                    <span>Low</span>
+                    <strong>20 Hz</strong>
+                  </>
+                </label>
+                <label>
+                  <>
+                    <span>High</span>
+                    <strong>20,000 Hz</strong>
+                  </>
+                </label>
+                <label class="level-control">
+                  <>
+                    <span>Level</span>
+                    <strong>−24 dB</strong>
+                    <i>
+                      <b />
+                    </i>
+                  </>
+                </label>
+              </div>
+              <div class="transport-row">
+                <button class="primary" type="button">
+                  Run 15 s sweep
+                </button>
+                <button class="quiet" type="button">
+                  ■ Stop
+                </button>
+              </div>
             </div>
-            <div class="transport-row">
-              <button class="primary" type="button">Run 15 s sweep</button>
-              <button class="quiet" type="button">■ Stop</button>
-            </div>
-          </div>
-        </section>
-      )}
+          </section>
+        )
+      }
 
-      {tool === "spectrum" && (
-        <section class="instrument spectrum" aria-label="Spectrum Analyzer visual prototype">
-          <div class="spectrum-field">
-            <div class="spectrum-ruler spectrum-ruler--x"><span>0 s</span><span>1 s</span><span>2 s</span><span>3 s</span></div>
-            <div class="spectrum-ruler spectrum-ruler--y"><span>20k</span><span>5k</span><span>1k</span><span>200</span><span>20 Hz</span></div>
-            <div class="spectrogram" aria-label="Synthetic spectrogram prototype">
-              {spectrumColumns.map((index) => <i style={`--i:${index}`}></i>)}
-              <div class="spectral-line spectral-line--a"></div>
-              <div class="spectral-line spectral-line--b"></div>
-              <div class="spectral-line spectral-line--c"></div>
-              <div class="playhead"></div>
-            </div>
-            <div class="spectrum-meta">
-              <span><small>DOMINANT BIN</small><strong>1.06 kHz</strong></span>
-              <span><small>FFT</small><strong>2048</strong></span>
-              <span><small>RATE</small><strong>48 kHz</strong></span>
-            </div>
-          </div>
-
-          <div class="spectrum-controls">
-            <div class="permission-line"><span class="live-dot"></span><strong>Analyzing local microphone stream</strong><small>synthetic display pattern in this prototype</small></div>
-            <nav class="mode-row" aria-label="Spectrum view prototype">
-              <button type="button">Spectrum</button>
-              <button type="button">Waveform</button>
-              <button type="button" class="is-active">Spectrogram</button>
-            </nav>
-            <div class="control-grid">
-              <label><span>FFT size</span><strong>2048</strong></label>
-              <label><span>Display</span><strong>20 Hz → 24 kHz</strong></label>
-              <label><span>Smoothing</span><strong>0.8</strong></label>
-            </div>
-            <div class="transport-row">
-              <button class="primary" type="button">● Analyzer running</button>
-              <button class="quiet" type="button">■ Stop</button>
-            </div>
-          </div>
-        </section>
-      )}
-
-      {tool === "hearing" && (
-        <section class="instrument hearing" aria-label="Hearing Frequency Test visual prototype">
-          <div class="hearing-field">
-            <div class="hearing-axis" aria-hidden="true">
-              {hearingSteps.map((frequency, index) => (
-                <span class:list={[index < 6 && "is-past", index === 6 && "is-current"]}>
-                  <i></i><small>{frequency}k</small>
+      {
+        tool === "spectrum" && (
+          <section
+            class="instrument spectrum"
+            aria-label="Spectrum Analyzer visual prototype"
+          >
+            <div class="spectrum-field">
+              <div class="spectrum-ruler spectrum-ruler--x">
+                <>
+                  <span>0 s</span>
+                  <span>1 s</span>
+                  <span>2 s</span>
+                  <span>3 s</span>
+                </>
+              </div>
+              <div class="spectrum-ruler spectrum-ruler--y">
+                <>
+                  <span>20k</span>
+                  <span>5k</span>
+                  <span>1k</span>
+                  <span>200</span>
+                  <span>20 Hz</span>
+                </>
+              </div>
+              <div
+                class="spectrogram"
+                aria-label="Synthetic spectrogram prototype"
+              >
+                {spectrumColumns.map((index) => (
+                  <i style={`--i:${index}`} />
+                ))}
+                <div class="spectral-line spectral-line--a" />
+                <div class="spectral-line spectral-line--b" />
+                <div class="spectral-line spectral-line--c" />
+                <div class="playhead" />
+              </div>
+              <div class="spectrum-meta">
+                <span>
+                  <>
+                    <small>DOMINANT BIN</small>
+                    <strong>1.06 kHz</strong>
+                  </>
                 </span>
-              ))}
+                <span>
+                  <>
+                    <small>FFT</small>
+                    <strong>2048</strong>
+                  </>
+                </span>
+                <span>
+                  <>
+                    <small>RATE</small>
+                    <strong>48 kHz</strong>
+                  </>
+                </span>
+              </div>
             </div>
-            <div class="hearing-current">
-              <small>CURRENT TONE</small>
-              <strong>14</strong><span>kHz</span>
-              <p>Step 7 of 10 · fixed app level −30 dB</p>
-            </div>
-            <div class="hearing-observation">
-              <small>SESSION OBSERVATIONS</small>
-              <div><span>2</span><span>4</span><span>6</span><span>8</span><span>10</span><span>12</span></div>
-              <p>Highest frequency reported heard so far: <strong>12 kHz</strong></p>
-            </div>
-          </div>
 
-          <div class="hearing-controls">
-            <div class="safety-line"><strong>SETUP LOCKED</strong><span>1 kHz setup tone completed. Keep system/device volume unchanged.</span></div>
-            <div class="question">
-              <small>LISTENING DECISION</small>
-              <h2>Did you hear the 14 kHz tone?</h2>
-              <div><button class="answer answer--yes" type="button">I heard it</button><button class="answer answer--no" type="button">I didn't hear it</button></div>
-              <p>This records only a session observation. It is not an audiogram, diagnosis or normal/abnormal assessment.</p>
+            <div class="spectrum-controls">
+              <div class="permission-line">
+                <>
+                  <span class="live-dot" />
+                  <strong>Analyzing local microphone stream</strong>
+                  <small>synthetic display pattern in this prototype</small>
+                </>
+              </div>
+              <nav class="mode-row" aria-label="Spectrum view prototype">
+                <button type="button">Spectrum</button>
+                <button type="button">Waveform</button>
+                <button type="button" class="is-active">
+                  Spectrogram
+                </button>
+              </nav>
+              <div class="control-grid">
+                <label>
+                  <>
+                    <span>FFT size</span>
+                    <strong>2048</strong>
+                  </>
+                </label>
+                <label>
+                  <>
+                    <span>Display</span>
+                    <strong>20 Hz → 24 kHz</strong>
+                  </>
+                </label>
+                <label>
+                  <>
+                    <span>Smoothing</span>
+                    <strong>0.8</strong>
+                  </>
+                </label>
+              </div>
+              <div class="transport-row">
+                <button class="primary" type="button">
+                  ● Analyzer running
+                </button>
+                <button class="quiet" type="button">
+                  ■ Stop
+                </button>
+              </div>
             </div>
-            <div class="transport-row">
-              <button class="quiet" type="button">■ Stop session</button>
-              <span class="session-progress">07 / 10</span>
+          </section>
+        )
+      }
+
+      {
+        tool === "hearing" && (
+          <section
+            class="instrument hearing"
+            aria-label="Hearing Frequency Test visual prototype"
+          >
+            <div class="hearing-field">
+              <div class="hearing-axis" aria-hidden="true">
+                {hearingSteps.map((frequency, index) => (
+                  <span
+                    class:list={[
+                      index < 6 && "is-past",
+                      index === 6 && "is-current",
+                    ]}
+                  >
+                    <i />
+                    <small>{frequency}k</small>
+                  </span>
+                ))}
+              </div>
+              <div class="hearing-current">
+                <small>CURRENT TONE</small>
+                <>
+                  <strong>14</strong>
+                  <span>kHz</span>
+                </>
+                <p>Step 7 of 10 · fixed app level −30 dB</p>
+              </div>
+              <div class="hearing-observation">
+                <small>SESSION OBSERVATIONS</small>
+                <div>
+                  <>
+                    <span>2</span>
+                    <span>4</span>
+                    <span>6</span>
+                    <span>8</span>
+                    <span>10</span>
+                    <span>12</span>
+                  </>
+                </div>
+                <p>
+                  Highest frequency reported heard so far:{" "}
+                  <strong>12 kHz</strong>
+                </p>
+              </div>
             </div>
-          </div>
-        </section>
-      )}
+
+            <div class="hearing-controls">
+              <div class="safety-line">
+                <>
+                  <strong>SETUP LOCKED</strong>
+                  <span>
+                    1 kHz setup tone completed. Keep system/device volume
+                    unchanged.
+                  </span>
+                </>
+              </div>
+              <div class="question">
+                <small>LISTENING DECISION</small>
+                <h2>Did you hear the 14 kHz tone?</h2>
+                <div>
+                  <>
+                    <button class="answer answer--yes" type="button">
+                      I heard it
+                    </button>
+                    <button class="answer answer--no" type="button">
+                      I didn't hear it
+                    </button>
+                  </>
+                </div>
+                <p>
+                  This records only a session observation. It is not an
+                  audiogram, diagnosis or normal/abnormal assessment.
+                </p>
+              </div>
+              <div class="transport-row">
+                <button class="quiet" type="button">
+                  ■ Stop session
+                </button>
+                <span class="session-progress">07 / 10</span>
+              </div>
+            </div>
+          </section>
+        )
+      }
     </main>
   </body>
 </html>
 
 <style>
   :root {
-    font-family: Inter, ui-sans-serif, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    font-family:
+      Inter,
+      ui-sans-serif,
+      -apple-system,
+      BlinkMacSystemFont,
+      "Segoe UI",
+      sans-serif;
     color: #171816;
     background: #f3efe8;
   }
-  * { box-sizing: border-box; }
-  body { margin: 0; min-width: 320px; min-height: 100vh; background: inherit; }
-  button { font: inherit; }
-  .prototype { min-height: 100vh; padding: 0 34px 38px; overflow: hidden; }
-  .sitebar { width: min(1240px, 100%); min-height: 58px; margin: 0 auto; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgb(20 22 20 / .16); }
-  .brand { display: inline-flex; gap: 10px; align-items: center; color: inherit; font-size: 14px; font-weight: 760; text-decoration: none; }
-  .brand-mark { width: 26px; height: 26px; display: grid; place-items: center; border: 1px solid currentColor; border-radius: 50%; font-size: 17px; }
-  .direction-tag { display: flex; align-items: baseline; gap: 8px; font-size: 11px; }
-  .direction-tag > span { display: grid; width: 20px; height: 20px; place-items: center; border-radius: 50%; font-weight: 850; }
-  .direction-tag strong { font-size: 12px; }
-  .direction-tag small { opacity: .52; }
-  .identity { width: min(1240px, 100%); margin: 18px auto 16px; display: flex; align-items: end; justify-content: space-between; gap: 26px; }
-  .identity h1 { margin: 2px 0 0; font-size: clamp(34px, 4vw, 52px); line-height: .98; letter-spacing: -.055em; }
-  .kicker { margin: 0; font-size: 10px; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; opacity: .52; }
-  .subtitle { max-width: 620px; margin: 8px 0 0; font-size: 14px; line-height: 1.42; opacity: .62; }
-  .prototype-note { margin: 0 0 4px; font-size: 10px; letter-spacing: .06em; text-transform: uppercase; opacity: .42; }
-  .instrument { width: min(1240px, 100%); min-height: 525px; margin: 0 auto; overflow: hidden; }
-  .mode-row { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .mode-row button, .primary, .quiet, .answer { cursor: pointer; }
-  .control-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); }
-  .control-grid label { min-width: 0; }
-  .control-grid span, .control-grid strong { display: block; }
-  .transport-row { display: flex; align-items: center; justify-content: space-between; gap: 12px; }
-  .safety-line { display: flex; align-items: baseline; gap: 12px; }
-  .safety-line strong { flex: 0 0 auto; }
-  .field-label, .spectrum-ruler, .hearing-current small, .hearing-observation small, .question small { font-size: 9px; font-weight: 800; letter-spacing: .13em; text-transform: uppercase; }
+  * {
+    box-sizing: border-box;
+  }
+  body {
+    margin: 0;
+    min-width: 320px;
+    min-height: 100vh;
+    background: inherit;
+  }
+  button {
+    font: inherit;
+  }
+  .prototype {
+    min-height: 100vh;
+    padding: 0 34px 38px;
+    overflow: hidden;
+  }
+  .sitebar {
+    width: min(1240px, 100%);
+    min-height: 58px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid rgb(20 22 20 / 0.16);
+  }
+  .brand {
+    display: inline-flex;
+    gap: 10px;
+    align-items: center;
+    color: inherit;
+    font-size: 14px;
+    font-weight: 760;
+    text-decoration: none;
+  }
+  .brand-mark {
+    width: 26px;
+    height: 26px;
+    display: grid;
+    place-items: center;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    font-size: 17px;
+  }
+  .direction-tag {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    font-size: 11px;
+  }
+  .direction-tag > span {
+    display: grid;
+    width: 20px;
+    height: 20px;
+    place-items: center;
+    border-radius: 50%;
+    font-weight: 850;
+  }
+  .direction-tag strong {
+    font-size: 12px;
+  }
+  .direction-tag small {
+    opacity: 0.52;
+  }
+  .identity {
+    width: min(1240px, 100%);
+    margin: 18px auto 16px;
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 26px;
+  }
+  .identity h1 {
+    margin: 2px 0 0;
+    font-size: clamp(34px, 4vw, 52px);
+    line-height: 0.98;
+    letter-spacing: -0.055em;
+  }
+  .kicker {
+    margin: 0;
+    font-size: 10px;
+    font-weight: 800;
+    letter-spacing: 0.14em;
+    text-transform: uppercase;
+    opacity: 0.52;
+  }
+  .subtitle {
+    max-width: 620px;
+    margin: 8px 0 0;
+    font-size: 14px;
+    line-height: 1.42;
+    opacity: 0.62;
+  }
+  .prototype-note {
+    margin: 0 0 4px;
+    font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    opacity: 0.42;
+  }
+  .instrument {
+    width: min(1240px, 100%);
+    min-height: 525px;
+    margin: 0 auto;
+    overflow: hidden;
+  }
+  .mode-row {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .mode-row button,
+  .primary,
+  .quiet,
+  .answer {
+    cursor: pointer;
+  }
+  .control-grid {
+    display: grid;
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+  .control-grid label {
+    min-width: 0;
+  }
+  .control-grid span,
+  .control-grid strong {
+    display: block;
+  }
+  .transport-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+  }
+  .safety-line {
+    display: flex;
+    align-items: baseline;
+    gap: 12px;
+  }
+  .safety-line strong {
+    flex: 0 0 auto;
+  }
+  .field-label,
+  .spectrum-ruler,
+  .hearing-current small,
+  .hearing-observation small,
+  .question small {
+    font-size: 9px;
+    font-weight: 800;
+    letter-spacing: 0.13em;
+    text-transform: uppercase;
+  }
 
   /* ----------------------------------------------------------
      A · STEREO FIELD
      Spatial/channel relationships create the composition.
   ---------------------------------------------------------- */
-  .prototype--stereo-field { color: #f4efe6; background: #d9d1c5; }
-  .prototype--stereo-field .sitebar { color: #171a1f; border-color: rgb(20 22 26 / .24); }
-  .prototype--stereo-field .identity { color: #171a1f; }
-  .prototype--stereo-field .direction-tag > span { background: #171a1f; color: #f4efe6; }
-  .prototype--stereo-field .instrument { display: grid; grid-template-columns: minmax(0, 1.35fr) minmax(350px, .65fr); border-radius: 30px 5px 30px 5px; background: #11151c; box-shadow: 0 28px 80px rgb(24 20 16 / .18); }
+  .prototype--stereo-field {
+    color: #f4efe6;
+    background: #d9d1c5;
+  }
+  .prototype--stereo-field .sitebar {
+    color: #171a1f;
+    border-color: rgb(20 22 26 / 0.24);
+  }
+  .prototype--stereo-field .identity {
+    color: #171a1f;
+  }
+  .prototype--stereo-field .direction-tag > span {
+    background: #171a1f;
+    color: #f4efe6;
+  }
+  .prototype--stereo-field .instrument {
+    display: grid;
+    grid-template-columns: minmax(0, 1.35fr) minmax(350px, 0.65fr);
+    border-radius: 30px 5px 30px 5px;
+    background: #11151c;
+    box-shadow: 0 28px 80px rgb(24 20 16 / 0.18);
+  }
   .prototype--stereo-field .headphone-field,
   .prototype--stereo-field .spectrum-field,
-  .prototype--stereo-field .hearing-field { position: relative; min-width: 0; padding: 24px; overflow: hidden; border-right: 1px solid rgb(244 239 230 / .15); background: radial-gradient(circle at 50% 46%, #202c37 0, #11151c 56%, #0c0f14 100%); }
+  .prototype--stereo-field .hearing-field {
+    position: relative;
+    min-width: 0;
+    padding: 24px;
+    overflow: hidden;
+    border-right: 1px solid rgb(244 239 230 / 0.15);
+    background: radial-gradient(
+      circle at 50% 46%,
+      #202c37 0,
+      #11151c 56%,
+      #0c0f14 100%
+    );
+  }
   .prototype--stereo-field .headphone-controls,
   .prototype--stereo-field .spectrum-controls,
-  .prototype--stereo-field .hearing-controls { padding: 24px 24px 22px; display: grid; align-content: start; gap: 18px; background: #f4efe6; color: #181b20; }
-  .prototype--stereo-field .headphone-field { min-height: 525px; }
-  .prototype--stereo-field .field-label { position: absolute; left: 24px; top: 20px; color: rgb(244 239 230 / .46); }
-  .prototype--stereo-field .field-axis { position: absolute; background: rgb(244 239 230 / .14); }
-  .prototype--stereo-field .field-axis--x { left: 10%; right: 10%; top: 53%; height: 1px; }
-  .prototype--stereo-field .field-axis--y { top: 13%; bottom: 12%; left: 50%; width: 1px; }
-  .prototype--stereo-field .field-orbit { position: absolute; left: 50%; top: 51%; translate: -50% -50%; border: 1px solid rgb(244 239 230 / .12); border-radius: 50%; }
-  .prototype--stereo-field .field-orbit--one { width: 330px; height: 330px; }
-  .prototype--stereo-field .field-orbit--two { width: 480px; height: 220px; }
-  .prototype--stereo-field .channel { position: absolute; z-index: 4; display: grid; place-items: center; gap: 2px; width: 94px; height: 94px; border: 1px solid currentColor; border-radius: 50%; background: rgb(17 21 28 / .72); color: #f4efe6; backdrop-filter: blur(4px); }
-  .prototype--stereo-field .channel span { font-size: 25px; font-weight: 760; }
-  .prototype--stereo-field .channel small { font-size: 8px; letter-spacing: .14em; opacity: .62; }
-  .prototype--stereo-field .channel--left { left: 12%; top: 43%; color: #45c5d0; }
-  .prototype--stereo-field .channel--right { right: 12%; top: 43%; color: #ff7064; }
-  .prototype--stereo-field .channel--both { left: 50%; top: 53%; translate: -50% -50%; width: 70px; height: 70px; color: #f4d35e; }
-  .prototype--stereo-field .field-trace { position: absolute; left: 50%; top: 50%; width: 270px; height: 130px; translate: -50% -50%; border: 2px solid #f4d35e; border-radius: 48% 52% 38% 62% / 56% 35% 65% 44%; rotate: -11deg; opacity: .75; box-shadow: 0 0 28px rgb(244 211 94 / .13); }
+  .prototype--stereo-field .hearing-controls {
+    padding: 24px 24px 22px;
+    display: grid;
+    align-content: start;
+    gap: 18px;
+    background: #f4efe6;
+    color: #181b20;
+  }
+  .prototype--stereo-field .headphone-field {
+    min-height: 525px;
+  }
+  .prototype--stereo-field .field-label {
+    position: absolute;
+    left: 24px;
+    top: 20px;
+    color: rgb(244 239 230 / 0.46);
+  }
+  .prototype--stereo-field .field-axis {
+    position: absolute;
+    background: rgb(244 239 230 / 0.14);
+  }
+  .prototype--stereo-field .field-axis--x {
+    left: 10%;
+    right: 10%;
+    top: 53%;
+    height: 1px;
+  }
+  .prototype--stereo-field .field-axis--y {
+    top: 13%;
+    bottom: 12%;
+    left: 50%;
+    width: 1px;
+  }
+  .prototype--stereo-field .field-orbit {
+    position: absolute;
+    left: 50%;
+    top: 51%;
+    translate: -50% -50%;
+    border: 1px solid rgb(244 239 230 / 0.12);
+    border-radius: 50%;
+  }
+  .prototype--stereo-field .field-orbit--one {
+    width: 330px;
+    height: 330px;
+  }
+  .prototype--stereo-field .field-orbit--two {
+    width: 480px;
+    height: 220px;
+  }
+  .prototype--stereo-field .channel {
+    position: absolute;
+    z-index: 4;
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    width: 94px;
+    height: 94px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    background: rgb(17 21 28 / 0.72);
+    color: #f4efe6;
+    backdrop-filter: blur(4px);
+  }
+  .prototype--stereo-field .channel span {
+    font-size: 25px;
+    font-weight: 760;
+  }
+  .prototype--stereo-field .channel small {
+    font-size: 8px;
+    letter-spacing: 0.14em;
+    opacity: 0.62;
+  }
+  .prototype--stereo-field .channel--left {
+    left: 12%;
+    top: 43%;
+    color: #45c5d0;
+  }
+  .prototype--stereo-field .channel--right {
+    right: 12%;
+    top: 43%;
+    color: #ff7064;
+  }
+  .prototype--stereo-field .channel--both {
+    left: 50%;
+    top: 53%;
+    translate: -50% -50%;
+    width: 70px;
+    height: 70px;
+    color: #f4d35e;
+  }
+  .prototype--stereo-field .field-trace {
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 270px;
+    height: 130px;
+    translate: -50% -50%;
+    border: 2px solid #f4d35e;
+    border-radius: 48% 52% 38% 62% / 56% 35% 65% 44%;
+    rotate: -11deg;
+    opacity: 0.75;
+    box-shadow: 0 0 28px rgb(244 211 94 / 0.13);
+  }
   .prototype--stereo-field .field-trace::before,
-  .prototype--stereo-field .field-trace::after { content: ""; position: absolute; inset: 18px; border: 1px solid #45c5d0; border-radius: 50% 38% 55% 45%; rotate: 24deg; opacity: .45; }
-  .prototype--stereo-field .field-trace::after { inset: 34px; border-color: #ff7064; rotate: 67deg; }
-  .prototype--stereo-field .frequency-marker { position: absolute; left: 50%; bottom: 48px; translate: -50% 0; display: flex; align-items: baseline; gap: 5px; color: #f4efe6; }
-  .prototype--stereo-field .frequency-marker strong { font-size: 44px; letter-spacing: -.05em; }
-  .prototype--stereo-field .frequency-marker span { color: #f4d35e; font-size: 13px; }
-  .prototype--stereo-field .range-caption { position: absolute; left: 24px; right: 24px; bottom: 20px; display: flex; justify-content: space-between; color: rgb(244 239 230 / .42); font-size: 9px; }
-  .prototype--stereo-field .mode-row { gap: 2px; padding: 2px; border: 1px solid #bbb2a4; border-radius: 24px; }
-  .prototype--stereo-field .mode-row button { min-height: 42px; border: 0; border-radius: 21px; background: transparent; color: #5d5a56; font-size: 12px; font-weight: 730; }
-  .prototype--stereo-field .mode-row .is-active { background: #181b20; color: #f4efe6; }
-  .prototype--stereo-field .safety-line { padding: 12px 0; border-block: 1px solid #d3cbc0; font-size: 11px; line-height: 1.45; }
-  .prototype--stereo-field .safety-line strong { color: #9c5f16; font-size: 9px; letter-spacing: .11em; }
-  .prototype--stereo-field .control-grid { gap: 1px; border: 1px solid #c7bfb4; background: #c7bfb4; }
-  .prototype--stereo-field .control-grid label { padding: 12px; background: #f8f4ed; }
-  .prototype--stereo-field .control-grid span { margin-bottom: 5px; color: #7d7870; font-size: 9px; letter-spacing: .08em; text-transform: uppercase; }
-  .prototype--stereo-field .control-grid strong { font-size: 14px; }
-  .prototype--stereo-field .level-control { grid-column: 1 / -1; }
-  .prototype--stereo-field .level-control i { display: block; height: 3px; margin-top: 12px; background: #d0c8bc; }
-  .prototype--stereo-field .level-control b { display: block; width: 68%; height: 100%; background: #45c5d0; }
-  .prototype--stereo-field .primary { min-height: 48px; flex: 1; border: 0; border-radius: 2px; background: #181b20; color: #f4efe6; font-weight: 760; }
-  .prototype--stereo-field .quiet { min-height: 48px; padding: 0 14px; border: 1px solid #c7bfb4; border-radius: 2px; background: transparent; color: #605b54; }
+  .prototype--stereo-field .field-trace::after {
+    content: "";
+    position: absolute;
+    inset: 18px;
+    border: 1px solid #45c5d0;
+    border-radius: 50% 38% 55% 45%;
+    rotate: 24deg;
+    opacity: 0.45;
+  }
+  .prototype--stereo-field .field-trace::after {
+    inset: 34px;
+    border-color: #ff7064;
+    rotate: 67deg;
+  }
+  .prototype--stereo-field .frequency-marker {
+    position: absolute;
+    left: 50%;
+    bottom: 48px;
+    translate: -50% 0;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    color: #f4efe6;
+  }
+  .prototype--stereo-field .frequency-marker strong {
+    font-size: 44px;
+    letter-spacing: -0.05em;
+  }
+  .prototype--stereo-field .frequency-marker span {
+    color: #f4d35e;
+    font-size: 13px;
+  }
+  .prototype--stereo-field .range-caption {
+    position: absolute;
+    left: 24px;
+    right: 24px;
+    bottom: 20px;
+    display: flex;
+    justify-content: space-between;
+    color: rgb(244 239 230 / 0.42);
+    font-size: 9px;
+  }
+  .prototype--stereo-field .mode-row {
+    gap: 2px;
+    padding: 2px;
+    border: 1px solid #bbb2a4;
+    border-radius: 24px;
+  }
+  .prototype--stereo-field .mode-row button {
+    min-height: 42px;
+    border: 0;
+    border-radius: 21px;
+    background: transparent;
+    color: #5d5a56;
+    font-size: 12px;
+    font-weight: 730;
+  }
+  .prototype--stereo-field .mode-row .is-active {
+    background: #181b20;
+    color: #f4efe6;
+  }
+  .prototype--stereo-field .safety-line {
+    padding: 12px 0;
+    border-block: 1px solid #d3cbc0;
+    font-size: 11px;
+    line-height: 1.45;
+  }
+  .prototype--stereo-field .safety-line strong {
+    color: #9c5f16;
+    font-size: 9px;
+    letter-spacing: 0.11em;
+  }
+  .prototype--stereo-field .control-grid {
+    gap: 1px;
+    border: 1px solid #c7bfb4;
+    background: #c7bfb4;
+  }
+  .prototype--stereo-field .control-grid label {
+    padding: 12px;
+    background: #f8f4ed;
+  }
+  .prototype--stereo-field .control-grid span {
+    margin-bottom: 5px;
+    color: #7d7870;
+    font-size: 9px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .prototype--stereo-field .control-grid strong {
+    font-size: 14px;
+  }
+  .prototype--stereo-field .level-control {
+    grid-column: 1 / -1;
+  }
+  .prototype--stereo-field .level-control i {
+    display: block;
+    height: 3px;
+    margin-top: 12px;
+    background: #d0c8bc;
+  }
+  .prototype--stereo-field .level-control b {
+    display: block;
+    width: 68%;
+    height: 100%;
+    background: #45c5d0;
+  }
+  .prototype--stereo-field .primary {
+    min-height: 48px;
+    flex: 1;
+    border: 0;
+    border-radius: 2px;
+    background: #181b20;
+    color: #f4efe6;
+    font-weight: 760;
+  }
+  .prototype--stereo-field .quiet {
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid #c7bfb4;
+    border-radius: 2px;
+    background: transparent;
+    color: #605b54;
+  }
 
-  .prototype--stereo-field .spectrum-field { min-height: 525px; padding: 42px 34px 28px 58px; }
-  .prototype--stereo-field .spectrogram { position: absolute; inset: 40px 28px 86px 58px; display: flex; align-items: stretch; overflow: hidden; border: 1px solid rgb(244 239 230 / .16); background: #0a0d12; }
-  .prototype--stereo-field .spectrogram i { flex: 1; background:
-    radial-gradient(circle at 50% calc(18% + (var(--i) % 7) * 8%), rgb(69 197 208 / .78), transparent 11%),
-    radial-gradient(circle at 50% calc(58% - (var(--i) % 5) * 4%), rgb(244 211 94 / .55), transparent 15%),
-    linear-gradient(to bottom, transparent 0 38%, rgb(255 112 100 / .18) 38% 44%, transparent 44% 100%);
-    opacity: calc(.34 + (var(--i) % 6) * .09); }
-  .prototype--stereo-field .spectral-line { position: absolute; left: 0; right: 0; height: 1px; background: currentColor; opacity: .72; box-shadow: 0 0 10px currentColor; }
-  .prototype--stereo-field .spectral-line--a { top: 34%; color: #45c5d0; }
-  .prototype--stereo-field .spectral-line--b { top: 52%; color: #f4d35e; }
-  .prototype--stereo-field .spectral-line--c { top: 70%; color: #ff7064; }
-  .prototype--stereo-field .playhead { position: absolute; top: 0; bottom: 0; left: 68%; width: 1px; background: #f4efe6; }
-  .prototype--stereo-field .spectrum-ruler { position: absolute; display: flex; color: rgb(244 239 230 / .38); font-size: 8px; }
-  .prototype--stereo-field .spectrum-ruler--x { left: 58px; right: 28px; bottom: 69px; justify-content: space-between; }
-  .prototype--stereo-field .spectrum-ruler--y { left: 18px; top: 40px; bottom: 86px; flex-direction: column; justify-content: space-between; text-align: right; }
-  .prototype--stereo-field .spectrum-meta { position: absolute; left: 58px; right: 28px; bottom: 20px; display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; }
-  .prototype--stereo-field .spectrum-meta span { display: grid; gap: 2px; }
-  .prototype--stereo-field .spectrum-meta small { color: rgb(244 239 230 / .36); font-size: 8px; letter-spacing: .1em; }
-  .prototype--stereo-field .spectrum-meta strong { font-size: 15px; }
-  .prototype--stereo-field .permission-line { display: grid; grid-template-columns: auto 1fr; gap: 3px 8px; align-items: center; font-size: 11px; }
-  .prototype--stereo-field .permission-line small { grid-column: 2; color: #7d7870; }
-  .prototype--stereo-field .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #45c5d0; box-shadow: 0 0 0 4px rgb(69 197 208 / .12); }
+  .prototype--stereo-field .spectrum-field {
+    min-height: 525px;
+    padding: 42px 34px 28px 58px;
+  }
+  .prototype--stereo-field .spectrogram {
+    position: absolute;
+    inset: 40px 28px 86px 58px;
+    display: flex;
+    align-items: stretch;
+    overflow: hidden;
+    border: 1px solid rgb(244 239 230 / 0.16);
+    background: #0a0d12;
+  }
+  .prototype--stereo-field .spectrogram i {
+    flex: 1;
+    background:
+      radial-gradient(
+        circle at 50% calc(18% + (var(--i) % 7) * 8%),
+        rgb(69 197 208 / 0.78),
+        transparent 11%
+      ),
+      radial-gradient(
+        circle at 50% calc(58% - (var(--i) % 5) * 4%),
+        rgb(244 211 94 / 0.55),
+        transparent 15%
+      ),
+      linear-gradient(
+        to bottom,
+        transparent 0 38%,
+        rgb(255 112 100 / 0.18) 38% 44%,
+        transparent 44% 100%
+      );
+    opacity: calc(0.34 + (var(--i) % 6) * 0.09);
+  }
+  .prototype--stereo-field .spectral-line {
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: currentColor;
+    opacity: 0.72;
+    box-shadow: 0 0 10px currentColor;
+  }
+  .prototype--stereo-field .spectral-line--a {
+    top: 34%;
+    color: #45c5d0;
+  }
+  .prototype--stereo-field .spectral-line--b {
+    top: 52%;
+    color: #f4d35e;
+  }
+  .prototype--stereo-field .spectral-line--c {
+    top: 70%;
+    color: #ff7064;
+  }
+  .prototype--stereo-field .playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 68%;
+    width: 1px;
+    background: #f4efe6;
+  }
+  .prototype--stereo-field .spectrum-ruler {
+    position: absolute;
+    display: flex;
+    color: rgb(244 239 230 / 0.38);
+    font-size: 8px;
+  }
+  .prototype--stereo-field .spectrum-ruler--x {
+    left: 58px;
+    right: 28px;
+    bottom: 69px;
+    justify-content: space-between;
+  }
+  .prototype--stereo-field .spectrum-ruler--y {
+    left: 18px;
+    top: 40px;
+    bottom: 86px;
+    flex-direction: column;
+    justify-content: space-between;
+    text-align: right;
+  }
+  .prototype--stereo-field .spectrum-meta {
+    position: absolute;
+    left: 58px;
+    right: 28px;
+    bottom: 20px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .prototype--stereo-field .spectrum-meta span {
+    display: grid;
+    gap: 2px;
+  }
+  .prototype--stereo-field .spectrum-meta small {
+    color: rgb(244 239 230 / 0.36);
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+  .prototype--stereo-field .spectrum-meta strong {
+    font-size: 15px;
+  }
+  .prototype--stereo-field .permission-line {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 3px 8px;
+    align-items: center;
+    font-size: 11px;
+  }
+  .prototype--stereo-field .permission-line small {
+    grid-column: 2;
+    color: #7d7870;
+  }
+  .prototype--stereo-field .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #45c5d0;
+    box-shadow: 0 0 0 4px rgb(69 197 208 / 0.12);
+  }
 
-  .prototype--stereo-field .hearing-field { min-height: 525px; padding: 32px; }
-  .prototype--stereo-field .hearing-axis { position: absolute; left: 9%; right: 9%; top: 56%; display: grid; grid-template-columns: repeat(10, 1fr); align-items: center; }
-  .prototype--stereo-field .hearing-axis::before { content: ""; position: absolute; left: 0; right: 0; top: 10px; height: 1px; background: rgb(244 239 230 / .18); }
-  .prototype--stereo-field .hearing-axis span { position: relative; display: grid; justify-items: center; gap: 10px; color: rgb(244 239 230 / .34); }
-  .prototype--stereo-field .hearing-axis i { z-index: 1; width: 20px; height: 20px; border: 1px solid currentColor; border-radius: 50%; background: #11151c; }
-  .prototype--stereo-field .hearing-axis .is-past { color: #45c5d0; }
-  .prototype--stereo-field .hearing-axis .is-past i { background: #45c5d0; }
-  .prototype--stereo-field .hearing-axis .is-current { color: #f4d35e; }
-  .prototype--stereo-field .hearing-axis .is-current i { scale: 1.5; background: #f4d35e; box-shadow: 0 0 0 8px rgb(244 211 94 / .12); }
-  .prototype--stereo-field .hearing-axis small { font-size: 8px; }
-  .prototype--stereo-field .hearing-current { position: absolute; left: 50%; top: 18%; translate: -50% 0; display: grid; grid-template-columns: auto auto; justify-content: center; align-items: baseline; text-align: center; }
-  .prototype--stereo-field .hearing-current small { grid-column: 1 / -1; color: rgb(244 239 230 / .42); }
-  .prototype--stereo-field .hearing-current strong { font-size: 82px; line-height: .96; letter-spacing: -.07em; }
-  .prototype--stereo-field .hearing-current > span { color: #f4d35e; font-size: 18px; }
-  .prototype--stereo-field .hearing-current p { grid-column: 1 / -1; margin: 7px 0 0; color: rgb(244 239 230 / .48); font-size: 10px; }
-  .prototype--stereo-field .hearing-observation { position: absolute; left: 9%; right: 9%; bottom: 24px; padding-top: 14px; border-top: 1px solid rgb(244 239 230 / .16); }
-  .prototype--stereo-field .hearing-observation small { color: rgb(244 239 230 / .36); }
-  .prototype--stereo-field .hearing-observation div { display: flex; gap: 12px; margin-top: 7px; color: #45c5d0; font-size: 10px; }
-  .prototype--stereo-field .hearing-observation p { margin: 7px 0 0; color: rgb(244 239 230 / .52); font-size: 10px; }
-  .prototype--stereo-field .question { display: grid; gap: 12px; padding: 18px 0; border-block: 1px solid #d3cbc0; }
-  .prototype--stereo-field .question small { color: #7d7870; }
-  .prototype--stereo-field .question h2 { margin: 0; font-size: 25px; letter-spacing: -.04em; }
-  .prototype--stereo-field .question > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .prototype--stereo-field .question p { margin: 0; color: #77716a; font-size: 10px; line-height: 1.45; }
-  .prototype--stereo-field .answer { min-height: 52px; border: 1px solid #bfb6aa; background: transparent; font-weight: 760; }
-  .prototype--stereo-field .answer--yes { border-color: #167a86; color: #0f6670; }
-  .prototype--stereo-field .session-progress { font-size: 12px; font-weight: 800; letter-spacing: .09em; }
+  .prototype--stereo-field .hearing-field {
+    min-height: 525px;
+    padding: 32px;
+  }
+  .prototype--stereo-field .hearing-axis {
+    position: absolute;
+    left: 9%;
+    right: 9%;
+    top: 56%;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    align-items: center;
+  }
+  .prototype--stereo-field .hearing-axis::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 10px;
+    height: 1px;
+    background: rgb(244 239 230 / 0.18);
+  }
+  .prototype--stereo-field .hearing-axis span {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 10px;
+    color: rgb(244 239 230 / 0.34);
+  }
+  .prototype--stereo-field .hearing-axis i {
+    z-index: 1;
+    width: 20px;
+    height: 20px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    background: #11151c;
+  }
+  .prototype--stereo-field .hearing-axis .is-past {
+    color: #45c5d0;
+  }
+  .prototype--stereo-field .hearing-axis .is-past i {
+    background: #45c5d0;
+  }
+  .prototype--stereo-field .hearing-axis .is-current {
+    color: #f4d35e;
+  }
+  .prototype--stereo-field .hearing-axis .is-current i {
+    scale: 1.5;
+    background: #f4d35e;
+    box-shadow: 0 0 0 8px rgb(244 211 94 / 0.12);
+  }
+  .prototype--stereo-field .hearing-axis small {
+    font-size: 8px;
+  }
+  .prototype--stereo-field .hearing-current {
+    position: absolute;
+    left: 50%;
+    top: 18%;
+    translate: -50% 0;
+    display: grid;
+    grid-template-columns: auto auto;
+    justify-content: center;
+    align-items: baseline;
+    text-align: center;
+  }
+  .prototype--stereo-field .hearing-current small {
+    grid-column: 1 / -1;
+    color: rgb(244 239 230 / 0.42);
+  }
+  .prototype--stereo-field .hearing-current strong {
+    font-size: 82px;
+    line-height: 0.96;
+    letter-spacing: -0.07em;
+  }
+  .prototype--stereo-field .hearing-current > span {
+    color: #f4d35e;
+    font-size: 18px;
+  }
+  .prototype--stereo-field .hearing-current p {
+    grid-column: 1 / -1;
+    margin: 7px 0 0;
+    color: rgb(244 239 230 / 0.48);
+    font-size: 10px;
+  }
+  .prototype--stereo-field .hearing-observation {
+    position: absolute;
+    left: 9%;
+    right: 9%;
+    bottom: 24px;
+    padding-top: 14px;
+    border-top: 1px solid rgb(244 239 230 / 0.16);
+  }
+  .prototype--stereo-field .hearing-observation small {
+    color: rgb(244 239 230 / 0.36);
+  }
+  .prototype--stereo-field .hearing-observation div {
+    display: flex;
+    gap: 12px;
+    margin-top: 7px;
+    color: #45c5d0;
+    font-size: 10px;
+  }
+  .prototype--stereo-field .hearing-observation p {
+    margin: 7px 0 0;
+    color: rgb(244 239 230 / 0.52);
+    font-size: 10px;
+  }
+  .prototype--stereo-field .question {
+    display: grid;
+    gap: 12px;
+    padding: 18px 0;
+    border-block: 1px solid #d3cbc0;
+  }
+  .prototype--stereo-field .question small {
+    color: #7d7870;
+  }
+  .prototype--stereo-field .question h2 {
+    margin: 0;
+    font-size: 25px;
+    letter-spacing: -0.04em;
+  }
+  .prototype--stereo-field .question > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .prototype--stereo-field .question p {
+    margin: 0;
+    color: #77716a;
+    font-size: 10px;
+    line-height: 1.45;
+  }
+  .prototype--stereo-field .answer {
+    min-height: 52px;
+    border: 1px solid #bfb6aa;
+    background: transparent;
+    font-weight: 760;
+  }
+  .prototype--stereo-field .answer--yes {
+    border-color: #167a86;
+    color: #0f6670;
+  }
+  .prototype--stereo-field .session-progress {
+    font-size: 12px;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+  }
 
   /* ----------------------------------------------------------
      B · TEMPORAL SCORE
      Time, events and annotations organize the whole page.
   ---------------------------------------------------------- */
-  .prototype--temporal-score { color: #171715; background: #fbfaf5; }
-  .prototype--temporal-score .sitebar { border-color: #171715; }
-  .prototype--temporal-score .brand-mark { border-radius: 0; }
-  .prototype--temporal-score .direction-tag > span { border-radius: 0; background: #3556d8; color: white; }
-  .prototype--temporal-score .identity { align-items: start; border-bottom: 3px solid #171715; padding-bottom: 13px; }
-  .prototype--temporal-score .identity h1 { font-size: clamp(38px, 4.4vw, 58px); }
-  .prototype--temporal-score .instrument { position: relative; min-height: 525px; overflow: visible; border-bottom: 1px solid #171715; background: transparent; }
+  .prototype--temporal-score {
+    color: #171715;
+    background: #fbfaf5;
+  }
+  .prototype--temporal-score .sitebar {
+    border-color: #171715;
+  }
+  .prototype--temporal-score .brand-mark {
+    border-radius: 0;
+  }
+  .prototype--temporal-score .direction-tag > span {
+    border-radius: 0;
+    background: #3556d8;
+    color: white;
+  }
+  .prototype--temporal-score .identity {
+    align-items: start;
+    border-bottom: 3px solid #171715;
+    padding-bottom: 13px;
+  }
+  .prototype--temporal-score .identity h1 {
+    font-size: clamp(38px, 4.4vw, 58px);
+  }
+  .prototype--temporal-score .instrument {
+    position: relative;
+    min-height: 525px;
+    overflow: visible;
+    border-bottom: 1px solid #171715;
+    background: transparent;
+  }
   .prototype--temporal-score .instrument::before,
-  .prototype--temporal-score .instrument::after { content: ""; position: absolute; left: 0; right: 0; height: 1px; background: rgb(23 23 21 / .18); pointer-events: none; }
-  .prototype--temporal-score .instrument::before { top: 170px; }
-  .prototype--temporal-score .instrument::after { top: 350px; }
-  .prototype--temporal-score .headphone { display: grid; grid-template-columns: minmax(0, 1fr) 340px; column-gap: 34px; }
-  .prototype--temporal-score .headphone-field { position: relative; min-height: 525px; }
-  .prototype--temporal-score .field-label { position: absolute; top: 13px; left: 0; color: #3556d8; }
-  .prototype--temporal-score .field-axis--x { position: absolute; left: 0; right: 0; top: 255px; height: 2px; background: #171715; }
-  .prototype--temporal-score .field-axis--x::before { content: "00:00"; position: absolute; top: -22px; left: 0; font: 10px ui-monospace, monospace; }
-  .prototype--temporal-score .field-axis--x::after { content: "00:15"; position: absolute; top: -22px; right: 0; font: 10px ui-monospace, monospace; }
+  .prototype--temporal-score .instrument::after {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: rgb(23 23 21 / 0.18);
+    pointer-events: none;
+  }
+  .prototype--temporal-score .instrument::before {
+    top: 170px;
+  }
+  .prototype--temporal-score .instrument::after {
+    top: 350px;
+  }
+  .prototype--temporal-score .headphone {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 340px;
+    column-gap: 34px;
+  }
+  .prototype--temporal-score .headphone-field {
+    position: relative;
+    min-height: 525px;
+  }
+  .prototype--temporal-score .field-label {
+    position: absolute;
+    top: 13px;
+    left: 0;
+    color: #3556d8;
+  }
+  .prototype--temporal-score .field-axis--x {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 255px;
+    height: 2px;
+    background: #171715;
+  }
+  .prototype--temporal-score .field-axis--x::before {
+    content: "00:00";
+    position: absolute;
+    top: -22px;
+    left: 0;
+    font:
+      10px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .field-axis--x::after {
+    content: "00:15";
+    position: absolute;
+    top: -22px;
+    right: 0;
+    font:
+      10px ui-monospace,
+      monospace;
+  }
   .prototype--temporal-score .field-axis--y,
-  .prototype--temporal-score .field-orbit { display: none; }
-  .prototype--temporal-score .channel { position: absolute; top: 76px; display: grid; place-items: center; width: 92px; height: 92px; border: 2px solid #171715; border-radius: 50%; background: #fbfaf5; color: #171715; }
-  .prototype--temporal-score .channel span { font-size: 28px; font-weight: 820; }
-  .prototype--temporal-score .channel small { position: absolute; bottom: -22px; font-size: 9px; letter-spacing: .1em; }
-  .prototype--temporal-score .channel--left { left: 9%; border-color: #3556d8; color: #3556d8; }
-  .prototype--temporal-score .channel--both { left: 50%; translate: -50% 0; width: 70px; height: 70px; top: 87px; background: #171715; color: #fbfaf5; }
-  .prototype--temporal-score .channel--right { right: 9%; border-color: #d94c35; color: #d94c35; }
-  .prototype--temporal-score .field-trace { position: absolute; left: 6%; right: 6%; top: 244px; height: 24px; background:
-    linear-gradient(135deg, transparent 0 6%, #3556d8 6% 7%, transparent 7% 11%, #171715 11% 12%, transparent 12% 18%, #d94c35 18% 19%, transparent 19% 26%, #171715 26% 27%, transparent 27% 34%, #3556d8 34% 35%, transparent 35% 46%, #d94c35 46% 47%, transparent 47% 58%, #171715 58% 59%, transparent 59% 69%, #3556d8 69% 70%, transparent 70% 82%, #d94c35 82% 83%, transparent 83% 100%);
-    clip-path: polygon(0 48%, 5% 30%, 10% 70%, 15% 20%, 20% 60%, 25% 45%, 30% 54%, 35% 14%, 40% 79%, 45% 38%, 50% 52%, 55% 28%, 60% 70%, 65% 45%, 70% 59%, 75% 22%, 80% 74%, 85% 38%, 90% 60%, 95% 34%, 100% 50%, 100% 54%, 0 54%); }
-  .prototype--temporal-score .frequency-marker { position: absolute; left: 48%; top: 287px; display: flex; align-items: baseline; gap: 4px; color: #3556d8; }
-  .prototype--temporal-score .frequency-marker::before { content: ""; position: absolute; left: 50%; bottom: 42px; width: 2px; height: 76px; background: #3556d8; }
-  .prototype--temporal-score .frequency-marker strong { font-size: 52px; letter-spacing: -.06em; }
-  .prototype--temporal-score .frequency-marker span { font-size: 13px; }
-  .prototype--temporal-score .range-caption { position: absolute; left: 0; right: 0; top: 378px; display: flex; justify-content: space-between; font: 10px ui-monospace, monospace; }
-  .prototype--temporal-score .headphone-controls { min-height: 525px; padding-left: 22px; border-left: 1px solid #171715; display: grid; align-content: start; gap: 14px; }
-  .prototype--temporal-score .mode-row { border-top: 1px solid #171715; border-bottom: 1px solid #171715; }
-  .prototype--temporal-score .mode-row button { min-height: 46px; border: 0; border-right: 1px solid #171715; background: transparent; font-size: 11px; font-weight: 760; text-transform: uppercase; }
-  .prototype--temporal-score .mode-row button:last-child { border-right: 0; }
-  .prototype--temporal-score .mode-row .is-active { background: #3556d8; color: white; }
-  .prototype--temporal-score .safety-line { display: grid; gap: 3px; padding: 9px 0; border-bottom: 1px solid #171715; font-size: 10px; }
-  .prototype--temporal-score .safety-line strong { color: #d94c35; letter-spacing: .12em; }
-  .prototype--temporal-score .control-grid { grid-template-columns: 1fr; border-bottom: 1px solid #171715; }
-  .prototype--temporal-score .control-grid label { display: flex; justify-content: space-between; align-items: center; min-height: 46px; border-top: 1px solid rgb(23 23 21 / .24); }
-  .prototype--temporal-score .control-grid span { font-size: 9px; letter-spacing: .12em; text-transform: uppercase; }
-  .prototype--temporal-score .control-grid strong { font: 14px ui-monospace, monospace; }
-  .prototype--temporal-score .level-control i { display: none; }
-  .prototype--temporal-score .primary { min-height: 48px; flex: 1; border: 2px solid #171715; border-radius: 0; background: #171715; color: #fbfaf5; font-weight: 780; }
-  .prototype--temporal-score .quiet { min-height: 48px; border: 2px solid #171715; border-radius: 0; background: transparent; }
+  .prototype--temporal-score .field-orbit {
+    display: none;
+  }
+  .prototype--temporal-score .channel {
+    position: absolute;
+    top: 76px;
+    display: grid;
+    place-items: center;
+    width: 92px;
+    height: 92px;
+    border: 2px solid #171715;
+    border-radius: 50%;
+    background: #fbfaf5;
+    color: #171715;
+  }
+  .prototype--temporal-score .channel span {
+    font-size: 28px;
+    font-weight: 820;
+  }
+  .prototype--temporal-score .channel small {
+    position: absolute;
+    bottom: -22px;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+  .prototype--temporal-score .channel--left {
+    left: 9%;
+    border-color: #3556d8;
+    color: #3556d8;
+  }
+  .prototype--temporal-score .channel--both {
+    left: 50%;
+    translate: -50% 0;
+    width: 70px;
+    height: 70px;
+    top: 87px;
+    background: #171715;
+    color: #fbfaf5;
+  }
+  .prototype--temporal-score .channel--right {
+    right: 9%;
+    border-color: #d94c35;
+    color: #d94c35;
+  }
+  .prototype--temporal-score .field-trace {
+    position: absolute;
+    left: 6%;
+    right: 6%;
+    top: 244px;
+    height: 24px;
+    background: linear-gradient(
+      135deg,
+      transparent 0 6%,
+      #3556d8 6% 7%,
+      transparent 7% 11%,
+      #171715 11% 12%,
+      transparent 12% 18%,
+      #d94c35 18% 19%,
+      transparent 19% 26%,
+      #171715 26% 27%,
+      transparent 27% 34%,
+      #3556d8 34% 35%,
+      transparent 35% 46%,
+      #d94c35 46% 47%,
+      transparent 47% 58%,
+      #171715 58% 59%,
+      transparent 59% 69%,
+      #3556d8 69% 70%,
+      transparent 70% 82%,
+      #d94c35 82% 83%,
+      transparent 83% 100%
+    );
+    clip-path: polygon(
+      0 48%,
+      5% 30%,
+      10% 70%,
+      15% 20%,
+      20% 60%,
+      25% 45%,
+      30% 54%,
+      35% 14%,
+      40% 79%,
+      45% 38%,
+      50% 52%,
+      55% 28%,
+      60% 70%,
+      65% 45%,
+      70% 59%,
+      75% 22%,
+      80% 74%,
+      85% 38%,
+      90% 60%,
+      95% 34%,
+      100% 50%,
+      100% 54%,
+      0 54%
+    );
+  }
+  .prototype--temporal-score .frequency-marker {
+    position: absolute;
+    left: 48%;
+    top: 287px;
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    color: #3556d8;
+  }
+  .prototype--temporal-score .frequency-marker::before {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 42px;
+    width: 2px;
+    height: 76px;
+    background: #3556d8;
+  }
+  .prototype--temporal-score .frequency-marker strong {
+    font-size: 52px;
+    letter-spacing: -0.06em;
+  }
+  .prototype--temporal-score .frequency-marker span {
+    font-size: 13px;
+  }
+  .prototype--temporal-score .range-caption {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 378px;
+    display: flex;
+    justify-content: space-between;
+    font:
+      10px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .headphone-controls {
+    min-height: 525px;
+    padding-left: 22px;
+    border-left: 1px solid #171715;
+    display: grid;
+    align-content: start;
+    gap: 14px;
+  }
+  .prototype--temporal-score .mode-row {
+    border-top: 1px solid #171715;
+    border-bottom: 1px solid #171715;
+  }
+  .prototype--temporal-score .mode-row button {
+    min-height: 46px;
+    border: 0;
+    border-right: 1px solid #171715;
+    background: transparent;
+    font-size: 11px;
+    font-weight: 760;
+    text-transform: uppercase;
+  }
+  .prototype--temporal-score .mode-row button:last-child {
+    border-right: 0;
+  }
+  .prototype--temporal-score .mode-row .is-active {
+    background: #3556d8;
+    color: white;
+  }
+  .prototype--temporal-score .safety-line {
+    display: grid;
+    gap: 3px;
+    padding: 9px 0;
+    border-bottom: 1px solid #171715;
+    font-size: 10px;
+  }
+  .prototype--temporal-score .safety-line strong {
+    color: #d94c35;
+    letter-spacing: 0.12em;
+  }
+  .prototype--temporal-score .control-grid {
+    grid-template-columns: 1fr;
+    border-bottom: 1px solid #171715;
+  }
+  .prototype--temporal-score .control-grid label {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    min-height: 46px;
+    border-top: 1px solid rgb(23 23 21 / 0.24);
+  }
+  .prototype--temporal-score .control-grid span {
+    font-size: 9px;
+    letter-spacing: 0.12em;
+    text-transform: uppercase;
+  }
+  .prototype--temporal-score .control-grid strong {
+    font:
+      14px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .level-control i {
+    display: none;
+  }
+  .prototype--temporal-score .primary {
+    min-height: 48px;
+    flex: 1;
+    border: 2px solid #171715;
+    border-radius: 0;
+    background: #171715;
+    color: #fbfaf5;
+    font-weight: 780;
+  }
+  .prototype--temporal-score .quiet {
+    min-height: 48px;
+    border: 2px solid #171715;
+    border-radius: 0;
+    background: transparent;
+  }
 
-  .prototype--temporal-score .spectrum { display: grid; grid-template-rows: minmax(360px, 1fr) auto; }
-  .prototype--temporal-score .spectrum-field { position: relative; min-height: 395px; padding: 30px 0 62px 54px; }
-  .prototype--temporal-score .spectrogram { position: absolute; inset: 34px 0 70px 54px; display: flex; overflow: hidden; border-block: 2px solid #171715; background: #efeee8; }
-  .prototype--temporal-score .spectrogram::before { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(90deg, transparent 0 79px, rgb(23 23 21 / .14) 80px); }
-  .prototype--temporal-score .spectrogram i { flex: 1; background:
-    linear-gradient(to bottom, transparent 0 calc(18% + (var(--i) % 7) * 4%), #171715 calc(18% + (var(--i) % 7) * 4%) calc(19% + (var(--i) % 7) * 4%), transparent calc(19% + (var(--i) % 7) * 4%) 100%),
-    linear-gradient(to bottom, transparent 0 calc(60% - (var(--i) % 5) * 3%), #3556d8 calc(60% - (var(--i) % 5) * 3%) calc(62% - (var(--i) % 5) * 3%), transparent calc(62% - (var(--i) % 5) * 3%) 100%); opacity: calc(.45 + (var(--i) % 5) * .1); }
+  .prototype--temporal-score .spectrum {
+    display: grid;
+    grid-template-rows: minmax(360px, 1fr) auto;
+  }
+  .prototype--temporal-score .spectrum-field {
+    position: relative;
+    min-height: 395px;
+    padding: 30px 0 62px 54px;
+  }
+  .prototype--temporal-score .spectrogram {
+    position: absolute;
+    inset: 34px 0 70px 54px;
+    display: flex;
+    overflow: hidden;
+    border-block: 2px solid #171715;
+    background: #efeee8;
+  }
+  .prototype--temporal-score .spectrogram::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: repeating-linear-gradient(
+      90deg,
+      transparent 0 79px,
+      rgb(23 23 21 / 0.14) 80px
+    );
+  }
+  .prototype--temporal-score .spectrogram i {
+    flex: 1;
+    background:
+      linear-gradient(
+        to bottom,
+        transparent 0 calc(18% + (var(--i) % 7) * 4%),
+        #171715 calc(18% + (var(--i) % 7) * 4%) calc(19% + (var(--i) % 7) * 4%),
+        transparent calc(19% + (var(--i) % 7) * 4%) 100%
+      ),
+      linear-gradient(
+        to bottom,
+        transparent 0 calc(60% - (var(--i) % 5) * 3%),
+        #3556d8 calc(60% - (var(--i) % 5) * 3%) calc(62% - (var(--i) % 5) * 3%),
+        transparent calc(62% - (var(--i) % 5) * 3%) 100%
+      );
+    opacity: calc(0.45 + (var(--i) % 5) * 0.1);
+  }
   .prototype--temporal-score .spectral-line--a,
   .prototype--temporal-score .spectral-line--b,
-  .prototype--temporal-score .spectral-line--c { display: none; }
-  .prototype--temporal-score .playhead { position: absolute; top: 0; bottom: 0; left: 66%; width: 2px; background: #d94c35; }
-  .prototype--temporal-score .playhead::before { content: "PLAY"; position: absolute; top: -20px; left: -11px; color: #d94c35; font-size: 8px; font-weight: 850; }
-  .prototype--temporal-score .spectrum-ruler--x { position: absolute; left: 54px; right: 0; top: 12px; display: flex; justify-content: space-between; font: 9px ui-monospace, monospace; }
-  .prototype--temporal-score .spectrum-ruler--y { position: absolute; left: 0; top: 35px; bottom: 72px; display: flex; flex-direction: column; justify-content: space-between; font: 9px ui-monospace, monospace; }
-  .prototype--temporal-score .spectrum-meta { position: absolute; left: 54px; right: 0; bottom: 10px; display: grid; grid-template-columns: repeat(3, 1fr); border-top: 1px solid #171715; }
-  .prototype--temporal-score .spectrum-meta span { padding-top: 9px; display: grid; gap: 2px; }
-  .prototype--temporal-score .spectrum-meta small { font-size: 8px; letter-spacing: .1em; }
-  .prototype--temporal-score .spectrum-meta strong { font: 14px ui-monospace, monospace; }
-  .prototype--temporal-score .spectrum-controls { display: grid; grid-template-columns: 1.15fr 1fr 1.15fr 1.6fr; align-items: stretch; border-top: 2px solid #171715; }
-  .prototype--temporal-score .permission-line { padding: 12px 14px 12px 0; display: grid; gap: 2px; align-content: center; border-right: 1px solid #171715; font-size: 10px; }
-  .prototype--temporal-score .permission-line small { opacity: .56; }
-  .prototype--temporal-score .live-dot { display: none; }
-  .prototype--temporal-score .spectrum-controls .mode-row { border: 0; border-right: 1px solid #171715; }
-  .prototype--temporal-score .spectrum-controls .control-grid { grid-template-columns: 1fr; border: 0; border-right: 1px solid #171715; }
-  .prototype--temporal-score .spectrum-controls .control-grid label { min-height: 34px; }
-  .prototype--temporal-score .spectrum-controls .transport-row { padding-left: 14px; }
+  .prototype--temporal-score .spectral-line--c {
+    display: none;
+  }
+  .prototype--temporal-score .playhead {
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: 66%;
+    width: 2px;
+    background: #d94c35;
+  }
+  .prototype--temporal-score .playhead::before {
+    content: "PLAY";
+    position: absolute;
+    top: -20px;
+    left: -11px;
+    color: #d94c35;
+    font-size: 8px;
+    font-weight: 850;
+  }
+  .prototype--temporal-score .spectrum-ruler--x {
+    position: absolute;
+    left: 54px;
+    right: 0;
+    top: 12px;
+    display: flex;
+    justify-content: space-between;
+    font:
+      9px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .spectrum-ruler--y {
+    position: absolute;
+    left: 0;
+    top: 35px;
+    bottom: 72px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    font:
+      9px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .spectrum-meta {
+    position: absolute;
+    left: 54px;
+    right: 0;
+    bottom: 10px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    border-top: 1px solid #171715;
+  }
+  .prototype--temporal-score .spectrum-meta span {
+    padding-top: 9px;
+    display: grid;
+    gap: 2px;
+  }
+  .prototype--temporal-score .spectrum-meta small {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+  .prototype--temporal-score .spectrum-meta strong {
+    font:
+      14px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .spectrum-controls {
+    display: grid;
+    grid-template-columns: 1.15fr 1fr 1.15fr 1.6fr;
+    align-items: stretch;
+    border-top: 2px solid #171715;
+  }
+  .prototype--temporal-score .permission-line {
+    padding: 12px 14px 12px 0;
+    display: grid;
+    gap: 2px;
+    align-content: center;
+    border-right: 1px solid #171715;
+    font-size: 10px;
+  }
+  .prototype--temporal-score .permission-line small {
+    opacity: 0.56;
+  }
+  .prototype--temporal-score .live-dot {
+    display: none;
+  }
+  .prototype--temporal-score .spectrum-controls .mode-row {
+    border: 0;
+    border-right: 1px solid #171715;
+  }
+  .prototype--temporal-score .spectrum-controls .control-grid {
+    grid-template-columns: 1fr;
+    border: 0;
+    border-right: 1px solid #171715;
+  }
+  .prototype--temporal-score .spectrum-controls .control-grid label {
+    min-height: 34px;
+  }
+  .prototype--temporal-score .spectrum-controls .transport-row {
+    padding-left: 14px;
+  }
 
-  .prototype--temporal-score .hearing { display: grid; grid-template-columns: minmax(0, 1fr) 380px; gap: 34px; }
-  .prototype--temporal-score .hearing-field { position: relative; min-height: 525px; }
-  .prototype--temporal-score .hearing-axis { position: absolute; left: 0; right: 0; top: 248px; display: grid; grid-template-columns: repeat(10, 1fr); border-top: 2px solid #171715; }
-  .prototype--temporal-score .hearing-axis span { position: relative; display: grid; justify-items: center; gap: 9px; padding-top: 15px; border-left: 1px solid rgb(23 23 21 / .26); }
-  .prototype--temporal-score .hearing-axis span:last-child { border-right: 1px solid rgb(23 23 21 / .26); }
-  .prototype--temporal-score .hearing-axis i { position: absolute; top: -8px; width: 14px; height: 14px; border: 2px solid #171715; border-radius: 50%; background: #fbfaf5; }
-  .prototype--temporal-score .hearing-axis .is-past i { background: #3556d8; border-color: #3556d8; }
-  .prototype--temporal-score .hearing-axis .is-current i { width: 19px; height: 19px; top: -11px; border-color: #d94c35; background: #d94c35; }
-  .prototype--temporal-score .hearing-axis small { font: 9px ui-monospace, monospace; }
-  .prototype--temporal-score .hearing-current { position: absolute; left: 42%; top: 55px; display: grid; grid-template-columns: auto auto; align-items: baseline; }
-  .prototype--temporal-score .hearing-current::after { content: ""; position: absolute; left: 50%; top: 110px; width: 2px; height: 83px; background: #d94c35; }
-  .prototype--temporal-score .hearing-current small { grid-column: 1 / -1; color: #d94c35; }
-  .prototype--temporal-score .hearing-current strong { font-size: 94px; line-height: .9; letter-spacing: -.075em; }
-  .prototype--temporal-score .hearing-current > span { color: #d94c35; font-size: 18px; }
-  .prototype--temporal-score .hearing-current p { grid-column: 1 / -1; margin: 6px 0 0; font: 10px ui-monospace, monospace; }
-  .prototype--temporal-score .hearing-observation { position: absolute; left: 0; right: 0; bottom: 40px; border-top: 1px solid #171715; padding-top: 12px; }
-  .prototype--temporal-score .hearing-observation div { display: flex; gap: 8px; margin-top: 8px; }
-  .prototype--temporal-score .hearing-observation div span { padding: 4px 8px; background: #3556d8; color: white; font: 9px ui-monospace, monospace; }
-  .prototype--temporal-score .hearing-observation p { margin: 9px 0 0; font-size: 10px; }
-  .prototype--temporal-score .hearing-controls { min-height: 525px; padding-left: 22px; border-left: 1px solid #171715; display: grid; align-content: start; gap: 16px; }
-  .prototype--temporal-score .question { display: grid; gap: 14px; padding-top: 20px; border-top: 3px solid #171715; }
-  .prototype--temporal-score .question h2 { margin: 0; font-size: 29px; line-height: 1.02; letter-spacing: -.045em; }
-  .prototype--temporal-score .question > div { display: grid; grid-template-columns: 1fr 1fr; gap: 0; border: 2px solid #171715; }
-  .prototype--temporal-score .answer { min-height: 62px; border: 0; border-right: 2px solid #171715; border-radius: 0; background: transparent; font-weight: 800; }
-  .prototype--temporal-score .answer:last-child { border-right: 0; }
-  .prototype--temporal-score .answer--yes { color: #3556d8; }
-  .prototype--temporal-score .answer--no { color: #d94c35; }
-  .prototype--temporal-score .question p { margin: 0; font-size: 10px; line-height: 1.45; opacity: .6; }
-  .prototype--temporal-score .session-progress { font: 12px ui-monospace, monospace; }
+  .prototype--temporal-score .hearing {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) 380px;
+    gap: 34px;
+  }
+  .prototype--temporal-score .hearing-field {
+    position: relative;
+    min-height: 525px;
+  }
+  .prototype--temporal-score .hearing-axis {
+    position: absolute;
+    left: 0;
+    right: 0;
+    top: 248px;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    border-top: 2px solid #171715;
+  }
+  .prototype--temporal-score .hearing-axis span {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 9px;
+    padding-top: 15px;
+    border-left: 1px solid rgb(23 23 21 / 0.26);
+  }
+  .prototype--temporal-score .hearing-axis span:last-child {
+    border-right: 1px solid rgb(23 23 21 / 0.26);
+  }
+  .prototype--temporal-score .hearing-axis i {
+    position: absolute;
+    top: -8px;
+    width: 14px;
+    height: 14px;
+    border: 2px solid #171715;
+    border-radius: 50%;
+    background: #fbfaf5;
+  }
+  .prototype--temporal-score .hearing-axis .is-past i {
+    background: #3556d8;
+    border-color: #3556d8;
+  }
+  .prototype--temporal-score .hearing-axis .is-current i {
+    width: 19px;
+    height: 19px;
+    top: -11px;
+    border-color: #d94c35;
+    background: #d94c35;
+  }
+  .prototype--temporal-score .hearing-axis small {
+    font:
+      9px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .hearing-current {
+    position: absolute;
+    left: 42%;
+    top: 55px;
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: baseline;
+  }
+  .prototype--temporal-score .hearing-current::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    top: 110px;
+    width: 2px;
+    height: 83px;
+    background: #d94c35;
+  }
+  .prototype--temporal-score .hearing-current small {
+    grid-column: 1 / -1;
+    color: #d94c35;
+  }
+  .prototype--temporal-score .hearing-current strong {
+    font-size: 94px;
+    line-height: 0.9;
+    letter-spacing: -0.075em;
+  }
+  .prototype--temporal-score .hearing-current > span {
+    color: #d94c35;
+    font-size: 18px;
+  }
+  .prototype--temporal-score .hearing-current p {
+    grid-column: 1 / -1;
+    margin: 6px 0 0;
+    font:
+      10px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .hearing-observation {
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 40px;
+    border-top: 1px solid #171715;
+    padding-top: 12px;
+  }
+  .prototype--temporal-score .hearing-observation div {
+    display: flex;
+    gap: 8px;
+    margin-top: 8px;
+  }
+  .prototype--temporal-score .hearing-observation div span {
+    padding: 4px 8px;
+    background: #3556d8;
+    color: white;
+    font:
+      9px ui-monospace,
+      monospace;
+  }
+  .prototype--temporal-score .hearing-observation p {
+    margin: 9px 0 0;
+    font-size: 10px;
+  }
+  .prototype--temporal-score .hearing-controls {
+    min-height: 525px;
+    padding-left: 22px;
+    border-left: 1px solid #171715;
+    display: grid;
+    align-content: start;
+    gap: 16px;
+  }
+  .prototype--temporal-score .question {
+    display: grid;
+    gap: 14px;
+    padding-top: 20px;
+    border-top: 3px solid #171715;
+  }
+  .prototype--temporal-score .question h2 {
+    margin: 0;
+    font-size: 29px;
+    line-height: 1.02;
+    letter-spacing: -0.045em;
+  }
+  .prototype--temporal-score .question > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0;
+    border: 2px solid #171715;
+  }
+  .prototype--temporal-score .answer {
+    min-height: 62px;
+    border: 0;
+    border-right: 2px solid #171715;
+    border-radius: 0;
+    background: transparent;
+    font-weight: 800;
+  }
+  .prototype--temporal-score .answer:last-child {
+    border-right: 0;
+  }
+  .prototype--temporal-score .answer--yes {
+    color: #3556d8;
+  }
+  .prototype--temporal-score .answer--no {
+    color: #d94c35;
+  }
+  .prototype--temporal-score .question p {
+    margin: 0;
+    font-size: 10px;
+    line-height: 1.45;
+    opacity: 0.6;
+  }
+  .prototype--temporal-score .session-progress {
+    font:
+      12px ui-monospace,
+      monospace;
+  }
 
   /* ----------------------------------------------------------
      C · ACOUSTIC MAP
      Frequency/time/energy and thresholds become a continuous terrain.
   ---------------------------------------------------------- */
-  .prototype--acoustic-map { color: #172329; background: #e8e0d4; }
-  .prototype--acoustic-map .sitebar { border-color: rgb(23 35 41 / .2); }
-  .prototype--acoustic-map .direction-tag > span { background: #193e4a; color: #f6f0e7; }
-  .prototype--acoustic-map .identity h1 { color: #12323c; }
-  .prototype--acoustic-map .instrument { position: relative; border-radius: 18px; background: #f4efe7; box-shadow: 0 18px 50px rgb(50 39 26 / .12); }
-  .prototype--acoustic-map .instrument::before { content: ""; position: absolute; inset: 0; pointer-events: none; background: linear-gradient(90deg, rgb(255 255 255 / .38), transparent 44%); }
+  .prototype--acoustic-map {
+    color: #172329;
+    background: #e8e0d4;
+  }
+  .prototype--acoustic-map .sitebar {
+    border-color: rgb(23 35 41 / 0.2);
+  }
+  .prototype--acoustic-map .direction-tag > span {
+    background: #193e4a;
+    color: #f6f0e7;
+  }
+  .prototype--acoustic-map .identity h1 {
+    color: #12323c;
+  }
+  .prototype--acoustic-map .instrument {
+    position: relative;
+    border-radius: 18px;
+    background: #f4efe7;
+    box-shadow: 0 18px 50px rgb(50 39 26 / 0.12);
+  }
+  .prototype--acoustic-map .instrument::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background: linear-gradient(
+      90deg,
+      rgb(255 255 255 / 0.38),
+      transparent 44%
+    );
+  }
   .prototype--acoustic-map .headphone,
   .prototype--acoustic-map .spectrum,
-  .prototype--acoustic-map .hearing { display: grid; grid-template-columns: minmax(0, 1.5fr) minmax(340px, .62fr); }
+  .prototype--acoustic-map .hearing {
+    display: grid;
+    grid-template-columns: minmax(0, 1.5fr) minmax(340px, 0.62fr);
+  }
   .prototype--acoustic-map .headphone-field,
   .prototype--acoustic-map .spectrum-field,
-  .prototype--acoustic-map .hearing-field { position: relative; min-height: 525px; overflow: hidden; border-right: 1px solid rgb(23 35 41 / .14); background:
-    radial-gradient(ellipse at 25% 48%, rgb(35 132 150 / .30), transparent 23%),
-    radial-gradient(ellipse at 73% 43%, rgb(209 115 72 / .26), transparent 25%),
-    radial-gradient(circle at 52% 64%, rgb(216 172 74 / .22), transparent 25%),
-    #d7e0dd; }
+  .prototype--acoustic-map .hearing-field {
+    position: relative;
+    min-height: 525px;
+    overflow: hidden;
+    border-right: 1px solid rgb(23 35 41 / 0.14);
+    background:
+      radial-gradient(
+        ellipse at 25% 48%,
+        rgb(35 132 150 / 0.3),
+        transparent 23%
+      ),
+      radial-gradient(
+        ellipse at 73% 43%,
+        rgb(209 115 72 / 0.26),
+        transparent 25%
+      ),
+      radial-gradient(
+        circle at 52% 64%,
+        rgb(216 172 74 / 0.22),
+        transparent 25%
+      ),
+      #d7e0dd;
+  }
   .prototype--acoustic-map .headphone-field::before,
   .prototype--acoustic-map .spectrum-field::before,
-  .prototype--acoustic-map .hearing-field::before { content: ""; position: absolute; inset: -20%; background: repeating-radial-gradient(ellipse at 52% 48%, transparent 0 32px, rgb(16 57 67 / .11) 33px 34px, transparent 35px 58px); rotate: -8deg; opacity: .7; }
+  .prototype--acoustic-map .hearing-field::before {
+    content: "";
+    position: absolute;
+    inset: -20%;
+    background: repeating-radial-gradient(
+      ellipse at 52% 48%,
+      transparent 0 32px,
+      rgb(16 57 67 / 0.11) 33px 34px,
+      transparent 35px 58px
+    );
+    rotate: -8deg;
+    opacity: 0.7;
+  }
   .prototype--acoustic-map .headphone-controls,
   .prototype--acoustic-map .spectrum-controls,
-  .prototype--acoustic-map .hearing-controls { position: relative; z-index: 2; padding: 22px; display: grid; align-content: start; gap: 14px; background: rgb(246 241 232 / .82); backdrop-filter: blur(10px); }
-  .prototype--acoustic-map .field-label { position: absolute; z-index: 4; top: 18px; left: 20px; color: #315966; }
-  .prototype--acoustic-map .field-axis--x { position: absolute; z-index: 2; left: 8%; right: 8%; top: 55%; height: 1px; background: rgb(18 50 60 / .3); }
-  .prototype--acoustic-map .field-axis--y { position: absolute; z-index: 2; top: 10%; bottom: 10%; left: 50%; width: 1px; background: rgb(18 50 60 / .22); }
-  .prototype--acoustic-map .field-orbit { position: absolute; z-index: 1; left: 50%; top: 52%; translate: -50% -50%; border: 1px solid rgb(18 50 60 / .24); border-radius: 50%; }
-  .prototype--acoustic-map .field-orbit--one { width: 410px; height: 290px; }
-  .prototype--acoustic-map .field-orbit--two { width: 540px; height: 170px; }
-  .prototype--acoustic-map .channel { position: absolute; z-index: 5; display: grid; place-items: center; gap: 2px; width: 88px; height: 88px; border: 1px solid rgb(18 50 60 / .5); border-radius: 50%; background: rgb(244 239 231 / .72); color: #12323c; box-shadow: 0 8px 20px rgb(41 50 47 / .08); }
-  .prototype--acoustic-map .channel span { font-size: 25px; font-weight: 800; }
-  .prototype--acoustic-map .channel small { font-size: 8px; letter-spacing: .1em; }
-  .prototype--acoustic-map .channel--left { left: 13%; top: 44%; color: #1b7890; }
-  .prototype--acoustic-map .channel--right { right: 13%; top: 44%; color: #a94f34; }
-  .prototype--acoustic-map .channel--both { left: 50%; top: 55%; translate: -50% -50%; width: 66px; height: 66px; color: #7b5d15; }
-  .prototype--acoustic-map .field-trace { position: absolute; z-index: 3; left: 50%; top: 50%; width: 310px; height: 210px; translate: -50% -50%; border: 2px solid rgb(18 50 60 / .5); border-radius: 52% 48% 61% 39% / 39% 54% 46% 61%; rotate: 12deg; }
+  .prototype--acoustic-map .hearing-controls {
+    position: relative;
+    z-index: 2;
+    padding: 22px;
+    display: grid;
+    align-content: start;
+    gap: 14px;
+    background: rgb(246 241 232 / 0.82);
+    backdrop-filter: blur(10px);
+  }
+  .prototype--acoustic-map .field-label {
+    position: absolute;
+    z-index: 4;
+    top: 18px;
+    left: 20px;
+    color: #315966;
+  }
+  .prototype--acoustic-map .field-axis--x {
+    position: absolute;
+    z-index: 2;
+    left: 8%;
+    right: 8%;
+    top: 55%;
+    height: 1px;
+    background: rgb(18 50 60 / 0.3);
+  }
+  .prototype--acoustic-map .field-axis--y {
+    position: absolute;
+    z-index: 2;
+    top: 10%;
+    bottom: 10%;
+    left: 50%;
+    width: 1px;
+    background: rgb(18 50 60 / 0.22);
+  }
+  .prototype--acoustic-map .field-orbit {
+    position: absolute;
+    z-index: 1;
+    left: 50%;
+    top: 52%;
+    translate: -50% -50%;
+    border: 1px solid rgb(18 50 60 / 0.24);
+    border-radius: 50%;
+  }
+  .prototype--acoustic-map .field-orbit--one {
+    width: 410px;
+    height: 290px;
+  }
+  .prototype--acoustic-map .field-orbit--two {
+    width: 540px;
+    height: 170px;
+  }
+  .prototype--acoustic-map .channel {
+    position: absolute;
+    z-index: 5;
+    display: grid;
+    place-items: center;
+    gap: 2px;
+    width: 88px;
+    height: 88px;
+    border: 1px solid rgb(18 50 60 / 0.5);
+    border-radius: 50%;
+    background: rgb(244 239 231 / 0.72);
+    color: #12323c;
+    box-shadow: 0 8px 20px rgb(41 50 47 / 0.08);
+  }
+  .prototype--acoustic-map .channel span {
+    font-size: 25px;
+    font-weight: 800;
+  }
+  .prototype--acoustic-map .channel small {
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+  .prototype--acoustic-map .channel--left {
+    left: 13%;
+    top: 44%;
+    color: #1b7890;
+  }
+  .prototype--acoustic-map .channel--right {
+    right: 13%;
+    top: 44%;
+    color: #a94f34;
+  }
+  .prototype--acoustic-map .channel--both {
+    left: 50%;
+    top: 55%;
+    translate: -50% -50%;
+    width: 66px;
+    height: 66px;
+    color: #7b5d15;
+  }
+  .prototype--acoustic-map .field-trace {
+    position: absolute;
+    z-index: 3;
+    left: 50%;
+    top: 50%;
+    width: 310px;
+    height: 210px;
+    translate: -50% -50%;
+    border: 2px solid rgb(18 50 60 / 0.5);
+    border-radius: 52% 48% 61% 39% / 39% 54% 46% 61%;
+    rotate: 12deg;
+  }
   .prototype--acoustic-map .field-trace::before,
-  .prototype--acoustic-map .field-trace::after { content: ""; position: absolute; inset: 23px; border: 1px solid rgb(27 120 144 / .5); border-radius: 45% 55% 40% 60%; rotate: -17deg; }
-  .prototype--acoustic-map .field-trace::after { inset: 48px; border-color: rgb(169 79 52 / .45); rotate: 38deg; }
-  .prototype--acoustic-map .frequency-marker { position: absolute; z-index: 6; left: 50%; top: 17%; translate: -50% 0; display: flex; align-items: baseline; gap: 5px; color: #12323c; }
-  .prototype--acoustic-map .frequency-marker strong { font-size: 55px; letter-spacing: -.06em; }
-  .prototype--acoustic-map .frequency-marker span { color: #7b5d15; font-size: 15px; }
-  .prototype--acoustic-map .range-caption { position: absolute; z-index: 3; left: 22px; right: 22px; bottom: 18px; display: flex; justify-content: space-between; color: #46636a; font-size: 9px; }
-  .prototype--acoustic-map .mode-row { gap: 7px; }
-  .prototype--acoustic-map .mode-row button { min-height: 42px; border: 1px solid rgb(18 50 60 / .2); border-radius: 8px; background: rgb(255 255 255 / .34); color: #31535c; font-size: 11px; font-weight: 760; }
-  .prototype--acoustic-map .mode-row .is-active { border-color: #1b7890; background: #1b7890; color: #f6f0e7; }
-  .prototype--acoustic-map .safety-line { padding: 9px 10px; border-left: 3px solid #b78927; background: rgb(222 188 111 / .16); font-size: 10px; line-height: 1.45; }
-  .prototype--acoustic-map .safety-line strong { color: #8a6318; font-size: 9px; letter-spacing: .1em; }
-  .prototype--acoustic-map .control-grid { gap: 8px; }
-  .prototype--acoustic-map .control-grid label { padding: 10px; border: 1px solid rgb(18 50 60 / .16); border-radius: 8px; background: rgb(255 255 255 / .28); }
-  .prototype--acoustic-map .control-grid span { color: #5d7479; font-size: 8px; letter-spacing: .11em; text-transform: uppercase; }
-  .prototype--acoustic-map .control-grid strong { margin-top: 4px; font-size: 14px; }
-  .prototype--acoustic-map .level-control { grid-column: 1 / -1; }
-  .prototype--acoustic-map .level-control i { display: block; height: 5px; margin-top: 9px; border-radius: 4px; background: rgb(18 50 60 / .12); }
-  .prototype--acoustic-map .level-control b { display: block; width: 68%; height: 100%; border-radius: inherit; background: linear-gradient(90deg, #1b7890, #6d9e8a); }
-  .prototype--acoustic-map .primary { min-height: 48px; flex: 1; border: 0; border-radius: 8px; background: #12323c; color: #f6f0e7; font-weight: 780; }
-  .prototype--acoustic-map .quiet { min-height: 48px; padding: 0 14px; border: 1px solid rgb(18 50 60 / .22); border-radius: 8px; background: transparent; color: #36545d; }
+  .prototype--acoustic-map .field-trace::after {
+    content: "";
+    position: absolute;
+    inset: 23px;
+    border: 1px solid rgb(27 120 144 / 0.5);
+    border-radius: 45% 55% 40% 60%;
+    rotate: -17deg;
+  }
+  .prototype--acoustic-map .field-trace::after {
+    inset: 48px;
+    border-color: rgb(169 79 52 / 0.45);
+    rotate: 38deg;
+  }
+  .prototype--acoustic-map .frequency-marker {
+    position: absolute;
+    z-index: 6;
+    left: 50%;
+    top: 17%;
+    translate: -50% 0;
+    display: flex;
+    align-items: baseline;
+    gap: 5px;
+    color: #12323c;
+  }
+  .prototype--acoustic-map .frequency-marker strong {
+    font-size: 55px;
+    letter-spacing: -0.06em;
+  }
+  .prototype--acoustic-map .frequency-marker span {
+    color: #7b5d15;
+    font-size: 15px;
+  }
+  .prototype--acoustic-map .range-caption {
+    position: absolute;
+    z-index: 3;
+    left: 22px;
+    right: 22px;
+    bottom: 18px;
+    display: flex;
+    justify-content: space-between;
+    color: #46636a;
+    font-size: 9px;
+  }
+  .prototype--acoustic-map .mode-row {
+    gap: 7px;
+  }
+  .prototype--acoustic-map .mode-row button {
+    min-height: 42px;
+    border: 1px solid rgb(18 50 60 / 0.2);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 0.34);
+    color: #31535c;
+    font-size: 11px;
+    font-weight: 760;
+  }
+  .prototype--acoustic-map .mode-row .is-active {
+    border-color: #1b7890;
+    background: #1b7890;
+    color: #f6f0e7;
+  }
+  .prototype--acoustic-map .safety-line {
+    padding: 9px 10px;
+    border-left: 3px solid #b78927;
+    background: rgb(222 188 111 / 0.16);
+    font-size: 10px;
+    line-height: 1.45;
+  }
+  .prototype--acoustic-map .safety-line strong {
+    color: #8a6318;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+  }
+  .prototype--acoustic-map .control-grid {
+    gap: 8px;
+  }
+  .prototype--acoustic-map .control-grid label {
+    padding: 10px;
+    border: 1px solid rgb(18 50 60 / 0.16);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 0.28);
+  }
+  .prototype--acoustic-map .control-grid span {
+    color: #5d7479;
+    font-size: 8px;
+    letter-spacing: 0.11em;
+    text-transform: uppercase;
+  }
+  .prototype--acoustic-map .control-grid strong {
+    margin-top: 4px;
+    font-size: 14px;
+  }
+  .prototype--acoustic-map .level-control {
+    grid-column: 1 / -1;
+  }
+  .prototype--acoustic-map .level-control i {
+    display: block;
+    height: 5px;
+    margin-top: 9px;
+    border-radius: 4px;
+    background: rgb(18 50 60 / 0.12);
+  }
+  .prototype--acoustic-map .level-control b {
+    display: block;
+    width: 68%;
+    height: 100%;
+    border-radius: inherit;
+    background: linear-gradient(90deg, #1b7890, #6d9e8a);
+  }
+  .prototype--acoustic-map .primary {
+    min-height: 48px;
+    flex: 1;
+    border: 0;
+    border-radius: 8px;
+    background: #12323c;
+    color: #f6f0e7;
+    font-weight: 780;
+  }
+  .prototype--acoustic-map .quiet {
+    min-height: 48px;
+    padding: 0 14px;
+    border: 1px solid rgb(18 50 60 / 0.22);
+    border-radius: 8px;
+    background: transparent;
+    color: #36545d;
+  }
 
-  .prototype--acoustic-map .spectrum-field { padding: 34px 36px 74px 58px; background:
-    radial-gradient(circle at 66% 26%, rgb(216 172 74 / .28), transparent 20%),
-    radial-gradient(circle at 38% 68%, rgb(35 132 150 / .3), transparent 28%),
-    #cfdbd7; }
-  .prototype--acoustic-map .spectrogram { position: absolute; z-index: 2; inset: 38px 30px 78px 58px; display: flex; overflow: hidden; border-radius: 14px; background: #173844; box-shadow: inset 0 0 0 1px rgb(246 240 231 / .25); }
-  .prototype--acoustic-map .spectrogram i { flex: 1; background:
-    radial-gradient(ellipse at 50% calc(22% + (var(--i) % 6) * 7%), rgb(224 176 74 / .88), transparent 12%),
-    radial-gradient(ellipse at 50% calc(58% - (var(--i) % 4) * 6%), rgb(69 179 174 / .72), transparent 16%),
-    radial-gradient(ellipse at 50% 78%, rgb(172 77 56 / .48), transparent 13%); opacity: calc(.45 + (var(--i) % 6) * .08); }
-  .prototype--acoustic-map .spectrogram::after { content: ""; position: absolute; inset: 0; background: repeating-linear-gradient(0deg, transparent 0 39px, rgb(246 240 231 / .08) 40px), repeating-linear-gradient(90deg, transparent 0 69px, rgb(246 240 231 / .06) 70px); }
-  .prototype--acoustic-map .spectral-line { position: absolute; z-index: 3; left: 0; right: 0; height: 1px; background: #f0d173; opacity: .75; }
-  .prototype--acoustic-map .spectral-line--a { top: 31%; }
-  .prototype--acoustic-map .spectral-line--b { top: 53%; background: #66c6bd; }
-  .prototype--acoustic-map .spectral-line--c { top: 72%; background: #d78268; }
-  .prototype--acoustic-map .playhead { position: absolute; z-index: 4; top: 0; bottom: 0; left: 66%; width: 2px; background: #f6f0e7; }
-  .prototype--acoustic-map .spectrum-ruler--x { position: absolute; z-index: 4; left: 58px; right: 30px; bottom: 60px; display: flex; justify-content: space-between; color: #46636a; font-size: 8px; }
-  .prototype--acoustic-map .spectrum-ruler--y { position: absolute; z-index: 4; left: 14px; top: 38px; bottom: 79px; display: flex; flex-direction: column; justify-content: space-between; color: #46636a; font-size: 8px; }
-  .prototype--acoustic-map .spectrum-meta { position: absolute; z-index: 4; left: 58px; right: 30px; bottom: 17px; display: grid; grid-template-columns: repeat(3, 1fr); }
-  .prototype--acoustic-map .spectrum-meta span { display: grid; gap: 1px; }
-  .prototype--acoustic-map .spectrum-meta small { color: #668087; font-size: 8px; letter-spacing: .1em; }
-  .prototype--acoustic-map .spectrum-meta strong { font-size: 14px; }
-  .prototype--acoustic-map .permission-line { display: grid; grid-template-columns: auto 1fr; gap: 2px 8px; align-items: center; font-size: 10px; }
-  .prototype--acoustic-map .permission-line small { grid-column: 2; color: #6c7d80; }
-  .prototype--acoustic-map .live-dot { width: 7px; height: 7px; border-radius: 50%; background: #1b7890; }
+  .prototype--acoustic-map .spectrum-field {
+    padding: 34px 36px 74px 58px;
+    background:
+      radial-gradient(
+        circle at 66% 26%,
+        rgb(216 172 74 / 0.28),
+        transparent 20%
+      ),
+      radial-gradient(
+        circle at 38% 68%,
+        rgb(35 132 150 / 0.3),
+        transparent 28%
+      ),
+      #cfdbd7;
+  }
+  .prototype--acoustic-map .spectrogram {
+    position: absolute;
+    z-index: 2;
+    inset: 38px 30px 78px 58px;
+    display: flex;
+    overflow: hidden;
+    border-radius: 14px;
+    background: #173844;
+    box-shadow: inset 0 0 0 1px rgb(246 240 231 / 0.25);
+  }
+  .prototype--acoustic-map .spectrogram i {
+    flex: 1;
+    background:
+      radial-gradient(
+        ellipse at 50% calc(22% + (var(--i) % 6) * 7%),
+        rgb(224 176 74 / 0.88),
+        transparent 12%
+      ),
+      radial-gradient(
+        ellipse at 50% calc(58% - (var(--i) % 4) * 6%),
+        rgb(69 179 174 / 0.72),
+        transparent 16%
+      ),
+      radial-gradient(
+        ellipse at 50% 78%,
+        rgb(172 77 56 / 0.48),
+        transparent 13%
+      );
+    opacity: calc(0.45 + (var(--i) % 6) * 0.08);
+  }
+  .prototype--acoustic-map .spectrogram::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background:
+      repeating-linear-gradient(
+        0deg,
+        transparent 0 39px,
+        rgb(246 240 231 / 0.08) 40px
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0 69px,
+        rgb(246 240 231 / 0.06) 70px
+      );
+  }
+  .prototype--acoustic-map .spectral-line {
+    position: absolute;
+    z-index: 3;
+    left: 0;
+    right: 0;
+    height: 1px;
+    background: #f0d173;
+    opacity: 0.75;
+  }
+  .prototype--acoustic-map .spectral-line--a {
+    top: 31%;
+  }
+  .prototype--acoustic-map .spectral-line--b {
+    top: 53%;
+    background: #66c6bd;
+  }
+  .prototype--acoustic-map .spectral-line--c {
+    top: 72%;
+    background: #d78268;
+  }
+  .prototype--acoustic-map .playhead {
+    position: absolute;
+    z-index: 4;
+    top: 0;
+    bottom: 0;
+    left: 66%;
+    width: 2px;
+    background: #f6f0e7;
+  }
+  .prototype--acoustic-map .spectrum-ruler--x {
+    position: absolute;
+    z-index: 4;
+    left: 58px;
+    right: 30px;
+    bottom: 60px;
+    display: flex;
+    justify-content: space-between;
+    color: #46636a;
+    font-size: 8px;
+  }
+  .prototype--acoustic-map .spectrum-ruler--y {
+    position: absolute;
+    z-index: 4;
+    left: 14px;
+    top: 38px;
+    bottom: 79px;
+    display: flex;
+    flex-direction: column;
+    justify-content: space-between;
+    color: #46636a;
+    font-size: 8px;
+  }
+  .prototype--acoustic-map .spectrum-meta {
+    position: absolute;
+    z-index: 4;
+    left: 58px;
+    right: 30px;
+    bottom: 17px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+  }
+  .prototype--acoustic-map .spectrum-meta span {
+    display: grid;
+    gap: 1px;
+  }
+  .prototype--acoustic-map .spectrum-meta small {
+    color: #668087;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+  }
+  .prototype--acoustic-map .spectrum-meta strong {
+    font-size: 14px;
+  }
+  .prototype--acoustic-map .permission-line {
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 2px 8px;
+    align-items: center;
+    font-size: 10px;
+  }
+  .prototype--acoustic-map .permission-line small {
+    grid-column: 2;
+    color: #6c7d80;
+  }
+  .prototype--acoustic-map .live-dot {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: #1b7890;
+  }
 
-  .prototype--acoustic-map .hearing-field { padding: 28px; background:
-    radial-gradient(ellipse at 22% 75%, rgb(35 132 150 / .31), transparent 24%),
-    radial-gradient(ellipse at 72% 32%, rgb(216 172 74 / .28), transparent 28%),
-    #d7e0dd; }
-  .prototype--acoustic-map .hearing-axis { position: absolute; z-index: 3; left: 7%; right: 7%; top: 58%; display: grid; grid-template-columns: repeat(10, 1fr); align-items: end; }
-  .prototype--acoustic-map .hearing-axis::before { content: ""; position: absolute; left: 0; right: 0; bottom: 29px; height: 1px; background: rgb(18 50 60 / .32); }
-  .prototype--acoustic-map .hearing-axis span { position: relative; display: grid; justify-items: center; gap: 9px; color: #60777c; }
-  .prototype--acoustic-map .hearing-axis i { z-index: 1; width: 14px; height: 14px; border: 1px solid currentColor; border-radius: 50%; background: #d7e0dd; }
-  .prototype--acoustic-map .hearing-axis .is-past { color: #1b7890; }
-  .prototype--acoustic-map .hearing-axis .is-past i { background: #1b7890; }
-  .prototype--acoustic-map .hearing-axis .is-current { color: #a85f21; }
-  .prototype--acoustic-map .hearing-axis .is-current i { width: 23px; height: 23px; border: 5px solid rgb(246 240 231 / .9); background: #d89d39; box-shadow: 0 0 0 1px #a85f21; }
-  .prototype--acoustic-map .hearing-axis small { font-size: 8px; }
-  .prototype--acoustic-map .hearing-current { position: absolute; z-index: 4; left: 50%; top: 17%; translate: -50% 0; display: grid; grid-template-columns: auto auto; align-items: baseline; text-align: center; color: #12323c; }
-  .prototype--acoustic-map .hearing-current small { grid-column: 1 / -1; color: #587078; }
-  .prototype--acoustic-map .hearing-current strong { font-size: 88px; line-height: .94; letter-spacing: -.075em; }
-  .prototype--acoustic-map .hearing-current > span { color: #a85f21; font-size: 18px; }
-  .prototype--acoustic-map .hearing-current p { grid-column: 1 / -1; margin: 5px 0 0; color: #5c747a; font-size: 10px; }
-  .prototype--acoustic-map .hearing-observation { position: absolute; z-index: 4; left: 7%; right: 7%; bottom: 22px; padding: 12px 14px; border-radius: 10px; background: rgb(246 240 231 / .55); backdrop-filter: blur(7px); }
-  .prototype--acoustic-map .hearing-observation small { color: #62787d; }
-  .prototype--acoustic-map .hearing-observation div { display: flex; gap: 8px; margin-top: 7px; color: #1b7890; font-size: 10px; }
-  .prototype--acoustic-map .hearing-observation p { margin: 7px 0 0; color: #4b666d; font-size: 10px; }
-  .prototype--acoustic-map .question { display: grid; gap: 12px; padding: 15px; border: 1px solid rgb(18 50 60 / .16); border-radius: 10px; background: rgb(255 255 255 / .26); }
-  .prototype--acoustic-map .question small { color: #60777c; }
-  .prototype--acoustic-map .question h2 { margin: 0; font-size: 25px; line-height: 1.05; letter-spacing: -.04em; }
-  .prototype--acoustic-map .question > div { display: grid; grid-template-columns: 1fr 1fr; gap: 8px; }
-  .prototype--acoustic-map .answer { min-height: 54px; border: 1px solid rgb(18 50 60 / .22); border-radius: 8px; background: rgb(255 255 255 / .26); color: #12323c; font-weight: 760; }
-  .prototype--acoustic-map .answer--yes { border-color: #1b7890; color: #176679; }
-  .prototype--acoustic-map .answer--no { border-color: #a94f34; color: #8b432f; }
-  .prototype--acoustic-map .question p { margin: 0; color: #63777c; font-size: 10px; line-height: 1.45; }
-  .prototype--acoustic-map .session-progress { color: #12323c; font-size: 11px; font-weight: 800; letter-spacing: .08em; }
+  .prototype--acoustic-map .hearing-field {
+    padding: 28px;
+    background:
+      radial-gradient(
+        ellipse at 22% 75%,
+        rgb(35 132 150 / 0.31),
+        transparent 24%
+      ),
+      radial-gradient(
+        ellipse at 72% 32%,
+        rgb(216 172 74 / 0.28),
+        transparent 28%
+      ),
+      #d7e0dd;
+  }
+  .prototype--acoustic-map .hearing-axis {
+    position: absolute;
+    z-index: 3;
+    left: 7%;
+    right: 7%;
+    top: 58%;
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    align-items: end;
+  }
+  .prototype--acoustic-map .hearing-axis::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: 29px;
+    height: 1px;
+    background: rgb(18 50 60 / 0.32);
+  }
+  .prototype--acoustic-map .hearing-axis span {
+    position: relative;
+    display: grid;
+    justify-items: center;
+    gap: 9px;
+    color: #60777c;
+  }
+  .prototype--acoustic-map .hearing-axis i {
+    z-index: 1;
+    width: 14px;
+    height: 14px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    background: #d7e0dd;
+  }
+  .prototype--acoustic-map .hearing-axis .is-past {
+    color: #1b7890;
+  }
+  .prototype--acoustic-map .hearing-axis .is-past i {
+    background: #1b7890;
+  }
+  .prototype--acoustic-map .hearing-axis .is-current {
+    color: #a85f21;
+  }
+  .prototype--acoustic-map .hearing-axis .is-current i {
+    width: 23px;
+    height: 23px;
+    border: 5px solid rgb(246 240 231 / 0.9);
+    background: #d89d39;
+    box-shadow: 0 0 0 1px #a85f21;
+  }
+  .prototype--acoustic-map .hearing-axis small {
+    font-size: 8px;
+  }
+  .prototype--acoustic-map .hearing-current {
+    position: absolute;
+    z-index: 4;
+    left: 50%;
+    top: 17%;
+    translate: -50% 0;
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: baseline;
+    text-align: center;
+    color: #12323c;
+  }
+  .prototype--acoustic-map .hearing-current small {
+    grid-column: 1 / -1;
+    color: #587078;
+  }
+  .prototype--acoustic-map .hearing-current strong {
+    font-size: 88px;
+    line-height: 0.94;
+    letter-spacing: -0.075em;
+  }
+  .prototype--acoustic-map .hearing-current > span {
+    color: #a85f21;
+    font-size: 18px;
+  }
+  .prototype--acoustic-map .hearing-current p {
+    grid-column: 1 / -1;
+    margin: 5px 0 0;
+    color: #5c747a;
+    font-size: 10px;
+  }
+  .prototype--acoustic-map .hearing-observation {
+    position: absolute;
+    z-index: 4;
+    left: 7%;
+    right: 7%;
+    bottom: 22px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgb(246 240 231 / 0.55);
+    backdrop-filter: blur(7px);
+  }
+  .prototype--acoustic-map .hearing-observation small {
+    color: #62787d;
+  }
+  .prototype--acoustic-map .hearing-observation div {
+    display: flex;
+    gap: 8px;
+    margin-top: 7px;
+    color: #1b7890;
+    font-size: 10px;
+  }
+  .prototype--acoustic-map .hearing-observation p {
+    margin: 7px 0 0;
+    color: #4b666d;
+    font-size: 10px;
+  }
+  .prototype--acoustic-map .question {
+    display: grid;
+    gap: 12px;
+    padding: 15px;
+    border: 1px solid rgb(18 50 60 / 0.16);
+    border-radius: 10px;
+    background: rgb(255 255 255 / 0.26);
+  }
+  .prototype--acoustic-map .question small {
+    color: #60777c;
+  }
+  .prototype--acoustic-map .question h2 {
+    margin: 0;
+    font-size: 25px;
+    line-height: 1.05;
+    letter-spacing: -0.04em;
+  }
+  .prototype--acoustic-map .question > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 8px;
+  }
+  .prototype--acoustic-map .answer {
+    min-height: 54px;
+    border: 1px solid rgb(18 50 60 / 0.22);
+    border-radius: 8px;
+    background: rgb(255 255 255 / 0.26);
+    color: #12323c;
+    font-weight: 760;
+  }
+  .prototype--acoustic-map .answer--yes {
+    border-color: #1b7890;
+    color: #176679;
+  }
+  .prototype--acoustic-map .answer--no {
+    border-color: #a94f34;
+    color: #8b432f;
+  }
+  .prototype--acoustic-map .question p {
+    margin: 0;
+    color: #63777c;
+    font-size: 10px;
+    line-height: 1.45;
+  }
+  .prototype--acoustic-map .session-progress {
+    color: #12323c;
+    font-size: 11px;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+  }
 
   @media (max-width: 900px) {
-    .prototype { padding-inline: 18px; }
-    .identity { align-items: start; flex-direction: column; }
+    .prototype {
+      padding-inline: 18px;
+    }
+    .identity {
+      align-items: start;
+      flex-direction: column;
+    }
     .instrument,
     .prototype--stereo-field .instrument,
     .prototype--temporal-score .headphone,
     .prototype--temporal-score .hearing,
     .prototype--acoustic-map .headphone,
     .prototype--acoustic-map .spectrum,
-    .prototype--acoustic-map .hearing { grid-template-columns: 1fr; }
+    .prototype--acoustic-map .hearing {
+      grid-template-columns: 1fr;
+    }
     .prototype--stereo-field .headphone-field,
     .prototype--stereo-field .spectrum-field,
     .prototype--stereo-field .hearing-field,
     .prototype--acoustic-map .headphone-field,
     .prototype--acoustic-map .spectrum-field,
-    .prototype--acoustic-map .hearing-field { min-height: 430px; border-right: 0; border-bottom: 1px solid rgb(20 25 25 / .18); }
+    .prototype--acoustic-map .hearing-field {
+      min-height: 430px;
+      border-right: 0;
+      border-bottom: 1px solid rgb(20 25 25 / 0.18);
+    }
     .prototype--temporal-score .headphone-controls,
-    .prototype--temporal-score .hearing-controls { min-height: 0; padding: 18px 0 0; border-left: 0; border-top: 2px solid #171715; }
-    .prototype--temporal-score .spectrum-controls { grid-template-columns: 1fr; }
+    .prototype--temporal-score .hearing-controls {
+      min-height: 0;
+      padding: 18px 0 0;
+      border-left: 0;
+      border-top: 2px solid #171715;
+    }
+    .prototype--temporal-score .spectrum-controls {
+      grid-template-columns: 1fr;
+    }
   }
 </style>
