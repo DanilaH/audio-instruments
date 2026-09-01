@@ -94,3 +94,29 @@ test("Speaker spatial anchors stay fixed across mode changes", async ({
     expect(after).toEqual(before);
   }
 });
+
+test("Speaker channel targets are disabled outside Channel mode", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/speaker-test");
+
+  const targets = ["Left", "Both", "Right"] as const;
+  for (const name of targets) {
+    await expect(page.getByRole("button", { name, exact: true })).toBeEnabled();
+  }
+
+  for (const mode of ["Phase", "Sweep", "Bass / rattle"] as const) {
+    await page.getByRole("button", { name: mode, exact: true }).click();
+    for (const name of targets) {
+      await expect(
+        page.getByRole("button", { name, exact: true }),
+      ).toBeDisabled();
+    }
+  }
+
+  await page.getByRole("button", { name: "Channel", exact: true }).click();
+  for (const name of targets) {
+    await expect(page.getByRole("button", { name, exact: true })).toBeEnabled();
+  }
+});

@@ -217,7 +217,7 @@ export class StereoTestController {
     this.#clearFinishTimer();
     this.#clearReturnTimer();
     this.#setControlsActive(false);
-    this.#setVisual("center", "None");
+    this.#setVisual(null, "None");
     this.#setStatus("error", "Audio unavailable");
     this.#showError(
       "Stereo playback could not start. Check that your browser allows Web Audio and that an output device is available, then try again.",
@@ -234,7 +234,7 @@ export class StereoTestController {
     this.#playback?.stop();
     this.#playback = null;
     this.#setControlsActive(false);
-    this.#setVisual("center", "None");
+    this.#setVisual(null, "None");
     this.#setStatus("idle", "Stopped");
   }
 
@@ -251,22 +251,25 @@ export class StereoTestController {
     ) {
       this.#returnPanVisual(finishedAction);
     } else {
-      this.#setVisual("center", "None");
+      this.#setVisual(null, "None");
     }
     this.#setStatus("idle", "Ready for another check");
   }
 
   #returnPanVisual(action: "left-to-right" | "right-to-left"): void {
     if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
-      this.#setVisual("center", "None");
+      this.#setVisual(null, "None");
       return;
+    }
+    for (const button of this.#actionButtons) {
+      button.setAttribute("aria-pressed", "false");
     }
     this.#root.dataset.stereoVisual =
       action === "left-to-right" ? "return-from-right" : "return-from-left";
     this.#positionLabel.textContent = "Returning to center";
     this.#returnTimer = window.setTimeout(() => {
       this.#returnTimer = null;
-      if (!this.#disposed) this.#setVisual("center", "None");
+      if (!this.#disposed) this.#setVisual(null, "None");
     }, PAN_RETURN_MS);
   }
 
@@ -298,13 +301,13 @@ export class StereoTestController {
     this.#stopButton.disabled = !active;
   }
 
-  #setVisual(action: StereoAction | "center", label: string): void {
-    this.#root.dataset.stereoVisual = action;
+  #setVisual(action: StereoAction | null, label: string): void {
+    this.#root.dataset.stereoVisual = action ?? "center";
     this.#positionLabel.textContent = label;
     for (const button of this.#actionButtons) {
       button.setAttribute(
         "aria-pressed",
-        String(button.dataset.stereoAction === action),
+        String(action !== null && button.dataset.stereoAction === action),
       );
     }
   }
@@ -316,7 +319,7 @@ export class StereoTestController {
 
   #resetIdleUi(): void {
     this.#setControlsActive(false);
-    this.#setVisual("center", "None");
+    this.#setVisual(null, "None");
     this.#setStatus("idle", "Ready");
     this.#hideError();
   }

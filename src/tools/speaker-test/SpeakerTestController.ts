@@ -645,7 +645,9 @@ export class SpeakerTestController {
 
   #setControlsActive(active: boolean): void {
     const disableStarts = active || this.#starting;
-    for (const button of this.#channelButtons) button.disabled = disableStarts;
+    for (const button of this.#channelButtons) {
+      button.disabled = disableStarts || this.#mode !== "channel";
+    }
     this.#sequenceButton.disabled = disableStarts;
     this.#sweepButton.disabled = disableStarts;
     this.#bassButton.disabled = disableStarts;

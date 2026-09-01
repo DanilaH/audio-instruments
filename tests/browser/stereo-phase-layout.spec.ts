@@ -151,3 +151,19 @@ test("Phase visual polarity states keep one stable Sonic Field relationship stag
     ),
   ).toBeVisible();
 });
+
+test("Stereo neutral center is not exposed as an active playback selection", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/stereo-test");
+
+  await expect(
+    page.locator('[data-stereo-action][aria-pressed="true"]'),
+  ).toHaveCount(0);
+  await expect(page.locator("[data-stereo-position-label]")).toHaveText("None");
+  await expect(page.locator("[data-stereo-test]")).toHaveAttribute(
+    "data-stereo-visual",
+    "center",
+  );
+});
