@@ -41,6 +41,9 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Run geometry and interaction audit
         run: pnpm exec playwright test tests/browser/runtime-consistency-audit.spec.ts --project=chromium --workers=1 --reporter=line
+      - name: Collect Audio Latency 320 delta
+        if: ${{ always() }}
+        run: pnpm exec playwright test tests/browser/runtime-latency-delta-collector.spec.ts --project=chromium --workers=1 --reporter=line
       - name: Collect exact mode deltas
         if: ${{ always() }}
         run: pnpm exec playwright test tests/browser/runtime-mode-delta-collector.spec.ts --project=chromium --workers=1 --reporter=line
