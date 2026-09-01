@@ -14,3 +14,32 @@ export const prerender = true;
     <SonicFieldPrototype tool="hearing" />
   </body>
 </html>
+
+<style>
+  @media (max-width: 760px) {
+    :global(.sonic--hearing .frequency-path) {
+      top: 178px;
+    }
+
+    :global(.sonic--hearing .observation-line) {
+      bottom: 112px;
+    }
+
+    :global(.sonic--hearing .hearing-rail) {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+    }
+
+    :global(.sonic--hearing .hearing-rail > .setup-group),
+    :global(.sonic--hearing .hearing-rail > .action-group) {
+      grid-column: 1 / -1;
+    }
+
+    :global(.sonic--hearing .hearing-rail > .rail-group:nth-child(2)) {
+      border-right: 1px solid #c2c7c3;
+    }
+
+    :global(.sonic--hearing .hearing-rail > .rail-group:nth-child(4)) {
+      border-right: 0;
+    }
+  }
+</style>
