@@ -655,14 +655,14 @@ import {
       font-size: 0.78rem;
     }
 
-    .sweep-selector {
-      grid-template-columns: 1fr;
+    .sweep-options .sweep-selector {
+      grid-template-columns: minmax(0, 1fr);
       gap: 2px;
       padding: 3px;
     }
 
     .sweep-selector button {
-      min-height: 34px;
+      min-height: 44px;
       font-size: 0.72rem;
     }
 
@@ -688,6 +688,27 @@ import {
     .sweep-stop {
       min-height: 44px;
       padding: 0 12px;
+    }
+  }
+
+  @media (max-width: 340px) {
+    .sweep-range-grid,
+    .sweep-options {
+      grid-template-columns: 1fr;
+    }
+
+    .sweep-range-grid.sweep-range-grid :global(.frequency-control) {
+      grid-template-columns: 1fr;
+    }
+
+    .sweep-options .sweep-selector {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .sweep-selector button {
+      min-width: 0;
+      padding-inline: 5px;
+      font-size: 0.7rem;
     }
   }
 

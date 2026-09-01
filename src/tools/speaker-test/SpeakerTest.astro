@@ -159,8 +159,8 @@ import LevelControl from "../../components/controls/LevelControl.astro";
             <span>40 → 120 Hz · 12 s logarithmic slow sweep</span>
           </div>
           <p class="speaker-panel__copy">
-            Listen for buzzing, rattles or resonances. Keep the system volume
-            moderate; low audibility is not a reason to turn it up aggressively.
+            Listen for buzzing, rattles or resonances at moderate volume. Do not
+            raise system volume to chase hard-to-hear lows.
           </p>
           <button type="button" class="speaker-primary" data-speaker-bass>
             <i class="ph ph-waveform" aria-hidden="true"></i>
@@ -417,7 +417,7 @@ import LevelControl from "../../components/controls/LevelControl.astro";
   .speaker-panel {
     display: grid;
     gap: 9px;
-    min-height: 126px;
+    min-height: 167px;
   }
 
   .speaker-panel[hidden] {
@@ -592,7 +592,13 @@ import LevelControl from "../../components/controls/LevelControl.astro";
     }
 
     .speaker-panel {
-      min-height: 118px;
+      min-height: 168px;
+    }
+  }
+
+  @media (max-width: 340px) {
+    .speaker-panel {
+      min-height: 194px;
     }
 
     .speaker-footer-controls {

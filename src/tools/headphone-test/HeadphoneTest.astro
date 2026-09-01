@@ -165,9 +165,8 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
             <span>20 → 120 Hz · 12 s logarithmic slow sweep</span>
           </div>
           <p class="headphone-panel__copy">
-            Listen for rattles or obvious asymmetry at moderate volume. If a low
-            tone is hard to hear, do not compensate by turning the system volume
-            up aggressively.
+            Listen for rattles or obvious left/right asymmetry at moderate
+            volume. Do not raise system volume to chase hard-to-hear lows.
           </p>
           <button type="button" class="headphone-primary" data-headphone-bass>
             <i class="ph ph-waveform" aria-hidden="true"></i>
@@ -422,7 +421,7 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
   .headphone-panel {
     display: grid;
     gap: 8px;
-    min-height: 118px;
+    min-height: 167px;
   }
   .headphone-channel-hint {
     align-content: center;
@@ -593,7 +592,14 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     }
     .headphone-channel-hint,
     .headphone-panel {
-      min-height: 112px;
+      min-height: 170px;
+    }
+  }
+
+  @media (max-width: 340px) {
+    .headphone-channel-hint,
+    .headphone-panel {
+      min-height: 194px;
     }
     .headphone-footer {
       grid-template-columns: 1fr;
