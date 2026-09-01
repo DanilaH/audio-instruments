@@ -1,0 +1,35 @@
+name: Temporary Sonic Field PR2 touch review
+
+on:
+  push:
+    branches:
+      - feat/sonic-field-spatial-output-family
+    paths:
+      - .github/workflows/tmp-sonic-pr2-touch-review.yml
+      - tests/browser/tool-touch-targets.spec.ts
+
+jobs:
+  touch-review:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --check tests/browser/tool-touch-targets.spec.ts
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Verify PR2 touch and layout contracts
+        run: >-
+          pnpm exec playwright test
+          tests/browser/tool-touch-targets.spec.ts
+          tests/browser/sonic-field-spatial-output-production-layout.spec.ts
+          tests/browser/speaker-layout.spec.ts
+          tests/browser/stereo-phase-layout.spec.ts
+          tests/browser/surround-layout.spec.ts
+          --project=chromium --project=firefox --project=webkit
