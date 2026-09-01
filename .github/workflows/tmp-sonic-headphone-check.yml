@@ -1,4 +1,4 @@
-name: Temporary Sonic Field production layout check
+name: Temporary Sonic Field visual QA
 
 on:
   push:
@@ -8,16 +8,14 @@ on:
       - .github/workflows/tmp-sonic-headphone-check.yml
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  validate:
+  capture:
     runs-on: ubuntu-24.04
     timeout-minutes: 25
     steps:
       - uses: actions/checkout@v7
-        with:
-          fetch-depth: 0
       - uses: pnpm/setup@v2
         with:
           version: 11.21.0
@@ -25,38 +23,144 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Close final Spectrum viewport gap
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Create temporary visual QA test
         run: |
-          python - <<'PY'
-          from pathlib import Path
-          path = Path('src/tools/spectrum-analyzer/SpectrumAnalyzer.astro')
-          text = path.read_text()
-          old = '''    .spectrum-field {\n      gap: 7px;\n      min-height: 292px;'''
-          new = '''    .spectrum-field {\n      gap: 5px;\n      min-height: 292px;'''
-          if old not in text:
-              raise SystemExit('expected compact Spectrum field block not found')
-          path.write_text(text.replace(old, new, 1))
-          PY
-      - run: pnpm exec prettier --write src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
-      - name: Commit final Spectrum gap fix
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/tools/spectrum-analyzer/SpectrumAnalyzer.astro
-          git commit -m "fix: close final Spectrum viewport gap"
-          git push
-      - name: Static checks
-        run: |
-          git diff --check origin/main...HEAD
-          pnpm check
-          pnpm build
-      - name: Install Chromium
-        run: pnpm exec playwright install --with-deps chromium
-      - name: Spectrum behavior regression
-        run: |
-          pnpm exec playwright test \
-            tests/browser/spectrum-analyzer.spec.ts \
-            tests/browser/spectrum-analyzer-layout.spec.ts \
-            --project=chromium
-      - name: Sonic Field production layout gates
-        run: pnpm exec playwright test tests/browser/sonic-field-production-layout.spec.ts --project=chromium
+          cat > tests/browser/tmp-sonic-visual-qa.spec.ts <<'TS'
+          import { mkdir } from "node:fs/promises";
+          import { test, type Page } from "@playwright/test";
+
+          const evidenceDir = "visual-evidence";
+
+          async function spectrumChallenge(page: Page): Promise<void> {
+            await page.locator('[data-spectrum-view="spectrogram"]').click();
+            await page.locator("[data-spectrum-input-field]").evaluate((element) => {
+              const field = element as HTMLElement;
+              field.hidden = false;
+              const select = field.querySelector("select");
+              if (select && select.options.length === 0) {
+                select.append(new Option("Built-in microphone", "visual-qa"));
+              }
+            });
+            await page.locator("[data-spectrum-active-input]").evaluate((element) => {
+              element.textContent = "Built-in microphone";
+            });
+            await page.locator("[data-spectrum-analyzer]").evaluate((element) => {
+              (element as HTMLElement).dataset.spectrumState = "running";
+            });
+          }
+
+          async function hearingChallenge(page: Page): Promise<void> {
+            await page.locator("[data-hearing-answer-panel]").evaluate((element) => {
+              const panel = element as HTMLElement;
+              panel.hidden = false;
+              for (const button of panel.querySelectorAll<HTMLButtonElement>("button")) {
+                button.disabled = false;
+              }
+            });
+            await page.locator("[data-hearing-current-frequency]").evaluate((element) => {
+              element.textContent = "14 kHz";
+            });
+            await page.locator("[data-hearing-progress]").evaluate((element) => {
+              element.textContent = "Step 7 of 10";
+            });
+            await page.locator("[data-hearing-result]").evaluate((element) => {
+              element.textContent = "12 kHz";
+            });
+            await page.locator("[data-hearing-frequency]").evaluate((element) => {
+              (element as HTMLElement).dataset.hearingState = "awaiting-answer";
+            });
+          }
+
+          async function capture(
+            page: Page,
+            route: string,
+            width: number,
+            height: number,
+            name: string,
+            prepare?: (page: Page) => Promise<void>,
+          ): Promise<void> {
+            await page.setViewportSize({ width, height });
+            await page.emulateMedia({ reducedMotion: "reduce" });
+            await page.goto(route);
+            if (prepare) await prepare(page);
+            await page.screenshot({
+              path: `${evidenceDir}/${name}-${width}x${height}.png`,
+              fullPage: false,
+            });
+          }
+
+          test.beforeAll(async () => {
+            await mkdir(evidenceDir, { recursive: true });
+          });
+
+          test("capture production challenge states", async ({ page }) => {
+            for (const [width, height] of [
+              [1366, 768],
+              [1280, 720],
+            ] as const) {
+              await capture(
+                page,
+                "/headphone-test",
+                width,
+                height,
+                "headphone-sweep",
+                async (currentPage) => {
+                  await currentPage.locator('[data-headphone-mode="sweep"]').click();
+                },
+              );
+              await capture(
+                page,
+                "/spectrum-analyzer",
+                width,
+                height,
+                "spectrum-spectrogram",
+                spectrumChallenge,
+              );
+              await capture(
+                page,
+                "/hearing-frequency-test",
+                width,
+                height,
+                "hearing-answer",
+                hearingChallenge,
+              );
+            }
+
+            await capture(
+              page,
+              "/headphone-test",
+              390,
+              844,
+              "headphone-mobile-sweep",
+              async (currentPage) => {
+                await currentPage.locator('[data-headphone-mode="sweep"]').click();
+              },
+            );
+            await capture(
+              page,
+              "/spectrum-analyzer",
+              390,
+              844,
+              "spectrum-mobile-spectrogram",
+              spectrumChallenge,
+            );
+            await capture(
+              page,
+              "/hearing-frequency-test",
+              390,
+              844,
+              "hearing-mobile-answer",
+              hearingChallenge,
+            );
+          });
+          TS
+      - name: Capture screenshots
+        run: pnpm exec playwright test tests/browser/tmp-sonic-visual-qa.spec.ts --project=chromium
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sonic-field-visual-evidence
+          path: visual-evidence/*.png
+          if-no-files-found: error
+          retention-days: 3
