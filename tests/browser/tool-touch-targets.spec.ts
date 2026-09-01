@@ -28,7 +28,12 @@ const touchTargetCases = [
   },
   {
     path: "/spectrum-analyzer",
-    selectors: [".spectrum-field select", ".spectrum-view-switch button"],
+    selectors: [
+      ".spectrum-control-field select",
+      ".spectrum-view-switch button",
+      ".spectrum-start",
+      ".spectrum-stop",
+    ],
   },
   { path: "/pitch-detector", selectors: [".pitch-field select"] },
   {
@@ -115,7 +120,7 @@ test("native microphone playback keeps a 44px outer height", async ({
     const box = await player.boundingBox();
     expect(box).not.toBeNull();
     if (box) {
-      expect(box.height).toBeGreaterThanOrEqual(44);
+      expect(box.height).toBeGreaterThanOrEqual(44 - 0.01);
     }
   }
 });

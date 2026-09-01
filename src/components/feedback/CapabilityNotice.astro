@@ -20,10 +20,10 @@ const { id, message = "", hidden = true } = Astro.props;
     gap: 9px;
     margin: 0;
     padding: 12px 14px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-control);
-    background: rgb(255 255 255 / 0.62);
-    color: var(--color-ink-muted);
+    border: 1px solid var(--sonic-border, var(--color-border));
+    border-radius: var(--sonic-control-radius, var(--radius-control));
+    background: var(--sonic-control-bg, rgb(255 255 255 / 0.62));
+    color: var(--sonic-muted, var(--color-ink-muted));
     font-size: 0.88rem;
     line-height: 1.45;
   }
@@ -34,6 +34,6 @@ const { id, message = "", hidden = true } = Astro.props;
 
   .capability-notice i {
     margin-top: 2px;
-    color: var(--color-focus);
+    color: var(--sonic-signal, var(--color-focus));
   }
 </style>
