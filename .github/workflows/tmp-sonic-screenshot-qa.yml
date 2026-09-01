@@ -7,6 +7,7 @@ on:
     paths:
       - .github/workflows/tmp-sonic-screenshot-qa.yml
       - tests/browser/tmp-sonic-screenshot-qa.spec.ts
+      - src/tools/headphone-test/HeadphoneTest.astro
 
 permissions:
   contents: read
@@ -25,12 +26,28 @@ jobs:
           install: false
       - run: pnpm install --frozen-lockfile
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Firefox final stress-trio layout contracts
+        run: |
+          pnpm exec playwright test \
+            tests/browser/headphone-layout.spec.ts \
+            tests/browser/spectrum-analyzer-layout.spec.ts \
+            tests/browser/hearing-frequency-layout.spec.ts \
+            tests/browser/sonic-field-production-layout.spec.ts \
+            --project=firefox
+      - name: WebKit final stress-trio layout contracts
+        run: |
+          pnpm exec playwright test \
+            tests/browser/headphone-layout.spec.ts \
+            tests/browser/spectrum-analyzer-layout.spec.ts \
+            tests/browser/hearing-frequency-layout.spec.ts \
+            tests/browser/sonic-field-production-layout.spec.ts \
+            --project=webkit
       - name: Capture stress-trio runtime screenshots
         run: pnpm exec playwright test tests/browser/tmp-sonic-screenshot-qa.spec.ts --project=chromium
       - uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: sonic-field-screenshot-qa
+          name: sonic-field-screenshot-qa-final
           path: artifacts/sonic-field-screenshots
           if-no-files-found: error
