@@ -38,10 +38,15 @@ jobs:
 
           touch = Path('tests/browser/tool-touch-targets.spec.ts')
           text = touch.read_text()
-          old = '{ path: "/spectrum-analyzer",\n    selectors: [".spectrum-field select", ".spectrum-view-switch button"],\n  },'
-          new = '{ path: "/spectrum-analyzer",\n    selectors: [\n      ".spectrum-control-field select",\n      ".spectrum-view-switch button",\n      ".spectrum-start",\n      ".spectrum-stop",\n    ],\n  },'
+          old = 'selectors: [".spectrum-field select", ".spectrum-view-switch button"],'
+          new = '''selectors: [
+              ".spectrum-control-field select",
+              ".spectrum-view-switch button",
+              ".spectrum-start",
+              ".spectrum-stop",
+            ],'''
           if old not in text:
-              raise SystemExit('spectrum touch-target case not found')
+              raise SystemExit('spectrum touch-target selectors not found')
           text = text.replace(old, new, 1)
           old = 'expect(box.height).toBeGreaterThanOrEqual(44);'
           new = 'expect(box.height).toBeGreaterThanOrEqual(44 - 0.01);'
