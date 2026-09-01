@@ -1,0 +1,29 @@
+name: Temporary Sonic Field review check
+
+on:
+  push:
+    branches:
+      - feat/sonic-field-foundation-stress-trio
+    paths:
+      - .github/workflows/tmp-sonic-review-check.yml
+
+permissions:
+  contents: read
+
+jobs:
+  review-check:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Sonic Field production layout contracts
+        run: pnpm exec playwright test tests/browser/sonic-field-production-layout.spec.ts --project=chromium
