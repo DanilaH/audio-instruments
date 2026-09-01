@@ -4,13 +4,7 @@ interface Props {
   title: string;
   description: string;
   accent?:
-    | "lavender"
-    | "blue"
-    | "mint"
-    | "peach"
-    | "yellow"
-    | "cyan"
-    | "neutral";
+    "lavender" | "blue" | "mint" | "peach" | "yellow" | "cyan" | "neutral";
 }
 
 const { eyebrow, title, description, accent = "lavender" } = Astro.props;
