@@ -73,6 +73,26 @@ The guided test is a frequency path with past, current and future steps. Session
 
 The design must not resemble or claim to be a diagnostic audiogram. It does not introduce a hearing-threshold y-axis or normal/abnormal zones.
 
+## v3.1 compact viewport budget
+
+The v3.1 pass adds a viewport-budget rule instead of a one-off screenshot hack.
+
+Desktop target:
+
+- at **1366 × 768** and **1440 × 900**, the complete active instrument sheet must fit inside the viewport;
+- leave at least **24 px** of clear space below the sheet;
+- canvas height may grow with viewport height, but the control rail and safety strip remain compact;
+- the tool may use the available desktop area aggressively, but it must not require a scroll just to reach primary controls.
+
+Mobile target:
+
+- full-sheet fit is not a hard requirement;
+- page chrome is compressed so the working field appears early;
+- output and primary controls stay close enough that the user is not repeatedly shuttling between distant regions of the page;
+- compactness must not make labels, targets or data illegible.
+
+The v3.1 CSS intentionally lives in a separate prototype override layer so the compactness experiment can be accepted or rejected without rewriting the v3 base.
+
 ## Failure criteria
 
 Reject or revise this direction if any of the following are true after browser rendering:
@@ -83,12 +103,15 @@ Reject or revise this direction if any of the following are true after browser r
 4. Desktop works only because the canvas is enormous and the system collapses into generic stacked cards on mobile.
 5. Color becomes decorative rather than semantic.
 6. The visual language converges on a generic DAW/plugin, brutalist anti-AI preset, retro hi-fi cosplay or soft SaaS dashboard.
+7. A desktop tool falls below the viewport fold at the validation sizes.
+8. Mobile separates output from the primary controls enough to create repeated scroll-ping-pong.
 
 ## Prototype validation
 
 The prototype should be rendered at minimum at:
 
 - 1366 × 768;
+- 1440 × 900;
 - 390 × 844.
 
 The first decision after rendering is visual, not implementation-driven: determine whether Sonic Field is distinct enough to justify adapting production components around it. No production tool should be restyled before that decision.
