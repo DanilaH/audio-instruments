@@ -1,4 +1,4 @@
-name: Temporary Audio Identity v2 render
+name: Finalize Audio Identity v2 research prototype
 
 on:
   push:
@@ -6,17 +6,18 @@ on:
       - prototype/audio-identity-v2-research
     paths:
       - .github/workflows/tmp-audio-identity-v2-render.yml
-      - src/pages/prototypes/audio-identity/**
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
-  render:
+  finalize:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
 
       - uses: pnpm/setup@v2
         with:
@@ -27,20 +28,13 @@ jobs:
 
       - run: pnpm install --frozen-lockfile
 
-      - name: Patch prototype static paths for isolated render
+      - name: Persist static paths fix and formatting
         run: |
           python - <<'PY'
           from pathlib import Path
           path = Path("src/pages/prototypes/audio-identity/[direction]/[tool].astro")
           text = path.read_text(encoding="utf-8")
           old = '''export function getStaticPaths() {
-            return directions.flatMap((direction) =>
-              tools.map((tool) => ({ params: { direction, tool } })),
-            );
-          }'''
-          # Handle both source and Prettier indentation shapes.
-          if old not in text:
-              old = '''export function getStaticPaths() {
             return directions.flatMap((direction) =>
               tools.map((tool) => ({ params: { direction, tool } })),
             );
@@ -51,49 +45,21 @@ jobs:
             return staticDirections.flatMap((direction) =>
               staticTools.map((tool) => ({ params: { direction, tool } })),
             );
-          }'''
+          }'''.replace("          ", "")
           if old not in text:
               raise SystemExit("getStaticPaths target not found")
           path.write_text(text.replace(old, new, 1), encoding="utf-8")
           PY
-
-      - name: Validate prototype
-        run: |
           pnpm exec prettier --write src/pages/prototypes/audio-identity/[direction]/[tool].astro
           git diff --check
           pnpm check
           pnpm build
 
-      - run: pnpm exec playwright install --with-deps chromium
-
-      - name: Capture 9 comparative frames
+      - name: Commit clean research prototype
         run: |
-          mkdir -p audio-identity-v2-renders
-          cat > tests/browser/tmp-audio-identity-v2.spec.ts <<'EOF'
-          import { test } from "@playwright/test";
-
-          const directions = ["stereo-field", "temporal-score", "acoustic-map"] as const;
-          const tools = ["headphone", "spectrum", "hearing"] as const;
-
-          for (const direction of directions) {
-            for (const tool of tools) {
-              test(`${direction}-${tool}`, async ({ page }) => {
-                await page.setViewportSize({ width: 1366, height: 768 });
-                await page.goto(`/prototypes/audio-identity/${direction}/${tool}`);
-                await page.screenshot({
-                  path: `audio-identity-v2-renders/${direction}-${tool}-1366x768.png`,
-                  fullPage: false,
-                });
-              });
-            }
-          }
-          EOF
-          pnpm exec playwright test tests/browser/tmp-audio-identity-v2.spec.ts --project=chromium --workers=1 --reporter=line
-          rm tests/browser/tmp-audio-identity-v2.spec.ts
-
-      - uses: actions/upload-artifact@v7
-        with:
-          name: audio-identity-v2-renders-${{ github.run_id }}
-          path: audio-identity-v2-renders
-          if-no-files-found: error
-          retention-days: 14
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/pages/prototypes/audio-identity/[direction]/[tool].astro
+          git rm .github/workflows/tmp-audio-identity-v2-render.yml
+          git commit -m "prototype: finalize Audio Identity v2 comparison"
+          git push origin HEAD:prototype/audio-identity-v2-research
