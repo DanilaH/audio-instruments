@@ -106,3 +106,30 @@ replace(
     """    .spectrum-canvas-meta {\n      display: none;\n    }\n  }\n</style>""",
     """    .spectrum-canvas-meta {\n      display: none;\n    }\n  }\n\n  @media (max-width: 340px) {\n    .spectrum-view-switch button {\n      padding-inline: 2px;\n      font-size: 0.68rem;\n      letter-spacing: -0.01em;\n    }\n  }\n</style>""",
 )
+
+# Diagnostic gate: dynamic state transitions must be effectively geometry-stable at 320+.
+replace(
+    "tests/browser/runtime-consistency-audit.spec.ts",
+    """const dynamicViewports = [\n  { width: 390, height: 844 },\n  { width: 1366, height: 768 },\n] as const;""",
+    """const dynamicViewports = [\n  { width: 320, height: 844 },\n  { width: 390, height: 844 },\n  { width: 1366, height: 768 },\n] as const;""",
+)
+replace(
+    "tests/browser/runtime-consistency-audit.spec.ts",
+    "expect(Math.abs(surfaceDelta.height)).toBeLessThanOrEqual(4);",
+    "expect(Math.abs(surfaceDelta.height)).toBeLessThanOrEqual(1);",
+)
+replace(
+    "tests/browser/runtime-consistency-audit.spec.ts",
+    "expect(Math.abs(documentHeightDelta)).toBeLessThanOrEqual(4);",
+    "expect(Math.abs(documentHeightDelta)).toBeLessThanOrEqual(1);",
+)
+replace(
+    "tests/browser/runtime-consistency-audit.spec.ts",
+    "expect(Math.abs(surfaceDelta.height)).toBeLessThanOrEqual(12);",
+    "expect(Math.abs(surfaceDelta.height)).toBeLessThanOrEqual(1);",
+)
+replace(
+    "tests/browser/runtime-consistency-audit.spec.ts",
+    "expect(Math.abs(documentHeightDelta)).toBeLessThanOrEqual(12);",
+    "expect(Math.abs(documentHeightDelta)).toBeLessThanOrEqual(1);",
+)
