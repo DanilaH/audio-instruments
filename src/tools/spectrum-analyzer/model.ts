@@ -13,6 +13,7 @@ export const SPECTROGRAM_HISTORY_MS = 10_000;
 export const SPECTROGRAM_COLUMN_CAPACITY = 300;
 export const SPECTROGRAM_MIN_COLUMN_INTERVAL_MS =
   1_000 / SPECTROGRAM_MAX_COLUMNS_PER_SECOND;
+export const SPECTROGRAM_CONTRAST_GAMMA = 0.65;
 
 export interface DominantFftBin {
   readonly binIndex: number;
@@ -75,12 +76,37 @@ export function frequencyToLogRatio(
   return Math.log(boundedFrequency / minHz) / Math.log(maxHz / minHz);
 }
 
+export function frequencyFromLogRatio(
+  ratio: number,
+  minHz: number,
+  maxHz: number,
+): number {
+  if (
+    !Number.isFinite(ratio) ||
+    !Number.isFinite(minHz) ||
+    !Number.isFinite(maxHz) ||
+    minHz <= 0 ||
+    maxHz <= minHz
+  ) {
+    throw new RangeError("Log-frequency mapping requires a finite ratio and 0 < minHz < maxHz");
+  }
+
+  const boundedRatio = Math.min(1, Math.max(0, ratio));
+  return minHz * Math.pow(maxHz / minHz, boundedRatio);
+}
+
 export function dbToDisplayRatio(valueDb: number): number {
   const bounded = clampSpectrumDbForDisplay(valueDb);
   return (
     (bounded - SPECTRUM_DISPLAY_MIN_DB) /
     (SPECTRUM_DISPLAY_MAX_DB - SPECTRUM_DISPLAY_MIN_DB)
   );
+}
+
+export function spectrogramDbToIntensity(valueDb: number): number {
+  // This is a monotonic display-contrast transfer only. It does not turn raw
+  // analyser dB values into calibrated SPL or a measured frequency response.
+  return Math.pow(dbToDisplayRatio(valueDb), SPECTROGRAM_CONTRAST_GAMMA);
 }
 
 export function findDominantFftBin(
