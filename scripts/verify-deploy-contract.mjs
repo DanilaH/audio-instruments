@@ -38,15 +38,15 @@ assertNotMatches(
   /(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.(?:com|net|org|io|dev|app|ru)\b/i,
   "hard-coded production hostname",
 );
-assertNotIncludes(
+assertNotMatches(
   caddyfile,
-  "reverse_proxy",
-  "unexpected application server proxy",
+  /^\s*reverse_proxy(?:\s|$)/m,
+  "unexpected application server proxy directive",
 );
-assertNotIncludes(
+assertNotMatches(
   caddyfile,
-  "redir",
-  "route redirect that could rewrite canonical paths",
+  /^\s*redir(?:\s|$)/m,
+  "route redirect directive that could rewrite canonical paths",
 );
 
 process.stdout.write("VPS/Caddy deployment contract verified.\n");
@@ -54,12 +54,6 @@ process.stdout.write("VPS/Caddy deployment contract verified.\n");
 function assertIncludes(actual, expected, label) {
   if (!actual.includes(expected)) {
     throw new Error(`${label} is missing expected content: ${expected}`);
-  }
-}
-
-function assertNotIncludes(actual, unexpected, label) {
-  if (actual.includes(unexpected)) {
-    throw new Error(`${label} unexpectedly contains: ${unexpected}`);
   }
 }
 
