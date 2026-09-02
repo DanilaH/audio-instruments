@@ -459,7 +459,11 @@ function runSelfTest() {
     '<!doctype html><meta name="robots" content="noindex,nofollow"><p>This build does not enable an analytics provider.</p>';
   const enabledHtml = `<!doctype html><meta content="index,follow" name="robots"><link href="${origin}/privacy" rel="canonical"><script type="module" src="${BEACON_URL}" data-cf-beacon="{&quot;token&quot;:&quot;x&quot;,&quot;spa&quot;:false}"></script><p>Cloudflare Web Analytics is enabled for this build</p>`;
 
-  assertEqual(normalizeProductionOrigin(`${origin}/`), origin, "origin normalization");
+  assertEqual(
+    normalizeProductionOrigin(`${origin}/`),
+    origin,
+    "origin normalization",
+  );
   expectThrows(
     () => normalizeProductionOrigin("http://audio.example"),
     /must use https/,
@@ -498,7 +502,10 @@ function runSelfTest() {
   expectThrows(
     () =>
       verifyHtml({
-        html: enabledHtml.replace(`${origin}/privacy`, "https://other.example/privacy"),
+        html: enabledHtml.replace(
+          `${origin}/privacy`,
+          "https://other.example/privacy",
+        ),
         route: "/privacy",
         origin,
         indexing: "enabled",
@@ -520,7 +527,8 @@ function runSelfTest() {
 
   const sitemapIndex = `<sitemapindex><sitemap><loc>${origin}/sitemap-0.xml</loc></sitemap></sitemapindex>`;
   const sitemap = `<urlset>${HTML_ROUTES.map(
-    (route) => `<url><loc>${escapeXml(expectedCanonical(origin, route))}</loc></url>`,
+    (route) =>
+      `<url><loc>${escapeXml(expectedCanonical(origin, route))}</loc></url>`,
   ).join("")}</urlset>`;
   verifyEnabledSitemaps({ sitemapIndex, sitemap, origin });
 
@@ -534,7 +542,11 @@ function runSelfTest() {
     /escaped the expected origin/,
   );
 
-  assertEqual(parseExpectation("--indexing", "enabled"), "enabled", "expectation");
+  assertEqual(
+    parseExpectation("--indexing", "enabled"),
+    "enabled",
+    "expectation",
+  );
   expectThrows(
     () => parseExpectation("--analytics", "maybe"),
     /must be exactly/,
@@ -544,5 +556,7 @@ function runSelfTest() {
 }
 
 function printHelp() {
-  process.stdout.write(`Browser Audio Lab live release verifier\n\nUsage:\n  pnpm verify:live-release -- --origin https://example.com --indexing disabled --analytics disabled\n  pnpm verify:live-release -- --origin https://example.com --indexing enabled --analytics enabled\n\nOptions:\n  --origin <https-origin>        Real deployed origin. Origin only; no path/query/hash.\n  --indexing enabled|disabled   Expected live indexing state. Required.\n  --analytics enabled|disabled  Expected live analytics state. Required.\n  --timeout-ms <1000-60000>     Per-request timeout. Default: ${DEFAULT_TIMEOUT_MS}.\n  --self-test                   Run deterministic local contract tests; no network.\n  --help                        Show this help.\n\nThe verifier checks all 18 HTML routes, robots metadata, canonical behavior, robots.txt, sitemap state, Cloudflare beacon count, same-origin redirects, and /privacy build-state disclosure. It does not prove that Cloudflare received an analytics event or that Search Console indexed the site.\n`);
+  process.stdout.write(
+    `Browser Audio Lab live release verifier\n\nUsage:\n  pnpm verify:live-release -- --origin https://example.com --indexing disabled --analytics disabled\n  pnpm verify:live-release -- --origin https://example.com --indexing enabled --analytics enabled\n\nOptions:\n  --origin <https-origin>        Real deployed origin. Origin only; no path/query/hash.\n  --indexing enabled|disabled   Expected live indexing state. Required.\n  --analytics enabled|disabled  Expected live analytics state. Required.\n  --timeout-ms <1000-60000>     Per-request timeout. Default: ${DEFAULT_TIMEOUT_MS}.\n  --self-test                   Run deterministic local contract tests; no network.\n  --help                        Show this help.\n\nThe verifier checks all 18 HTML routes, robots metadata, canonical behavior, robots.txt, sitemap state, Cloudflare beacon count, same-origin redirects, and /privacy build-state disclosure. It does not prove that Cloudflare received an analytics event or that Search Console indexed the site.\n`,
+  );
 }
