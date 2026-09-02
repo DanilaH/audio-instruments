@@ -30,6 +30,12 @@ jobs:
           ]
           helper = '''\nasync function openDbCalibration(page: Page): Promise<void> {\n  const disclosure = page.locator("[data-db-calibration-disclosure]");\n  if ((await disclosure.getAttribute("open")) === null) {\n    await disclosure.locator("summary").click();\n  }\n}\n'''
 
+          def ensure_open_before(text: str, target: str) -> str:
+              guarded = f'  await openDbCalibration(page);\n{target}'
+              if guarded in text:
+                  return text
+              return text.replace(target, guarded)
+
           for path in files:
               text = path.read_text()
               if 'async function openDbCalibration' not in text:
@@ -39,13 +45,13 @@ jobs:
                       raise RuntimeError(f'No helper insertion point in {path}')
                   text = text[:index] + helper + text[index:]
 
-              text = text.replace(
+              text = ensure_open_before(
+                  text,
                   '  await page.locator("[data-db-reference]").fill(',
-                  '  await openDbCalibration(page);\n  await page.locator("[data-db-reference]").fill(',
               )
-              text = text.replace(
+              text = ensure_open_before(
+                  text,
                   '  await page.locator("[data-db-calibrate]").click();',
-                  '  await openDbCalibration(page);\n  await page.locator("[data-db-calibrate]").click();',
               )
               path.write_text(text)
           PY
@@ -72,6 +78,7 @@ jobs:
           tests/browser/decibel-meter-session-calibration.spec.ts
           tests/browser/decibel-meter-calibration-disclosure.spec.ts
           tests/browser/sonic-field-input-measurement-production-layout.spec.ts
+          tests/browser/tool-touch-targets.spec.ts
 
       - name: Lint PR4 files
         run: >-
@@ -83,6 +90,7 @@ jobs:
           tests/browser/decibel-meter-session-calibration.spec.ts
           tests/browser/decibel-meter-calibration-disclosure.spec.ts
           tests/browser/sonic-field-input-measurement-production-layout.spec.ts
+          tests/browser/tool-touch-targets.spec.ts
 
       - name: Commit remediation and formatting
         run: |
@@ -99,7 +107,8 @@ jobs:
             tests/browser/decibel-meter.spec.ts \
             tests/browser/decibel-meter-session-calibration.spec.ts \
             tests/browser/decibel-meter-calibration-disclosure.spec.ts \
-            tests/browser/sonic-field-input-measurement-production-layout.spec.ts
+            tests/browser/sonic-field-input-measurement-production-layout.spec.ts \
+            tests/browser/tool-touch-targets.spec.ts
           git commit -m "test: align PR4 measurement interaction contracts"
           git push origin HEAD:feat/sonic-field-input-measurement-family
 
