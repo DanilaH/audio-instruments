@@ -1,0 +1,61 @@
+name: P8 Live Release Docs Sync
+
+on:
+  push:
+    branches:
+      - feat/p8-live-release-verifier
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/p8-live-release-verifier
+      - name: Synchronize live release verifier guidance
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path_str, old, new, expected=1):
+              path = Path(path_str)
+              text = path.read_text()
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f"{path_str}: expected {expected}, got {count}: {old[:120]!r}")
+              path.write_text(text.replace(old, new, expected))
+
+          replace_exact(
+              "docs/11_RELEASE_AND_ANALYTICS.md",
+              "Canonical implementation evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.\n\n## Search Console",
+              "Canonical implementation evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.\n\n## Live post-deploy verification\n\nThe repository provides a parameterized real-origin verifier:\n\n```text\npnpm verify:live-release -- --origin https://<REAL_PRODUCTION_ORIGIN> --indexing disabled --analytics disabled\n```\n\nThe origin must be the actual deployed HTTPS origin. Do not substitute a synthetic/test hostname. The verifier checks all 18 HTML routes, same-origin redirects, robots metadata, canonical behavior, robots.txt, sitemap state, Cloudflare beacon multiplicity and `/privacy` build-state disclosure.\n\nUse it as a staged release gate rather than enabling everything at once:\n\n```text\n1. initial deploy: indexing=disabled, analytics=disabled\n2. after separately approved analytics activation: re-run with analytics=enabled\n3. after explicit indexing activation: re-run with indexing=enabled\n```\n\nAnalytics and indexing expectations are independent; pass the state that is actually intended for that deployment. A green live verifier does not prove Cloudflare dashboard ingestion, Search Console indexing, or physical-device/browser QA.\n\nDeterministic no-network verifier logic is gated in CI through `pnpm test:live-release-contract`. Repository-side readiness evidence is recorded in `docs/evidence/P8_LIVE_RELEASE_VERIFIER_2026-09-02.md`. Real post-deploy verification remains incomplete until a real-origin command/result is recorded.\n\n## Search Console",
+          )
+
+          replace_exact(
+              "docs/13_BACKLOG_AND_ROADMAP.md",
+              "P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; Cloudflare Web Analytics repository readiness is implemented fail-closed; real-device/deployment/provider-activation/indexing rollout gates remain",
+              "P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; Cloudflare Web Analytics repository readiness is implemented fail-closed; a parameterized live-release verifier is implemented but has not been run on a real origin; real-device/deployment/provider-activation/indexing rollout gates remain",
+          )
+          replace_exact(
+              "docs/13_BACKLOG_AND_ROADMAP.md",
+              "post-deploy canonical/sitemap/indexing verification",
+              "run the real-origin live-release verifier against the intended fail-closed/activated state\npost-deploy canonical/sitemap/indexing verification on the real origin",
+          )
+          replace_exact(
+              "docs/13_BACKLOG_AND_ROADMAP.md",
+              "The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence. Repository-side analytics readiness is recorded in `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`; it does not claim a real Cloudflare site/token, deployment or jurisdiction-specific activation approval.",
+              "The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence. Repository-side analytics readiness is recorded in `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`; it does not claim a real Cloudflare site/token, deployment or jurisdiction-specific activation approval. Repository-side live-release verifier readiness is recorded in `docs/evidence/P8_LIVE_RELEASE_VERIFIER_2026-09-02.md`; it does not claim that any real production origin has passed the verifier.",
+          )
+          PY
+          git diff --check
+      - name: Commit documentation synchronization
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/11_RELEASE_AND_ANALYTICS.md docs/13_BACKLOG_AND_ROADMAP.md
+          git commit -m "docs: synchronize live release verifier guidance"
+          git push
