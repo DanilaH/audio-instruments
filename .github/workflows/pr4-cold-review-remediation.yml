@@ -1,0 +1,123 @@
+name: PR4 Cold Review Remediation
+
+on:
+  push:
+    branches:
+      - feat/sonic-field-input-measurement-family
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          ref: feat/sonic-field-input-measurement-family
+
+      - name: Apply Cold Review #1 fixes
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+
+          pitch_path = Path('src/tools/pitch-detector/PitchDetector.astro')
+          pitch = pitch_path.read_text()
+          old_pitch = '''  .pitch-tuner__needle {
+            position: absolute;
+            top: 3px;
+            bottom: 3px;
+            left: calc(50% + var(--pitch-offset, 0%));
+            width: 4px;
+            border-radius: 2px;
+            background: var(--sonic-current);
+            transform: translateX(-50%);
+            transition: left 90ms linear;
+          }
+
+          .pitch-tuner__cents {'''
+          new_pitch = '''  .pitch-tuner__needle {
+            position: absolute;
+            top: 3px;
+            bottom: 3px;
+            left: calc(50% + var(--pitch-offset, 0%));
+            width: 4px;
+            visibility: hidden;
+            border-radius: 2px;
+            background: var(--sonic-current);
+            transform: translateX(-50%);
+            transition: left 90ms linear;
+          }
+
+          [data-pitch-result-state="settling"] .pitch-tuner__needle,
+          [data-pitch-result-state="stable"] .pitch-tuner__needle {
+            visibility: visible;
+          }
+
+          .pitch-tuner__cents {'''
+          if new_pitch not in pitch:
+            if old_pitch not in pitch:
+              raise SystemExit('Pitch needle CSS anchor not found')
+            pitch = pitch.replace(old_pitch, new_pitch, 1)
+            pitch_path.write_text(pitch)
+
+          spec_path = Path('tests/browser/sonic-field-input-measurement-production-layout.spec.ts')
+          spec = spec_path.read_text()
+          old_sheet = '''      if (sheetBox && fieldBox && primaryBox) {
+            expect(fieldBox.y).toBeGreaterThanOrEqual(sheetBox.y);
+            expect(primaryBox.y).toBeGreaterThan(fieldBox.y);
+            expect(primaryBox.y + primaryBox.height).toBeLessThanOrEqual(
+              viewport.height,
+            );
+          }
+'''
+          new_sheet = '''      if (sheetBox && fieldBox && primaryBox) {
+            const minimumBottomAir = viewport.height === 720 ? 16 : 24;
+            expect(fieldBox.y).toBeGreaterThanOrEqual(sheetBox.y);
+            expect(primaryBox.y).toBeGreaterThan(fieldBox.y);
+            expect(primaryBox.y + primaryBox.height).toBeLessThanOrEqual(
+              viewport.height,
+            );
+            expect(sheetBox.y + sheetBox.height).toBeLessThanOrEqual(
+              viewport.height - minimumBottomAir,
+            );
+          }
+'''
+          if new_sheet not in spec:
+            if old_sheet not in spec:
+              raise SystemExit('Desktop sheet assertion anchor not found')
+            spec = spec.replace(old_sheet, new_sheet, 1)
+
+          needle_test = '''
+          test("Pitch current needle is hidden until an accepted estimate state exists", async ({
+            page,
+          }) => {
+            await page.goto("/pitch-detector");
+            const root = page.locator("[data-pitch-detector]");
+            const needle = page.locator("[data-pitch-needle]");
+
+            await expect(needle).toHaveCSS("visibility", "hidden");
+            await root.evaluate((element) => {
+              element.dataset.pitchResultState = "settling";
+            });
+            await expect(needle).toHaveCSS("visibility", "visible");
+          });
+'''
+          if 'Pitch current needle is hidden until an accepted estimate state exists' not in spec:
+            spec = spec.rstrip() + '\n\n' + needle_test.strip() + '\n'
+
+          spec_path.write_text(spec)
+          PY
+
+      - name: Commit remediation
+        run: |
+          if git diff --quiet; then
+            echo "No remediation changes needed"
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/tools/pitch-detector/PitchDetector.astro tests/browser/sonic-field-input-measurement-production-layout.spec.ts
+          git commit -m "fix: remediate PR4 cold review findings"
+          git push origin HEAD:feat/sonic-field-input-measurement-family
