@@ -48,14 +48,6 @@ jobs:
                   '''function countOccurrences(actual, needle) {\n  return actual.split(needle).length - 1;\n}''',
                   '''function extractCloudflareBeaconScripts(html) {\n  return (html.match(/<script\\b[^>]*>/gi) ?? []).filter((tag) =>\n    tag.includes(BEACON_URL),\n  );\n}\n\nfunction countOccurrences(actual, needle) {\n  return actual.split(needle).length - 1;\n}''',
               ),
-              (
-                  '''  expectThrows(\n    () =>\n      verifyHtml({\n        html: enabledHtml.replace(`${origin}/privacy`, "https://other.example/privacy"),\n        route: "/privacy",\n        origin,\n        indexing: "enabled",\n        analytics: "enabled",\n      }),\n    /canonical mismatch/,\n  );''',
-                  '''  expectThrows(\n    () =>\n      verifyHtml({\n        html: enabledHtml.replace(`${origin}/privacy`, "https://other.example/privacy"),\n        route: "/privacy",\n        origin,\n        indexing: "enabled",\n        analytics: "enabled",\n      }),\n    /canonical mismatch/,\n  );\n\n  const wrongBeaconTypeHtml =\n    enabledHtml.replace(\n      '<script type="module" src=',\n      '<script type="text/javascript" src=',\n    ) + '<script type="module"></script>';\n  expectThrows(\n    () =>\n      verifyHtml({\n        html: wrongBeaconTypeHtml,\n        route: "/privacy",\n        origin,\n        indexing: "enabled",\n        analytics: "enabled",\n      }),\n    /beacon script type mismatch/,\n  );''',
-              ),
-              (
-                  '''  assertEqual(parseTimeout(null), DEFAULT_TIMEOUT_MS, "default timeout");\n  expectThrows(() => parseTimeout("999"), /between 1000 and 60000/);''',
-                  '''  assertEqual(parseTimeout(null), DEFAULT_TIMEOUT_MS, "default timeout");\n  expectThrows(() => parseTimeout("999"), /between 1000 and 60000/);\n  expectThrows(() => parseTimeout("10000oops"), /decimal digits only/);''',
-              ),
           ]
 
           for old, new in replacements:
@@ -63,6 +55,21 @@ jobs:
               if count != 1:
                   raise SystemExit(f'expected one match, got {count}: {old[:120]!r}')
               text = text.replace(old, new, 1)
+
+          canonical_marker = '''    /canonical mismatch/,\n  );'''
+          canonical_insert = '''\n\n  const wrongBeaconTypeHtml =\n    enabledHtml.replace(\n      '<script type="module" src=',\n      '<script type="text/javascript" src=',\n    ) + '<script type="module"></script>';\n  expectThrows(\n    () =>\n      verifyHtml({\n        html: wrongBeaconTypeHtml,\n        route: "/privacy",\n        origin,\n        indexing: "enabled",\n        analytics: "enabled",\n      }),\n    /beacon script type mismatch/,\n  );'''
+          if text.count(canonical_marker) != 1:
+              raise SystemExit('canonical mismatch self-test marker was not unique')
+          text = text.replace(canonical_marker, canonical_marker + canonical_insert, 1)
+
+          timeout_marker = '''  expectThrows(() => parseTimeout("999"), /between 1000 and 60000/);'''
+          if text.count(timeout_marker) != 1:
+              raise SystemExit('timeout self-test marker was not unique')
+          text = text.replace(
+              timeout_marker,
+              timeout_marker + '\n  expectThrows(() => parseTimeout("10000oops"), /decimal digits only/);',
+              1,
+          )
 
           path.write_text(text)
           PY
