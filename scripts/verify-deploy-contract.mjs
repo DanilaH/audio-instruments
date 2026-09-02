@@ -5,7 +5,11 @@ import process from "node:process";
 const caddyfilePath = path.join(process.cwd(), "deploy", "Caddyfile");
 const caddyfile = await readFile(caddyfilePath, "utf8");
 
-assertIncludes(caddyfile, "{$SITE_DOMAIN}", "site-domain environment placeholder");
+assertIncludes(
+  caddyfile,
+  "{$SITE_DOMAIN}",
+  "site-domain environment placeholder",
+);
 assertIncludes(
   caddyfile,
   "{$SITE_ROOT:/srv/browser-audio-lab/current}",
@@ -17,7 +21,11 @@ assertIncludes(
   "try_files {path}.html {path}/index.html {path}",
   "extensionless Astro route rewrite",
 );
-assertIncludes(caddyfile, "@immutableAssets path /_astro/*", "Astro asset matcher");
+assertIncludes(
+  caddyfile,
+  "@immutableAssets path /_astro/*",
+  "Astro asset matcher",
+);
 assertIncludes(
   caddyfile,
   'Cache-Control "public, max-age=31536000, immutable"',
@@ -30,8 +38,16 @@ assertNotMatches(
   /(?:https?:\/\/)?(?:www\.)?[a-z0-9-]+\.(?:com|net|org|io|dev|app|ru)\b/i,
   "hard-coded production hostname",
 );
-assertNotIncludes(caddyfile, "reverse_proxy", "unexpected application server proxy");
-assertNotIncludes(caddyfile, "redir", "route redirect that could rewrite canonical paths");
+assertNotIncludes(
+  caddyfile,
+  "reverse_proxy",
+  "unexpected application server proxy",
+);
+assertNotIncludes(
+  caddyfile,
+  "redir",
+  "route redirect that could rewrite canonical paths",
+);
 
 process.stdout.write("VPS/Caddy deployment contract verified.\n");
 
