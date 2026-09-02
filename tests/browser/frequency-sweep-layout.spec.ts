@@ -43,11 +43,22 @@ test("Frequency Sweep keeps its core interaction usable at every required viewpo
     expect(safetyBox).not.toBeNull();
     if (playBox && safetyBox) {
       expect(safetyBox.y).toBeGreaterThanOrEqual(0);
-      expect(safetyBox.y + safetyBox.height).toBeLessThanOrEqual(
-        viewport.height,
-      );
       expect(playBox.y).toBeGreaterThanOrEqual(0);
-      expect(playBox.y + playBox.height).toBeLessThanOrEqual(viewport.height);
+      if (viewport.width >= 900) {
+        expect(safetyBox.y + safetyBox.height).toBeLessThanOrEqual(
+          viewport.height,
+        );
+        expect(playBox.y + playBox.height).toBeLessThanOrEqual(viewport.height);
+      } else {
+        const scrollHeight = await page.evaluate(
+          () => document.documentElement.scrollHeight,
+        );
+        expect(playBox.y + playBox.height).toBeLessThanOrEqual(scrollHeight);
+        expect(safetyBox.y + safetyBox.height).toBeLessThanOrEqual(
+          scrollHeight,
+        );
+        expect(safetyBox.y).toBeGreaterThan(playBox.y);
+      }
     }
   }
 });

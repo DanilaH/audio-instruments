@@ -99,7 +99,10 @@ async function expectNoHorizontalOverflow(page: Page): Promise<void> {
   expect(metrics.scrollWidth).toBeLessThanOrEqual(metrics.clientWidth);
 }
 
-async function openActiveState(page: Page, route: GeneratedRoute): Promise<void> {
+async function openActiveState(
+  page: Page,
+  route: GeneratedRoute,
+): Promise<void> {
   await installGeneratedSignalAudioContext(page);
   await page.goto(route);
 
@@ -110,7 +113,10 @@ async function openActiveState(page: Page, route: GeneratedRoute): Promise<void>
   }
 
   await page.getByRole("button", { name: "Play sweep", exact: true }).click();
-  await expect(page.locator("#frequency-sweep-status")).toContainText("Playing");
+  await expect(page.locator("#frequency-sweep-status")).toHaveAttribute(
+    "data-state",
+    "playing",
+  );
   await expect(page.locator("[data-frequency-sweep]")).toHaveAttribute(
     "data-sweep-visual",
     "playing",
@@ -123,9 +129,15 @@ async function expectDesktopSheetFits(
 ): Promise<void> {
   const sheet = page.locator("[data-sonic-instrument]");
   await expect(sheet).toBeVisible();
-  const box = await sheet.boundingBox();
-  expect(box).not.toBeNull();
-  expect((box?.y ?? viewport.height) + (box?.height ?? 0)).toBeLessThanOrEqual(
+  const bounds = await sheet.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      top: rect.top + window.scrollY,
+      bottom: rect.bottom + window.scrollY,
+    };
+  });
+  expect(bounds.top).toBeGreaterThanOrEqual(0);
+  expect(bounds.bottom).toBeLessThanOrEqual(
     viewport.height - viewport.bottomAir,
   );
   await expectNoHorizontalOverflow(page);

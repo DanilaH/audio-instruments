@@ -56,7 +56,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
           viewBox="0 0 100 42"
           preserveAspectRatio="none"
         >
-          <path class="sweep-curve__grid" d="M0 35 H100 M0 22 H100 M0 9 H100"></path>
+          <path class="sweep-curve__grid" d="M0 35 H100 M0 22 H100 M0 9 H100"
+          ></path>
           <path
             class="sweep-curve__line sweep-curve__line--log"
             d="M1 36 C36 36 54 31 69 23 C82 16 91 8 99 4"></path>
@@ -595,6 +596,33 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
   @media (prefers-reduced-motion: reduce) {
     [data-sweep-visual="playing"] .sweep-cursor {
       animation: none;
+    }
+  }
+
+  @media (min-width: 901px) and (max-height: 820px) {
+    .sweep-field {
+      grid-template-rows: auto 104px auto;
+      min-height: 0;
+      gap: 5px;
+      padding-block: 10px 7px;
+    }
+
+    .sweep-stage {
+      min-height: 104px;
+    }
+
+    .sweep-rail {
+      min-height: 0;
+    }
+
+    .sweep-rail > div {
+      gap: 5px;
+      padding: 8px 11px;
+    }
+
+    .sweep-state-strip {
+      min-height: 44px;
+      padding-block: 7px;
     }
   }
 
