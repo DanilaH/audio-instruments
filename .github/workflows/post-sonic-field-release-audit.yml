@@ -242,3 +242,5 @@ jobs:
           path: artifacts/post-sonic-release-audit
           if-no-files-found: error
           retention-days: 30
+
+# User-authored trigger after final contrast remediation.
