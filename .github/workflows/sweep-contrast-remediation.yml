@@ -1,0 +1,49 @@
+name: Sweep Contrast Remediation
+
+on:
+  push:
+    branches:
+      - fix/sonic-field-muted-contrast
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/sonic-field-muted-contrast
+      - name: Apply text-safe sweep endpoint color
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('src/tools/frequency-sweep/FrequencySweep.astro')
+          text = path.read_text()
+          old = '''  .sweep-sheet__state strong {
+    display: inline-flex;
+    gap: 7px;
+    align-items: baseline;
+    color: var(--sonic-current);
+'''
+          new = '''  .sweep-sheet__state strong {
+    display: inline-flex;
+    gap: 7px;
+    align-items: baseline;
+    color: var(--sonic-current-ink);
+'''
+          if text.count(old) != 1:
+              raise SystemExit(f'expected one sweep endpoint color anchor, got {text.count(old)}')
+          path.write_text(text.replace(old, new, 1))
+          PY
+      - name: Commit remediation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/tools/frequency-sweep/FrequencySweep.astro
+          git diff --cached --check
+          git commit -m 'fix: raise sweep endpoint text contrast'
+          git push origin HEAD:fix/sonic-field-muted-contrast
