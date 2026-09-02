@@ -88,7 +88,9 @@ export function frequencyFromLogRatio(
     minHz <= 0 ||
     maxHz <= minHz
   ) {
-    throw new RangeError("Log-frequency mapping requires a finite ratio and 0 < minHz < maxHz");
+    throw new RangeError(
+      "Log-frequency mapping requires a finite ratio and 0 < minHz < maxHz",
+    );
   }
 
   const boundedRatio = Math.min(1, Math.max(0, ratio));
