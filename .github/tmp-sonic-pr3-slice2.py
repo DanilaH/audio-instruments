@@ -193,3 +193,77 @@ new_expectation = '''  const readout = page.locator("[data-bass-frequency-readou
 });'''
 text = replace_once(text, old_expectation, new_expectation, "Bass live sweep expectation")
 spec.write_text(text)
+
+
+layout = Path("tests/browser/sonic-field-generated-signal-production-layout.spec.ts")
+text = layout.read_text()
+text = replace_once(
+    text,
+    'type GeneratedRoute = "/tone-generator" | "/frequency-sweep";',
+    'type GeneratedRoute = "/tone-generator" | "/frequency-sweep" | "/bass-test";',
+    "Generated route Bass type",
+)
+text = replace_once(
+    text,
+    '''  if (route === "/tone-generator") {
+    await page.getByRole("button", { name: "Play", exact: true }).click();
+    await expect(page.locator("#tone-status")).toContainText("Playing");
+    return;
+  }
+
+  await page.getByRole("button", { name: "Play sweep", exact: true }).click();''',
+    '''  if (route === "/tone-generator") {
+    await page.getByRole("button", { name: "Play", exact: true }).click();
+    await expect(page.locator("#tone-status")).toContainText("Playing");
+    return;
+  }
+
+  if (route === "/bass-test") {
+    await page.locator('[data-bass-mode="sweep"]').click();
+    await page.locator("[data-bass-sweep-play]").click();
+    await expect(page.locator("#bass-status")).toHaveAttribute(
+      "data-state",
+      "playing",
+    );
+    await expect(page.locator("[data-bass-test]")).toHaveAttribute(
+      "data-bass-visual",
+      "sweep",
+    );
+    return;
+  }
+
+  await page.getByRole("button", { name: "Play sweep", exact: true }).click();''',
+    "Generated Bass activation",
+)
+text = replace_once(
+    text,
+    '''const routes: GeneratedRoute[] = ["/tone-generator", "/frequency-sweep"];''',
+    '''const routes: GeneratedRoute[] = [
+  "/tone-generator",
+  "/frequency-sweep",
+  "/bass-test",
+];''',
+    "Generated Bass route list",
+)
+old_mobile = '''      const field = page.locator(
+        route === "/tone-generator" ? ".tone-field" : ".sweep-field",
+      );
+      const action = page.locator(
+        route === "/tone-generator" ? "#tone-play-stop" : "[data-sweep-stop]",
+      );'''
+new_mobile = '''      const fieldSelector =
+        route === "/tone-generator"
+          ? ".tone-field"
+          : route === "/frequency-sweep"
+            ? ".sweep-field"
+            : ".bass-field";
+      const actionSelector =
+        route === "/tone-generator"
+          ? "#tone-play-stop"
+          : route === "/frequency-sweep"
+            ? "[data-sweep-stop]"
+            : "[data-bass-stop]";
+      const field = page.locator(fieldSelector);
+      const action = page.locator(actionSelector);'''
+text = replace_once(text, old_mobile, new_mobile, "Generated Bass mobile selectors")
+layout.write_text(text)
