@@ -1,4 +1,4 @@
-name: Temporary Sonic Field PR3 slice 1 geometry
+name: Temporary Sonic Field PR3 slice 1 remediation
 
 on:
   push:
@@ -7,10 +7,13 @@ on:
     paths:
       - .github/workflows/tmp-sonic-pr3-slice1.yml
 
+permissions:
+  contents: write
+
 jobs:
-  geometry:
+  slice1:
     runs-on: ubuntu-24.04
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/setup@v2
@@ -20,11 +23,53 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - run: python .github/tmp-sonic-pr3-slice1-fix.py
-      - run: pnpm exec prettier --write src/tools/tone-generator/ToneGenerator.astro src/tools/frequency-sweep/FrequencySweep.astro tests/browser/sonic-field-generated-signal-production-layout.spec.ts tests/browser/tmp-sonic-pr3-geometry.spec.ts
+      - name: Apply slice-one remediation
+        run: python .github/tmp-sonic-pr3-slice1-fix.py
+      - name: Format affected files
+        run: >-
+          pnpm exec prettier --write
+          src/tools/tone-generator/ToneGenerator.astro
+          src/tools/frequency-sweep/FrequencySweep.astro
+          tests/browser/tone-generator.spec.ts
+          tests/browser/frequency-sweep-layout.spec.ts
+          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
+      - name: Verify formatting
+        run: >-
+          pnpm exec prettier --check
+          src/tools/tone-generator/ToneGenerator.astro
+          src/tools/frequency-sweep/FrequencySweep.astro
+          tests/browser/tone-generator.spec.ts
+          tests/browser/frequency-sweep-layout.spec.ts
+          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
       - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
-      - name: Probe Tone geometry
-        run: pnpm exec playwright test tests/browser/tmp-sonic-pr3-geometry.spec.ts --project=chromium
-
-# expanded rail metrics
+      - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Verify Tone and Frequency behavior plus Sonic Field contracts
+        run: >-
+          pnpm exec playwright test
+          tests/browser/tone-generator.spec.ts
+          tests/browser/frequency-sweep.spec.ts
+          tests/browser/frequency-sweep-layout.spec.ts
+          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
+          tests/browser/tool-touch-targets.spec.ts
+          tests/browser/runtime-layout-stability.spec.ts
+          --project=chromium --project=firefox --project=webkit
+      - name: Persist verified slice
+        run: |
+          if git diff --quiet -- \
+            src/tools/tone-generator/ToneGenerator.astro \
+            src/tools/frequency-sweep/FrequencySweep.astro \
+            tests/browser/tone-generator.spec.ts \
+            tests/browser/frequency-sweep-layout.spec.ts \
+            tests/browser/sonic-field-generated-signal-production-layout.spec.ts; then
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/tools/tone-generator/ToneGenerator.astro \
+            src/tools/frequency-sweep/FrequencySweep.astro \
+            tests/browser/tone-generator.spec.ts \
+            tests/browser/frequency-sweep-layout.spec.ts \
+            tests/browser/sonic-field-generated-signal-production-layout.spec.ts
+          git commit -m "fix: harden generated-signal slice one"
+          git push origin HEAD:feat/sonic-field-generated-signal-family
