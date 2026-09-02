@@ -1,6 +1,6 @@
 ---
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
-import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 import { GENERAL_LEVEL_DEFAULT_DB } from "../../utils/audio";
 import {
   AV_SYNC_OFFSET_MAX_MS,
@@ -10,30 +10,52 @@ import {
 ---
 
 <div data-audio-latency data-latency-state="idle">
-  <InstrumentSurface
+  <SonicInstrument
     label="Audio Latency browser metadata and manual audiovisual sync"
-    accent="yellow"
+    class="latency-sheet"
   >
-    <div class="latency-instrument">
-      <section class="latency-stage" aria-label="Manual audiovisual sync">
-        <div class="latency-stage__header">
-          <ToolStatus id="audio-latency-status" label="Ready" state="idle" />
-          <div class="latency-offset-summary">
-            <span>Selected offset</span>
-            <strong data-latency-offset-value>0 ms</strong>
-          </div>
+    <div class="latency-sheet__bar">
+      <ToolStatus id="audio-latency-status" label="Ready" state="idle" />
+      <div class="latency-offset-summary">
+        <span>Selected offset</span>
+        <strong data-latency-offset-value>0 ms</strong>
+      </div>
+    </div>
+
+    <section class="latency-field" aria-label="Manual audiovisual sync path">
+      <div class="latency-field__heading">
+        <div>
+          <span>Manual AV sync path</span>
+          <strong>Visual reference + user-positioned audio click</strong>
+        </div>
+        <span>One event pair every 1000 ms while active</span>
+      </div>
+
+      <div class="latency-sync-field">
+        <div class="latency-lane-labels" aria-hidden="true">
+          <span>Visual</span>
+          <span>Audio</span>
         </div>
 
-        <div class="latency-pulse-zone">
-          <div class="latency-pulse" data-latency-pulse aria-hidden="true">
+        <div class="latency-timeline" aria-hidden="true">
+          <span class="latency-track latency-track--visual"></span>
+          <span class="latency-track latency-track--audio"></span>
+          <span class="latency-zero-guide"></span>
+
+          <div class="latency-pulse" data-latency-pulse>
             <span></span>
           </div>
-          <div class="latency-pulse-copy">
-            <strong>Visual pulse + audio click</strong>
-            <span>One timing event every 1000 ms while active</span>
+          <div class="latency-audio-marker" data-latency-offset-marker></div>
+
+          <div class="latency-timeline__bounds">
+            <span>−300 ms</span>
+            <span>0</span>
+            <span>+300 ms</span>
           </div>
         </div>
+      </div>
 
+      <div class="latency-result-band">
         <p class="latency-result" data-latency-result>
           Your selected sync offset: 0 ms
         </p>
@@ -42,33 +64,15 @@ import {
           This is a perception-based setting, not a measurement of exact
           hardware, headphone or Bluetooth latency.
         </p>
-      </section>
+      </div>
+    </section>
 
-      <section class="latency-controls" aria-label="Audio Latency controls">
-        <div class="latency-safety">
-          <i class="ph ph-shield-check" aria-hidden="true"></i>
-          <p>
-            Start with your device/headphone volume low. Increase it only to a
-            comfortable listening level. Do not turn the volume up to compensate
-            for a tone you cannot hear.
-          </p>
-        </div>
-
-        <div class="latency-actions-row">
-          <div class="latency-actions">
-            <button type="button" class="latency-start" data-latency-start>
-              <i class="ph ph-play" aria-hidden="true"></i>
-              Start sync loop
-            </button>
-            <button
-              type="button"
-              class="latency-stop"
-              data-latency-stop
-              disabled
-            >
-              <i class="ph ph-stop" aria-hidden="true"></i>
-              Stop
-            </button>
+    <section class="latency-rail" aria-label="Audio Latency controls">
+      <div class="latency-transport">
+        <div class="latency-section-heading">
+          <div>
+            <span>Playback</span>
+            <h3>Sync loop</h3>
           </div>
           <p class="latency-level">
             <span>Click level</span>
@@ -77,43 +81,62 @@ import {
           </p>
         </div>
 
-        <div class="latency-offset-control">
-          <div class="latency-field-header">
-            <label for="audio-latency-offset">Manual sync offset</label>
-            <output for="audio-latency-offset" data-latency-offset-value
-              >0 ms</output
-            >
-          </div>
-          <input
-            id="audio-latency-offset"
-            type="range"
-            min={AV_SYNC_OFFSET_MIN_MS}
-            max={AV_SYNC_OFFSET_MAX_MS}
-            step={AV_SYNC_OFFSET_STEP_MS}
-            value="0"
-            data-latency-offset
-          />
-          <div class="latency-offset-control__bounds" aria-hidden="true">
-            <span>−300 ms</span>
-            <span>0</span>
-            <span>+300 ms</span>
-          </div>
-          <p>
-            Positive values place the audio click after the visual pulse.
-            Negative values place the audio click before it. The 5 ms step is
-            control granularity, not a ±5 ms accuracy claim.
-          </p>
+        <div class="latency-actions">
+          <button type="button" class="latency-start" data-latency-start>
+            <span class="transport-play-shape" aria-hidden="true"></span>
+            Start sync loop
+          </button>
+          <button
+            type="button"
+            class="latency-stop"
+            data-latency-stop
+            disabled
+          >
+            <span class="transport-stop-shape" aria-hidden="true"></span>
+            Stop
+          </button>
         </div>
+      </div>
 
-        <div class="latency-reported" aria-labelledby="latency-reported-title">
-          <div class="latency-section-heading">
-            <div>
-              <p class="latency-eyebrow">Browser-reported</p>
-              <h3 id="latency-reported-title">Web Audio latency metadata</h3>
-            </div>
-            <i class="ph ph-browser" aria-hidden="true"></i>
-          </div>
+      <div class="latency-offset-control">
+        <div class="latency-field-header">
+          <label for="audio-latency-offset">Manual sync offset</label>
+          <output for="audio-latency-offset" data-latency-offset-value
+            >0 ms</output
+          >
+        </div>
+        <input
+          id="audio-latency-offset"
+          type="range"
+          min={AV_SYNC_OFFSET_MIN_MS}
+          max={AV_SYNC_OFFSET_MAX_MS}
+          step={AV_SYNC_OFFSET_STEP_MS}
+          value="0"
+          data-latency-offset
+          aria-describedby="audio-latency-offset-help"
+        />
+        <div class="latency-offset-control__bounds" aria-hidden="true">
+          <span>Audio before</span>
+          <span>Aligned</span>
+          <span>Audio after</span>
+        </div>
+        <p id="audio-latency-offset-help">
+          Positive values place the audio click after the visual pulse. Negative
+          values place the audio click before it. The 5 ms step is control
+          granularity, not a ±5 ms accuracy claim.
+        </p>
+      </div>
 
+      <details class="latency-reported">
+        <summary>
+          <span>
+            <small>Browser-reported</small>
+            <strong>Web Audio latency metadata</strong>
+          </span>
+          <i class="ph ph-caret-down" aria-hidden="true"></i>
+        </summary>
+
+        <div class="latency-reported__content">
           <dl>
             <div>
               <dt>Base latency</dt>
@@ -129,11 +152,20 @@ import {
             are not exact end-to-end hardware latency.
           </p>
         </div>
+      </details>
+    </section>
 
-        <p class="latency-error" data-latency-error role="alert" hidden></p>
-      </section>
+    <div class="latency-safety-strip">
+      <strong>Listening safety</strong>
+      <p>
+        Start with your device/headphone volume low. Increase it only to a
+        comfortable listening level. Do not turn the volume up to compensate for
+        a tone you cannot hear.
+      </p>
     </div>
-  </InstrumentSurface>
+
+    <p class="latency-error" data-latency-error role="alert" hidden></p>
+  </SonicInstrument>
 </div>
 
 <script>
@@ -162,261 +194,283 @@ import {
 </script>
 
 <style>
-  .latency-instrument {
-    display: grid;
-    grid-template-columns: minmax(0, 1.02fr) minmax(390px, 0.98fr);
-    min-height: 520px;
-  }
-
-  .latency-stage,
-  .latency-controls {
-    min-width: 0;
-    padding: clamp(20px, 2.6vw, 32px);
-  }
-
-  .latency-stage {
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    gap: 18px;
-    border-right: 1px solid var(--color-border);
-    background:
-      radial-gradient(
-        circle at 52% 48%,
-        rgb(244 196 92 / 0.24),
-        transparent 28%
-      ),
-      linear-gradient(145deg, rgb(255 253 244 / 0.98), rgb(252 246 225 / 0.9));
-  }
-
-  .latency-stage__header,
-  .latency-field-header,
-  .latency-section-heading,
-  .latency-actions-row,
-  .latency-actions {
+  .latency-sheet__bar {
     display: flex;
+    min-height: 48px;
     align-items: center;
     justify-content: space-between;
-    gap: 14px;
+    gap: 18px;
+    padding: 6px 18px;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
 
   .latency-offset-summary {
     display: grid;
     justify-items: end;
-    gap: 2px;
+    gap: 1px;
     text-align: right;
   }
 
   .latency-offset-summary span,
-  .latency-stage__note,
-  .latency-pulse-copy span,
-  .latency-reported > p,
-  .latency-offset-control > p {
-    color: var(--color-ink-muted);
-    font-size: 0.78rem;
-    line-height: 1.5;
-  }
-
-  .latency-offset-summary strong {
-    font-size: 1.25rem;
-  }
-
-  .latency-pulse-zone {
-    display: grid;
-    align-self: center;
-    justify-items: center;
-    gap: 22px;
-    min-height: 260px;
-    padding: 32px 18px;
-  }
-
-  .latency-pulse {
-    display: grid;
-    width: clamp(118px, 18vw, 170px);
-    aspect-ratio: 1;
-    place-items: center;
-    border: 1px solid rgb(112 87 30 / 0.14);
-    border-radius: 32px;
-    background: rgb(255 255 255 / 0.62);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.8);
-  }
-
-  .latency-pulse span {
-    width: 44%;
-    aspect-ratio: 1;
-    border-radius: 50%;
-    background: rgb(199 151 46 / 0.36);
-    box-shadow: 0 0 0 12px rgb(199 151 46 / 0.07);
-    opacity: 0.55;
-    transition:
-      opacity 70ms linear,
-      background-color 70ms linear,
-      box-shadow 70ms linear;
-  }
-
-  .latency-pulse[data-active="true"] span {
-    background: rgb(199 151 46 / 0.95);
-    box-shadow: 0 0 0 18px rgb(199 151 46 / 0.18);
-    opacity: 1;
-  }
-
-  .latency-pulse-copy {
-    display: grid;
-    justify-items: center;
-    gap: 5px;
-    text-align: center;
-  }
-
-  .latency-pulse-copy strong {
-    font-size: clamp(1.05rem, 1.7vw, 1.35rem);
-  }
-
-  .latency-result {
-    margin: 0;
-    padding: 13px 15px;
-    border: 1px solid rgb(112 87 30 / 0.14);
-    border-radius: 14px;
-    background: rgb(255 255 255 / 0.56);
-    font-weight: 700;
-  }
-
-  .latency-stage__note {
-    margin: 0;
-  }
-
-  .latency-controls {
-    display: grid;
-    align-content: start;
-    gap: 18px;
-  }
-
-  .latency-safety {
-    display: flex;
-    align-items: flex-start;
-    gap: 10px;
-    padding: 11px 13px;
-    border: 1px solid rgb(199 151 46 / 0.18);
-    border-radius: 14px;
-    background: rgb(255 249 226 / 0.74);
-  }
-
-  .latency-safety i {
-    margin-top: 2px;
-    font-size: 1.05rem;
-  }
-
-  .latency-safety p,
-  .latency-reported p,
-  .latency-offset-control p,
-  .latency-level {
-    margin: 0;
-  }
-
-  .latency-safety p {
-    font-size: 0.78rem;
-    line-height: 1.45;
-  }
-
-  .latency-actions-row {
-    flex-wrap: wrap;
-  }
-
-  .latency-actions {
-    justify-content: flex-start;
-  }
-
-  .latency-level {
-    display: flex;
-    align-items: baseline;
-    gap: 5px;
-    color: var(--color-ink-muted);
-    font-size: 0.72rem;
-  }
-
-  .latency-level strong {
-    color: var(--color-ink);
-    font-size: 0.82rem;
-  }
-
-  .latency-reported,
-  .latency-offset-control {
-    display: grid;
-    gap: 12px;
-    padding: 16px;
-    border: 1px solid var(--color-border);
-    border-radius: 18px;
-    background: rgb(255 255 255 / 0.58);
-  }
-
-  .latency-section-heading h3,
-  .latency-section-heading p {
-    margin: 0;
-  }
-
-  .latency-section-heading h3 {
-    margin-top: 2px;
-    font-size: 1rem;
-  }
-
-  .latency-section-heading > i {
-    font-size: 1.25rem;
-  }
-
-  .latency-eyebrow {
-    color: var(--color-ink-muted);
-    font-size: 0.68rem;
-    font-weight: 700;
+  .latency-field__heading > div > span,
+  .latency-section-heading span,
+  .latency-reported summary small {
+    color: var(--sonic-muted);
+    font-size: 0.66rem;
+    font-weight: 800;
     letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
-  .latency-reported dl {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 10px;
-    margin: 0;
-  }
-
-  .latency-reported dl > div {
-    display: grid;
-    gap: 4px;
-    padding: 12px;
-    border-radius: 12px;
-    background: rgb(247 244 235 / 0.72);
-  }
-
-  .latency-reported dt {
-    color: var(--color-ink-muted);
-    font-size: 0.72rem;
-  }
-
+  .latency-offset-summary strong,
+  .latency-field-header output,
+  .latency-level strong,
+  .latency-result,
   .latency-reported dd {
-    margin: 0;
-    font-size: 0.92rem;
-    font-weight: 700;
+    font-variant-numeric: tabular-nums;
   }
 
-  .latency-field-header label {
-    font-size: 0.86rem;
-    font-weight: 700;
+  .latency-offset-summary strong {
+    font-size: 0.9rem;
   }
 
-  .latency-field-header output {
-    flex: 0 0 auto;
-    font-weight: 700;
-    white-space: nowrap;
+  .latency-field {
+    display: grid;
+    grid-template-rows: auto minmax(118px, 1fr) auto;
+    gap: 10px;
+    min-height: 250px;
+    padding: 14px 18px 12px;
+    border-bottom: 1px solid var(--sonic-border);
+    background: var(--sonic-field);
   }
 
-  .latency-offset-control input[type="range"] {
-    width: 100%;
-    min-height: 44px;
-    accent-color: rgb(183 132 20);
+  .latency-field__heading,
+  .latency-section-heading,
+  .latency-field-header {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
   }
 
-  .latency-offset-control__bounds {
+  .latency-field__heading > div,
+  .latency-section-heading > div,
+  .latency-reported summary > span {
+    display: grid;
+    gap: 2px;
+  }
+
+  .latency-field__heading strong {
+    font-size: 0.88rem;
+  }
+
+  .latency-field__heading > span {
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+    text-align: right;
+  }
+
+  .latency-sync-field {
+    display: grid;
+    grid-template-columns: 58px minmax(0, 1fr);
+    align-items: stretch;
+    min-height: 118px;
+  }
+
+  .latency-lane-labels {
+    display: grid;
+    grid-template-rows: 1fr 1fr;
+    align-items: center;
+    color: var(--sonic-muted);
+    font-size: 0.65rem;
+    font-weight: 760;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+
+  .latency-timeline {
+    position: relative;
+    min-width: 0;
+    min-height: 118px;
+  }
+
+  .latency-track,
+  .latency-zero-guide {
+    position: absolute;
+    background: var(--sonic-border);
+  }
+
+  .latency-track {
+    right: 8%;
+    left: 8%;
+    height: 1px;
+  }
+
+  .latency-track--visual {
+    top: 34px;
+  }
+
+  .latency-track--audio {
+    top: 76px;
+  }
+
+  .latency-zero-guide {
+    top: 18px;
+    bottom: 24px;
+    left: 50%;
+    width: 1px;
+    background: var(--sonic-border-soft);
+  }
+
+  .latency-pulse,
+  .latency-audio-marker {
+    position: absolute;
+    z-index: 2;
+    transform: translate(-50%, -50%);
+  }
+
+  .latency-pulse {
+    left: 50%;
+    top: 34px;
+    display: grid;
+    width: 32px;
+    height: 32px;
+    place-items: center;
+    border: 1px solid var(--sonic-signal);
+    border-radius: 50%;
+    background: var(--sonic-field);
+  }
+
+  .latency-pulse span {
+    width: 9px;
+    height: 9px;
+    border-radius: 50%;
+    background: var(--sonic-signal);
+    opacity: 0.48;
+    transition:
+      width 70ms linear,
+      height 70ms linear,
+      opacity 70ms linear,
+      background-color 70ms linear;
+  }
+
+  .latency-pulse[data-active="true"] span {
+    width: 18px;
+    height: 18px;
+    opacity: 1;
+  }
+
+  .latency-audio-marker {
+    --latency-audio-position: 50%;
+
+    left: var(--latency-audio-position);
+    top: 76px;
+    width: 17px;
+    height: 17px;
+    border: 1px solid var(--sonic-current);
+    border-radius: 2px;
+    background: var(--sonic-current);
+    box-shadow: inset 0 0 0 4px var(--sonic-field);
+    transform: translate(-50%, -50%) rotate(45deg);
+    transition: left 90ms ease-out;
+  }
+
+  .latency-timeline__bounds {
+    position: absolute;
+    right: 8%;
+    bottom: 0;
+    left: 8%;
     display: flex;
     justify-content: space-between;
-    color: var(--color-ink-muted);
-    font-size: 0.68rem;
+    color: var(--sonic-muted);
+    font-size: 0.62rem;
+    font-variant-numeric: tabular-nums;
+  }
+
+  .latency-result-band {
+    display: grid;
+    grid-template-columns: minmax(220px, 0.72fr) minmax(0, 1.28fr);
+    align-items: center;
+    gap: 18px;
+    min-height: 52px;
+    padding-top: 9px;
+    border-top: 1px solid var(--sonic-border-soft);
+  }
+
+  .latency-result,
+  .latency-stage__note {
+    margin: 0;
+  }
+
+  .latency-result {
+    font-size: 0.84rem;
+    font-weight: 780;
+  }
+
+  .latency-stage__note,
+  .latency-offset-control > p,
+  .latency-reported__content > p,
+  .latency-safety-strip p {
+    color: var(--sonic-muted);
+    font-size: 0.69rem;
+    line-height: 1.34;
+  }
+
+  .latency-rail {
+    display: grid;
+    grid-template-columns: minmax(230px, 0.78fr) minmax(390px, 1.34fr) minmax(
+        250px,
+        0.88fr
+      );
+    min-height: 154px;
+    border-bottom: 1px solid var(--sonic-border-soft);
+  }
+
+  .latency-rail > * {
+    min-width: 0;
+    padding: 12px 14px;
+  }
+
+  .latency-rail > * + * {
+    border-left: 1px solid var(--sonic-border-soft);
+  }
+
+  .latency-transport,
+  .latency-offset-control,
+  .latency-reported__content {
+    display: grid;
+    align-content: start;
+    gap: 10px;
+  }
+
+  .latency-section-heading {
+    align-items: start;
+  }
+
+  .latency-section-heading h3 {
+    margin: 0;
+    font-size: 0.9rem;
+  }
+
+  .latency-level {
+    display: grid;
+    justify-items: end;
+    gap: 1px;
+    margin: 0;
+    color: var(--sonic-muted);
+    font-size: 0.64rem;
+    text-align: right;
+  }
+
+  .latency-level strong {
+    color: var(--sonic-ink);
+    font-size: 0.76rem;
+  }
+
+  .latency-actions {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) minmax(86px, 0.58fr);
+    gap: 6px;
   }
 
   .latency-start,
@@ -425,148 +479,351 @@ import {
     min-height: 44px;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 0 18px;
-    border: 1px solid var(--color-border);
-    border-radius: 12px;
+    gap: 7px;
+    padding: 0 11px;
+    border: 1px solid var(--sonic-border);
+    border-radius: var(--sonic-control-radius);
+    background: transparent;
+    color: var(--sonic-ink);
     font: inherit;
-    font-weight: 700;
+    font-size: 0.72rem;
+    font-weight: 780;
     cursor: pointer;
   }
 
   .latency-start {
-    border-color: rgb(161 115 17 / 0.45);
-    background: rgb(231 181 73);
-    color: rgb(50 37 10);
+    border-color: var(--sonic-ink);
+    background: var(--sonic-ink);
+    color: var(--sonic-sheet);
   }
 
-  .latency-stop {
-    background: rgb(255 255 255 / 0.82);
-    color: var(--color-ink);
+  .transport-play-shape {
+    width: 0;
+    height: 0;
+    border-top: 5px solid transparent;
+    border-bottom: 5px solid transparent;
+    border-left: 8px solid currentColor;
+  }
+
+  .transport-stop-shape {
+    width: 9px;
+    height: 9px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+
+  .latency-field-header {
+    align-items: center;
+    gap: 8px;
+  }
+
+  .latency-field-header label,
+  .latency-field-header output {
+    font-size: 0.76rem;
+    font-weight: 760;
+  }
+
+  .latency-field-header output {
+    flex: 0 0 auto;
+    white-space: nowrap;
+  }
+
+  .latency-offset-control input[type="range"] {
+    width: 100%;
+    min-height: 44px;
+    margin: 0;
+    accent-color: var(--sonic-current);
+  }
+
+  .latency-offset-control__bounds {
+    display: flex;
+    justify-content: space-between;
+    gap: 8px;
+    color: var(--sonic-muted);
+    font-size: 0.62rem;
+  }
+
+  .latency-offset-control > p,
+  .latency-reported__content > p {
+    margin: 0;
+  }
+
+  .latency-reported {
+    padding: 0;
+  }
+
+  .latency-reported summary {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    padding: 10px 14px;
+    cursor: pointer;
+    list-style: none;
+  }
+
+  .latency-reported summary::-webkit-details-marker {
+    display: none;
+  }
+
+  .latency-reported summary strong {
+    font-size: 0.8rem;
+  }
+
+  .latency-reported summary > i {
+    color: var(--sonic-muted);
+    font-size: 0.9rem;
+    transition: transform 120ms ease-out;
+  }
+
+  .latency-reported[open] summary > i {
+    transform: rotate(180deg);
+  }
+
+  .latency-reported__content {
+    padding: 0 14px 12px;
+    border-top: 1px solid var(--sonic-border-soft);
+  }
+
+  .latency-reported dl {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 8px;
+    margin: 0;
+    padding-top: 10px;
+  }
+
+  .latency-reported dl > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .latency-reported dt {
+    color: var(--sonic-muted);
+    font-size: 0.64rem;
+  }
+
+  .latency-reported dd {
+    margin: 0;
+    font-size: 0.78rem;
+    font-weight: 760;
+  }
+
+  .latency-safety-strip {
+    display: grid;
+    grid-template-columns: 104px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 18px;
+  }
+
+  .latency-safety-strip strong {
+    color: var(--sonic-current);
+    font-size: 0.66rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+
+  .latency-safety-strip p {
+    margin: 0;
+  }
+
+  .latency-error {
+    margin: 0;
+    padding: 8px 18px;
+    color: var(--sonic-opposing);
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
+
+  .latency-error[hidden] {
+    display: none;
   }
 
   .latency-start:disabled,
   .latency-stop:disabled {
     cursor: not-allowed;
-    opacity: 0.46;
+    opacity: 0.45;
   }
 
-  .latency-error {
-    margin: 0;
-    padding: 11px 13px;
-    border: 1px solid rgb(176 68 57 / 0.28);
-    border-radius: 12px;
-    background: rgb(255 238 235 / 0.7);
-    color: rgb(118 43 36);
-    font-size: 0.8rem;
-    line-height: 1.45;
-  }
-
-  @media (max-width: 900px) {
-    .latency-instrument {
-      grid-template-columns: 1fr;
+  @media (min-width: 981px) and (max-height: 820px) {
+    .latency-sheet__bar {
+      min-height: 42px;
+      padding: 4px 16px;
     }
 
-    .latency-stage {
-      border-right: 0;
-      border-bottom: 1px solid var(--color-border);
+    .latency-field {
+      grid-template-rows: auto minmax(92px, 1fr) auto;
+      gap: 6px;
+      min-height: 196px;
+      padding: 9px 16px 8px;
     }
 
-    .latency-pulse-zone {
-      min-height: 180px;
-      padding-block: 18px;
-    }
-  }
-
-  @media (max-width: 520px) {
-    .latency-stage,
-    .latency-controls {
-      padding: 10px 14px;
+    .latency-sync-field,
+    .latency-timeline {
+      min-height: 92px;
     }
 
-    .latency-stage {
-      gap: 8px;
-    }
-
-    .latency-stage__header {
-      align-items: flex-start;
-    }
-
-    .latency-pulse-zone {
-      min-height: 96px;
-      gap: 8px;
-      padding: 4px;
-    }
-
+    .latency-track--visual,
     .latency-pulse {
-      width: 80px;
-      border-radius: 20px;
+      top: 27px;
     }
 
-    .latency-pulse-copy span,
-    .latency-stage__note {
-      font-size: 0.7rem;
-      line-height: 1.35;
+    .latency-track--audio,
+    .latency-audio-marker {
+      top: 59px;
     }
 
-    .latency-result {
-      padding: 8px 10px;
-      font-size: 0.75rem;
-      white-space: nowrap;
+    .latency-zero-guide {
+      top: 14px;
+      bottom: 22px;
     }
 
-    .latency-field-header {
+    .latency-result-band {
+      min-height: 44px;
+      padding-top: 6px;
+    }
+
+    .latency-rail {
+      min-height: 136px;
+    }
+
+    .latency-rail > * {
+      padding: 9px 12px;
+    }
+
+    .latency-transport,
+    .latency-offset-control,
+    .latency-reported__content {
       gap: 6px;
     }
 
-    .latency-field-header label {
-      flex: 0 0 auto;
-      font-size: 0.8rem;
-      white-space: nowrap;
+    .latency-offset-control > p,
+    .latency-stage__note,
+    .latency-reported__content > p,
+    .latency-safety-strip p {
+      font-size: 0.65rem;
+      line-height: 1.28;
     }
 
-    .latency-controls {
-      gap: 10px;
+    .latency-reported summary {
+      padding: 8px 12px;
     }
 
-    .latency-safety,
-    .latency-reported,
-    .latency-offset-control {
-      padding: 10px 11px;
+    .latency-safety-strip {
+      padding: 6px 16px;
+    }
+  }
+
+  @media (max-width: 980px) {
+    .latency-rail {
+      grid-template-columns: 0.9fr 1.35fr;
     }
 
-    .latency-safety p {
-      font-size: 0.74rem;
+    .latency-reported {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--sonic-border-soft);
+      border-left: 0;
+    }
+  }
+
+  @media (max-width: 720px) {
+    .latency-sheet__bar {
+      padding-inline: 14px;
     }
 
-    .latency-actions-row {
-      align-items: stretch;
-      gap: 8px;
+    .latency-field {
+      grid-template-rows: auto minmax(112px, 1fr) auto;
+      min-height: 228px;
+      padding: 12px 14px 10px;
+    }
+
+    .latency-field__heading {
+      align-items: start;
+    }
+
+    .latency-field__heading > span {
+      max-width: 120px;
+      font-size: 0.64rem;
+    }
+
+    .latency-sync-field {
+      grid-template-columns: 50px minmax(0, 1fr);
+    }
+
+    .latency-result-band {
+      grid-template-columns: 1fr;
+      gap: 3px;
+    }
+
+    .latency-rail {
+      grid-template-columns: 1fr;
+    }
+
+    .latency-rail > * + * {
+      border-top: 1px solid var(--sonic-border-soft);
+      border-left: 0;
+    }
+
+    .latency-reported {
+      grid-column: auto;
     }
 
     .latency-actions {
-      display: grid;
-      flex: 1 1 100%;
-      grid-template-columns: 1fr 1fr;
+      grid-template-columns: minmax(0, 1.3fr) minmax(88px, 0.7fr);
+    }
+
+    .latency-safety-strip {
+      grid-template-columns: 1fr;
+      gap: 3px;
+      padding: 9px 14px;
+    }
+  }
+
+  @media (max-width: 360px) {
+    .latency-sheet__bar {
+      gap: 10px;
+    }
+
+    .latency-offset-summary span,
+    .latency-field__heading > div > span,
+    .latency-section-heading span,
+    .latency-reported summary small {
+      font-size: 0.61rem;
+    }
+
+    .latency-field__heading > span {
+      display: none;
+    }
+
+    .latency-sync-field {
+      grid-template-columns: 44px minmax(0, 1fr);
+    }
+
+    .latency-lane-labels {
+      font-size: 0.58rem;
+    }
+
+    .latency-timeline__bounds,
+    .latency-offset-control__bounds {
+      font-size: 0.58rem;
+    }
+
+    .latency-actions {
+      grid-template-columns: 1fr 78px;
     }
 
     .latency-start,
     .latency-stop {
-      width: 100%;
-      padding-inline: 10px;
-    }
-
-    .latency-level {
-      flex: 1 1 100%;
-    }
-
-    .latency-reported dl {
-      grid-template-columns: 1fr;
+      padding-inline: 8px;
+      font-size: 0.68rem;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .latency-pulse span {
+    .latency-pulse span,
+    .latency-audio-marker,
+    .latency-reported summary > i {
       transition: none;
     }
   }
