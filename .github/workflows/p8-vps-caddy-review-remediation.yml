@@ -1,0 +1,52 @@
+name: P8 VPS Caddy Review Remediation
+
+on:
+  push:
+    branches:
+      - feat/p8-vps-caddy-deploy-contract
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/p8-vps-caddy-deploy-contract
+      - name: Clarify staged live verification roadmap
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('docs/13_BACKLOG_AND_ROADMAP.md')
+          text = path.read_text()
+          old = '''deploy the fail-closed static build through the reviewed VPS + Caddy contract in `docs/22_PRODUCTION_DEPLOYMENT.md`
+run and record the real-origin live-release verifier
+GSC
+explicit production indexing activation
+run the real-origin live-release verifier against the intended fail-closed/activated state
+post-deploy canonical/sitemap/indexing verification on the real origin'''
+          new = '''deploy the fail-closed static build through the reviewed VPS + Caddy contract in `docs/22_PRODUCTION_DEPLOYMENT.md`
+run and record the first real-origin verifier with indexing=disabled and analytics=disabled
+GSC preparation
+explicit production indexing activation
+rerun the real-origin verifier after every analytics/indexing activation state change
+post-activation canonical/sitemap/indexing verification on the real origin'''
+
+          count = text.count(old)
+          if count != 1:
+              raise SystemExit(f'expected one roadmap rollout block, got {count}')
+
+          path.write_text(text.replace(old, new, 1))
+          PY
+          git diff --check
+      - name: Commit roadmap remediation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/13_BACKLOG_AND_ROADMAP.md
+          git commit -m "docs: clarify staged production verification"
+          git push
