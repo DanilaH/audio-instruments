@@ -34,6 +34,8 @@ Missing review approval, missing token or an unknown provider causes explicit co
 
 The privacy-review flag is a technical release gate only. It does not itself make a legal determination about consent requirements in every deployment jurisdiction.
 
+Manual snippet installation is the single v1 analytics installation owner. Cloudflare supports automatic edge injection for proxied sites; that mode must be disabled / changed to manual JS snippet installation for the production hostname before activation so it cannot bypass the repository's fail-closed state or create a duplicate beacon.
+
 ## Data boundary
 
 Browser Audio Lab does not add these values to analytics:
@@ -87,6 +89,7 @@ Still external / rollout-dependent:
 ```text
 real Cloudflare account/site creation or selection
 real Cloudflare Web Analytics site token
+Cloudflare automatic beacon injection disabled / manual snippet mode confirmed
 production-domain decision
 DNS or Cloudflare proxy configuration
 deployment

@@ -88,10 +88,12 @@ const analytics = resolveSiteAnalyticsConfig({
         </>
       ) : (
         <p>
-          No analytics provider is enabled in this build. Cloudflare Web
+          This build does not enable an analytics provider. Cloudflare Web
           Analytics is selected for the production rollout, but activation
           remains fail-closed until the deployment privacy/consent review is
-          explicitly approved and a site token is configured.
+          explicitly approved, a site token is configured, and Cloudflare
+          automatic beacon injection is disabled so this build remains the
+          single analytics installation owner.
         </p>
       )
     }

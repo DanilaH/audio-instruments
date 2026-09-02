@@ -90,7 +90,9 @@ ANALYTICS_PRIVACY_REVIEW=approved
 CLOUDFLARE_WEB_ANALYTICS_TOKEN=<Cloudflare site token>
 ```
 
-Before those values are supplied in a real deployment, determine the required consent behavior for the actual deployment jurisdictions, verify the real Cloudflare site/token and network behavior, confirm that no microphone/recording content enters analytics, and record the deployment decision. `ANALYTICS_PRIVACY_REVIEW=approved` is a technical release gate, not a universal legal conclusion.
+Manual snippet installation is the single v1 analytics owner. If the production hostname is proxied through Cloudflare, Cloudflare automatic Web Analytics injection must be disabled / switched to manual JS snippet installation before release; otherwise edge injection could bypass the repository's disabled state or create duplicate beacons.
+
+Before those values are supplied in a real deployment, determine the required consent behavior for the actual deployment jurisdictions, verify the real Cloudflare site/token and network behavior, verify automatic injection is disabled, confirm that no microphone/recording content enters analytics, and record the deployment decision. `ANALYTICS_PRIVACY_REVIEW=approved` is a technical release gate, not a universal legal conclusion.
 
 Canonical implementation evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.
 

@@ -45,7 +45,7 @@ const disabledPrivacy = await readFile(
 );
 assertIncludes(
   disabledPrivacy,
-  "No analytics provider is enabled in this build.",
+  "This build does not enable an analytics provider.",
   "disabled privacy disclosure",
 );
 

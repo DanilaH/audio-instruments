@@ -280,7 +280,7 @@ actual iOS Safari smoke QA
 actual Android Chrome smoke QA
 actual Edge smoke QA
 real microphone/output-device smoke QA where practical
-configure the real Cloudflare site/token and approve deployment-jurisdiction privacy/consent behavior before enabling Web Analytics
+configure the real Cloudflare site/token, disable Cloudflare automatic beacon injection in favor of the repository-owned manual snippet, and approve deployment-jurisdiction privacy/consent behavior before enabling Web Analytics
 deploy
 GSC
 explicit production indexing activation

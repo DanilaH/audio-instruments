@@ -76,6 +76,8 @@ ANALYTICS_PRIVACY_REVIEW=approved
 CLOUDFLARE_WEB_ANALYTICS_TOKEN=<Cloudflare site token>
 ```
 
+Manual snippet installation is the single v1 analytics owner. A Cloudflare-proxied production hostname must have automatic Web Analytics injection disabled / switched to manual JS snippet installation before release so edge injection cannot bypass the build-state disclosure or create a second beacon.
+
 The approval flag is a release-control mechanism, not a legal guarantee. Evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.
 
 ## Indexing
