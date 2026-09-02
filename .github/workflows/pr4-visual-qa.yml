@@ -38,13 +38,23 @@ jobs:
 
       - name: Capture PR4 rendered states
         run: |
-          pnpm preview --host 127.0.0.1 > /tmp/pr4-preview.log 2>&1 &
+          python3 -m http.server 4321 --bind 127.0.0.1 --directory dist > /tmp/pr4-preview.log 2>&1 &
+          SERVER_PID=$!
+          ready=0
           for i in $(seq 1 30); do
-            if curl --fail --silent http://127.0.0.1:4321/microphone-test > /dev/null; then
+            if curl --fail --silent http://127.0.0.1:4321/microphone-test/ > /dev/null; then
+              ready=1
+              break
+            fi
+            if ! kill -0 "$SERVER_PID" 2>/dev/null; then
               break
             fi
             sleep 1
           done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/pr4-preview.log
+            exit 1
+          fi
 
           node --input-type=module <<'NODE'
           import { chromium, firefox, webkit } from '@playwright/test';
@@ -59,9 +69,9 @@ jobs:
             const page = await browser.newPage({ viewport: { width: 1366, height: 768 } });
 
             for (const [name, path] of [
-              ['microphone', '/microphone-test'],
-              ['decibel', '/decibel-meter'],
-              ['pitch', '/pitch-detector'],
+              ['microphone', '/microphone-test/'],
+              ['decibel', '/decibel-meter/'],
+              ['pitch', '/pitch-detector/'],
             ]) {
               await page.setViewportSize({ width: 1366, height: 768 });
               await page.goto(`${base}${path}`);
@@ -73,11 +83,11 @@ jobs:
             }
 
             await page.setViewportSize({ width: 1366, height: 768 });
-            await page.goto(`${base}/microphone-test`);
+            await page.goto(`${base}/microphone-test/`);
             await page.locator('[data-mic-playback]').evaluate((element) => element.removeAttribute('hidden'));
             await page.screenshot({ path: `pr4-visual-qa/${engineName}-microphone-playback.png` });
 
-            await page.goto(`${base}/decibel-meter`);
+            await page.goto(`${base}/decibel-meter/`);
             await page.locator('[data-db-calibration-disclosure] summary').click();
             await page.screenshot({ path: `pr4-visual-qa/${engineName}-decibel-calibration.png` });
 
@@ -86,8 +96,9 @@ jobs:
           NODE
 
       - name: Upload PR4 visual QA
+        if: always()
         uses: actions/upload-artifact@v4
         with:
           name: pr4-visual-qa
           path: pr4-visual-qa
-          if-no-files-found: error
+          if-no-files-found: warn
