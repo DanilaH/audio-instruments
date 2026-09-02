@@ -20,7 +20,14 @@ const touchTargetCases = [
       "[data-frequency-sweep] .sweep-selector button",
     ],
   },
-  { path: "/noise-generator", selectors: [".noise-selector button"] },
+  {
+    path: "/noise-generator",
+    selectors: [".noise-selector button", ".noise-play", ".noise-stop"],
+  },
+  {
+    path: "/sound-test",
+    selectors: [".channel-actions button", ".sequence-button", ".stop-button"],
+  },
   {
     path: "/speaker-test",
     selectors: [

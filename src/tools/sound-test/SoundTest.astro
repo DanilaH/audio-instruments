@@ -1,97 +1,116 @@
 ---
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
-import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 ---
 
 <div data-sound-test data-active-channel="none">
-  <InstrumentSurface label="Sound Test output controls" accent="peach">
-    <div class="sound-instrument">
-      <section class="sound-visual" aria-label="Stereo channel activity">
-        <div class="sound-visual__header">
-          <ToolStatus id="sound-status" label="Ready" state="idle" />
-          <div class="sound-reference" aria-label="Reference signal">
-            <strong>500 Hz</strong>
-            <span>700 ms sine burst</span>
-          </div>
-        </div>
-
-        <div class="channel-stage" aria-hidden="true">
-          <div class="channel-stage__speaker channel-stage__speaker--left">
-            <span class="channel-stage__ring"></span>
-            <strong>L</strong>
-          </div>
-          <div class="channel-stage__signal">
-            <i class="ph ph-wave-sine"></i>
-          </div>
-          <div class="channel-stage__speaker channel-stage__speaker--right">
-            <span class="channel-stage__ring"></span>
-            <strong>R</strong>
-          </div>
-        </div>
-
-        <p class="active-channel">
-          Active channel: <strong data-active-channel-label>None</strong>
-        </p>
-        <p class="sound-visual__note">
-          This shows the digital channel target. Confirm the expected sound with
-          your own ears; the browser cannot verify physical speaker output.
-        </p>
-      </section>
-
-      <section class="sound-controls" aria-label="Sound Test actions">
-        <div class="sound-safety">
-          <i class="ph ph-speaker-low" aria-hidden="true"></i>
-          <p>
-            Start with your device/headphone volume low. Increase it only to a
-            comfortable listening level. Do not turn the volume up to compensate
-            for a tone you cannot hear.
-          </p>
-        </div>
-
-        <div class="sound-action-group">
-          <div>
-            <p class="sound-action-group__label">Play one channel</p>
-            <p class="sound-action-group__hint">
-              Each button plays the same 500 Hz reference burst.
-            </p>
-          </div>
-          <div class="channel-actions">
-            <button type="button" data-sound-channel="left">
-              <i class="ph ph-speaker-simple-low" aria-hidden="true"></i>
-              Left
-            </button>
-            <button type="button" data-sound-channel="both">
-              <i class="ph ph-speaker-high" aria-hidden="true"></i>
-              Both
-            </button>
-            <button type="button" data-sound-channel="right">
-              <i class="ph ph-speaker-simple-high" aria-hidden="true"></i>
-              Right
-            </button>
-          </div>
-        </div>
-
-        <div class="sequence-panel">
-          <div>
-            <strong>Guided sequence</strong>
-            <span>Left → 300 ms gap → Both → 300 ms gap → Right</span>
-          </div>
-          <div class="sequence-actions">
-            <button type="button" class="sequence-button" data-sound-sequence>
-              <i class="ph ph-play" aria-hidden="true"></i>
-              Run sequence
-            </button>
-            <button type="button" class="stop-button" data-sound-stop disabled>
-              <i class="ph ph-stop" aria-hidden="true"></i>
-              Stop
-            </button>
-          </div>
-        </div>
-
-        <p class="sound-error" data-sound-error role="alert" hidden></p>
-      </section>
+  <SonicInstrument label="Sound Test output controls" class="sound-sheet">
+    <div class="sound-bar">
+      <ToolStatus id="sound-status" label="Ready" state="idle" />
+      <div class="sound-readout" aria-label="Generated channel reference">
+        <span>Reference burst</span>
+        <strong>500 Hz</strong>
+        <small>700 ms sine</small>
+      </div>
     </div>
-  </InstrumentSurface>
+
+    <section class="sound-field" aria-label="Stereo channel activity">
+      <div class="sound-field__heading">
+        <div>
+          <span>Digital channel target</span>
+          <strong>Hard-routed stereo reference</strong>
+        </div>
+        <p>Left · Both · Right</p>
+      </div>
+
+      <div class="sound-stage" aria-hidden="true">
+        <div class="sound-node sound-node--left">
+          <span class="sound-node__ring"></span>
+          <strong>L</strong>
+          <small>Left</small>
+        </div>
+        <div class="sound-stage__path">
+          <span></span>
+          <i class="ph ph-wave-sine"></i>
+          <span></span>
+        </div>
+        <div class="sound-node sound-node--right">
+          <span class="sound-node__ring"></span>
+          <strong>R</strong>
+          <small>Right</small>
+        </div>
+      </div>
+
+      <p class="sound-field__note">
+        Active channel: <strong data-active-channel-label>None</strong>. This is
+        the requested digital route; the browser cannot verify physical speaker
+        output.
+      </p>
+    </section>
+
+    <section class="sound-rail" aria-label="Sound Test actions">
+      <div class="sound-channels">
+        <span class="sound-rail__label">Single burst</span>
+        <div class="channel-actions">
+          <button type="button" data-sound-channel="left">
+            <i class="ph ph-speaker-simple-low" aria-hidden="true"></i>
+            Left
+          </button>
+          <button type="button" data-sound-channel="both">
+            <i class="ph ph-speaker-high" aria-hidden="true"></i>
+            Both
+          </button>
+          <button type="button" data-sound-channel="right">
+            <i class="ph ph-speaker-simple-high" aria-hidden="true"></i>
+            Right
+          </button>
+        </div>
+      </div>
+
+      <div class="sound-sequence">
+        <span class="sound-rail__label">Guided sequence</span>
+        <div class="sound-sequence__copy">
+          <strong>Left → Both → Right</strong>
+          <small>700 ms burst · 300 ms gap</small>
+        </div>
+        <button type="button" class="sequence-button" data-sound-sequence>
+          <i class="ph ph-play" aria-hidden="true"></i>
+          Run sequence
+        </button>
+      </div>
+
+      <div class="sound-output">
+        <span class="sound-rail__label">Transport</span>
+        <div class="sound-output__reference">
+          <strong>Same source</strong>
+          <small>500 Hz in every channel step</small>
+        </div>
+        <button type="button" class="stop-button" data-sound-stop disabled>
+          <span class="transport-stop-shape" aria-hidden="true"></span>
+          Stop
+        </button>
+      </div>
+    </section>
+
+    <div class="sound-state-strip sound-safety">
+      <strong>Low volume</strong>
+      <div>
+        <p>
+          Start with your device/headphone volume low. Increase it only to a
+          comfortable listening level. Do not turn the volume up to compensate
+          for a tone you cannot hear.
+        </p>
+        <small>
+          Use your ears to confirm the expected channel; Browser Audio Lab does
+          not detect which physical speaker produced sound.
+        </small>
+      </div>
+    </div>
+
+    <div class="sound-feedback-slot">
+      <p class="sound-error" data-sound-error role="alert" hidden></p>
+    </div>
+  </SonicInstrument>
 </div>
 
 <script>
@@ -120,339 +139,459 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 </script>
 
 <style>
-  .sound-instrument {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
-    min-height: 410px;
-  }
-
-  .sound-visual {
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    min-width: 0;
-    padding: clamp(22px, 3vw, 34px);
-    border-right: 1px solid var(--color-border);
-    background:
-      radial-gradient(
-        circle at 50% 52%,
-        rgb(255 181 141 / 0.2),
-        transparent 34%
-      ),
-      linear-gradient(145deg, rgb(255 253 252 / 0.9), rgb(255 247 242 / 0.72));
-  }
-
-  .sound-visual__header {
+  .sound-bar {
     display: flex;
-    align-items: flex-start;
+    min-height: 54px;
+    align-items: center;
+    justify-content: space-between;
+    gap: 18px;
+    padding: 8px 18px;
+    border-bottom: 1px solid var(--sonic-border-soft);
+  }
+
+  .sound-readout {
+    display: grid;
+    grid-template-columns: auto auto;
+    align-items: baseline;
+    gap: 1px 10px;
+    text-align: right;
+  }
+
+  .sound-readout > span,
+  .sound-field__heading span,
+  .sound-rail__label {
+    color: var(--sonic-muted);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .sound-readout > span {
+    grid-row: 1 / 3;
+    align-self: center;
+  }
+
+  .sound-readout strong {
+    font-size: 1.12rem;
+    line-height: 1;
+  }
+
+  .sound-readout small {
+    color: var(--sonic-muted);
+    font-size: 0.68rem;
+  }
+
+  .sound-field {
+    display: grid;
+    grid-template-rows: auto minmax(116px, 1fr) auto;
+    gap: 7px;
+    min-height: 224px;
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--sonic-border);
+    background: var(--sonic-field);
+  }
+
+  .sound-field__heading {
+    display: flex;
+    align-items: end;
     justify-content: space-between;
     gap: 18px;
   }
 
-  .sound-reference {
+  .sound-field__heading > div {
     display: grid;
-    justify-items: end;
-    gap: 3px;
+    gap: 2px;
   }
 
-  .sound-reference strong {
-    font-size: 1.35rem;
-    letter-spacing: -0.035em;
+  .sound-field__heading strong {
+    font-size: 0.88rem;
   }
 
-  .sound-reference span,
-  .sound-visual__note,
-  .sound-action-group__hint,
-  .sequence-panel span {
-    color: var(--color-ink-muted);
-    font-size: 0.78rem;
-    line-height: 1.45;
+  .sound-field__heading p,
+  .sound-field__note {
+    margin: 0;
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+    line-height: 1.35;
   }
 
-  .channel-stage {
+  .sound-stage {
     display: grid;
-    grid-template-columns: minmax(110px, 1fr) auto minmax(110px, 1fr);
+    grid-template-columns: minmax(96px, 150px) minmax(120px, 1fr) minmax(
+        96px,
+        150px
+      );
     align-items: center;
-    gap: clamp(18px, 4vw, 42px);
-    width: min(100%, 560px);
-    margin: 18px auto 10px;
+    gap: clamp(18px, 4vw, 44px);
+    width: min(100%, 760px);
+    margin-inline: auto;
   }
 
-  .channel-stage__speaker {
+  .sound-node {
     position: relative;
     display: grid;
-    aspect-ratio: 1;
+    min-height: 96px;
     place-items: center;
-    max-width: 190px;
-    border: 1px solid var(--color-border);
-    border-radius: 38%;
-    background: var(--color-surface);
-    color: var(--color-ink-muted);
-    box-shadow: 0 18px 48px rgb(31 36 48 / 0.06);
+    align-content: center;
+    gap: 1px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 8px;
+    background: rgb(243 240 232 / 0.58);
+    color: var(--sonic-muted);
     transition:
-      transform 160ms ease,
-      border-color 160ms ease,
-      color 160ms ease,
-      box-shadow 160ms ease;
+      border-color 150ms ease,
+      color 150ms ease,
+      box-shadow 150ms ease;
   }
 
-  .channel-stage__speaker strong {
+  .sound-node strong {
     position: relative;
     z-index: 2;
-    font-size: clamp(1.5rem, 4vw, 2.7rem);
+    font-size: clamp(1.45rem, 3vw, 2.3rem);
+    line-height: 1;
   }
 
-  .channel-stage__ring {
-    position: absolute;
-    width: 56%;
-    aspect-ratio: 1;
-    border: 8px solid currentColor;
-    border-radius: 999px;
-    opacity: 0.12;
-  }
-
-  .channel-stage__signal {
-    display: grid;
-    width: 48px;
-    height: 48px;
-    place-items: center;
-    border-radius: 999px;
-    background: rgb(255 181 141 / 0.2);
-    color: #b75c2d;
-    font-size: 1.35rem;
-  }
-
-  [data-active-channel="left"] .channel-stage__speaker--left,
-  [data-active-channel="both"] .channel-stage__speaker--left,
-  [data-active-channel="right"] .channel-stage__speaker--right,
-  [data-active-channel="both"] .channel-stage__speaker--right {
-    transform: translateY(-3px);
-    border-color: rgb(183 92 45 / 0.35);
-    color: #9d4d27;
-    box-shadow: 0 18px 52px rgb(183 92 45 / 0.16);
-  }
-
-  [data-active-channel="left"]
-    .channel-stage__speaker--left
-    .channel-stage__ring,
-  [data-active-channel="both"]
-    .channel-stage__speaker--left
-    .channel-stage__ring,
-  [data-active-channel="right"]
-    .channel-stage__speaker--right
-    .channel-stage__ring,
-  [data-active-channel="both"]
-    .channel-stage__speaker--right
-    .channel-stage__ring {
-    opacity: 0.34;
-  }
-
-  .active-channel {
-    margin: 0;
-    text-align: center;
-    font-size: 0.92rem;
-  }
-
-  .sound-visual__note {
-    max-width: 560px;
-    margin: 10px auto 0;
-    text-align: center;
-  }
-
-  .sound-controls {
-    display: grid;
-    align-content: start;
-    gap: 18px;
-    min-width: 0;
-    padding: clamp(22px, 3vw, 34px);
-    background: rgb(255 253 252 / 0.74);
-  }
-
-  .sound-safety {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 10px;
-    padding: 11px 13px;
-    border-radius: var(--radius-control);
-    background: rgb(255 215 106 / 0.18);
-  }
-
-  .sound-safety i {
-    margin-top: 3px;
-  }
-
-  .sound-safety p,
-  .sound-error {
-    margin: 0;
-    font-size: 0.8rem;
-    line-height: 1.45;
-  }
-
-  .sound-action-group {
-    display: grid;
-    gap: 12px;
-  }
-
-  .sound-action-group__label,
-  .sound-action-group__hint {
-    margin: 0;
-  }
-
-  .sound-action-group__label {
+  .sound-node small {
+    position: relative;
+    z-index: 2;
+    font-size: 0.66rem;
     font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
   }
 
-  .sound-action-group__hint {
-    margin-top: 3px;
+  .sound-node__ring {
+    position: absolute;
+    width: 52px;
+    height: 52px;
+    border: 7px solid currentColor;
+    border-radius: 50%;
+    opacity: 0.09;
+  }
+
+  .sound-stage__path {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    align-items: center;
+    color: var(--sonic-signal);
+  }
+
+  .sound-stage__path span {
+    height: 1px;
+    background: var(--sonic-border);
+  }
+
+  .sound-stage__path i {
+    display: grid;
+    width: 40px;
+    height: 40px;
+    place-items: center;
+    border: 1px solid var(--sonic-border);
+    border-radius: 50%;
+    background: var(--sonic-sheet);
+  }
+
+  [data-active-channel="left"] .sound-node--left,
+  [data-active-channel="both"] .sound-node--left,
+  [data-active-channel="right"] .sound-node--right,
+  [data-active-channel="both"] .sound-node--right {
+    border-color: var(--sonic-signal);
+    color: #0b6570;
+    box-shadow: 0 0 0 1px rgb(39 127 138 / 0.12);
+  }
+
+  [data-active-channel="left"] .sound-node--left .sound-node__ring,
+  [data-active-channel="both"] .sound-node--left .sound-node__ring,
+  [data-active-channel="right"] .sound-node--right .sound-node__ring,
+  [data-active-channel="both"] .sound-node--right .sound-node__ring {
+    opacity: 0.28;
+  }
+
+  .sound-field__note {
+    text-align: center;
+  }
+
+  .sound-field__note strong {
+    color: var(--sonic-ink);
+  }
+
+  .sound-rail {
+    display: grid;
+    grid-template-columns: minmax(300px, 1.15fr) minmax(300px, 1fr) minmax(
+        220px,
+        0.72fr
+      );
+    min-height: 160px;
+    border-bottom: 1px solid var(--sonic-border-soft);
+  }
+
+  .sound-rail > div {
+    min-width: 0;
+    padding: 11px 13px;
+  }
+
+  .sound-rail > div + div {
+    border-left: 1px solid var(--sonic-border-soft);
+  }
+
+  .sound-channels,
+  .sound-sequence,
+  .sound-output {
+    display: grid;
+    align-content: center;
+    gap: 7px;
   }
 
   .channel-actions {
     display: grid;
     grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 8px;
+    gap: 5px;
   }
 
   .channel-actions button,
   .sequence-button,
   .stop-button {
-    min-height: 48px;
-    border-radius: var(--radius-button);
+    min-height: 44px;
+    border: 1px solid var(--sonic-border);
+    border-radius: var(--sonic-control-radius);
+    background: transparent;
+    color: var(--sonic-ink);
+    font: inherit;
     font-weight: 800;
     cursor: pointer;
   }
 
   .channel-actions button {
     display: inline-flex;
+    min-width: 0;
     align-items: center;
     justify-content: center;
-    gap: 7px;
-    padding: 0 10px;
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-ink);
-  }
-
-  .channel-actions button:hover:not(:disabled) {
-    border-color: rgb(183 92 45 / 0.42);
-    background: #fff7f2;
-  }
-
-  .sequence-panel {
-    display: grid;
-    gap: 12px;
-    padding: 16px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-button);
-    background: var(--color-surface);
-  }
-
-  .sequence-panel > div:first-child {
-    display: grid;
-    gap: 4px;
-  }
-
-  .sequence-actions {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(120px, 0.42fr);
-    gap: 8px;
+    gap: 6px;
+    padding-inline: 7px;
   }
 
   .sequence-button,
   .stop-button {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    width: 100%;
-    padding: 0 16px;
+    min-height: 48px;
   }
 
   .sequence-button {
-    border: 0;
-    background: var(--color-ink);
-    color: var(--color-surface);
+    border-color: var(--sonic-ink);
+    background: var(--sonic-ink);
+    color: var(--sonic-sheet);
   }
 
-  .stop-button {
-    border: 1px solid var(--color-border);
-    background: transparent;
-    color: var(--color-ink);
+  .sound-sequence__copy,
+  .sound-output__reference {
+    display: grid;
+    gap: 2px;
   }
 
-  button:disabled {
-    cursor: not-allowed;
-    opacity: 0.48;
+  .sound-sequence__copy strong,
+  .sound-output__reference strong {
+    font-size: 0.78rem;
+  }
+
+  .sound-sequence__copy small,
+  .sound-output__reference small {
+    color: var(--sonic-muted);
+    font-size: 0.68rem;
+    line-height: 1.3;
+  }
+
+  .transport-stop-shape {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    margin-right: 7px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+
+  .sound-state-strip {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 18px;
+    color: var(--sonic-muted);
+  }
+
+  .sound-state-strip strong {
+    color: var(--sonic-ink);
+    font-size: 0.72rem;
+  }
+
+  .sound-state-strip div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .sound-state-strip p,
+  .sound-state-strip small {
+    margin: 0;
+    font-size: 0.69rem;
+    line-height: 1.35;
+  }
+
+  .sound-feedback-slot:empty {
+    display: none;
   }
 
   .sound-error {
-    padding: 11px 13px;
-    border-radius: var(--radius-control);
-    background: rgb(155 47 47 / 0.08);
-    color: #7f2929;
+    margin: 8px 18px;
+    padding: 9px 11px;
+    border: 1px solid rgb(149 80 59 / 0.28);
+    border-radius: var(--sonic-control-radius);
+    background: rgb(149 80 59 / 0.07);
+    color: #773927;
+    font-size: 0.76rem;
   }
 
   .sound-error[hidden] {
     display: none;
   }
 
-  @media (max-width: 900px) {
-    .sound-instrument {
-      grid-template-columns: 1fr;
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  @media (min-width: 901px) and (max-height: 820px) {
+    .sound-bar {
+      min-height: 48px;
+      padding-block: 6px;
     }
 
-    .sound-visual {
-      min-height: 360px;
-      border-right: 0;
-      border-bottom: 1px solid var(--color-border);
+    .sound-field {
+      grid-template-rows: auto 86px auto;
+      min-height: 0;
+      gap: 4px;
+      padding: 8px 16px 6px;
+    }
+
+    .sound-node {
+      min-height: 72px;
+    }
+
+    .sound-node__ring {
+      width: 42px;
+      height: 42px;
+      border-width: 6px;
+    }
+
+    .sound-rail {
+      min-height: 142px;
+    }
+
+    .sound-rail > div {
+      padding-block: 7px;
+    }
+
+    .sound-state-strip {
+      padding-block: 6px;
+    }
+  }
+
+  @media (max-width: 900px) {
+    .sound-field {
+      min-height: 220px;
+    }
+
+    .sound-rail {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .sound-output {
+      grid-column: 1 / -1;
+      border-top: 1px solid var(--sonic-border-soft);
+      border-left: 0 !important;
     }
   }
 
   @media (max-width: 560px) {
-    .sound-visual,
-    .sound-controls {
-      padding: 18px 20px;
+    .sound-bar {
+      align-items: flex-start;
+      padding: 8px 12px;
     }
 
-    .sound-visual {
-      min-height: 280px;
+    .sound-readout {
+      grid-template-columns: 1fr;
+      justify-items: end;
+      gap: 1px;
     }
 
-    .channel-stage {
-      grid-template-columns: 96px 32px 96px;
-      justify-content: center;
+    .sound-readout > span,
+    .sound-field__heading p {
+      display: none;
+    }
+
+    .sound-field {
+      grid-template-rows: auto 82px auto;
+      min-height: 0;
+      padding: 9px 12px 7px;
+    }
+
+    .sound-stage {
+      grid-template-columns: 74px minmax(70px, 1fr) 74px;
       gap: 8px;
-      margin: 10px auto 8px;
     }
 
-    .channel-stage__speaker {
-      width: 96px;
+    .sound-node {
+      min-height: 68px;
     }
 
-    .channel-stage__signal {
-      width: 32px;
-      height: 32px;
+    .sound-node__ring {
+      width: 38px;
+      height: 38px;
+      border-width: 5px;
     }
 
-    .sound-visual__note {
-      margin-top: 6px;
+    .sound-stage__path {
+      grid-template-columns: 1fr 30px 1fr;
+    }
+
+    .sound-stage__path i {
+      width: 30px;
+      height: 30px;
+    }
+
+    .sound-field__note {
+      text-align: left;
+    }
+
+    .sound-rail {
+      grid-template-columns: 1fr;
+    }
+
+    .sound-rail > div {
+      padding: 9px 11px;
+    }
+
+    .sound-rail > div + div {
+      border-top: 1px solid var(--sonic-border-soft);
+      border-left: 0;
+    }
+
+    .sound-output {
+      grid-column: auto;
     }
 
     .channel-actions button {
-      gap: 5px;
-      padding-inline: 8px;
+      padding-inline: 4px;
+      font-size: 0.74rem;
     }
 
-    .sequence-actions {
-      grid-template-columns: 1fr 1fr;
+    .sound-state-strip {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding: 8px 12px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .channel-stage__speaker {
+    .sound-node {
       transition: none;
-    }
-
-    [data-active-channel] .channel-stage__speaker {
-      transform: none;
     }
   }
 </style>

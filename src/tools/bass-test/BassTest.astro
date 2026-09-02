@@ -23,7 +23,10 @@ import {
       <ToolStatus id="bass-status" label="Ready" state="idle" />
       <div class="bass-readout" aria-label="Generated frequency">
         <span>Generated frequency</span>
-        <strong><span data-bass-frequency-readout>{BASS_SINGLE_TONE_DEFAULT_HZ}</span> Hz</strong>
+        <strong
+          ><span data-bass-frequency-readout>{BASS_SINGLE_TONE_DEFAULT_HZ}</span
+          > Hz</strong
+        >
         <small data-bass-visual-label>Single tone</small>
       </div>
     </div>
@@ -39,7 +42,9 @@ import {
 
       <div class="bass-stage" aria-hidden="true">
         <div class="bass-stage__axis">
-          <span>20</span><span>40</span><span>80</span><span>120</span><span>200 Hz</span>
+          <span>20</span><span>40</span><span>80</span><span>120</span><span
+            >200 Hz</span
+          >
         </div>
         <div class="bass-stage__track">
           <span class="bass-stage__band"></span>
@@ -51,16 +56,24 @@ import {
       </div>
 
       <p class="bass-field__note">
-        Reference visualization only. The numeric readout is the requested/generated digital frequency; it is not measured speaker motion, acoustic output, or frequency response.
+        Reference visualization only. The numeric readout is the
+        requested/generated digital frequency; it is not measured speaker
+        motion, acoustic output, or frequency response.
       </p>
     </section>
 
     <section class="bass-rail" aria-label="Bass Test settings and transport">
       <div class="bass-modes">
         <span class="bass-rail__label">Mode</span>
-        <button type="button" data-bass-mode="tone" aria-pressed="true">Single tone</button>
-        <button type="button" data-bass-mode="sweep" aria-pressed="false">Slow sweep</button>
-        <button type="button" data-bass-mode="sequence" aria-pressed="false">Preset sequence</button>
+        <button type="button" data-bass-mode="tone" aria-pressed="true"
+          >Single tone</button
+        >
+        <button type="button" data-bass-mode="sweep" aria-pressed="false"
+          >Slow sweep</button
+        >
+        <button type="button" data-bass-mode="sequence" aria-pressed="false"
+          >Preset sequence</button
+        >
       </div>
 
       <div class="bass-panel-slot">
@@ -75,7 +88,8 @@ import {
             {
               BASS_PRESET_FREQUENCIES_HZ.map((frequency) => (
                 <button type="button" data-bass-preset={frequency}>
-                  {frequency}<span class="sr-only"> Hz</span>
+                  {frequency}
+                  <span class="sr-only"> Hz</span>
                 </button>
               ))
             }
@@ -89,10 +103,15 @@ import {
         <div class="bass-panel" data-bass-panel="sweep" hidden>
           <div class="bass-panel__summary">
             <div>
-              <strong data-bass-sweep-range>{BASS_SWEEP_DEFAULT_LOW_HZ} → {BASS_SWEEP_DEFAULT_HIGH_HZ} Hz</strong>
+              <strong data-bass-sweep-range
+                >{BASS_SWEEP_DEFAULT_LOW_HZ} → {BASS_SWEEP_DEFAULT_HIGH_HZ} Hz</strong
+              >
               <span>12 seconds · logarithmic</span>
             </div>
-            <p>Slowly move through the core low-frequency range to listen for rattles or resonant spots.</p>
+            <p>
+              Slowly move through the core low-frequency range to listen for
+              rattles or resonant spots.
+            </p>
           </div>
           <button type="button" class="bass-primary" data-bass-sweep-play>
             <i class="ph ph-wave-sine" aria-hidden="true"></i>
@@ -106,7 +125,10 @@ import {
               <strong>{BASS_PRESET_FREQUENCIES_HZ.join(" · ")} Hz</strong>
               <span>800 ms each · 300 ms gaps</span>
             </div>
-            <p>Step through the exact reference presets with silence between tones.</p>
+            <p>
+              Step through the exact reference presets with silence between
+              tones.
+            </p>
           </div>
           <button type="button" class="bass-primary" data-bass-sequence-play>
             <i class="ph ph-list-numbers" aria-hidden="true"></i>
@@ -128,8 +150,15 @@ import {
     <div class="bass-state-strip bass-safety">
       <strong>Low volume</strong>
       <div>
-        <p>Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.</p>
-        <small>Keep playback volume moderate. If you cannot hear a low tone, do not turn the system volume up to compensate.</small>
+        <p>
+          Start with your device/headphone volume low. Increase it only to a
+          comfortable listening level. Do not turn the volume up to compensate
+          for a tone you cannot hear.
+        </p>
+        <small
+          >Keep playback volume moderate. If you cannot hear a low tone, do not
+          turn the system volume up to compensate.</small
+        >
       </div>
     </div>
 
@@ -272,9 +301,24 @@ import {
     border-top: 1px solid var(--sonic-border);
     border-bottom: 1px solid var(--sonic-border);
     background:
-      linear-gradient(90deg, transparent 24.8%, rgb(24 52 59 / 0.08) 25%, transparent 25.2%),
-      linear-gradient(90deg, transparent 49.8%, rgb(24 52 59 / 0.08) 50%, transparent 50.2%),
-      linear-gradient(90deg, transparent 74.8%, rgb(24 52 59 / 0.08) 75%, transparent 75.2%);
+      linear-gradient(
+        90deg,
+        transparent 24.8%,
+        rgb(24 52 59 / 0.08) 25%,
+        transparent 25.2%
+      ),
+      linear-gradient(
+        90deg,
+        transparent 49.8%,
+        rgb(24 52 59 / 0.08) 50%,
+        transparent 50.2%
+      ),
+      linear-gradient(
+        90deg,
+        transparent 74.8%,
+        rgb(24 52 59 / 0.08) 75%,
+        transparent 75.2%
+      );
   }
 
   .bass-stage__band {
@@ -347,7 +391,10 @@ import {
 
   .bass-rail {
     display: grid;
-    grid-template-columns: minmax(190px, 0.65fr) minmax(480px, 1.8fr) minmax(230px, 0.8fr);
+    grid-template-columns: minmax(190px, 0.65fr) minmax(480px, 1.8fr) minmax(
+        230px,
+        0.8fr
+      );
     min-height: 198px;
     border-bottom: 1px solid var(--sonic-border-soft);
   }
@@ -575,7 +622,10 @@ import {
 
   @media (max-width: 1040px) {
     .bass-rail {
-      grid-template-columns: minmax(170px, 0.7fr) minmax(420px, 1.7fr) minmax(210px, 0.8fr);
+      grid-template-columns: minmax(170px, 0.7fr) minmax(420px, 1.7fr) minmax(
+          210px,
+          0.8fr
+        );
     }
   }
 
@@ -662,8 +712,13 @@ import {
     .bass-panel-slot {
       grid-column: auto;
       grid-row: auto;
+      min-height: 237px;
       border-top: 1px solid var(--sonic-border-soft);
       border-bottom: 1px solid var(--sonic-border-soft);
+    }
+
+    .bass-panel {
+      min-height: 237px;
     }
 
     .bass-utility {

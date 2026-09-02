@@ -16,7 +16,12 @@ import {
   createBassSweepDefinition,
 } from "../../browser/audio-output/referenceSignals";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
-import { clamp, getEffectiveMaxFrequency } from "../../utils/audio";
+import {
+  clamp,
+  getEffectiveMaxFrequency,
+  getSweepFrequencyAtElapsed,
+  type SweepDefinition,
+} from "../../utils/audio";
 
 const GENERAL_LEVEL_MIN_DB = -60;
 const GENERAL_LEVEL_MAX_DB = -12;
@@ -93,6 +98,7 @@ export class BassTestController {
   #starting = false;
   #disposed = false;
   #runToken = 0;
+  #sweepFrameId: number | null = null;
 
   constructor(root: HTMLElement) {
     this.#root = root;
@@ -158,6 +164,7 @@ export class BassTestController {
     this.#listeners.abort();
     this.#runToken += 1;
     this.#clearTimers();
+    this.#clearSweepFrame();
     this.#playbacks = [];
     this.#engine = null;
     await this.#session.dispose();
@@ -370,9 +377,10 @@ export class BassTestController {
       this.#playbacks = [playback];
       this.#starting = false;
       this.#setControlsActive(true);
-      this.#frequencyReadout.textContent = `${definition.lowHz}–${definition.highHz}`;
-      this.#setVisual("sweep", `${definition.lowHz} → ${definition.highHz} Hz`);
+      this.#frequencyReadout.textContent = String(Math.round(definition.lowHz));
+      this.#setVisual("sweep", `${Math.round(definition.lowHz)} Hz · sweep`);
       this.#setStatus("playing", "Slow bass sweep running");
+      this.#startSweepReadout(context, definition, startTime, token);
       this.#schedule(
         definition.durationSeconds * MILLISECONDS_PER_SECOND,
         token,
@@ -546,6 +554,7 @@ export class BassTestController {
     this.#starting = false;
     this.#playbacks = [];
     this.#clearTimers();
+    this.#clearSweepFrame();
     this.#setControlsActive(false);
     this.#restoreIdleReadout();
     this.#setVisual("idle", modeLabel(this.#mode));
@@ -560,6 +569,7 @@ export class BassTestController {
     this.#runToken += 1;
     this.#starting = false;
     this.#clearTimers();
+    this.#clearSweepFrame();
     for (const playback of this.#playbacks) playback.stop();
     this.#playbacks = [];
     this.#setControlsActive(false);
@@ -570,6 +580,7 @@ export class BassTestController {
 
   #finishRun(): void {
     this.#clearTimers();
+    this.#clearSweepFrame();
     this.#starting = false;
     this.#playbacks = [];
     this.#setControlsActive(false);
@@ -624,6 +635,47 @@ export class BassTestController {
     this.#statusLabel.textContent = label;
   }
 
+  #startSweepReadout(
+    context: AudioContext,
+    definition: SweepDefinition,
+    startTime: number,
+    token: number,
+  ): void {
+    this.#clearSweepFrame();
+    let lastRoundedHz = -1;
+
+    const update = () => {
+      if (!this.#isCurrentRun(token) || this.#mode !== "sweep") {
+        this.#sweepFrameId = null;
+        return;
+      }
+
+      const elapsedSeconds = Math.max(0, context.currentTime - startTime);
+      const currentHz = Math.round(
+        getSweepFrequencyAtElapsed(definition, elapsedSeconds),
+      );
+      if (currentHz !== lastRoundedHz) {
+        lastRoundedHz = currentHz;
+        this.#frequencyReadout.textContent = String(currentHz);
+        this.#setVisual("sweep", `${currentHz} Hz · sweep`);
+      }
+
+      if (elapsedSeconds < definition.durationSeconds) {
+        this.#sweepFrameId = window.requestAnimationFrame(update);
+      } else {
+        this.#sweepFrameId = null;
+      }
+    };
+
+    update();
+  }
+
+  #clearSweepFrame(): void {
+    if (this.#sweepFrameId === null) return;
+    window.cancelAnimationFrame(this.#sweepFrameId);
+    this.#sweepFrameId = null;
+  }
+
   #schedule(delayMs: number, token: number, action: () => void): void {
     const timer = window.setTimeout(() => {
       this.#timers.delete(timer);
@@ -642,6 +694,7 @@ export class BassTestController {
   }
 
   #resetIdleUi(): void {
+    this.#clearSweepFrame();
     this.#effectiveMaxHz = BASS_SWEEP_MAX_HZ;
     this.#toneFrequencyHz = BASS_SINGLE_TONE_DEFAULT_HZ;
     this.#frequencyRoot.dataset.maxHz = String(BASS_SWEEP_MAX_HZ);

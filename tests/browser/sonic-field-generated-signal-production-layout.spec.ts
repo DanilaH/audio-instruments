@@ -16,7 +16,12 @@ const mobileViewports = [
   { width: 390, height: 844 },
 ] as const;
 
-type GeneratedRoute = "/tone-generator" | "/frequency-sweep";
+type GeneratedRoute =
+  | "/tone-generator"
+  | "/frequency-sweep"
+  | "/bass-test"
+  | "/noise-generator"
+  | "/sound-test";
 
 async function installGeneratedSignalAudioContext(page: Page): Promise<void> {
   await page.addInitScript(() => {
@@ -61,6 +66,28 @@ async function installGeneratedSignalAudioContext(page: Page): Promise<void> {
       addEventListener() {}
     }
 
+    class FakeAudioBuffer {
+      readonly channel: Float32Array;
+      constructor(
+        readonly numberOfChannels: number,
+        readonly length: number,
+        readonly sampleRate: number,
+      ) {
+        this.channel = new Float32Array(length);
+      }
+      getChannelData() {
+        return this.channel;
+      }
+    }
+
+    class FakeBufferSource extends FakeNode {
+      buffer: AudioBuffer | null = null;
+      loop = false;
+      start() {}
+      stop() {}
+      addEventListener() {}
+    }
+
     class FakeAudioContext {
       currentTime = 10;
       sampleRate = 48_000;
@@ -80,6 +107,16 @@ async function installGeneratedSignalAudioContext(page: Page): Promise<void> {
       }
       createChannelMerger() {
         return new FakeNode();
+      }
+      createBuffer(
+        numberOfChannels: number,
+        length: number,
+        sampleRate: number,
+      ) {
+        return new FakeAudioBuffer(numberOfChannels, length, sampleRate);
+      }
+      createBufferSource() {
+        return new FakeBufferSource();
       }
     }
 
@@ -106,21 +143,38 @@ async function openActiveState(
   await installGeneratedSignalAudioContext(page);
   await page.goto(route);
 
-  if (route === "/tone-generator") {
-    await page.getByRole("button", { name: "Play", exact: true }).click();
-    await expect(page.locator("#tone-status")).toContainText("Playing");
-    return;
+  switch (route) {
+    case "/tone-generator":
+      await page.getByRole("button", { name: "Play", exact: true }).click();
+      await expect(page.locator("#tone-status")).toContainText("Playing");
+      return;
+    case "/frequency-sweep":
+      await page
+        .getByRole("button", { name: "Play sweep", exact: true })
+        .click();
+      await expect(page.locator("#frequency-sweep-status")).toHaveAttribute(
+        "data-state",
+        "playing",
+      );
+      return;
+    case "/bass-test":
+      await page.locator('[data-bass-mode="sweep"]').click();
+      await page.locator("[data-bass-sweep-play]").click();
+      await expect(page.locator("#bass-status")).toContainText(
+        "Slow bass sweep running",
+      );
+      return;
+    case "/noise-generator":
+      await page.locator("[data-noise-play]").click();
+      await expect(page.locator("#noise-generator-status")).toContainText(
+        "White noise",
+      );
+      return;
+    case "/sound-test":
+      await page.locator('[data-sound-channel="left"]').click();
+      await expect(page.locator("#sound-status")).toContainText("Playing Left");
+      return;
   }
-
-  await page.getByRole("button", { name: "Play sweep", exact: true }).click();
-  await expect(page.locator("#frequency-sweep-status")).toHaveAttribute(
-    "data-state",
-    "playing",
-  );
-  await expect(page.locator("[data-frequency-sweep]")).toHaveAttribute(
-    "data-sweep-visual",
-    "playing",
-  );
 }
 
 async function expectDesktopSheetFits(
@@ -143,7 +197,43 @@ async function expectDesktopSheetFits(
   await expectNoHorizontalOverflow(page);
 }
 
-const routes: GeneratedRoute[] = ["/tone-generator", "/frequency-sweep"];
+function fieldSelector(route: GeneratedRoute): string {
+  switch (route) {
+    case "/tone-generator":
+      return ".tone-field";
+    case "/frequency-sweep":
+      return ".sweep-field";
+    case "/bass-test":
+      return ".bass-field";
+    case "/noise-generator":
+      return ".noise-field";
+    case "/sound-test":
+      return ".sound-field";
+  }
+}
+
+function actionSelector(route: GeneratedRoute): string {
+  switch (route) {
+    case "/tone-generator":
+      return "#tone-play-stop";
+    case "/frequency-sweep":
+      return "[data-sweep-stop]";
+    case "/bass-test":
+      return "[data-bass-sweep-play]";
+    case "/noise-generator":
+      return "[data-noise-play]";
+    case "/sound-test":
+      return '[data-sound-channel="left"]';
+  }
+}
+
+const routes: GeneratedRoute[] = [
+  "/tone-generator",
+  "/frequency-sweep",
+  "/bass-test",
+  "/noise-generator",
+  "/sound-test",
+];
 
 for (const viewport of [...primaryDesktopViewports, compactDesktopViewport]) {
   for (const route of routes) {
@@ -166,12 +256,8 @@ for (const viewport of mobileViewports) {
       await openActiveState(page, route);
       await expectNoHorizontalOverflow(page);
 
-      const field = page.locator(
-        route === "/tone-generator" ? ".tone-field" : ".sweep-field",
-      );
-      const action = page.locator(
-        route === "/tone-generator" ? "#tone-play-stop" : "[data-sweep-stop]",
-      );
+      const field = page.locator(fieldSelector(route));
+      const action = page.locator(actionSelector(route));
       const fieldBox = await field.boundingBox();
       const actionBox = await action.boundingBox();
       expect(fieldBox).not.toBeNull();
@@ -182,3 +268,30 @@ for (const viewport of mobileViewports) {
     });
   }
 }
+
+test("Sound Test active channel styling keeps speaker anchors fixed", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1_366, height: 768 });
+  await installGeneratedSignalAudioContext(page);
+  await page.goto("/sound-test");
+
+  const before = await page.locator(".sound-node").evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const rect = node.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+    }),
+  );
+  await page.locator('[data-sound-channel="left"]').click();
+  await expect(page.locator("[data-sound-test]")).toHaveAttribute(
+    "data-active-channel",
+    "left",
+  );
+  const after = await page.locator(".sound-node").evaluateAll((nodes) =>
+    nodes.map((node) => {
+      const rect = node.getBoundingClientRect();
+      return { x: rect.x, y: rect.y, width: rect.width, height: rect.height };
+    }),
+  );
+  expect(after).toEqual(before);
+});
