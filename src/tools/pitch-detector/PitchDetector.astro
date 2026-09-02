@@ -86,23 +86,29 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         <div class="pitch-input-slot">
           <label class="pitch-control-field" data-pitch-input-field hidden>
             <span>Input device</span>
-            <select data-pitch-input aria-label="Pitch Detector input device"></select>
+            <select data-pitch-input aria-label="Pitch Detector input device"
+            ></select>
           </label>
           <p
             class="pitch-selection-error"
             data-pitch-selection-error
             role="alert"
             hidden
-          ></p>
+          >
+          </p>
         </div>
       </div>
 
       <dl class="pitch-details" aria-label="Pitch analysis settings">
         <div><dt>Target</dt><dd>50–2000 Hz</dd></div>
         <div><dt>Confidence floor</dt><dd>80%</dd></div>
-        <div><dt>Analysis rate</dt><dd data-pitch-analysis-rate>Not active</dd></div>
+        <div>
+          <dt>Analysis rate</dt><dd data-pitch-analysis-rate>Not active</dd>
+        </div>
         <div><dt>Downsample</dt><dd data-pitch-downsample>—</dd></div>
-        <div class="pitch-details__wide"><dt>YIN frame</dt><dd data-pitch-frame-size>—</dd></div>
+        <div class="pitch-details__wide">
+          <dt>YIN frame</dt><dd data-pitch-frame-size>—</dd>
+        </div>
       </dl>
     </section>
 
@@ -110,8 +116,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       <strong>Estimate limits</strong>
       <p>
         Pitch is estimated from a monophonic browser microphone signal. Weak,
-        noisy, polyphonic or unstable input may produce no accepted result rather
-        than a guessed note.
+        noisy, polyphonic or unstable input may produce no accepted result
+        rather than a guessed note.
       </p>
     </div>
 
@@ -209,7 +215,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     gap: 2px;
   }
 
-  .pitch-field__heading strong { font-size: 0.9rem; }
+  .pitch-field__heading strong {
+    font-size: 0.9rem;
+  }
 
   .pitch-field__heading small,
   .pitch-result__message,
@@ -235,7 +243,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     text-align: center;
   }
 
-  .pitch-result__eyebrow { margin: 0 0 4px; }
+  .pitch-result__eyebrow {
+    margin: 0 0 4px;
+  }
 
   .pitch-result__note {
     min-height: 1em;
@@ -286,7 +296,12 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     border: 1px solid var(--sonic-border);
     border-radius: 4px;
     background:
-      repeating-linear-gradient(90deg, transparent 0, transparent calc(25% - 1px), rgb(24 56 65 / 0.1) 25%),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent calc(25% - 1px),
+        rgb(24 56 65 / 0.1) 25%
+      ),
       rgb(243 240 232 / 0.64);
   }
 
@@ -340,7 +355,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     padding: 8px 10px 0;
   }
 
-  .pitch-readouts > div + div { border-left: 1px solid var(--sonic-border-soft); }
+  .pitch-readouts > div + div {
+    border-left: 1px solid var(--sonic-border-soft);
+  }
 
   .pitch-readouts strong {
     font-size: 1rem;
@@ -371,7 +388,10 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     min-width: 0;
   }
 
-  .pitch-permission > i { margin-top: 2px; color: var(--sonic-signal); }
+  .pitch-permission > i {
+    margin-top: 2px;
+    color: var(--sonic-signal);
+  }
 
   .pitch-permission strong {
     display: block;
@@ -438,7 +458,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 
   .pitch-control-field[hidden],
   .pitch-selection-error[hidden],
-  .pitch-error[hidden] { display: none; }
+  .pitch-error[hidden] {
+    display: none;
+  }
 
   .pitch-control-field select {
     min-width: 0;
@@ -446,7 +468,10 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     background: var(--sonic-control-bg);
   }
 
-  .pitch-selection-error { padding-top: 4px; color: #773927; }
+  .pitch-selection-error {
+    padding-top: 4px;
+    color: #773927;
+  }
 
   .pitch-details {
     display: grid;
@@ -464,9 +489,15 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     padding: 9px 12px;
   }
 
-  .pitch-details > div:nth-child(odd) { border-right: 1px solid var(--sonic-border-soft); }
-  .pitch-details > div:nth-child(-n + 4) { border-bottom: 1px solid var(--sonic-border-soft); }
-  .pitch-details__wide { grid-column: 1 / -1; }
+  .pitch-details > div:nth-child(odd) {
+    border-right: 1px solid var(--sonic-border-soft);
+  }
+  .pitch-details > div:nth-child(-n + 4) {
+    border-bottom: 1px solid var(--sonic-border-soft);
+  }
+  .pitch-details__wide {
+    grid-column: 1 / -1;
+  }
 
   .pitch-details dt {
     color: var(--sonic-muted);
@@ -496,7 +527,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     font-size: 0.72rem;
   }
 
-  .pitch-feedback-slot:empty { display: none; }
+  .pitch-feedback-slot:empty {
+    display: none;
+  }
 
   .pitch-error {
     margin: 0;
@@ -513,21 +546,42 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .pitch-tuner__needle { transition: none; }
+    .pitch-tuner__needle {
+      transition: none;
+    }
   }
 
   @media (min-width: 901px) and (max-height: 820px) {
-    .pitch-bar { min-height: 46px; padding-block: 5px; }
-    .pitch-field { grid-template-rows: auto 126px auto; min-height: 0; padding-block: 8px; }
-    .pitch-result { min-height: 126px; }
-    .pitch-rail { min-height: 154px; }
-    .pitch-capture-pane { padding-block: 8px; }
-    .pitch-state-strip { padding-block: 6px; }
+    .pitch-bar {
+      min-height: 46px;
+      padding-block: 5px;
+    }
+    .pitch-field {
+      grid-template-rows: auto 126px auto;
+      min-height: 0;
+      padding-block: 8px;
+    }
+    .pitch-result {
+      min-height: 126px;
+    }
+    .pitch-rail {
+      min-height: 154px;
+    }
+    .pitch-capture-pane {
+      padding-block: 8px;
+    }
+    .pitch-state-strip {
+      padding-block: 6px;
+    }
   }
 
   @media (max-width: 900px) {
-    .pitch-field { grid-template-columns: minmax(210px, 0.75fr) minmax(0, 1.25fr); }
-    .pitch-rail { grid-template-columns: 1fr; }
+    .pitch-field {
+      grid-template-columns: minmax(210px, 0.75fr) minmax(0, 1.25fr);
+    }
+    .pitch-rail {
+      grid-template-columns: 1fr;
+    }
     .pitch-capture-pane {
       border-right: 0;
       border-bottom: 1px solid var(--sonic-border-soft);
@@ -535,8 +589,13 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
   }
 
   @media (max-width: 560px) {
-    .pitch-bar { align-items: flex-start; padding: 7px 12px; }
-    .pitch-input-readout strong { max-width: 48vw; }
+    .pitch-bar {
+      align-items: flex-start;
+      padding: 7px 12px;
+    }
+    .pitch-input-readout strong {
+      max-width: 48vw;
+    }
     .pitch-field {
       grid-template-columns: 1fr;
       grid-template-rows: auto auto auto auto;
@@ -544,16 +603,43 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       min-height: 0;
       padding: 10px 12px;
     }
-    .pitch-field__heading { grid-column: 1; align-items: start; }
-    .pitch-field__heading small { max-width: 130px; text-align: right; }
-    .pitch-result { min-height: 128px; padding: 10px; }
-    .pitch-result__note { font-size: clamp(3.4rem, 18vw, 5.2rem); }
-    .pitch-readouts { grid-column: 1; }
-    .pitch-capture-pane { grid-template-columns: 1fr; padding: 10px 12px; }
+    .pitch-field__heading {
+      grid-column: 1;
+      align-items: start;
+    }
+    .pitch-field__heading small {
+      max-width: 130px;
+      text-align: right;
+    }
+    .pitch-result {
+      min-height: 128px;
+      padding: 10px;
+    }
+    .pitch-result__note {
+      font-size: clamp(3.4rem, 18vw, 5.2rem);
+    }
+    .pitch-readouts {
+      grid-column: 1;
+    }
+    .pitch-capture-pane {
+      grid-template-columns: 1fr;
+      padding: 10px 12px;
+    }
     .pitch-primary-actions,
-    .pitch-input-slot { grid-column: 1; }
-    .pitch-control-field { grid-template-columns: 1fr; gap: 4px; }
-    .pitch-details { grid-template-columns: repeat(2, minmax(0, 1fr)); }
-    .pitch-state-strip { grid-template-columns: 1fr; gap: 3px; padding: 8px 12px; }
+    .pitch-input-slot {
+      grid-column: 1;
+    }
+    .pitch-control-field {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .pitch-details {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+    .pitch-state-strip {
+      grid-template-columns: 1fr;
+      gap: 3px;
+      padding: 8px 12px;
+    }
   }
 </style>

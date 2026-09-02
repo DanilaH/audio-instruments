@@ -1,5 +1,12 @@
 import { expect, test, type Page } from "@playwright/test";
 
+async function openDbCalibration(page: Page): Promise<void> {
+  const disclosure = page.locator("[data-db-calibration-disclosure]");
+  if ((await disclosure.getAttribute("open")) === null) {
+    await disclosure.locator("summary").click();
+  }
+}
+
 async function installNoDeviceIdHarness(page: Page): Promise<void> {
   await page.addInitScript(() => {
     let unstableMeter = false;
@@ -176,8 +183,10 @@ test("calibration without a reported deviceId is session-only and clears on Stop
     "Eligible",
   );
 
+  await openDbCalibration(page);
   await page.locator("[data-db-reference]").fill("72");
   await page.locator("[data-db-weighting-confirm]").check();
+  await openDbCalibration(page);
   await page.locator("[data-db-calibrate]").click();
 
   await expect(page.locator("[data-db-calibration-live-status]")).toHaveText(
@@ -223,8 +232,10 @@ test("rejects an unstable calibration window through the controller UI", async (
 
   await page.locator("[data-db-start]").click();
   await setUnstableMeter(page, true);
+  await openDbCalibration(page);
   await page.locator("[data-db-reference]").fill("72");
   await page.locator("[data-db-weighting-confirm]").check();
+  await openDbCalibration(page);
   await page.locator("[data-db-calibrate]").click();
 
   await expect(page.locator("[data-db-calibration-live-status]")).toHaveText(

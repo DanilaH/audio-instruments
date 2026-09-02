@@ -57,7 +57,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
             </div>
             <span class="db-estimate__badge">User-calibrated</span>
           </div>
-          <p class="db-estimate-placeholder">Optional reference estimate appears here after calibration.</p>
+          <p class="db-estimate-placeholder">
+            Optional reference estimate appears here after calibration.
+          </p>
         </div>
       </div>
     </section>
@@ -89,7 +91,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         <div class="db-input-slot">
           <label class="db-control-field" data-db-input-field hidden>
             <span>Input device</span>
-            <select data-db-input aria-label="Decibel Meter input device"></select>
+            <select data-db-input aria-label="Decibel Meter input device"
+            ></select>
           </label>
           <p class="db-error" data-db-selection-error role="alert" hidden></p>
         </div>
@@ -97,13 +100,41 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         <details class="db-details">
           <summary>Capture details</summary>
           <dl>
-            <div><dt>Device ID</dt><dd data-db-detail-device-id>Not reported</dd></div>
-            <div><dt>Web Audio processing rate</dt><dd data-db-detail-analysis-rate>Not reported</dd></div>
-            <div><dt>Track-reported sample rate</dt><dd data-db-detail-sample-rate>Not reported</dd></div>
-            <div><dt>Channel count</dt><dd data-db-detail-channel-count>Not reported</dd></div>
-            <div><dt>Echo cancellation</dt><dd data-db-detail-echo-cancellation>Not reported</dd></div>
-            <div><dt>Noise suppression</dt><dd data-db-detail-noise-suppression>Not reported</dd></div>
-            <div><dt>Auto gain control</dt><dd data-db-detail-auto-gain>Not reported</dd></div>
+            <div>
+              <dt>Device ID</dt><dd data-db-detail-device-id>Not reported</dd>
+            </div>
+            <div>
+              <dt>Web Audio processing rate</dt><dd
+                data-db-detail-analysis-rate
+              >
+                Not reported
+              </dd>
+            </div>
+            <div>
+              <dt>Track-reported sample rate</dt><dd data-db-detail-sample-rate>
+                Not reported
+              </dd>
+            </div>
+            <div>
+              <dt>Channel count</dt><dd data-db-detail-channel-count>
+                Not reported
+              </dd>
+            </div>
+            <div>
+              <dt>Echo cancellation</dt><dd data-db-detail-echo-cancellation>
+                Not reported
+              </dd>
+            </div>
+            <div>
+              <dt>Noise suppression</dt><dd data-db-detail-noise-suppression>
+                Not reported
+              </dd>
+            </div>
+            <div>
+              <dt>Auto gain control</dt><dd data-db-detail-auto-gain>
+                Not reported
+              </dd>
+            </div>
           </dl>
         </details>
       </div>
@@ -114,12 +145,18 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
             <small>Optional</small>
             <strong>Reference calibration</strong>
           </span>
-          <span class="db-calibration__badge" data-db-estimate-badge>Uncalibrated</span>
+          <span class="db-calibration__badge" data-db-estimate-badge
+            >Uncalibrated</span
+          >
         </summary>
 
         <div class="db-calibration__body">
-          <p class="db-calibration__eligibility" data-db-calibration-eligibility>
-            Start the microphone to check whether reference calibration is eligible.
+          <p
+            class="db-calibration__eligibility"
+            data-db-calibration-eligibility
+          >
+            Start the microphone to check whether reference calibration is
+            eligible.
           </p>
 
           <label class="db-control-field db-control-field--stacked">
@@ -148,13 +185,16 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
             Capture 3-second reference
           </button>
 
-          <p class="db-calibration__status" data-db-calibration-status>Uncalibrated</p>
+          <p class="db-calibration__status" data-db-calibration-status>
+            Uncalibrated
+          </p>
           <p
             class="sr-only"
             data-db-calibration-live-status
             role="status"
             aria-live="polite"
-          ></p>
+          >
+          </p>
 
           <div class="db-calibration__limit">
             <i class="ph ph-info" aria-hidden="true"></i>
@@ -325,8 +365,12 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     font-variant-numeric: tabular-nums;
   }
 
-  .db-meter__scale span:not(:first-child):not(:last-child) { text-align: center; }
-  .db-meter__scale span:last-child { text-align: right; }
+  .db-meter__scale span:not(:first-child):not(:last-child) {
+    text-align: center;
+  }
+  .db-meter__scale span:last-child {
+    text-align: right;
+  }
 
   .db-meter__track {
     height: 26px;
@@ -334,7 +378,12 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     border: 1px solid var(--sonic-border);
     border-radius: 4px;
     background:
-      repeating-linear-gradient(90deg, transparent 0, transparent calc(25% - 1px), rgb(24 56 65 / 0.1) 25%),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent calc(25% - 1px),
+        rgb(24 56 65 / 0.1) 25%
+      ),
       rgb(243 240 232 / 0.64);
   }
 
@@ -384,8 +433,12 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     gap: 10px;
   }
 
-  .db-estimate[hidden] { display: none; }
-  .db-estimate:not([hidden]) + .db-estimate-placeholder { display: none; }
+  .db-estimate[hidden] {
+    display: none;
+  }
+  .db-estimate:not([hidden]) + .db-estimate-placeholder {
+    display: none;
+  }
 
   .db-estimate__badge,
   .db-calibration__badge {
@@ -500,7 +553,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
   }
 
   .db-control-field[hidden],
-  .db-error[hidden] { display: none; }
+  .db-error[hidden] {
+    display: none;
+  }
 
   .db-control-field select,
   .db-reference-input input {
@@ -539,7 +594,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     font-size: 0.68rem;
   }
 
-  .db-details dt { color: var(--sonic-muted); }
+  .db-details dt {
+    color: var(--sonic-muted);
+  }
   .db-details dd {
     min-width: 0;
     margin: 0;
@@ -562,14 +619,18 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     list-style: none;
   }
 
-  .db-calibration > summary::-webkit-details-marker { display: none; }
+  .db-calibration > summary::-webkit-details-marker {
+    display: none;
+  }
 
   .db-calibration > summary > span:first-child {
     display: grid;
     gap: 1px;
   }
 
-  .db-calibration > summary strong { font-size: 0.82rem; }
+  .db-calibration > summary strong {
+    font-size: 0.82rem;
+  }
 
   .db-calibration__body {
     display: grid;
@@ -578,7 +639,9 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     border-top: 1px solid var(--sonic-border-soft);
   }
 
-  .db-calibration__eligibility { padding-top: 8px; }
+  .db-calibration__eligibility {
+    padding-top: 8px;
+  }
 
   .db-reference-input {
     display: grid;
@@ -608,8 +671,13 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     margin: 1px 0 0;
   }
 
-  .db-calibrate { justify-self: start; }
-  .db-calibration__status { color: var(--sonic-ink); font-weight: 760; }
+  .db-calibrate {
+    justify-self: start;
+  }
+  .db-calibration__status {
+    color: var(--sonic-ink);
+    font-weight: 760;
+  }
 
   .db-calibration__limit {
     display: flex;
@@ -619,9 +687,13 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     border-top: 1px solid var(--sonic-border-soft);
   }
 
-  .db-calibration__limit i { color: var(--sonic-current); }
+  .db-calibration__limit i {
+    color: var(--sonic-current);
+  }
 
-  .db-feedback-slot:empty { display: none; }
+  .db-feedback-slot:empty {
+    display: none;
+  }
 
   .db-error {
     color: #773927;
@@ -654,20 +726,39 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .db-meter__fill { transition: none; }
+    .db-meter__fill {
+      transition: none;
+    }
   }
 
   @media (min-width: 901px) and (max-height: 820px) {
-    .db-bar { min-height: 46px; padding-block: 5px; }
-    .db-field { grid-template-rows: auto 126px auto; min-height: 0; padding-block: 8px; }
-    .db-primary-readout { min-height: 126px; }
-    .db-rail { min-height: 176px; }
-    .db-capture-pane { padding-block: 8px; }
+    .db-bar {
+      min-height: 46px;
+      padding-block: 5px;
+    }
+    .db-field {
+      grid-template-rows: auto 126px auto;
+      min-height: 0;
+      padding-block: 8px;
+    }
+    .db-primary-readout {
+      min-height: 126px;
+    }
+    .db-rail {
+      min-height: 176px;
+    }
+    .db-capture-pane {
+      padding-block: 8px;
+    }
   }
 
   @media (max-width: 900px) {
-    .db-field { grid-template-columns: minmax(210px, 0.78fr) minmax(0, 1.22fr); }
-    .db-rail { grid-template-columns: 1fr; }
+    .db-field {
+      grid-template-columns: minmax(210px, 0.78fr) minmax(0, 1.22fr);
+    }
+    .db-rail {
+      grid-template-columns: 1fr;
+    }
     .db-capture-pane {
       border-right: 0;
       border-bottom: 1px solid var(--sonic-border-soft);
@@ -675,8 +766,13 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
   }
 
   @media (max-width: 560px) {
-    .db-bar { align-items: flex-start; padding: 7px 12px; }
-    .db-input-readout strong { max-width: 48vw; }
+    .db-bar {
+      align-items: flex-start;
+      padding: 7px 12px;
+    }
+    .db-input-readout strong {
+      max-width: 48vw;
+    }
     .db-field {
       grid-template-columns: 1fr;
       grid-template-rows: auto auto auto auto;
@@ -684,19 +780,51 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       min-height: 0;
       padding: 10px 12px;
     }
-    .db-field__heading { grid-column: 1; align-items: start; }
-    .db-field__heading small { max-width: 130px; text-align: right; }
-    .db-primary-readout { min-height: 114px; padding: 12px; }
-    .db-primary-readout strong { font-size: clamp(2.4rem, 11vw, 3.4rem); }
-    .db-meter { min-height: 58px; }
-    .db-readout-strip { grid-column: 1; grid-template-columns: 1fr; }
-    .db-estimate-slot { border-left: 0; border-top: 1px solid var(--sonic-border-soft); }
-    .db-capture-pane { grid-template-columns: 1fr; padding: 10px 12px; }
+    .db-field__heading {
+      grid-column: 1;
+      align-items: start;
+    }
+    .db-field__heading small {
+      max-width: 130px;
+      text-align: right;
+    }
+    .db-primary-readout {
+      min-height: 114px;
+      padding: 12px;
+    }
+    .db-primary-readout strong {
+      font-size: clamp(2.4rem, 11vw, 3.4rem);
+    }
+    .db-meter {
+      min-height: 58px;
+    }
+    .db-readout-strip {
+      grid-column: 1;
+      grid-template-columns: 1fr;
+    }
+    .db-estimate-slot {
+      border-left: 0;
+      border-top: 1px solid var(--sonic-border-soft);
+    }
+    .db-capture-pane {
+      grid-template-columns: 1fr;
+      padding: 10px 12px;
+    }
     .db-primary-actions,
     .db-input-slot,
-    .db-details { grid-column: 1; }
-    .db-control-field { grid-template-columns: 1fr; gap: 4px; }
-    .db-details dl { grid-template-columns: 1fr; }
-    .db-reference-input { grid-template-columns: 1fr; gap: 4px; }
+    .db-details {
+      grid-column: 1;
+    }
+    .db-control-field {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+    .db-details dl {
+      grid-template-columns: 1fr;
+    }
+    .db-reference-input {
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
   }
 </style>
