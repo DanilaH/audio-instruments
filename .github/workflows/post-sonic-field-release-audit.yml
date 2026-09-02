@@ -60,9 +60,9 @@ jobs:
           import fs from 'node:fs';
           import path from 'node:path';
           import { createRequire } from 'node:module';
-          import { chromium, firefox, webkit } from '@playwright/test';
 
-          const require = createRequire(import.meta.url);
+          const require = createRequire(`${process.cwd()}/package.json`);
+          const { chromium, firefox, webkit } = require('@playwright/test');
           const axeSource = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
           const baseUrl = 'http://127.0.0.1:4321';
           const outputDir = 'artifacts/post-sonic-release-audit';
@@ -209,7 +209,8 @@ jobs:
           }
 
           const summary = {
-            productBaseline: process.env.GITHUB_SHA,
+            productBaseline: '643ed304ad47a17dcbffebfe4090546cd9ed7546',
+            auditHarnessHead: process.env.GITHUB_SHA,
             axeSurfaces: results.length,
             axeViolationSurfaces: results.filter((result) => result.violations.length > 0).length,
             overflowSurfaces: results.filter((result) => result.overflow.scrollWidth > result.overflow.clientWidth).length,
@@ -222,6 +223,7 @@ jobs:
             JSON.stringify(summary, null, 2),
           );
           console.log(JSON.stringify({
+            productBaseline: summary.productBaseline,
             axeSurfaces: summary.axeSurfaces,
             axeViolationSurfaces: summary.axeViolationSurfaces,
             overflowSurfaces: summary.overflowSurfaces,
