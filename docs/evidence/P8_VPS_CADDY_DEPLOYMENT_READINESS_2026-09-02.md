@@ -13,7 +13,7 @@ The v1 deployment shape is intentionally small:
 ```text
 Astro static dist/
 → immutable VPS release directory
-→ atomic /srv/browser-audio-lab/current symlink
+→ atomic /srv/browser-audio-lab/current symlink replacement
 → Caddy static file server
 → real-origin live verifier
 ```
@@ -113,6 +113,24 @@ pnpm verify:live-release -- \
 
 A green local Caddy smoke does not replace this real-origin verification.
 
+## Cold Review #1 remediation
+
+Cold Review #1 on clean head `48ea47c1d969d2d4cb03b40a91fed66a2321110d` found:
+
+```text
+BLOCKER 0
+MAJOR 1
+MINOR 2
+```
+
+Remediation:
+
+1. the runbook no longer calls direct `ln -sfn ... current` an atomic deployment switch; activation and rollback now build `current.next` and atomically rename that symlink over `current` with Linux `mv -Tf`;
+2. the rollout roadmap distinguishes the first fail-closed real-origin verification from later verifier reruns after analytics/indexing state changes;
+3. the runbook explicitly requires the real hostname to resolve to the VPS and inbound TCP 80/443 to be reachable before relying on Caddy automatic HTTPS. An intentionally published AAAA record must also route to this Caddy instance.
+
+The Caddyfile itself did not change during review remediation; the real Caddy 2.11.4 runtime evidence above therefore remains applicable to the same server configuration.
+
 ## Rollback ownership
 
 Releases are immutable directories under:
@@ -121,7 +139,13 @@ Releases are immutable directories under:
 /srv/browser-audio-lab/releases/<git-sha>/
 ```
 
-Activation/rollback changes only:
+Activation/rollback prepares:
+
+```text
+/srv/browser-audio-lab/current.next
+```
+
+and atomically renames that symlink over:
 
 ```text
 /srv/browser-audio-lab/current
@@ -133,7 +157,9 @@ A partial upload must never be copied directly into the live `current` path.
 
 ```text
 real production domain registration
-DNS A/AAAA configuration
+DNS A configuration to the VPS
+DNS AAAA configuration only if IPv6 is intentionally served
+public TCP 80/443 reachability
 VPS filesystem and Caddy service configuration
 real TLS certificate issuance
 first fail-closed deployment
