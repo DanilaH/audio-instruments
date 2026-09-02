@@ -1,0 +1,59 @@
+name: Apply Current Ink To Audit
+
+on:
+  push:
+    branches:
+      - audit/post-sonic-field-release
+
+permissions:
+  contents: write
+
+jobs:
+  apply:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: audit/post-sonic-field-release
+      - name: Apply production contrast remediation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          shared = Path('src/components/layout/SonicInstrument.astro')
+          text = shared.read_text()
+          anchor = '    --sonic-current: #b37b1f;\n'
+          addition = anchor + '    --sonic-current-ink: #87540a;\n'
+          if text.count(anchor) != 1 or '--sonic-current-ink:' in text:
+              raise SystemExit('unexpected Sonic current token anchor')
+          shared.write_text(text.replace(anchor, addition, 1))
+
+          targets = {
+              'src/tools/speaker-test/SpeakerTest.astro': 'speaker-state-strip',
+              'src/tools/headphone-test/HeadphoneTest.astro': 'headphone-state-strip',
+              'src/tools/stereo-test/StereoTest.astro': 'stereo-state-strip',
+              'src/tools/phase-test/PhaseTest.astro': 'phase-state-strip',
+              'src/tools/surround-sound-test/SurroundSoundTest.astro': 'surround-state-strip',
+              'src/tools/tone-generator/ToneGenerator.astro': 'tone-state-strip',
+              'src/tools/frequency-sweep/FrequencySweep.astro': 'sweep-state-strip',
+              'src/tools/audio-latency/AudioLatency.astro': 'latency-safety-strip',
+              'src/tools/hearing-frequency/HearingFrequency.astro': 'hearing-safety-strip',
+          }
+          for filename, class_name in targets.items():
+              path = Path(filename)
+              text = path.read_text()
+              old = f'.{class_name} strong {{\n    color: var(--sonic-current);'
+              new = f'.{class_name} strong {{\n    color: var(--sonic-current-ink);'
+              if text.count(old) != 1:
+                  raise SystemExit(f'{filename}: expected one current-text anchor, got {text.count(old)}')
+              path.write_text(text.replace(old, new, 1))
+          PY
+      - name: Commit audit fixture
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add src/components/layout/SonicInstrument.astro src/tools
+          git diff --cached --check
+          git commit -m 'test: apply final Sonic contrast remediation'
+          git push origin HEAD:audit/post-sonic-field-release
