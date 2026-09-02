@@ -23,18 +23,8 @@ jobs:
 
           path = Path('docs/13_BACKLOG_AND_ROADMAP.md')
           text = path.read_text()
-          old = '''deploy the fail-closed static build through the reviewed VPS + Caddy contract in `docs/22_PRODUCTION_DEPLOYMENT.md`
-run and record the real-origin live-release verifier
-GSC
-explicit production indexing activation
-run the real-origin live-release verifier against the intended fail-closed/activated state
-post-deploy canonical/sitemap/indexing verification on the real origin'''
-          new = '''deploy the fail-closed static build through the reviewed VPS + Caddy contract in `docs/22_PRODUCTION_DEPLOYMENT.md`
-run and record the first real-origin verifier with indexing=disabled and analytics=disabled
-GSC preparation
-explicit production indexing activation
-rerun the real-origin verifier after every analytics/indexing activation state change
-post-activation canonical/sitemap/indexing verification on the real origin'''
+          old = "deploy the fail-closed static build through the reviewed VPS + Caddy contract in `docs/22_PRODUCTION_DEPLOYMENT.md`\nrun and record the real-origin live-release verifier\nGSC\nexplicit production indexing activation\nrun the real-origin live-release verifier against the intended fail-closed/activated state\npost-deploy canonical/sitemap/indexing verification on the real origin"
+          new = "deploy the fail-closed static build through the reviewed VPS + Caddy contract in `docs/22_PRODUCTION_DEPLOYMENT.md`\nrun and record the first real-origin verifier with indexing=disabled and analytics=disabled\nGSC preparation\nexplicit production indexing activation\nrerun the real-origin verifier after every analytics/indexing activation state change\npost-activation canonical/sitemap/indexing verification on the real origin"
 
           count = text.count(old)
           if count != 1:
