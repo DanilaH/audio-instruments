@@ -3,7 +3,7 @@ import FrequencyControl from "../../components/controls/FrequencyControl.astro";
 import LevelControl from "../../components/controls/LevelControl.astro";
 import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
-import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 import {
   BASS_PRESET_FREQUENCIES_HZ,
   BASS_SINGLE_TONE_DEFAULT_HZ,
@@ -15,76 +15,55 @@ import {
 ---
 
 <div data-bass-test data-bass-mode="tone" data-bass-visual="idle">
-  <InstrumentSurface
+  <SonicInstrument
     label="Bass Test controls and low-frequency visualization"
-    accent="mint"
+    class="bass-sheet"
   >
-    <div class="bass-instrument">
-      <section class="bass-visual" aria-label="Bass playback visualization">
-        <div class="bass-visual__header">
-          <ToolStatus id="bass-status" label="Ready" state="idle" />
-          <div class="bass-readout">
-            <strong
-              ><span data-bass-frequency-readout
-                >{BASS_SINGLE_TONE_DEFAULT_HZ}</span
-              >
-              Hz</strong
-            >
-            <span data-bass-visual-label>Single tone</span>
-          </div>
-        </div>
+    <div class="bass-bar">
+      <ToolStatus id="bass-status" label="Ready" state="idle" />
+      <div class="bass-readout" aria-label="Generated frequency">
+        <span>Generated frequency</span>
+        <strong><span data-bass-frequency-readout>{BASS_SINGLE_TONE_DEFAULT_HZ}</span> Hz</strong>
+        <small data-bass-visual-label>Single tone</small>
+      </div>
+    </div>
 
-        <div class="bass-driver" aria-hidden="true">
-          <span class="bass-driver__frame"></span>
-          <span class="bass-driver__cone"></span>
-          <span class="bass-driver__cap"></span>
-          <span class="bass-driver__wave bass-driver__wave--one"></span>
-          <span class="bass-driver__wave bass-driver__wave--two"></span>
-          <span class="bass-driver__wave bass-driver__wave--three"></span>
+    <section class="bass-field" aria-label="Bass playback visualization">
+      <div class="bass-field__heading">
+        <div>
+          <span>Low-frequency reference</span>
+          <strong>Generated signal state</strong>
         </div>
+        <p>20–200 Hz nominal range</p>
+      </div>
 
-        <div class="bass-scale" aria-hidden="true">
-          <span>20</span>
-          <span>40</span>
-          <span>80</span>
-          <span>120</span>
-          <span>200 Hz</span>
+      <div class="bass-stage" aria-hidden="true">
+        <div class="bass-stage__axis">
+          <span>20</span><span>40</span><span>80</span><span>120</span><span>200 Hz</span>
         </div>
-        <p class="bass-visual__note">
-          Stylized playback visual. The numeric readout is the
-          requested/generated digital frequency; the animation is not measured
-          speaker motion or frequency response.
-        </p>
-      </section>
-
-      <section class="bass-controls" aria-label="Bass Test settings">
-        <div class="bass-safety">
-          <i class="ph ph-speaker-low" aria-hidden="true"></i>
-          <div>
-            <p>
-              Start with your device/headphone volume low. Increase it only to a
-              comfortable listening level. Do not turn the volume up to
-              compensate for a tone you cannot hear.
-            </p>
-            <strong>
-              Keep playback volume moderate. If you cannot hear a low tone, do
-              not turn the system volume up to compensate.
-            </strong>
-          </div>
+        <div class="bass-stage__track">
+          <span class="bass-stage__band"></span>
+          <span class="bass-stage__pulse bass-stage__pulse--one"></span>
+          <span class="bass-stage__pulse bass-stage__pulse--two"></span>
+          <span class="bass-stage__pulse bass-stage__pulse--three"></span>
+          <span class="bass-stage__node"></span>
         </div>
+      </div>
 
-        <div class="bass-mode-selector" aria-label="Bass Test mode">
-          <button type="button" data-bass-mode="tone" aria-pressed="true"
-            >Single tone</button
-          >
-          <button type="button" data-bass-mode="sweep" aria-pressed="false"
-            >Slow sweep</button
-          >
-          <button type="button" data-bass-mode="sequence" aria-pressed="false"
-            >Preset sequence</button
-          >
-        </div>
+      <p class="bass-field__note">
+        Reference visualization only. The numeric readout is the requested/generated digital frequency; it is not measured speaker motion, acoustic output, or frequency response.
+      </p>
+    </section>
 
+    <section class="bass-rail" aria-label="Bass Test settings and transport">
+      <div class="bass-modes">
+        <span class="bass-rail__label">Mode</span>
+        <button type="button" data-bass-mode="tone" aria-pressed="true">Single tone</button>
+        <button type="button" data-bass-mode="sweep" aria-pressed="false">Slow sweep</button>
+        <button type="button" data-bass-mode="sequence" aria-pressed="false">Preset sequence</button>
+      </div>
+
+      <div class="bass-panel-slot">
         <div class="bass-panel" data-bass-panel="tone">
           <FrequencyControl
             id="bass-frequency"
@@ -96,8 +75,7 @@ import {
             {
               BASS_PRESET_FREQUENCIES_HZ.map((frequency) => (
                 <button type="button" data-bass-preset={frequency}>
-                  {frequency}
-                  <span class="sr-only"> Hz</span>
+                  {frequency}<span class="sr-only"> Hz</span>
                 </button>
               ))
             }
@@ -111,15 +89,10 @@ import {
         <div class="bass-panel" data-bass-panel="sweep" hidden>
           <div class="bass-panel__summary">
             <div>
-              <strong data-bass-sweep-range
-                >{BASS_SWEEP_DEFAULT_LOW_HZ} → {BASS_SWEEP_DEFAULT_HIGH_HZ} Hz</strong
-              >
+              <strong data-bass-sweep-range>{BASS_SWEEP_DEFAULT_LOW_HZ} → {BASS_SWEEP_DEFAULT_HIGH_HZ} Hz</strong>
               <span>12 seconds · logarithmic</span>
             </div>
-            <p>
-              Slowly move through the core low-frequency range to listen for
-              rattles or resonant spots.
-            </p>
+            <p>Slowly move through the core low-frequency range to listen for rattles or resonant spots.</p>
           </div>
           <button type="button" class="bass-primary" data-bass-sweep-play>
             <i class="ph ph-wave-sine" aria-hidden="true"></i>
@@ -133,30 +106,38 @@ import {
               <strong>{BASS_PRESET_FREQUENCIES_HZ.join(" · ")} Hz</strong>
               <span>800 ms each · 300 ms gaps</span>
             </div>
-            <p>
-              Step through the exact reference presets with silence between
-              tones.
-            </p>
+            <p>Step through the exact reference presets with silence between tones.</p>
           </div>
           <button type="button" class="bass-primary" data-bass-sequence-play>
             <i class="ph ph-list-numbers" aria-hidden="true"></i>
             Run preset sequence
           </button>
         </div>
+      </div>
 
-        <div class="bass-footer">
-          <LevelControl id="bass-level" valueDb={-24} minDb={-60} maxDb={-12} />
-          <button type="button" class="bass-stop" data-bass-stop disabled>
-            <i class="ph ph-stop" aria-hidden="true"></i>
-            Stop
-          </button>
-        </div>
+      <div class="bass-utility">
+        <span class="bass-rail__label">Output</span>
+        <LevelControl id="bass-level" valueDb={-24} minDb={-60} maxDb={-12} />
+        <button type="button" class="bass-stop" data-bass-stop disabled>
+          <span class="transport-stop-shape" aria-hidden="true"></span>
+          Stop
+        </button>
+      </div>
+    </section>
 
-        <CapabilityNotice id="bass-frequency-cap" />
-        <p class="bass-error" data-bass-error role="alert" hidden></p>
-      </section>
+    <div class="bass-state-strip bass-safety">
+      <strong>Low volume</strong>
+      <div>
+        <p>Start with your device/headphone volume low. Increase it only to a comfortable listening level. Do not turn the volume up to compensate for a tone you cannot hear.</p>
+        <small>Keep playback volume moderate. If you cannot hear a low tone, do not turn the system volume up to compensate.</small>
+      </div>
     </div>
-  </InstrumentSurface>
+
+    <div class="bass-feedback-slot">
+      <CapabilityNotice id="bass-frequency-cap" />
+      <p class="bass-error" data-bass-error role="alert" hidden></p>
+    </div>
+  </SonicInstrument>
 </div>
 
 <script>
@@ -185,243 +166,243 @@ import {
 </script>
 
 <style>
-  .bass-instrument {
-    display: grid;
-    grid-template-columns: minmax(0, 0.9fr) minmax(430px, 1.1fr);
-    min-height: 450px;
-  }
-
-  .bass-visual,
-  .bass-controls {
-    min-width: 0;
-    padding: clamp(20px, 2.6vw, 30px);
-  }
-
-  .bass-visual {
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    border-right: 1px solid var(--color-border);
-    background:
-      radial-gradient(
-        circle at 50% 48%,
-        rgb(119 199 164 / 0.22),
-        transparent 35%
-      ),
-      linear-gradient(145deg, rgb(255 253 252 / 0.94), rgb(240 250 246 / 0.9));
-  }
-
-  .bass-visual__header {
+  .bass-bar {
     display: flex;
-    align-items: flex-start;
+    min-height: 54px;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 18px;
+    padding: 8px 18px;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
 
   .bass-readout {
     display: grid;
-    justify-items: end;
-    gap: 2px;
+    grid-template-columns: auto auto;
+    align-items: baseline;
+    gap: 1px 10px;
     text-align: right;
-  }
-
-  .bass-readout strong {
-    font-size: clamp(1.35rem, 2.2vw, 2rem);
-    line-height: 1;
   }
 
   .bass-readout > span,
-  .bass-visual__note,
-  .bass-panel__summary span,
-  .bass-panel__summary p {
-    color: var(--color-ink-muted);
-    font-size: 0.78rem;
-    line-height: 1.45;
+  .bass-field__heading span,
+  .bass-rail__label {
+    color: var(--sonic-muted);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
   }
 
-  .bass-driver {
-    position: relative;
-    width: min(220px, 62%);
-    aspect-ratio: 1;
+  .bass-readout > span {
+    grid-row: 1 / 3;
     align-self: center;
-    justify-self: center;
   }
 
-  .bass-driver__frame,
-  .bass-driver__cone,
-  .bass-driver__cap,
-  .bass-driver__wave {
-    position: absolute;
-    border-radius: 50%;
+  .bass-readout strong {
+    font-size: 1.12rem;
+    line-height: 1;
   }
 
-  .bass-driver__frame {
-    inset: 5%;
-    border: 12px solid rgb(39 73 61 / 0.11);
-    background: rgb(255 255 255 / 0.72);
-    box-shadow:
-      inset 0 0 0 1px rgb(39 73 61 / 0.08),
-      0 18px 44px rgb(39 73 61 / 0.08);
-  }
-
-  .bass-driver__cone {
-    inset: 23%;
-    border: 1px solid rgb(39 73 61 / 0.12);
-    background: radial-gradient(circle at 42% 38%, #73958a, #263f37 70%);
-  }
-
-  .bass-driver__cap {
-    inset: 41%;
-    background: #182a24;
-    box-shadow: 0 4px 16px rgb(18 40 32 / 0.24);
-  }
-
-  .bass-driver__wave {
-    inset: 0;
-    border: 1px solid rgb(56 138 105 / 0.22);
-    opacity: 0;
-  }
-
-  [data-bass-visual="tone"] .bass-driver__cone,
-  [data-bass-visual="sequence"] .bass-driver__cone {
-    animation: bass-pulse 0.68s ease-in-out infinite alternate;
-  }
-
-  [data-bass-visual="sweep"] .bass-driver__cone {
-    animation: bass-sweep-pulse 1.4s ease-in-out infinite alternate;
-  }
-
-  [data-bass-visual="tone"] .bass-driver__wave,
-  [data-bass-visual="sequence"] .bass-driver__wave,
-  [data-bass-visual="sweep"] .bass-driver__wave {
-    animation: bass-wave 1.5s ease-out infinite;
-  }
-
-  .bass-driver__wave--two {
-    animation-delay: 0.35s !important;
-  }
-
-  .bass-driver__wave--three {
-    animation-delay: 0.7s !important;
-  }
-
-  @keyframes bass-pulse {
-    from {
-      transform: scale(0.97);
-    }
-    to {
-      transform: scale(1.035);
-    }
-  }
-
-  @keyframes bass-sweep-pulse {
-    from {
-      transform: scale(0.95);
-    }
-    to {
-      transform: scale(1.05);
-    }
-  }
-
-  @keyframes bass-wave {
-    0% {
-      opacity: 0.36;
-      transform: scale(0.72);
-    }
-    100% {
-      opacity: 0;
-      transform: scale(1.12);
-    }
-  }
-
-  .bass-scale {
-    display: grid;
-    grid-template-columns: repeat(5, 1fr);
-    gap: 6px;
-    margin-top: 2px;
-    padding-top: 9px;
-    border-top: 1px solid var(--color-border);
-    color: var(--color-ink-muted);
+  .bass-readout small {
+    color: var(--sonic-muted);
     font-size: 0.68rem;
   }
 
-  .bass-scale span:last-child {
+  .bass-field {
+    display: grid;
+    grid-template-rows: auto minmax(104px, 1fr) auto;
+    gap: 7px;
+    min-height: 218px;
+    padding: 14px 20px 10px;
+    border-bottom: 1px solid var(--sonic-border);
+    background: var(--sonic-field);
+  }
+
+  .bass-field__heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 18px;
+  }
+
+  .bass-field__heading > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .bass-field__heading strong {
+    font-size: 0.88rem;
+  }
+
+  .bass-field__heading p,
+  .bass-field__note {
+    margin: 0;
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
+
+  .bass-stage {
+    display: grid;
+    align-content: center;
+    width: min(100%, 820px);
+    margin-inline: auto;
+  }
+
+  .bass-stage__axis {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    margin-bottom: 7px;
+    color: var(--sonic-muted);
+    font-size: 0.66rem;
+  }
+
+  .bass-stage__axis span:last-child {
     text-align: right;
   }
 
-  .bass-scale span:not(:first-child):not(:last-child) {
+  .bass-stage__axis span:not(:first-child):not(:last-child) {
     text-align: center;
   }
 
-  .bass-visual__note {
-    max-width: 480px;
-    margin: 8px 0 0;
+  .bass-stage__track {
+    position: relative;
+    height: 70px;
+    border-top: 1px solid var(--sonic-border);
+    border-bottom: 1px solid var(--sonic-border);
+    background:
+      linear-gradient(90deg, transparent 24.8%, rgb(24 52 59 / 0.08) 25%, transparent 25.2%),
+      linear-gradient(90deg, transparent 49.8%, rgb(24 52 59 / 0.08) 50%, transparent 50.2%),
+      linear-gradient(90deg, transparent 74.8%, rgb(24 52 59 / 0.08) 75%, transparent 75.2%);
   }
 
-  .bass-controls {
+  .bass-stage__band {
+    position: absolute;
+    top: 50%;
+    left: 4%;
+    width: 92%;
+    height: 2px;
+    background: var(--sonic-border);
+    transform: translateY(-50%);
+  }
+
+  .bass-stage__node {
+    position: absolute;
+    top: 50%;
+    left: 28%;
+    width: 22px;
+    height: 22px;
+    border: 4px solid var(--sonic-sheet);
+    border-radius: 50%;
+    background: var(--sonic-signal);
+    box-shadow: 0 0 0 1px var(--sonic-signal);
+    transform: translate(-50%, -50%);
+  }
+
+  .bass-stage__pulse {
+    position: absolute;
+    top: 50%;
+    left: 28%;
+    width: 30px;
+    height: 30px;
+    border: 1px solid var(--sonic-signal);
+    border-radius: 50%;
+    opacity: 0;
+    transform: translate(-50%, -50%);
+  }
+
+  [data-bass-visual="tone"] .bass-stage__pulse,
+  [data-bass-visual="sweep"] .bass-stage__pulse,
+  [data-bass-visual="sequence"] .bass-stage__pulse {
+    animation: bass-reference-pulse 1.6s ease-out infinite;
+  }
+
+  .bass-stage__pulse--two {
+    animation-delay: 0.42s !important;
+  }
+
+  .bass-stage__pulse--three {
+    animation-delay: 0.84s !important;
+  }
+
+  [data-bass-visual="gap"] .bass-stage__node {
+    opacity: 0.46;
+  }
+
+  @keyframes bass-reference-pulse {
+    0% {
+      opacity: 0.54;
+      transform: translate(-50%, -50%) scale(0.8);
+    }
+    100% {
+      opacity: 0;
+      transform: translate(-50%, -50%) scale(2.35);
+    }
+  }
+
+  .bass-field__note {
+    text-align: center;
+  }
+
+  .bass-rail {
     display: grid;
-    align-content: start;
-    gap: 10px;
-    background: rgb(255 253 252 / 0.78);
+    grid-template-columns: minmax(190px, 0.65fr) minmax(480px, 1.8fr) minmax(230px, 0.8fr);
+    min-height: 198px;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
 
-  .bass-safety {
+  .bass-rail > div {
+    min-width: 0;
+    padding: 11px 13px;
+  }
+
+  .bass-rail > div + div {
+    border-left: 1px solid var(--sonic-border-soft);
+  }
+
+  .bass-modes,
+  .bass-utility {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 9px;
-    padding: 10px 12px;
-    border-radius: var(--radius-control);
-    background: rgb(255 215 106 / 0.18);
+    align-content: center;
+    gap: 6px;
   }
 
-  .bass-safety p,
-  .bass-safety strong,
-  .bass-error {
-    margin: 0;
-    font-size: 0.77rem;
-    line-height: 1.42;
-  }
-
-  .bass-safety div {
-    display: grid;
-    gap: 4px;
-  }
-
-  .bass-safety strong {
-    font-weight: 760;
-  }
-
-  .bass-mode-selector {
-    display: grid;
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-    gap: 5px;
-    padding: 5px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-button);
-    background: rgb(31 36 48 / 0.035);
-  }
-
-  .bass-mode-selector button {
-    min-height: 42px;
-    padding: 0 9px;
-    border: 0;
-    border-radius: calc(var(--radius-button) - 5px);
+  .bass-modes button,
+  .bass-presets button,
+  .bass-primary,
+  .bass-stop {
+    min-height: 44px;
+    border: 1px solid var(--sonic-border);
+    border-radius: var(--sonic-control-radius);
     background: transparent;
-    color: var(--color-ink-muted);
-    font-size: 0.78rem;
+    color: var(--sonic-ink);
+    font: inherit;
     font-weight: 800;
     cursor: pointer;
   }
 
-  .bass-mode-selector button[aria-pressed="true"] {
-    background: var(--color-surface);
-    color: var(--color-ink);
-    box-shadow: 0 4px 14px rgb(31 36 48 / 0.07);
+  .bass-modes button {
+    padding-inline: 10px;
+    text-align: left;
+  }
+
+  .bass-modes button[aria-pressed="true"] {
+    border-color: var(--sonic-signal);
+    background: rgb(39 127 138 / 0.08);
+    color: #0b6570;
+  }
+
+  .bass-panel-slot {
+    display: grid;
+    align-items: stretch;
   }
 
   .bass-panel {
     display: grid;
-    gap: 9px;
-    min-height: 181px;
+    align-content: center;
+    gap: 7px;
+    min-height: 174px;
   }
 
   .bass-panel[hidden],
@@ -436,22 +417,30 @@ import {
   }
 
   .bass-presets button {
-    min-height: 38px;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    background: var(--color-surface);
-    color: var(--color-ink-muted);
-    font-weight: 760;
-    cursor: pointer;
+    min-width: 0;
+    padding-inline: 2px;
+    color: var(--sonic-muted);
+    font-size: 0.74rem;
+  }
+
+  .bass-primary {
+    min-height: 48px;
+    border-color: var(--sonic-ink);
+    background: var(--sonic-ink);
+    color: var(--sonic-sheet);
+  }
+
+  .bass-primary i {
+    margin-right: 7px;
   }
 
   .bass-panel__summary {
     display: grid;
-    gap: 10px;
-    padding: 13px 14px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
+    gap: 7px;
+    padding: 10px 12px;
+    border: 1px solid var(--sonic-border-soft);
+    border-radius: var(--sonic-control-radius);
+    background: rgb(243 240 232 / 0.62);
   }
 
   .bass-panel__summary > div {
@@ -461,56 +450,81 @@ import {
     gap: 14px;
   }
 
+  .bass-panel__summary span,
+  .bass-panel__summary p {
+    color: var(--sonic-muted);
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
   .bass-panel__summary p {
     margin: 0;
   }
 
-  .bass-primary,
-  .bass-stop {
-    display: inline-flex;
-    min-height: 46px;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border-radius: var(--radius-button);
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  .bass-primary {
-    border: 0;
-    padding: 0 16px;
-    background: var(--color-ink);
-    color: var(--color-surface);
-  }
-
-  .bass-footer {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 118px;
-    align-items: end;
-    gap: 12px;
-    padding-top: 8px;
-    border-top: 1px solid var(--color-border);
+  .bass-utility :global(.level-control) {
+    gap: 5px;
   }
 
   .bass-stop {
     min-height: 48px;
-    border: 1px solid var(--color-border);
-    background: transparent;
-    color: var(--color-ink);
+    border-color: var(--sonic-ink);
+  }
+
+  .transport-stop-shape {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    margin-right: 7px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+
+  .bass-state-strip {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 18px;
+    color: var(--sonic-muted);
+  }
+
+  .bass-state-strip strong {
+    color: var(--sonic-ink);
+    font-size: 0.72rem;
+  }
+
+  .bass-state-strip div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .bass-state-strip p,
+  .bass-state-strip small {
+    margin: 0;
+    font-size: 0.69rem;
+    line-height: 1.35;
+  }
+
+  .bass-feedback-slot:empty {
+    display: none;
+  }
+
+  .bass-feedback-slot > :global(*) {
+    margin: 8px 18px;
+  }
+
+  .bass-error {
+    padding: 9px 11px;
+    border: 1px solid rgb(149 80 59 / 0.28);
+    border-radius: var(--sonic-control-radius);
+    background: rgb(149 80 59 / 0.07);
+    color: #773927;
+    font-size: 0.76rem;
   }
 
   button:disabled,
   input:disabled {
     cursor: not-allowed;
-    opacity: 0.48;
-  }
-
-  .bass-error {
-    padding: 10px 12px;
-    border-radius: var(--radius-control);
-    background: rgb(155 47 47 / 0.08);
-    color: #7f2929;
+    opacity: 0.5;
   }
 
   .sr-only {
@@ -525,111 +539,143 @@ import {
     border: 0;
   }
 
-  @media (min-width: 931px) and (max-height: 820px) {
-    .bass-instrument {
-      min-height: 390px;
+  @media (min-width: 901px) and (max-height: 820px) {
+    .bass-bar {
+      min-height: 48px;
+      padding-block: 6px;
     }
 
-    .bass-visual,
-    .bass-controls {
-      padding: 16px 20px;
+    .bass-field {
+      grid-template-rows: auto 74px auto;
+      min-height: 0;
+      gap: 4px;
+      padding: 8px 16px 6px;
     }
 
-    .bass-controls {
-      gap: 7px;
+    .bass-stage__track {
+      height: 48px;
     }
 
-    .bass-safety {
-      padding: 8px 10px;
+    .bass-rail {
+      min-height: 176px;
     }
 
-    .bass-safety p {
-      font-size: 0.72rem;
-      line-height: 1.32;
-    }
-
-    .bass-safety strong {
-      display: none;
+    .bass-rail > div {
+      padding-block: 7px;
     }
 
     .bass-panel {
-      gap: 7px;
-      min-height: 181px;
+      min-height: 158px;
     }
 
-    .bass-panel__summary {
-      gap: 6px;
-      padding: 9px 11px;
-    }
-
-    .bass-footer {
-      gap: 8px;
-      padding-top: 5px;
-    }
-
-    .bass-driver {
-      width: min(170px, 54%);
+    .bass-state-strip {
+      padding-block: 6px;
     }
   }
 
-  @media (max-width: 930px) {
-    .bass-instrument {
-      grid-template-columns: 1fr;
+  @media (max-width: 1040px) {
+    .bass-rail {
+      grid-template-columns: minmax(170px, 0.7fr) minmax(420px, 1.7fr) minmax(210px, 0.8fr);
     }
+  }
 
-    .bass-visual {
+  @media (max-width: 900px) {
+    .bass-field {
       min-height: 210px;
-      border-right: 0;
-      border-bottom: 1px solid var(--color-border);
     }
 
-    .bass-driver {
-      width: min(132px, 38%);
+    .bass-rail {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .bass-panel-slot {
+      grid-column: 1 / -1;
+      grid-row: 2;
+      border-top: 1px solid var(--sonic-border-soft);
+    }
+
+    .bass-rail > div + div {
+      border-left: 0;
+    }
+
+    .bass-utility {
+      border-left: 1px solid var(--sonic-border-soft) !important;
     }
   }
 
   @media (max-width: 560px) {
-    .bass-visual {
-      min-height: 0;
-      padding: 8px 16px;
+    .bass-bar {
+      align-items: flex-start;
+      padding: 8px 12px;
     }
 
-    .bass-controls {
-      gap: 8px;
-      padding: 8px 14px 12px;
+    .bass-readout {
+      grid-template-columns: 1fr;
+      justify-items: end;
+      gap: 1px;
     }
 
-    .bass-driver,
-    .bass-scale,
-    .bass-visual__note,
-    .bass-safety strong {
+    .bass-readout > span {
       display: none;
     }
 
-    .bass-mode-selector {
+    .bass-field {
+      grid-template-rows: auto 76px auto;
+      min-height: 0;
+      padding: 9px 12px 7px;
+    }
+
+    .bass-field__heading p {
+      display: none;
+    }
+
+    .bass-stage__track {
+      height: 48px;
+    }
+
+    .bass-field__note {
+      text-align: left;
+    }
+
+    .bass-rail {
+      grid-template-columns: 1fr;
+    }
+
+    .bass-rail > div {
+      padding: 9px 11px;
+    }
+
+    .bass-modes {
       grid-template-columns: repeat(3, minmax(0, 1fr));
     }
 
-    .bass-mode-selector button {
-      min-height: 44px;
-      padding-inline: 4px;
-      font-size: 0.71rem;
+    .bass-modes .bass-rail__label {
+      grid-column: 1 / -1;
     }
 
-    .bass-panel {
-      min-height: 239px;
+    .bass-modes button {
+      padding-inline: 4px;
+      font-size: 0.72rem;
+      text-align: center;
+    }
+
+    .bass-panel-slot {
+      grid-column: auto;
+      grid-row: auto;
+      border-top: 1px solid var(--sonic-border-soft);
+      border-bottom: 1px solid var(--sonic-border-soft);
+    }
+
+    .bass-utility {
+      border-left: 0 !important;
     }
 
     .bass-presets {
-      grid-template-columns: repeat(7, minmax(0, 1fr));
       gap: 4px;
     }
 
     .bass-presets button {
-      min-width: 0;
-      min-height: 44px;
-      padding-inline: 0;
-      font-size: 0.72rem;
+      font-size: 0.7rem;
     }
 
     .bass-panel__summary > div {
@@ -638,19 +684,16 @@ import {
       gap: 2px;
     }
 
-    .bass-footer {
+    .bass-state-strip {
       grid-template-columns: 1fr;
-      gap: 6px;
+      gap: 3px;
+      padding: 8px 12px;
     }
   }
 
   @media (prefers-reduced-motion: reduce) {
-    .bass-driver__cone,
-    .bass-driver__wave {
+    .bass-stage__pulse {
       animation: none !important;
-    }
-
-    .bass-driver__wave {
       display: none;
     }
   }
