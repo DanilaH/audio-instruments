@@ -76,6 +76,15 @@ jobs:
       - name: Verify VPS/Caddy deployment contract
         run: pnpm test:deploy-contract
 
+      - name: Validate Caddy 2.11.4 configuration
+        run: |
+          docker run --rm \
+            -e SITE_DOMAIN=:8080 \
+            -e SITE_ROOT=/srv/browser-audio-lab/current \
+            -v "$PWD/deploy/Caddyfile:/etc/caddy/Caddyfile:ro" \
+            caddy:2.11.4-alpine \
+            caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
+
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
