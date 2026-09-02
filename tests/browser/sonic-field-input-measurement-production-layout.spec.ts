@@ -71,10 +71,14 @@ for (const tool of tools) {
       expect(primaryBox).not.toBeNull();
 
       if (sheetBox && fieldBox && primaryBox) {
+        const minimumBottomAir = viewport.height === 720 ? 16 : 24;
         expect(fieldBox.y).toBeGreaterThanOrEqual(sheetBox.y);
         expect(primaryBox.y).toBeGreaterThan(fieldBox.y);
         expect(primaryBox.y + primaryBox.height).toBeLessThanOrEqual(
           viewport.height,
+        );
+        expect(sheetBox.y + sheetBox.height).toBeLessThanOrEqual(
+          viewport.height - minimumBottomAir,
         );
       }
     });
@@ -149,3 +153,17 @@ for (const tool of tools) {
     await expect(stop.locator(".ph-stop")).toHaveCount(0);
   });
 }
+
+test("Pitch current needle is hidden until an accepted estimate state exists", async ({
+  page,
+}) => {
+  await page.goto("/pitch-detector");
+  const root = page.locator("[data-pitch-detector]");
+  const needle = page.locator("[data-pitch-needle]");
+
+  await expect(needle).toHaveCSS("visibility", "hidden");
+  await root.evaluate((element) => {
+    element.dataset.pitchResultState = "settling";
+  });
+  await expect(needle).toHaveCSS("visibility", "visible");
+});

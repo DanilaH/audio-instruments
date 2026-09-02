@@ -327,10 +327,16 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     bottom: 3px;
     left: calc(50% + var(--pitch-offset, 0%));
     width: 4px;
+    visibility: hidden;
     border-radius: 2px;
     background: var(--sonic-current);
     transform: translateX(-50%);
     transition: left 90ms linear;
+  }
+
+  [data-pitch-result-state="settling"] .pitch-tuner__needle,
+  [data-pitch-result-state="stable"] .pitch-tuner__needle {
+    visibility: visible;
   }
 
   .pitch-tuner__cents {
