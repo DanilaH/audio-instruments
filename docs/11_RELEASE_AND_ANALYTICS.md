@@ -96,6 +96,12 @@ Before those values are supplied in a real deployment, determine the required co
 
 Canonical implementation evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.
 
+## Production deployment contract
+
+The canonical static deployment path is VPS + Caddy and is documented in `docs/22_PRODUCTION_DEPLOYMENT.md`. Repository readiness includes the domain-agnostic Caddyfile, deterministic deployment-contract validation and a real Caddy 2.11.4 local runtime smoke. This does **not** claim that a real production domain, DNS record, VPS release or TLS certificate exists yet.
+
+The first production publication must use an immutable release directory plus atomic `current` symlink switch and must keep both analytics and indexing disabled until their later gates are explicitly approved.
+
 ## Live post-deploy verification
 
 The repository provides a parameterized real-origin verifier:
