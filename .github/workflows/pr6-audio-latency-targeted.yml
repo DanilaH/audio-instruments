@@ -1,4 +1,4 @@
-name: PR6 Audio Latency Formatter
+name: PR6 Audio Latency Targeted
 
 on:
   push:
@@ -6,17 +6,15 @@ on:
       - feat/sonic-field-audio-latency
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  format:
+  targeted:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 25
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: feat/sonic-field-audio-latency
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -32,17 +30,23 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Format PR6 files
-        run: pnpm exec prettier --write src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
+      - name: Check formatting
+        run: pnpm exec prettier --check src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
 
-      - name: Commit exact formatter output
-        run: |
-          if git diff --quiet -- src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts; then
-            echo "No formatting changes needed."
-            exit 0
-          fi
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
-          git commit -m "style: format Audio Latency migration"
-          git push origin HEAD:feat/sonic-field-audio-latency
+      - name: Scoped lint
+        run: pnpm exec eslint src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
+
+      - name: Astro and TypeScript check
+        run: pnpm check
+
+      - name: AV sync unit tests
+        run: pnpm exec vitest run tests/unit/av-sync-timeline.test.ts
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Audio Latency browser regression
+        run: pnpm exec playwright test tests/browser/audio-latency.spec.ts tests/browser/audio-latency-layout.spec.ts tests/browser/runtime-layout-stability.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts --project=chromium --project=firefox --project=webkit
