@@ -282,11 +282,11 @@ actual Edge smoke QA
 real microphone/output-device smoke QA where practical
 configure the real Cloudflare site/token, disable Cloudflare automatic beacon injection in favor of the repository-owned manual snippet, and approve deployment-jurisdiction privacy/consent behavior before enabling Web Analytics
 deploy the fail-closed static build through the reviewed VPS + Caddy contract in `docs/22_PRODUCTION_DEPLOYMENT.md`
-run and record the real-origin live-release verifier
-GSC
+run and record the first real-origin verifier with indexing=disabled and analytics=disabled
+GSC preparation
 explicit production indexing activation
-run the real-origin live-release verifier against the intended fail-closed/activated state
-post-deploy canonical/sitemap/indexing verification on the real origin
+rerun the real-origin verifier after every analytics/indexing activation state change
+post-activation canonical/sitemap/indexing verification on the real origin
 ```
 
 P8 must not enable production indexing merely because P7 has evidence or because P8.3 makes the positive build path technically available. Production indexability remains an explicit release decision after the remaining gates pass.
