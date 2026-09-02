@@ -1,0 +1,68 @@
+name: Temporary PR3 Noise Remediation
+
+on:
+  pull_request:
+    types:
+      - synchronize
+
+permissions:
+  contents: read
+
+concurrency:
+  group: tmp-pr3-noise-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  targeted-browser-regression:
+    name: targeted-${{ matrix.browser }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        browser:
+          - chromium
+          - firefox
+          - webkit
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright browser
+        run: pnpm exec playwright install --with-deps ${{ matrix.browser }}
+
+      - name: Run focused PR3 remediation regression
+        run: >-
+          pnpm exec playwright test
+          tests/browser/noise-generator-layout.spec.ts
+          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
+          tests/browser/noise-generator.spec.ts
+          tests/browser/tmp-pr3-noise-mobile-geometry.spec.ts
+          --project=${{ matrix.browser }}
+
+      - name: Upload failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: tmp-pr3-noise-${{ matrix.browser }}-${{ github.run_id }}
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 1
