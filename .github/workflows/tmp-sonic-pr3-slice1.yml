@@ -1,4 +1,4 @@
-name: Temporary Sonic Field PR3 Bass final matrix
+name: Temporary Sonic Field PR3 Bass stability matrix
 
 on:
   push:
@@ -23,28 +23,20 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Apply Bass live-readout and coverage patch
-        run: python .github/tmp-sonic-pr3-slice2.py
-      - name: Format Bass slice
-        run: >-
-          pnpm exec prettier --write
-          src/tools/bass-test/BassTest.astro
-          src/tools/bass-test/BassTestController.ts
-          tests/browser/bass-test.spec.ts
-          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
-          tests/browser/runtime-layout-stability.spec.ts
-          tests/browser/tool-touch-targets.spec.ts
+      - name: Apply Bass mobile stability fix
+        run: python .github/tmp-sonic-pr3-bass-stability.py
+      - name: Format Bass surface
+        run: pnpm exec prettier --write src/tools/bass-test/BassTest.astro
       - name: Verify formatting
-        run: >-
-          pnpm exec prettier --check
-          src/tools/bass-test/BassTest.astro
-          src/tools/bass-test/BassTestController.ts
-          tests/browser/bass-test.spec.ts
-          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
-          tests/browser/runtime-layout-stability.spec.ts
-          tests/browser/tool-touch-targets.spec.ts
+        run: pnpm exec prettier --check src/tools/bass-test/BassTest.astro
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Chromium stability probe
+        run: >-
+          pnpm exec playwright test
+          tests/browser/runtime-layout-stability.spec.ts
+          tests/browser/bass-test.spec.ts
+          --project=chromium
       - name: Verify Bass behavior and production layout across engines
         run: >-
           pnpm exec playwright test
@@ -53,21 +45,13 @@ jobs:
           tests/browser/tool-touch-targets.spec.ts
           tests/browser/runtime-layout-stability.spec.ts
           --project=chromium --project=firefox --project=webkit
-      - name: Persist verified Bass slice
+      - name: Persist verified Bass stability fix
         run: |
-          if git diff --quiet -- \
-            src/tools/bass-test/BassTest.astro \
-            src/tools/bass-test/BassTestController.ts \
-            tests/browser/bass-test.spec.ts \
-            tests/browser/sonic-field-generated-signal-production-layout.spec.ts; then
+          if git diff --quiet -- src/tools/bass-test/BassTest.astro; then
             exit 0
           fi
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add \
-            src/tools/bass-test/BassTest.astro \
-            src/tools/bass-test/BassTestController.ts \
-            tests/browser/bass-test.spec.ts \
-            tests/browser/sonic-field-generated-signal-production-layout.spec.ts
-          git commit -m "feat: add Bass live sweep readout"
+          git add src/tools/bass-test/BassTest.astro
+          git commit -m "fix: stabilize Bass mobile mode slot"
           git push origin HEAD:feat/sonic-field-generated-signal-family
