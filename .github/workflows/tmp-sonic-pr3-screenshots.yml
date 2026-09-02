@@ -1,4 +1,4 @@
-name: Temporary Sonic Field PR3 screenshot QA
+name: Temporary Sonic Field PR3 visual QA contact sheets
 
 on:
   push:
@@ -11,86 +11,58 @@ permissions:
   contents: write
 
 jobs:
-  screenshots:
+  contact-sheets:
     runs-on: ubuntu-24.04
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - uses: actions/checkout@v7
-      - uses: pnpm/setup@v2
-        with:
-          version: 11.21.0
-          runtime: node@24
-          cache: true
-          install: false
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm build
-      - run: pnpm exec playwright install --with-deps chromium
-      - name: Capture viewport screenshots
+      - name: Install Pillow
+        run: python -m pip install --quiet pillow
+      - name: Build PDF contact sheets
         run: |
-          pnpm exec astro preview --host 127.0.0.1 > /tmp/pr3-preview.log 2>&1 &
-          PREVIEW_PID=$!
-          trap 'kill $PREVIEW_PID || true' EXIT
-          for i in $(seq 1 30); do
-            if curl -fsS http://127.0.0.1:4321/tone-generator >/dev/null; then break; fi
-            sleep 1
-          done
-          mkdir -p .github/tmp-pr3-screenshots
-          node <<'NODE'
-          const { chromium } = require('@playwright/test');
-          const fs = require('fs');
-          const routes = [
-            ['tone-generator', '/tone-generator', async (page) => {
-              await page.getByRole('button', { name: 'Play', exact: true }).click();
-            }],
-            ['frequency-sweep', '/frequency-sweep', async (page) => {
-              await page.getByRole('button', { name: 'Play sweep', exact: true }).click();
-            }],
-            ['bass-test', '/bass-test', async (page) => {
-              await page.locator('[data-bass-mode="sweep"]').click();
-              await page.locator('[data-bass-sweep-play]').click();
-            }],
-            ['noise-generator', '/noise-generator', async (page) => {
-              await page.locator('[data-noise-play]').click();
-            }],
-            ['sound-test', '/sound-test', async (page) => {
-              await page.locator('[data-sound-channel="left"]').click();
-            }],
-          ];
-          const viewports = [
-            [1366, 768],
-            [1440, 900],
-            [1280, 720],
-            [390, 844],
-          ];
-          (async () => {
-            const browser = await chromium.launch();
-            for (const [width, height] of viewports) {
-              for (const [name, route, activate] of routes) {
-                const page = await browser.newPage({ viewport: { width, height } });
-                await page.goto(`http://127.0.0.1:4321${route}`, { waitUntil: 'networkidle' });
-                try {
-                  await activate(page);
-                  await page.waitForTimeout(120);
-                } catch (error) {
-                  console.warn(`Activation failed for ${name} at ${width}x${height}:`, error.message);
-                }
-                await page.screenshot({
-                  path: `.github/tmp-pr3-screenshots/${name}-${width}x${height}.png`,
-                  fullPage: false,
-                });
-                await page.close();
-              }
-            }
-            await browser.close();
-          })().catch((error) => {
-            console.error(error);
-            process.exit(1);
-          });
-          NODE
-      - name: Persist screenshots for review
+          python <<'PY'
+          from pathlib import Path
+          from PIL import Image, ImageDraw, ImageFont
+
+          root = Path('.github/tmp-pr3-screenshots')
+          tools = ['tone-generator', 'frequency-sweep', 'bass-test', 'noise-generator', 'sound-test']
+          viewports = ['1366x768', '1440x900', '1280x720', '390x844']
+          pages = []
+          font = ImageFont.load_default()
+
+          for viewport in viewports:
+              if viewport == '390x844':
+                  canvas = Image.new('RGB', (2200, 980), 'white')
+                  draw = ImageDraw.Draw(canvas)
+                  draw.text((20, 15), f'PR3 visual QA — {viewport}', fill='black', font=font)
+                  x = 20
+                  for tool in tools:
+                      img = Image.open(root / f'{tool}-{viewport}.png').convert('RGB')
+                      img.thumbnail((390, 844))
+                      canvas.paste(img, (x, 70))
+                      draw.text((x, 50), tool, fill='black', font=font)
+                      x += 430
+              else:
+                  canvas = Image.new('RGB', (2440, 2280), 'white')
+                  draw = ImageDraw.Draw(canvas)
+                  draw.text((20, 15), f'PR3 visual QA — {viewport}', fill='black', font=font)
+                  for index, tool in enumerate(tools):
+                      row, col = divmod(index, 2)
+                      x = 20 + col * 1210
+                      y = 60 + row * 735
+                      img = Image.open(root / f'{tool}-{viewport}.png').convert('RGB')
+                      img.thumbnail((1180, 665))
+                      draw.text((x, y), tool, fill='black', font=font)
+                      canvas.paste(img, (x, y + 22))
+              pages.append(canvas)
+
+          out = root / 'pr3-visual-qa.pdf'
+          pages[0].save(out, save_all=True, append_images=pages[1:], resolution=120.0)
+          PY
+      - name: Persist PDF for review
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add .github/tmp-pr3-screenshots
-          git commit -m "chore: add temporary PR3 visual QA screenshots"
+          git add .github/tmp-pr3-screenshots/pr3-visual-qa.pdf
+          git commit -m "chore: add temporary PR3 visual QA contact sheet"
           git push origin HEAD:feat/sonic-field-generated-signal-family
