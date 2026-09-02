@@ -51,8 +51,10 @@ async function putLatencyIntoChallengeState(page: Page): Promise<void> {
   await page.locator("[data-audio-latency]").evaluate((element) => {
     const root = element as HTMLElement;
     root.dataset.latencyState = "playing";
-    root.querySelector<HTMLButtonElement>("[data-latency-start]")!.disabled = true;
-    root.querySelector<HTMLButtonElement>("[data-latency-stop]")!.disabled = false;
+    root.querySelector<HTMLButtonElement>("[data-latency-start]")!.disabled =
+      true;
+    root.querySelector<HTMLButtonElement>("[data-latency-stop]")!.disabled =
+      false;
     root.querySelector<HTMLElement>("[data-latency-pulse]")!.dataset.active =
       "true";
   });
