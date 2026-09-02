@@ -3,6 +3,11 @@ import "@phosphor-icons/web/regular";
 import "../styles/global.css";
 import "../styles/touch-targets.css";
 import {
+  buildCloudflareWebAnalyticsBeaconConfig,
+  CLOUDFLARE_WEB_ANALYTICS_SCRIPT_URL,
+  resolveSiteAnalyticsConfig,
+} from "../config/site-analytics";
+import {
   buildCanonicalUrl,
   resolveSiteIndexingConfigFromSite,
 } from "../config/site-indexing";
@@ -17,6 +22,14 @@ const { title, description, hasLiveTools = false } = Astro.props;
 const year = new Date().getFullYear();
 const indexing = resolveSiteIndexingConfigFromSite(Astro.site);
 const canonicalUrl = buildCanonicalUrl(indexing, Astro.url.pathname);
+const analytics = resolveSiteAnalyticsConfig({
+  SITE_ANALYTICS: import.meta.env.SITE_ANALYTICS,
+  ANALYTICS_PRIVACY_REVIEW: import.meta.env.ANALYTICS_PRIVACY_REVIEW,
+  CLOUDFLARE_WEB_ANALYTICS_TOKEN: import.meta.env
+    .CLOUDFLARE_WEB_ANALYTICS_TOKEN,
+});
+const cloudflareBeaconConfig =
+  buildCloudflareWebAnalyticsBeaconConfig(analytics);
 ---
 
 <!doctype html>
@@ -52,5 +65,15 @@ const canonicalUrl = buildCanonicalUrl(indexing, Astro.url.pathname);
         <a href="/privacy">Privacy</a>
       </div>
     </footer>
+    {
+      cloudflareBeaconConfig && (
+        <script
+          is:inline
+          type="module"
+          src={CLOUDFLARE_WEB_ANALYTICS_SCRIPT_URL}
+          data-cf-beacon={cloudflareBeaconConfig}
+        />
+      )
+    }
   </body>
 </html>

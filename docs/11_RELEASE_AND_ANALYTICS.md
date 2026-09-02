@@ -76,15 +76,25 @@ Selected for the initial production rollout:
 Cloudflare Web Analytics
 ```
 
-Status: **selected, not enabled**.
+Status: **integration implemented, disabled by default; production activation not authorized**.
 
-The v1 reason is deliberately narrow: page/referrer/browser/device/OS visibility and real-user Core Web Vitals are useful immediately, while a heavier custom-event analytics surface is not yet justified. Official Cloudflare documentation reviewed on 2026-08-31 states that Web Analytics does not use cookies or localStorage for usage metrics and does not fingerprint individuals for Vitals collection. It currently does not support custom events or UTM parameters.
+The v1 reason is deliberately narrow: page/referrer/browser/device/OS visibility and real-user Core Web Vitals are useful immediately, while a heavier custom-event analytics surface is not yet justified. Official Cloudflare documentation was refreshed on 2026-09-02 before the integration unit: Web Analytics does not use cookies or localStorage for usage metrics and does not fingerprint individuals for this analytics collection. The RUM documentation states that source IP is received during ordinary HTTP handling but discarded at the nearest Cloudflare data center rather than stored in the RUM service's core databases/logs. Custom events and UTM analytics remain outside this v1 integration.
 
 Therefore the possible provider-neutral product events listed above remain a future extension rather than a v1 requirement. Do not add a fake `trackEvent()` implementation that silently drops events merely to satisfy the old possibility list.
 
-Before Cloudflare Web Analytics is enabled, update `/privacy`, determine required consent behavior for the actual deployment jurisdictions, verify that no microphone/recording content enters analytics, and record the final deployment behavior.
+The repository now contains a fail-closed Cloudflare Web Analytics integration and build-state-aware `/privacy` copy. Default builds emit no analytics beacon. Production activation requires all three build-time inputs together:
 
-Current product baseline contains no analytics provider integration.
+```text
+SITE_ANALYTICS=cloudflare-web-analytics
+ANALYTICS_PRIVACY_REVIEW=approved
+CLOUDFLARE_WEB_ANALYTICS_TOKEN=<Cloudflare site token>
+```
+
+Manual snippet installation is the single v1 analytics owner. If the production hostname is proxied through Cloudflare, Cloudflare automatic Web Analytics injection must be disabled / switched to manual JS snippet installation before release; otherwise edge injection could bypass the repository's disabled state or create duplicate beacons.
+
+Before those values are supplied in a real deployment, determine the required consent behavior for the actual deployment jurisdictions, verify the real Cloudflare site/token and network behavior, verify automatic injection is disabled, confirm that no microphone/recording content enters analytics, and record the deployment decision. `ANALYTICS_PRIVACY_REVIEW=approved` is a technical release gate, not a universal legal conclusion.
+
+Canonical implementation evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.
 
 ## Search Console
 

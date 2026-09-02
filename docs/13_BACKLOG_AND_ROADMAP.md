@@ -12,7 +12,7 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
 P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
-P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; real-device/rollout gates remain
+P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; Cloudflare Web Analytics repository readiness is implemented fail-closed; real-device/deployment/provider-activation/indexing rollout gates remain
 ```
 
 P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
@@ -268,7 +268,7 @@ Chromium / Firefox / WebKit browser suite PASS
 2026-08-31 visual QA complete for the then-required 1440×900 / 1366×768 / 1024×768 / 390×844 matrix
 runtime axe A/AA audit complete with zero violations
 cross-engine visual spot-check complete
-Cloudflare Web Analytics selected for v1 rollout but not enabled
+Cloudflare Web Analytics selected for v1 rollout; fail-closed repository integration/readiness validated, production activation still disabled
 ```
 
 Remaining P8 work:
@@ -280,7 +280,7 @@ actual iOS Safari smoke QA
 actual Android Chrome smoke QA
 actual Edge smoke QA
 real microphone/output-device smoke QA where practical
-enable Cloudflare Web Analytics only with updated privacy/consent review
+configure the real Cloudflare site/token, disable Cloudflare automatic beacon injection in favor of the repository-owned manual snippet, and approve deployment-jurisdiction privacy/consent behavior before enabling Web Analytics
 deploy
 GSC
 explicit production indexing activation
@@ -289,7 +289,7 @@ post-deploy canonical/sitemap/indexing verification
 
 P8 must not enable production indexing merely because P7 has evidence or because P8.3 makes the positive build path technically available. Production indexability remains an explicit release decision after the remaining gates pass.
 
-The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence.
+The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence. Repository-side analytics readiness is recorded in `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`; it does not claim a real Cloudflare site/token, deployment or jurisdiction-specific activation approval.
 
 ## Polish backlog
 
