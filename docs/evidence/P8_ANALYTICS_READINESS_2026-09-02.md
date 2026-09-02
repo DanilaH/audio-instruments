@@ -51,7 +51,7 @@ Decibel calibration payloads
 
 Core microphone processing remains local to the browser as specified by the existing measurement/privacy contracts.
 
-## Build validation
+## Initial build validation
 
 Targeted validation run:
 
@@ -75,12 +75,52 @@ Chromium shell/browser smoke          PASS
 
 `pnpm test:analytics` builds all 18 HTML routes twice:
 
-1. analytics disabled — verifies no Cloudflare beacon URL or synthetic token is emitted and `/privacy` reports analytics disabled;
+1. analytics disabled — verifies no Cloudflare beacon URL or synthetic token is emitted and `/privacy` reports that the build does not enable analytics;
 2. synthetic authorized Cloudflare state — verifies exactly one Cloudflare beacon/token on every HTML route and verifies the enabled-state privacy/audio-content boundary.
 
 The synthetic token is test input only and is not a production Cloudflare credential.
 
 `pnpm test:indexing` remained green in the same run, so analytics readiness does not weaken the independent fail-closed indexing contract.
+
+## Cold Review #1 remediation
+
+Cold Review #1 found one material deployment-ownership gap:
+
+```text
+MAJOR = 1
+```
+
+Cloudflare can automatically inject Web Analytics at the edge for proxied sites. Without an explicit installation-ownership rule, that external mode could bypass a repository build with analytics disabled or create a duplicate beacon alongside the manual snippet.
+
+Remediation:
+
+- manual repository-owned snippet is the single v1 installation owner;
+- production deployment must disable Cloudflare automatic Web Analytics injection / select manual JS snippet installation;
+- disabled-state `/privacy` wording now describes what the build enables rather than making an unverifiable claim about edge-injected deployment behavior;
+- release/privacy/roadmap docs and this evidence record carry the same deployment requirement.
+
+## Post-review validation
+
+Post-remediation validation run:
+
+```text
+GitHub Actions run 33662405871
+```
+
+Result:
+
+```text
+pnpm format:check                     PASS
+pnpm lint                             PASS
+pnpm check                            PASS
+pnpm test                             PASS
+pnpm test:analytics                   PASS
+pnpm test:indexing                    PASS
+Chromium install                      PASS
+Chromium shell/browser smoke          PASS
+```
+
+The remediation changed only installation-ownership/privacy wording and its disabled-state verifier assertion; the analytics configuration and beacon generation logic remained unchanged.
 
 ## Not completed by this unit
 
