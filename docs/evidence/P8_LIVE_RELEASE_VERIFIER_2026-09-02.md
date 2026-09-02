@@ -59,7 +59,7 @@ The repository also exposes a no-network self-test:
 pnpm test:live-release-contract
 ```
 
-Targeted GitHub Actions validation:
+Initial targeted GitHub Actions validation:
 
 ```text
 run 33666256019
@@ -78,6 +78,43 @@ pnpm test:indexing                PASS
 ```
 
 The self-test covers origin validation, enabled/disabled HTML contracts, duplicate-beacon rejection, canonical escape rejection, robots states, sitemap origin lock, CLI expectation parsing and timeout validation.
+
+## Cold Review #1
+
+Cold Review #1 on clean head `14c1b4464b7eeb69caff1719d6dcc40082ef92d1` found:
+
+```text
+BLOCKER 0
+MAJOR   0
+MINOR   3
+```
+
+Findings and remediation:
+
+1. removed an unreachable `status === 200` branch after the disabled-sitemap fetch had already constrained accepted statuses to 404/410;
+2. tied Cloudflare `type="module"` and `data-cf-beacon` validation to the actual beacon `<script>` tag instead of accepting an unrelated module script elsewhere in the page;
+3. changed `--timeout-ms` parsing to reject non-decimal input instead of partially accepting values through `parseInt`.
+
+The self-test now includes a regression case where an unrelated module script is present while the Cloudflare beacon has the wrong type; that state must fail.
+
+## Post-review validation
+
+Post-remediation targeted run:
+
+```text
+run 33667069257
+```
+
+Result:
+
+```text
+pnpm format:check                 PASS
+pnpm lint                         PASS
+pnpm check                        PASS
+pnpm test:live-release-contract   PASS
+pnpm test:analytics               PASS
+pnpm test:indexing                PASS
+```
 
 ## What this verifier does not prove
 
