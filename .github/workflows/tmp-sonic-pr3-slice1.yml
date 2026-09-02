@@ -26,3 +26,5 @@ jobs:
       - run: pnpm exec playwright install --with-deps chromium
       - name: Probe Tone geometry
         run: pnpm exec playwright test tests/browser/tmp-sonic-pr3-geometry.spec.ts --project=chromium
+
+# expanded rail metrics
