@@ -10,7 +10,7 @@ beautiful
 honest
 ```
 
-The working visual direction is **Soft Sonic Studio**: a warm, friendly, expressive browser audio lab rather than a generic utility site.
+The production visual direction is **Sonic Field**: audio relationships made visible through a compact field / rail / state instrument system rather than a generic utility shell.
 
 ## Documentation status
 
@@ -48,6 +48,8 @@ The repository is now public. Current branch metadata reports `main` as `protect
 A GitHub Actions infrastructure incident is also recorded: on later P5/P6 PRs, hosted jobs repeatedly failed before runner allocation with `runner_id = 0` and `steps = []`. Those attempts are **not** represented as green CI. Affected merge history carries exact-SHA review evidence and explicit infrastructure incident notes. This records what happened; it does not authorize future merges without a green `merge-gate`.
 
 Automated P8 release validation is now recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: exact-head full Chromium/Firefox/WebKit validation is green, historical visual QA across the homepage + all 16 tool routes at 1440×900, 1366×768, 1024×768 and 390×844 is complete; the separate 2026-09-01 adversarial audit adds validated 320×844 browser/state/geometry coverage, and runtime axe audit reports zero WCAG A/AA violations on 34 desktop/mobile surfaces for that same 17-page scope, and cross-engine visual spot-checks found no material rendering regression. Remaining P8 work is real-device/browser smoke QA, production domain/deployment, Cloudflare Web Analytics enablement plus privacy/consent review, Search Console and explicit final indexing activation.
+
+The Sonic Field production migration is now complete across all 16 live tools. The reviewed rollout ran through PRs #79, #81, #83, #85, #86 and #87; post-release contrast closure PR #88 then passed a 54-surface Chromium WCAG A/AA + horizontal-overflow audit with 0 violation surfaces and 0 overflow surfaces, followed by green authoritative Full Validation and `merge-gate`. Canonical closure evidence: `docs/evidence/SONIC_FIELD_POST_RELEASE_CLOSURE_2026-09-02.md`.
 
 ## Stack
 
@@ -107,6 +109,7 @@ docs/
 ├── 18_HOMEPAGE_AND_SITE_SHELL.md
 ├── 19_PRIVACY_AND_LEGAL.md
 ├── 20_P0_TOOLING_CONTRACT.md
+├── 21_SONIC_FIELD_PRODUCTION_MIGRATION.md
 ├── CHANGELOG.md
 └── evidence/
     ├── competitor-evidence.csv
@@ -118,7 +121,8 @@ docs/
     ├── P8_STATIC_RELEASE_AUDIT_2026-08-30.md
     ├── P8_INDEXING_VALIDATION_2026-08-30.md
     ├── P8_RELEASE_VALIDATION_2026-08-31.md
-    └── P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md
+    ├── P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md
+    └── SONIC_FIELD_POST_RELEASE_CLOSURE_2026-09-02.md
 ```
 
 Each concern has one authoritative home. Do not recreate a second master specification.
@@ -187,7 +191,7 @@ blue button
 
 The instrument itself carries much of the visual identity.
 
-The dynamic waveform motif may use a subtle blur and a short disappearing trail.
+Blur, trails and other motion are allowed only when they communicate real signal/state; generic decorative motion is not part of the production system.
 
 ## Measurement rule
 
