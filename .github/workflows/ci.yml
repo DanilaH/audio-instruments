@@ -70,6 +70,9 @@ jobs:
       - name: Verify positive indexing build
         run: pnpm test:indexing
 
+      - name: Verify live release verifier contract
+        run: pnpm test:live-release-contract
+
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
