@@ -1,0 +1,78 @@
+name: P8 Live Release Review Remediation
+
+on:
+  push:
+    branches:
+      - feat/p8-live-release-verifier
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/p8-live-release-verifier
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Apply Cold Review #1 fixes
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/verify-live-release.mjs')
+          text = path.read_text()
+
+          replacements = [
+              (
+                  '''  } else {\n    const sitemapIndex = await fetchText(\n      new URL("/sitemap-index.xml", `${origin}/`),\n      {\n        origin,\n        timeoutMs,\n        expectedStatuses: [404, 410],\n      },\n    );\n\n    if (sitemapIndex.status === 200) {\n      throw new Error(\n        "Indexing is expected disabled, but /sitemap-index.xml is still publicly available.",\n      );\n    }\n  }''',
+                  '''  } else {\n    await fetchText(new URL("/sitemap-index.xml", `${origin}/`), {\n      origin,\n      timeoutMs,\n      expectedStatuses: [404, 410],\n    });\n  }''',
+              ),
+              (
+                  '''  const beaconCount = countOccurrences(html, BEACON_URL);\n  const configCount = countOccurrences(html, "data-cf-beacon");\n\n  if (analytics === "enabled") {\n    assertEqual(beaconCount, 1, `${route} Cloudflare beacon count`);\n    assertEqual(configCount, 1, `${route} data-cf-beacon count`);\n    assertIncludes(html, 'type="module"', `${route} Cloudflare module script`);\n  } else {\n    assertEqual(beaconCount, 0, `${route} Cloudflare beacon count`);\n    assertEqual(configCount, 0, `${route} data-cf-beacon count`);\n  }''',
+                  '''  const beaconScripts = extractCloudflareBeaconScripts(html);\n  const configCount = countOccurrences(html, "data-cf-beacon");\n\n  if (analytics === "enabled") {\n    assertEqual(beaconScripts.length, 1, `${route} Cloudflare beacon count`);\n    assertEqual(configCount, 1, `${route} data-cf-beacon count`);\n\n    const beaconScript = beaconScripts[0];\n    if (!beaconScript) {\n      throw new Error(`${route} is missing the Cloudflare beacon script.`);\n    }\n\n    const typeMatch = beaconScript.match(/\\btype=["']([^"']+)["']/i);\n    assertEqual(\n      typeMatch?.[1]?.toLowerCase() ?? null,\n      "module",\n      `${route} Cloudflare beacon script type`,\n    );\n\n    if (!/\\bdata-cf-beacon=["'][^"']+["']/i.test(beaconScript)) {\n      throw new Error(\n        `${route} Cloudflare beacon script is missing data-cf-beacon.`,\n      );\n    }\n  } else {\n    assertEqual(beaconScripts.length, 0, `${route} Cloudflare beacon count`);\n    assertEqual(configCount, 0, `${route} data-cf-beacon count`);\n  }''',
+              ),
+              (
+                  '''function parseTimeout(rawValue) {\n  if (rawValue === null) return DEFAULT_TIMEOUT_MS;\n\n  const value = Number.parseInt(rawValue, 10);\n  if (!Number.isInteger(value) || value < 1_000 || value > 60_000) {\n    throw new Error("--timeout-ms must be an integer between 1000 and 60000.");\n  }\n\n  return value;\n}''',
+                  '''function parseTimeout(rawValue) {\n  if (rawValue === null) return DEFAULT_TIMEOUT_MS;\n\n  if (!/^\\d+$/.test(rawValue)) {\n    throw new Error("--timeout-ms must contain decimal digits only.");\n  }\n\n  const value = Number(rawValue);\n  if (!Number.isInteger(value) || value < 1_000 || value > 60_000) {\n    throw new Error("--timeout-ms must be an integer between 1000 and 60000.");\n  }\n\n  return value;\n}''',
+              ),
+              (
+                  '''function countOccurrences(actual, needle) {\n  return actual.split(needle).length - 1;\n}''',
+                  '''function extractCloudflareBeaconScripts(html) {\n  return (html.match(/<script\\b[^>]*>/gi) ?? []).filter((tag) =>\n    tag.includes(BEACON_URL),\n  );\n}\n\nfunction countOccurrences(actual, needle) {\n  return actual.split(needle).length - 1;\n}''',
+              ),
+              (
+                  '''  expectThrows(\n    () =>\n      verifyHtml({\n        html: enabledHtml.replace(`${origin}/privacy`, "https://other.example/privacy"),\n        route: "/privacy",\n        origin,\n        indexing: "enabled",\n        analytics: "enabled",\n      }),\n    /canonical mismatch/,\n  );''',
+                  '''  expectThrows(\n    () =>\n      verifyHtml({\n        html: enabledHtml.replace(`${origin}/privacy`, "https://other.example/privacy"),\n        route: "/privacy",\n        origin,\n        indexing: "enabled",\n        analytics: "enabled",\n      }),\n    /canonical mismatch/,\n  );\n\n  const wrongBeaconTypeHtml =\n    enabledHtml.replace(\n      '<script type="module" src=',\n      '<script type="text/javascript" src=',\n    ) + '<script type="module"></script>';\n  expectThrows(\n    () =>\n      verifyHtml({\n        html: wrongBeaconTypeHtml,\n        route: "/privacy",\n        origin,\n        indexing: "enabled",\n        analytics: "enabled",\n      }),\n    /beacon script type mismatch/,\n  );''',
+              ),
+              (
+                  '''  assertEqual(parseTimeout(null), DEFAULT_TIMEOUT_MS, "default timeout");\n  expectThrows(() => parseTimeout("999"), /between 1000 and 60000/);''',
+                  '''  assertEqual(parseTimeout(null), DEFAULT_TIMEOUT_MS, "default timeout");\n  expectThrows(() => parseTimeout("999"), /between 1000 and 60000/);\n  expectThrows(() => parseTimeout("10000oops"), /decimal digits only/);''',
+              ),
+          ]
+
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one match, got {count}: {old[:120]!r}')
+              text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+          pnpm exec prettier --write scripts/verify-live-release.mjs
+          pnpm exec eslint scripts/verify-live-release.mjs
+          pnpm test:live-release-contract
+      - name: Commit review remediation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/verify-live-release.mjs
+          git commit -m "fix: close live release verifier review findings"
+          git push
