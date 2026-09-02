@@ -97,20 +97,11 @@ async function verifyLiveRelease({ origin, indexing, analytics, timeoutMs }) {
       origin,
     });
   } else {
-    const sitemapIndex = await fetchText(
-      new URL("/sitemap-index.xml", `${origin}/`),
-      {
-        origin,
-        timeoutMs,
-        expectedStatuses: [404, 410],
-      },
-    );
-
-    if (sitemapIndex.status === 200) {
-      throw new Error(
-        "Indexing is expected disabled, but /sitemap-index.xml is still publicly available.",
-      );
-    }
+    await fetchText(new URL("/sitemap-index.xml", `${origin}/`), {
+      origin,
+      timeoutMs,
+      expectedStatuses: [404, 410],
+    });
   }
 
   const privacyHtml = htmlByRoute.get("/privacy");
@@ -157,15 +148,32 @@ function verifyHtml({ html, route, origin, indexing, analytics }) {
     }
   }
 
-  const beaconCount = countOccurrences(html, BEACON_URL);
+  const beaconScripts = extractCloudflareBeaconScripts(html);
   const configCount = countOccurrences(html, "data-cf-beacon");
 
   if (analytics === "enabled") {
-    assertEqual(beaconCount, 1, `${route} Cloudflare beacon count`);
+    assertEqual(beaconScripts.length, 1, `${route} Cloudflare beacon count`);
     assertEqual(configCount, 1, `${route} data-cf-beacon count`);
-    assertIncludes(html, 'type="module"', `${route} Cloudflare module script`);
+
+    const beaconScript = beaconScripts[0];
+    if (!beaconScript) {
+      throw new Error(`${route} is missing the Cloudflare beacon script.`);
+    }
+
+    const typeMatch = beaconScript.match(/\btype=["']([^"']+)["']/i);
+    assertEqual(
+      typeMatch?.[1]?.toLowerCase() ?? null,
+      "module",
+      `${route} Cloudflare beacon script type`,
+    );
+
+    if (!/\bdata-cf-beacon=["'][^"']+["']/i.test(beaconScript)) {
+      throw new Error(
+        `${route} Cloudflare beacon script is missing data-cf-beacon.`,
+      );
+    }
   } else {
-    assertEqual(beaconCount, 0, `${route} Cloudflare beacon count`);
+    assertEqual(beaconScripts.length, 0, `${route} Cloudflare beacon count`);
     assertEqual(configCount, 0, `${route} data-cf-beacon count`);
   }
 }
@@ -328,7 +336,11 @@ function parseExpectation(flag, value) {
 function parseTimeout(rawValue) {
   if (rawValue === null) return DEFAULT_TIMEOUT_MS;
 
-  const value = Number.parseInt(rawValue, 10);
+  if (!/^\d+$/.test(rawValue)) {
+    throw new Error("--timeout-ms must contain decimal digits only.");
+  }
+
+  const value = Number(rawValue);
   if (!Number.isInteger(value) || value < 1_000 || value > 60_000) {
     throw new Error("--timeout-ms must be an integer between 1000 and 60000.");
   }
@@ -416,6 +428,12 @@ function decodeXml(value) {
     .replaceAll("&gt;", ">")
     .replaceAll("&lt;", "<")
     .replaceAll("&amp;", "&");
+}
+
+function extractCloudflareBeaconScripts(html) {
+  return (html.match(/<script\b[^>]*>/gi) ?? []).filter((tag) =>
+    tag.includes(BEACON_URL),
+  );
 }
 
 function countOccurrences(actual, needle) {
@@ -518,6 +536,23 @@ function runSelfTest() {
     /canonical mismatch/,
   );
 
+  const wrongBeaconTypeHtml =
+    enabledHtml.replace(
+      '<script type="module" src=',
+      '<script type="text/javascript" src=',
+    ) + '<script type="module"></script>';
+  expectThrows(
+    () =>
+      verifyHtml({
+        html: wrongBeaconTypeHtml,
+        route: "/privacy",
+        origin,
+        indexing: "enabled",
+        analytics: "enabled",
+      }),
+    /beacon script type mismatch/,
+  );
+
   verifyRobots({
     text: "User-agent: *\nAllow: /\n",
     origin,
@@ -557,6 +592,7 @@ function runSelfTest() {
   );
   assertEqual(parseTimeout(null), DEFAULT_TIMEOUT_MS, "default timeout");
   expectThrows(() => parseTimeout("999"), /between 1000 and 60000/);
+  expectThrows(() => parseTimeout("10000oops"), /decimal digits only/);
 }
 
 function printHelp() {
