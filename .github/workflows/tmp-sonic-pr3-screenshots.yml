@@ -1,4 +1,4 @@
-name: Temporary Sonic Field PR3 visual QA export
+name: Temporary Sonic Field PR3 mobile visual QA
 
 on:
   push:
@@ -11,14 +11,74 @@ permissions:
   contents: read
 
 jobs:
-  export:
+  mobile:
     runs-on: ubuntu-24.04
-    timeout-minutes: 10
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Capture corrected 390px active-state screenshots
+        run: |
+          pnpm exec astro preview --host 127.0.0.1 > /tmp/pr3-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4321/tone-generator >/dev/null; then break; fi
+            sleep 1
+          done
+          mkdir -p /tmp/pr3-mobile
+          node <<'NODE'
+          const { chromium } = require('@playwright/test');
+          const routes = [
+            ['tone-generator', '/tone-generator', async (page) => {
+              await page.getByRole('button', { name: 'Play', exact: true }).click();
+            }],
+            ['frequency-sweep', '/frequency-sweep', async (page) => {
+              await page.getByRole('button', { name: 'Play sweep', exact: true }).click();
+            }],
+            ['bass-test', '/bass-test', async (page) => {
+              await page.locator('[data-bass-mode="sweep"]').click();
+              await page.locator('[data-bass-sweep-play]').click();
+            }],
+            ['noise-generator', '/noise-generator', async (page) => {
+              await page.locator('[data-noise-play]').click();
+            }],
+            ['sound-test', '/sound-test', async (page) => {
+              await page.locator('[data-sound-channel="left"]').click();
+            }],
+          ];
+          (async () => {
+            const browser = await chromium.launch();
+            for (const [name, route, activate] of routes) {
+              const page = await browser.newPage({ viewport: { width: 390, height: 844 } });
+              await page.goto(`http://127.0.0.1:4321${route}`, { waitUntil: 'networkidle' });
+              await activate(page);
+              await page.waitForTimeout(120);
+              await page.evaluate(() => window.scrollTo(0, 0));
+              await page.waitForTimeout(80);
+              await page.screenshot({
+                path: `/tmp/pr3-mobile/${name}-390x844-top.png`,
+                fullPage: false,
+              });
+              await page.close();
+            }
+            await browser.close();
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
       - uses: actions/upload-artifact@v4
         with:
-          name: pr3-visual-qa
-          path: .github/tmp-pr3-screenshots/pr3-visual-qa.pdf
+          name: pr3-mobile-visual-qa
+          path: /tmp/pr3-mobile/*.png
           if-no-files-found: error
           retention-days: 1
