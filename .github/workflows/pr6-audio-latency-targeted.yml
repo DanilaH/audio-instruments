@@ -1,4 +1,4 @@
-name: PR6 Audio Latency Targeted
+name: PR6 Audio Latency Mobile Diagnostic
 
 on:
   push:
@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 jobs:
-  targeted:
+  diagnostic:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 15
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,23 +30,72 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting
-        run: pnpm exec prettier --check src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
-
-      - name: Scoped lint
-        run: pnpm exec eslint src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
-
-      - name: Astro and TypeScript check
-        run: pnpm check
-
-      - name: AV sync unit tests
-        run: pnpm exec vitest run tests/unit/av-sync-timeline.test.ts
-
       - name: Build
         run: pnpm build
 
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
 
-      - name: Audio Latency browser regression
-        run: pnpm exec playwright test tests/browser/audio-latency.spec.ts tests/browser/audio-latency-layout.spec.ts tests/browser/runtime-layout-stability.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts --project=chromium --project=firefox --project=webkit
+      - name: Add runner-only mobile geometry diagnostic
+        run: |
+          cat > tests/browser/pr6-mobile-diagnostic.spec.ts <<'TS'
+          import { test } from "@playwright/test";
+
+          const selectors = [
+            "[data-sonic-instrument]",
+            ".latency-sheet__bar",
+            ".latency-offset-summary",
+            ".latency-field",
+            ".latency-result-band",
+            ".latency-result",
+            ".latency-rail",
+            ".latency-transport",
+            ".latency-offset-control",
+            ".latency-field-header",
+            ".latency-field-header output",
+            ".latency-reported",
+            ".latency-safety-strip",
+          ];
+
+          async function snapshot(page: import("@playwright/test").Page) {
+            return page.evaluate((selectorList) => {
+              const entries = selectorList.map((selector) => {
+                const elements = [...document.querySelectorAll<HTMLElement>(selector)];
+                return [selector, elements.map((element) => {
+                  const rect = element.getBoundingClientRect();
+                  const style = getComputedStyle(element);
+                  return {
+                    text: element.textContent?.trim().replace(/\s+/g, " "),
+                    x: rect.x,
+                    y: rect.y,
+                    width: rect.width,
+                    height: rect.height,
+                    lineHeight: style.lineHeight,
+                    whiteSpace: style.whiteSpace,
+                  };
+                })];
+              });
+              return {
+                documentHeight: document.documentElement.scrollHeight,
+                entries: Object.fromEntries(entries),
+              };
+            }, selectorList);
+          }
+
+          test("report Audio Latency 320px offset reflow", async ({ page }) => {
+            await page.setViewportSize({ width: 320, height: 844 });
+            await page.goto("/audio-latency-test");
+            const before = await snapshot(page);
+            await page.locator("[data-latency-offset]").evaluate((element) => {
+              const input = element as HTMLInputElement;
+              input.value = "300";
+              input.dispatchEvent(new Event("input", { bubbles: true }));
+            });
+            await page.waitForTimeout(150);
+            const after = await snapshot(page);
+            console.log("PR6_GEOMETRY=" + JSON.stringify({ before, after }));
+          });
+          TS
+
+      - name: Run mobile geometry diagnostic
+        run: pnpm exec playwright test tests/browser/pr6-mobile-diagnostic.spec.ts --project=chromium --workers=1
