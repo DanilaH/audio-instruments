@@ -645,7 +645,9 @@ export class SpeakerTestController {
 
   #setControlsActive(active: boolean): void {
     const disableStarts = active || this.#starting;
-    for (const button of this.#channelButtons) button.disabled = disableStarts;
+    for (const button of this.#channelButtons) {
+      button.disabled = disableStarts || this.#mode !== "channel";
+    }
     this.#sequenceButton.disabled = disableStarts;
     this.#sweepButton.disabled = disableStarts;
     this.#bassButton.disabled = disableStarts;
@@ -669,6 +671,12 @@ export class SpeakerTestController {
   #setVisual(state: SpeakerVisualState, label: string): void {
     this.#root.dataset.speakerVisual = state;
     this.#visualLabel.textContent = label;
+    for (const button of this.#channelButtons) {
+      button.setAttribute(
+        "aria-pressed",
+        String(button.dataset.speakerChannel === state),
+      );
+    }
   }
 
   #setStatus(state: string, label: string): void {

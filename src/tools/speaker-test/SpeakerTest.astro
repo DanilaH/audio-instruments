@@ -1,47 +1,78 @@
 ---
 import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
-import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 import LevelControl from "../../components/controls/LevelControl.astro";
 ---
 
 <div data-speaker-test data-speaker-mode="channel" data-speaker-visual="idle">
-  <InstrumentSurface label="Speaker Test controls" accent="peach">
-    <div class="speaker-instrument">
-      <section class="speaker-visual" aria-label="Speaker Test visualization">
-        <div class="speaker-visual__header">
-          <ToolStatus id="speaker-status" label="Ready" state="idle" />
-          <span class="speaker-visual__mode" data-speaker-visual-label
-            >Ready</span
-          >
+  <SonicInstrument label="Speaker Test controls" class="speaker-sheet">
+    <div class="speaker-sheet__bar">
+      <ToolStatus id="speaker-status" label="Ready" state="idle" />
+      <div class="speaker-sheet__state">
+        <span>Requested target</span>
+        <strong data-speaker-visual-label>Ready</strong>
+      </div>
+    </div>
+
+    <section class="speaker-field" aria-label="Speaker stereo field">
+      <div class="speaker-field__heading">
+        <div>
+          <span>Stereo field</span>
+          <strong>Choose the output path you want to verify</strong>
         </div>
+        <span class="speaker-field__reference">500 Hz · 700 ms reference</span>
+      </div>
 
-        <div class="speaker-stage" aria-hidden="true">
-          <div class="speaker-node speaker-node--left">
-            <span class="speaker-node__ring"></span>
-            <strong>L</strong>
-          </div>
-          <div class="speaker-signal">
-            <i class="ph ph-wave-sine"></i>
-          </div>
-          <div class="speaker-node speaker-node--right">
-            <span class="speaker-node__ring"></span>
-            <strong>R</strong>
-          </div>
-        </div>
+      <div class="speaker-stage" data-speaker-stage>
+        <span class="speaker-stage__axis" aria-hidden="true"></span>
+        <button
+          type="button"
+          class="speaker-node speaker-node--left"
+          data-speaker-channel="left"
+          data-speaker-anchor="left"
+          aria-pressed="false"
+          aria-label="Left"
+        >
+          <span class="speaker-node__driver" aria-hidden="true"></span>
+          <strong>L</strong><small>Left</small>
+        </button>
+        <button
+          type="button"
+          class="speaker-node speaker-node--both"
+          data-speaker-channel="both"
+          data-speaker-anchor="center"
+          aria-pressed="false"
+          aria-label="Both"
+        >
+          <span class="speaker-node__signal" aria-hidden="true">∿</span>
+          <strong>Both</strong><small>Centered</small>
+        </button>
+        <button
+          type="button"
+          class="speaker-node speaker-node--right"
+          data-speaker-channel="right"
+          data-speaker-anchor="right"
+          aria-pressed="false"
+          aria-label="Right"
+        >
+          <span class="speaker-node__driver" aria-hidden="true"></span>
+          <strong>R</strong><small>Right</small>
+        </button>
+      </div>
 
-        <div class="speaker-meter" aria-hidden="true">
-          <span></span><span></span><span></span><span></span><span></span>
-        </div>
+      <div class="speaker-meter" aria-hidden="true">
+        <span></span><span></span><span></span><span></span><span></span>
+      </div>
+      <p class="speaker-field__note">
+        Requested digital routing only. Confirm missing output, distortion,
+        rattle, imbalance or phase-image changes by listening.
+      </p>
+    </section>
 
-        <p class="speaker-visual__note">
-          Visual state follows the requested digital test signal. Confirm
-          missing output, distortion, rattle, imbalance or phase-image changes
-          by listening.
-        </p>
-      </section>
-
-      <section class="speaker-controls" aria-label="Speaker Test actions">
+    <section class="speaker-rail" aria-label="Speaker Test actions">
+      <div class="speaker-rail__modes">
+        <span class="speaker-rail__label">Mode</span>
         <div class="speaker-mode-switcher" aria-label="Speaker Test mode">
           <button type="button" data-speaker-mode="channel" aria-pressed="true"
             >Channel</button
@@ -56,38 +87,28 @@ import LevelControl from "../../components/controls/LevelControl.astro";
             >Bass / rattle</button
           >
         </div>
+      </div>
 
-        <div class="speaker-safety">
-          <i class="ph ph-speaker-low" aria-hidden="true"></i>
-          <p>
-            Start with your device/headphone volume low. Increase it only to a
-            comfortable listening level. Do not turn the volume up to compensate
-            for a tone you cannot hear.
-          </p>
-        </div>
-
-        <CapabilityNotice id="speaker-frequency-cap" message="" />
-
+      <div class="speaker-mode-slot">
         <div class="speaker-panel" data-speaker-panel="channel">
           <div class="speaker-panel__heading">
-            <strong>Channel check</strong>
-            <span>500 Hz · 700 ms per burst</span>
+            <span>Channel check</span>
+            <strong>Direct L / Both / R targets live in the field</strong>
+            <p>
+              Run the automatic sequence when you want a hands-off comparison.
+            </p>
           </div>
-          <div class="speaker-actions speaker-actions--three">
-            <button type="button" data-speaker-channel="left">Left</button>
-            <button type="button" data-speaker-channel="both">Both</button>
-            <button type="button" data-speaker-channel="right">Right</button>
-          </div>
-          <button type="button" class="speaker-primary" data-speaker-sequence>
-            <i class="ph ph-play" aria-hidden="true"></i>
-            Run Left → Both → Right
-          </button>
+          <button type="button" class="speaker-primary" data-speaker-sequence
+            >Run Left → Both → Right</button
+          >
         </div>
-
         <div class="speaker-panel" data-speaker-panel="phase" hidden>
           <div class="speaker-panel__heading">
-            <strong>Phase comparison</strong>
-            <span>Same correlated pink-noise source and playback position</span>
+            <span>Phase comparison</span><strong>Correlated pink noise</strong>
+            <p>
+              Same source and playback position; only right-channel polarity
+              changes.
+            </p>
           </div>
           <div class="speaker-actions speaker-actions--two">
             <button type="button" data-speaker-phase-in aria-pressed="false"
@@ -103,23 +124,18 @@ import LevelControl from "../../components/controls/LevelControl.astro";
             type="button"
             class="speaker-primary"
             data-speaker-phase-toggle
-            disabled
+            disabled>A/B toggle</button
           >
-            <i class="ph ph-arrows-left-right" aria-hidden="true"></i>
-            A/B toggle
-          </button>
         </div>
-
         <div class="speaker-panel" data-speaker-panel="sweep" hidden>
           <div class="speaker-panel__heading">
-            <strong>Frequency sweep</strong>
-            <span>10 s logarithmic · default 100 → 10,000 Hz</span>
+            <span>Frequency sweep</span><strong>10 s logarithmic sweep</strong>
+            <p>Default 100 → 10,000 Hz.</p>
           </div>
           <div class="speaker-sweep-fields">
-            <label>
-              <span>Low</span>
-              <span class="speaker-field">
-                <input
+            <label
+              ><span>Low</span><span class="speaker-field-input"
+                ><input
                   id="speaker-sweep-low"
                   type="number"
                   min="20"
@@ -127,14 +143,12 @@ import LevelControl from "../../components/controls/LevelControl.astro";
                   step="1"
                   value="100"
                   inputmode="decimal"
-                />
-                Hz
-              </span>
-            </label>
-            <label>
-              <span>High</span>
-              <span class="speaker-field">
-                <input
+                /> Hz</span
+              ></label
+            >
+            <label
+              ><span>High</span><span class="speaker-field-input"
+                ><input
                   id="speaker-sweep-high"
                   type="number"
                   min="20"
@@ -142,44 +156,45 @@ import LevelControl from "../../components/controls/LevelControl.astro";
                   step="1"
                   value="10000"
                   inputmode="decimal"
-                />
-                Hz
-              </span>
-            </label>
+                /> Hz</span
+              ></label
+            >
           </div>
-          <button type="button" class="speaker-primary" data-speaker-sweep>
-            <i class="ph ph-chart-line-up" aria-hidden="true"></i>
-            Run speaker sweep
-          </button>
+          <button type="button" class="speaker-primary" data-speaker-sweep
+            >Run speaker sweep</button
+          >
         </div>
-
         <div class="speaker-panel" data-speaker-panel="bass" hidden>
           <div class="speaker-panel__heading">
-            <strong>Bass / rattle</strong>
-            <span>40 → 120 Hz · 12 s logarithmic slow sweep</span>
+            <span>Bass / rattle</span><strong>40 → 120 Hz · 12 s</strong>
+            <p>Listen for buzzing, rattles or resonances at moderate volume.</p>
           </div>
-          <p class="speaker-panel__copy">
-            Listen for buzzing, rattles or resonances at moderate volume. Do not
-            raise system volume to chase hard-to-hear lows.
-          </p>
-          <button type="button" class="speaker-primary" data-speaker-bass>
-            <i class="ph ph-waveform" aria-hidden="true"></i>
-            Run bass / rattle sweep
-          </button>
+          <button type="button" class="speaker-primary" data-speaker-bass
+            >Run bass / rattle sweep</button
+          >
         </div>
+      </div>
 
-        <div class="speaker-footer-controls">
-          <LevelControl id="speaker-level" valueDb={-24} />
-          <button type="button" class="speaker-stop" data-speaker-stop disabled>
-            <i class="ph ph-stop" aria-hidden="true"></i>
-            Stop
-          </button>
-        </div>
+      <div class="speaker-level">
+        <LevelControl id="speaker-level" valueDb={-24} />
+      </div>
+      <button type="button" class="speaker-stop" data-speaker-stop disabled
+        ><span class="transport-stop-shape" aria-hidden="true"
+        ></span>Stop</button
+      >
+    </section>
 
-        <p class="speaker-error" data-speaker-error role="alert" hidden></p>
-      </section>
+    <div class="speaker-state-strip">
+      <strong>Low volume</strong>
+      <p>
+        Start with your device/headphone volume low. Increase it only to a
+        comfortable listening level. Do not turn the volume up to compensate for
+        a tone you cannot hear.
+      </p>
     </div>
-  </InstrumentSurface>
+    <CapabilityNotice id="speaker-frequency-cap" message="" />
+    <p class="speaker-error" data-speaker-error role="alert" hidden></p>
+  </SonicInstrument>
 </div>
 
 <script>
@@ -206,99 +221,148 @@ import LevelControl from "../../components/controls/LevelControl.astro";
 </script>
 
 <style>
-  .speaker-instrument {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) minmax(410px, 1fr);
-    min-height: 430px;
-  }
-
-  .speaker-visual,
-  .speaker-controls {
-    min-width: 0;
-    padding: clamp(20px, 2.7vw, 30px);
-  }
-
-  .speaker-visual {
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    border-right: 1px solid var(--color-border);
-    background:
-      radial-gradient(
-        circle at 50% 52%,
-        rgb(255 181 141 / 0.2),
-        transparent 34%
-      ),
-      linear-gradient(145deg, rgb(255 253 252 / 0.94), rgb(255 247 242 / 0.76));
-  }
-
-  .speaker-visual__header {
+  .speaker-sheet__bar {
     display: flex;
-    align-items: flex-start;
+    min-height: 48px;
+    align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 18px;
+    padding: 6px 18px;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
-
-  .speaker-visual__mode {
-    max-width: 220px;
-    color: var(--color-ink-muted);
-    font-size: 0.82rem;
-    font-weight: 750;
+  .speaker-sheet__state {
+    display: grid;
+    justify-items: end;
+    gap: 1px;
+    min-width: 0;
     text-align: right;
   }
-
-  .speaker-stage {
-    display: grid;
-    grid-template-columns: minmax(100px, 1fr) 44px minmax(100px, 1fr);
-    align-items: center;
-    gap: clamp(14px, 3vw, 34px);
-    width: min(100%, 520px);
-    margin: 12px auto 4px;
+  .speaker-sheet__state span,
+  .speaker-field__heading > div > span,
+  .speaker-rail__label,
+  .speaker-panel__heading > span {
+    color: var(--sonic-muted);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
   }
-
-  .speaker-node {
+  .speaker-sheet__state strong {
+    max-width: 280px;
+    overflow: hidden;
+    font-size: 0.82rem;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .speaker-field {
+    display: grid;
+    gap: 8px;
+    min-height: 244px;
+    padding: 16px 22px 14px;
+    border-bottom: 1px solid var(--sonic-border);
+    background: var(--sonic-field);
+  }
+  .speaker-field__heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .speaker-field__heading > div {
+    display: grid;
+    gap: 2px;
+  }
+  .speaker-field__heading strong {
+    font-size: 0.88rem;
+  }
+  .speaker-field__reference {
+    color: var(--sonic-muted);
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
+  .speaker-stage {
     position: relative;
     display: grid;
-    aspect-ratio: 1;
-    place-items: center;
-    max-width: 172px;
-    border: 1px solid var(--color-border);
-    border-radius: 36%;
-    background: var(--color-surface);
-    color: var(--color-ink-muted);
-    box-shadow: 0 18px 44px rgb(31 36 48 / 0.06);
-    transition:
-      transform 160ms ease,
-      color 160ms ease,
-      border-color 160ms ease,
-      box-shadow 160ms ease;
+    grid-template-columns: minmax(118px, 1fr) minmax(96px, 0.74fr) minmax(
+        118px,
+        1fr
+      );
+    align-items: center;
+    gap: clamp(18px, 5vw, 72px);
+    width: min(100%, 720px);
+    min-height: 126px;
+    margin-inline: auto;
   }
-
+  .speaker-stage__axis {
+    position: absolute;
+    z-index: 0;
+    top: 50%;
+    right: 8%;
+    left: 8%;
+    height: 1px;
+    background: var(--sonic-border);
+  }
+  .speaker-node {
+    position: relative;
+    z-index: 2;
+    display: grid;
+    min-width: 0;
+    min-height: 100px;
+    place-items: center;
+    align-content: center;
+    gap: 2px;
+    padding: 10px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 8px;
+    background: rgb(238 234 224 / 0.88);
+    color: var(--sonic-ink);
+    cursor: pointer;
+    transition:
+      border-color 120ms ease,
+      background-color 120ms ease,
+      color 120ms ease;
+  }
   .speaker-node strong {
     position: relative;
     z-index: 2;
-    font-size: clamp(1.45rem, 3.5vw, 2.5rem);
+    font-size: 1.55rem;
   }
-
-  .speaker-node__ring {
+  .speaker-node small {
+    position: relative;
+    z-index: 2;
+    color: var(--sonic-muted);
+    font-size: 0.67rem;
+    font-weight: 750;
+    letter-spacing: 0.05em;
+    text-transform: uppercase;
+  }
+  .speaker-node__driver {
     position: absolute;
-    width: 56%;
-    aspect-ratio: 1;
-    border: 8px solid currentColor;
-    border-radius: 999px;
-    opacity: 0.12;
+    width: 48px;
+    height: 48px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    opacity: 0.24;
   }
-
-  .speaker-signal {
-    display: grid;
-    width: 44px;
-    height: 44px;
-    place-items: center;
-    border-radius: 999px;
-    background: rgb(255 181 141 / 0.22);
-    color: #a85229;
-    font-size: 1.2rem;
+  .speaker-node__driver::after {
+    position: absolute;
+    inset: 9px;
+    border: 1px solid currentColor;
+    border-radius: 50%;
+    content: "";
   }
-
+  .speaker-node__signal {
+    position: absolute;
+    top: 8px;
+    color: var(--sonic-muted);
+    font-size: 1.15rem;
+  }
+  .speaker-node[aria-pressed="true"] {
+    border-color: var(--sonic-signal);
+    background: #eef0e7;
+    color: var(--sonic-signal);
+  }
   [data-speaker-visual="left"] .speaker-node--left,
   [data-speaker-visual="both"] .speaker-node,
   [data-speaker-visual="right"] .speaker-node--right,
@@ -306,315 +370,303 @@ import LevelControl from "../../components/controls/LevelControl.astro";
   [data-speaker-visual="phase-inverted"] .speaker-node,
   [data-speaker-visual="sweep"] .speaker-node,
   [data-speaker-visual="bass"] .speaker-node {
-    transform: translateY(-3px);
-    border-color: rgb(168 82 41 / 0.34);
-    color: #98502c;
-    box-shadow: 0 18px 48px rgb(168 82 41 / 0.14);
+    border-color: var(--sonic-signal);
   }
-
   [data-speaker-visual="phase-inverted"] .speaker-node--right {
-    transform: translateY(3px) scaleY(-1);
+    border-style: dashed;
+    color: var(--sonic-opposing);
   }
-
   .speaker-meter {
     display: flex;
+    min-height: 24px;
     align-items: end;
     justify-content: center;
     gap: 5px;
-    min-height: 28px;
   }
-
   .speaker-meter span {
     width: 5px;
-    height: 8px;
-    border-radius: 999px;
-    background: rgb(168 82 41 / 0.2);
+    height: 7px;
+    border-radius: 1px;
+    background: rgb(39 127 138 / 0.28);
     transition:
       height 160ms ease,
       opacity 160ms ease;
   }
-
   [data-speaker-visual="sweep"] .speaker-meter span:nth-child(1),
   [data-speaker-visual="bass"] .speaker-meter span:nth-child(5) {
-    height: 24px;
+    height: 22px;
   }
-
   [data-speaker-visual="sweep"] .speaker-meter span:nth-child(2),
   [data-speaker-visual="bass"] .speaker-meter span:nth-child(4) {
-    height: 18px;
+    height: 16px;
   }
-
   [data-speaker-visual="sweep"] .speaker-meter span:nth-child(3),
   [data-speaker-visual="bass"] .speaker-meter span:nth-child(3) {
-    height: 13px;
+    height: 12px;
   }
-
-  .speaker-visual__note,
-  .speaker-panel__heading span,
-  .speaker-panel__copy {
-    color: var(--color-ink-muted);
-    font-size: 0.78rem;
-    line-height: 1.45;
+  .speaker-field__note {
+    margin: 0;
+    color: var(--sonic-muted);
+    font-size: 0.71rem;
+    line-height: 1.35;
   }
-
-  .speaker-visual__note {
-    max-width: 540px;
-    margin: 8px auto 0;
-    text-align: center;
+  .speaker-rail {
+    display: grid;
+    grid-template-columns:
+      minmax(220px, 0.78fr) minmax(350px, 1.35fr) minmax(180px, 0.65fr)
+      110px;
+    min-height: 178px;
+    align-items: stretch;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
-
-  .speaker-controls {
+  .speaker-rail > * {
+    min-width: 0;
+    padding: 12px 14px;
+  }
+  .speaker-rail > * + * {
+    border-left: 1px solid var(--sonic-border-soft);
+  }
+  .speaker-rail__modes {
     display: grid;
     align-content: start;
-    gap: 10px;
-    background: rgb(255 253 252 / 0.78);
+    gap: 7px;
   }
-
   .speaker-mode-switcher {
     display: grid;
-    grid-template-columns: repeat(4, minmax(0, 1fr));
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 6px;
-    padding: 5px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-button);
-    background: rgb(31 36 48 / 0.035);
   }
-
-  .speaker-mode-switcher button {
+  .speaker-rail button,
+  .speaker-panel button,
+  .speaker-stop {
     min-height: 44px;
-    padding: 0 8px;
-    border: 0;
-    border-radius: calc(var(--radius-button) - 5px);
+    border: 1px solid var(--sonic-border);
+    border-radius: 5px;
     background: transparent;
-    color: var(--color-ink-muted);
-    font-size: 0.82rem;
-    font-weight: 800;
+    color: var(--sonic-ink);
     cursor: pointer;
+    font-weight: 800;
   }
-
-  .speaker-mode-switcher button[aria-pressed="true"] {
-    background: var(--color-surface);
-    color: var(--color-ink);
-    box-shadow: 0 4px 14px rgb(31 36 48 / 0.07);
+  .speaker-rail button[aria-pressed="true"],
+  .speaker-panel button[aria-pressed="true"] {
+    border-color: var(--sonic-signal);
+    background: rgb(39 127 138 / 0.07);
+    color: #0b6570;
   }
-
-  .speaker-safety {
-    display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 9px;
-    padding: 9px 11px;
-    border-radius: var(--radius-control);
-    background: rgb(255 215 106 / 0.18);
+  .speaker-mode-slot {
+    position: relative;
+    min-height: 176px;
+    overflow: hidden;
   }
-
-  .speaker-safety p,
-  .speaker-error {
-    margin: 0;
-    font-size: 0.78rem;
-    line-height: 1.4;
-  }
-
   .speaker-panel {
+    position: absolute;
+    inset: 12px 14px;
     display: grid;
-    gap: 9px;
-    min-height: 167px;
+    align-content: start;
+    gap: 7px;
   }
-
   .speaker-panel[hidden] {
     display: none;
   }
-
   .speaker-panel__heading {
     display: grid;
-    gap: 2px;
+    gap: 1px;
   }
-
+  .speaker-panel__heading strong {
+    font-size: 0.86rem;
+  }
+  .speaker-panel__heading p {
+    margin: 0;
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+    line-height: 1.35;
+  }
   .speaker-actions {
     display: grid;
-    gap: 7px;
+    gap: 6px;
   }
-
-  .speaker-actions--three {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
   .speaker-actions--two {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
-
-  .speaker-actions button,
-  .speaker-primary,
-  .speaker-stop {
-    min-height: 46px;
-    border-radius: var(--radius-button);
-    font-weight: 800;
-    cursor: pointer;
-  }
-
-  .speaker-actions button {
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-ink);
-  }
-
-  .speaker-actions button[aria-pressed="true"] {
-    border-color: rgb(168 82 41 / 0.38);
-    background: #fff5ef;
-  }
-
-  .speaker-primary,
-  .speaker-stop {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 7px;
-  }
-
   .speaker-primary {
-    border: 0;
-    background: var(--color-ink);
-    color: var(--color-surface);
+    width: 100%;
+    border-color: var(--sonic-ink) !important;
+    background: var(--sonic-ink) !important;
+    color: #f7f6ef !important;
   }
-
   .speaker-sweep-fields {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 8px;
   }
-
   .speaker-sweep-fields label {
     display: grid;
-    gap: 4px;
-    color: var(--color-ink-muted);
-    font-size: 0.78rem;
-    font-weight: 700;
+    gap: 3px;
+    min-width: 0;
+    color: var(--sonic-muted);
+    font-size: 0.67rem;
+    font-weight: 800;
   }
-
-  .speaker-field {
+  .speaker-field-input {
     display: grid;
-    grid-template-columns: 1fr auto;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-items: center;
-    gap: 6px;
+    gap: 5px;
   }
-
-  .speaker-field input {
+  .speaker-field-input input {
     width: 100%;
-    min-height: 42px;
-    padding: 0 10px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-ink);
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 9px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 5px;
+    background: #f7f6ef;
+    color: var(--sonic-ink);
+    font-weight: 800;
   }
-
-  .speaker-panel__copy {
-    margin: 0;
+  .speaker-level {
+    display: flex;
+    align-items: center;
   }
-
-  .speaker-footer-controls {
-    display: grid;
-    grid-template-columns: minmax(0, 1fr) 120px;
-    align-items: end;
-    gap: 12px;
-    padding-top: 8px;
-    border-top: 1px solid var(--color-border);
+  .speaker-level :global(.level-control) {
+    width: 100%;
   }
-
   .speaker-stop {
-    min-height: 48px;
-    border: 1px solid var(--color-border);
-    background: transparent;
-    color: var(--color-ink);
+    align-self: center;
+    margin: 12px;
+    padding: 0 10px;
   }
-
-  button:disabled,
-  input:disabled {
+  .transport-stop-shape {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    margin-right: 7px;
+    border-radius: 1px;
+    background: currentColor;
+  }
+  .speaker-stop:disabled {
+    color: #8a9695;
     cursor: not-allowed;
-    opacity: 0.48;
   }
-
+  .speaker-state-strip {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 18px;
+    color: var(--sonic-muted);
+  }
+  .speaker-state-strip strong {
+    color: var(--sonic-current);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .speaker-state-strip p,
   .speaker-error {
-    padding: 10px 12px;
-    border-radius: var(--radius-control);
-    background: rgb(155 47 47 / 0.08);
-    color: #7f2929;
+    margin: 0;
+    font-size: 0.7rem;
+    line-height: 1.35;
   }
-
+  .speaker-error {
+    padding: 8px 18px 10px;
+    color: var(--sonic-opposing);
+  }
   .speaker-error[hidden] {
     display: none;
   }
-
-  @media (max-width: 940px) {
-    .speaker-instrument {
-      grid-template-columns: 1fr;
+  button:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+  @media (min-width: 981px) and (max-height: 920px) {
+    .speaker-field {
+      min-height: 218px;
+      padding-block: 12px 10px;
     }
-
-    .speaker-visual {
-      min-height: 260px;
-      border-right: 0;
-      border-bottom: 1px solid var(--color-border);
+    .speaker-stage {
+      min-height: 108px;
+    }
+    .speaker-node {
+      min-height: 88px;
+    }
+    .speaker-rail {
+      min-height: 162px;
+    }
+    .speaker-rail > * {
+      padding-block: 10px;
+    }
+    .speaker-mode-slot {
+      min-height: 158px;
+    }
+    .speaker-panel {
+      inset-block: 10px;
     }
   }
-
-  @media (max-width: 560px) {
-    .speaker-visual {
-      min-height: 190px;
-      padding: 14px 20px;
+  @media (max-width: 980px) {
+    .speaker-rail {
+      grid-template-columns: 1fr 1.25fr;
     }
-
-    .speaker-controls {
-      padding: 14px 20px 18px;
+    .speaker-rail > *:nth-child(3) {
+      border-left: 0;
+      border-top: 1px solid var(--sonic-border-soft);
     }
-
-    .speaker-stage {
-      grid-template-columns: 84px 30px 84px;
-      justify-content: center;
-      gap: 8px;
-      margin: 3px auto 0;
+    .speaker-rail > *:nth-child(4) {
+      border-top: 1px solid var(--sonic-border-soft);
     }
-
-    .speaker-node {
-      width: 84px;
+  }
+  @media (max-width: 620px) {
+    .speaker-sheet__bar {
+      padding-inline: 14px;
     }
-
-    .speaker-signal {
-      width: 30px;
-      height: 30px;
+    .speaker-field {
+      min-height: 220px;
+      padding: 13px 14px 11px;
     }
-
-    .speaker-meter,
-    .speaker-visual__note {
+    .speaker-field__heading {
+      align-items: start;
+    }
+    .speaker-field__reference {
       display: none;
     }
-
-    .speaker-mode-switcher {
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .speaker-stage {
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      min-height: 94px;
     }
-
-    .speaker-panel {
-      min-height: 168px;
+    .speaker-node {
+      min-height: 82px;
+      padding: 7px 4px;
     }
-  }
-
-  @media (max-width: 340px) {
-    .speaker-panel {
-      min-height: 194px;
+    .speaker-node strong {
+      font-size: 1.2rem;
     }
-
-    .speaker-footer-controls {
+    .speaker-node__driver {
+      width: 38px;
+      height: 38px;
+    }
+    .speaker-node small {
+      font-size: 0.6rem;
+    }
+    .speaker-rail {
       grid-template-columns: 1fr;
-      gap: 6px;
+    }
+    .speaker-rail > * + * {
+      border-left: 0;
+      border-top: 1px solid var(--sonic-border-soft);
+    }
+    .speaker-mode-slot {
+      min-height: 174px;
+    }
+    .speaker-state-strip {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding-inline: 14px;
     }
   }
-
   @media (prefers-reduced-motion: reduce) {
     .speaker-node,
     .speaker-meter span {
       transition: none;
-    }
-
-    [data-speaker-visual] .speaker-node {
-      transform: none;
     }
   }
 </style>

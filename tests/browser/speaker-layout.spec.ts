@@ -70,3 +70,53 @@ for (const scenario of [
     await expectNoHorizontalOverflow(page);
   });
 }
+
+test("Speaker spatial anchors stay fixed across mode changes", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/speaker-test");
+  const anchors = page.locator("[data-speaker-anchor]");
+  const before = await anchors.evaluateAll((elements) =>
+    elements.map((element) => {
+      const box = element.getBoundingClientRect();
+      return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+    }),
+  );
+  for (const name of ["Phase", "Sweep", "Bass / rattle", "Channel"]) {
+    await page.getByRole("button", { name, exact: true }).click();
+    const after = await anchors.evaluateAll((elements) =>
+      elements.map((element) => {
+        const box = element.getBoundingClientRect();
+        return { x: box.x + box.width / 2, y: box.y + box.height / 2 };
+      }),
+    );
+    expect(after).toEqual(before);
+  }
+});
+
+test("Speaker channel targets are disabled outside Channel mode", async ({
+  page,
+}) => {
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/speaker-test");
+
+  const targets = ["Left", "Both", "Right"] as const;
+  for (const name of targets) {
+    await expect(page.getByRole("button", { name, exact: true })).toBeEnabled();
+  }
+
+  for (const mode of ["Phase", "Sweep", "Bass / rattle"] as const) {
+    await page.getByRole("button", { name: mode, exact: true }).click();
+    for (const name of targets) {
+      await expect(
+        page.getByRole("button", { name, exact: true }),
+      ).toBeDisabled();
+    }
+  }
+
+  await page.getByRole("button", { name: "Channel", exact: true }).click();
+  for (const name of targets) {
+    await expect(page.getByRole("button", { name, exact: true })).toBeEnabled();
+  }
+});

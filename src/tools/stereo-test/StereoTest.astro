@@ -1,88 +1,99 @@
 ---
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
-import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 ---
 
 <div data-stereo-test data-stereo-visual="center">
-  <InstrumentSurface label="Stereo Test output controls" accent="lavender">
-    <div class="stereo-instrument">
-      <section class="stereo-visual" aria-label="Stereo position visualization">
-        <div class="stereo-visual__header">
-          <ToolStatus id="stereo-status" label="Ready" state="idle" />
-          <div class="stereo-reference">
-            <strong>500 Hz</strong>
-            <span>700 ms static · 4 s pan</span>
-          </div>
-        </div>
-
-        <div class="stereo-track" aria-hidden="true">
-          <span class="stereo-track__rail"></span>
-          <span class="stereo-track__trail stereo-track__trail--one"></span>
-          <span class="stereo-track__trail stereo-track__trail--two"></span>
-          <span class="stereo-track__signal"
-            ><i class="ph ph-wave-sine"></i></span
-          >
-          <span class="stereo-track__label stereo-track__label--left">L</span>
-          <span class="stereo-track__label stereo-track__label--center">C</span>
-          <span class="stereo-track__label stereo-track__label--right">R</span>
-        </div>
-
-        <p class="stereo-position">
-          Digital target: <strong data-stereo-position-label>None</strong>
-        </p>
-        <p class="stereo-visual__note">
-          Static Center uses explicit equal Left + Right routing. Pan sweeps use
-          continuous stereo panning and do not verify physical speaker
-          placement.
-        </p>
-      </section>
-
-      <section class="stereo-controls" aria-label="Stereo Test actions">
-        <div class="stereo-safety">
-          <i class="ph ph-speaker-low" aria-hidden="true"></i>
-          <p>
-            Start with your device/headphone volume low. Increase it only to a
-            comfortable listening level. Do not turn the volume up to compensate
-            for a tone you cannot hear.
-          </p>
-        </div>
-
-        <div class="stereo-group">
-          <div>
-            <strong>Static position</strong>
-            <span>Same short reference burst in each position.</span>
-          </div>
-          <div class="stereo-actions stereo-actions--static">
-            <button type="button" data-stereo-action="left">Left</button>
-            <button type="button" data-stereo-action="center">Center</button>
-            <button type="button" data-stereo-action="right">Right</button>
-          </div>
-        </div>
-
-        <div class="stereo-group">
-          <div>
-            <strong>Pan sweep</strong>
-            <span>Linear movement over four seconds.</span>
-          </div>
-          <div class="stereo-actions stereo-actions--pan">
-            <button type="button" data-stereo-action="left-to-right"
-              >L → R</button
-            >
-            <button type="button" data-stereo-action="right-to-left"
-              >R → L</button
-            >
-          </div>
-        </div>
-
-        <button type="button" class="stereo-stop" data-stereo-stop disabled>
-          <i class="ph ph-stop" aria-hidden="true"></i>
-          Stop
-        </button>
-
-        <p class="stereo-error" data-stereo-error role="alert" hidden></p>
-      </section>
+  <SonicInstrument label="Stereo Test output controls" class="stereo-sheet">
+    <div class="stereo-sheet__bar">
+      <ToolStatus id="stereo-status" label="Ready" state="idle" />
+      <div class="stereo-sheet__state">
+        <span>Digital target</span><strong data-stereo-position-label
+          >None</strong
+        >
+      </div>
     </div>
-  </InstrumentSurface>
+
+    <section class="stereo-field" aria-label="Stereo position field">
+      <div class="stereo-field__heading">
+        <div>
+          <span>Stereo position</span><strong
+            >Choose a fixed target or run a pan across the field</strong
+          >
+        </div>
+        <span class="stereo-field__reference"
+          >500 Hz · 700 ms static · 4 s pan</span
+        >
+      </div>
+      <div class="stereo-track" data-stereo-track>
+        <span class="stereo-track__rail" aria-hidden="true"></span>
+        <span
+          class="stereo-track__trail stereo-track__trail--one"
+          aria-hidden="true"></span>
+        <span
+          class="stereo-track__trail stereo-track__trail--two"
+          aria-hidden="true"></span>
+        <span class="stereo-track__signal" aria-hidden="true">∿</span>
+        <button
+          type="button"
+          class="stereo-track__target stereo-track__target--left"
+          data-stereo-action="left"
+          aria-pressed="false">Left</button
+        >
+        <button
+          type="button"
+          class="stereo-track__target stereo-track__target--center"
+          data-stereo-action="center"
+          aria-pressed="false">Center</button
+        >
+        <button
+          type="button"
+          class="stereo-track__target stereo-track__target--right"
+          data-stereo-action="right"
+          aria-pressed="false">Right</button
+        >
+      </div>
+      <p class="stereo-field__note">
+        Static Center uses explicit equal Left + Right routing. Pan sweeps use
+        continuous stereo panning and do not verify physical speaker placement.
+      </p>
+    </section>
+
+    <section class="stereo-rail" aria-label="Stereo Test actions">
+      <div class="stereo-pan-copy">
+        <span>Pan sweep</span><strong>Linear movement over four seconds</strong
+        ><p>
+          Natural completion returns the marker to centre after playback has
+          already stopped.
+        </p>
+      </div>
+      <div class="stereo-pan-actions">
+        <button
+          type="button"
+          data-stereo-action="left-to-right"
+          aria-pressed="false">L → R</button
+        >
+        <button
+          type="button"
+          data-stereo-action="right-to-left"
+          aria-pressed="false">R → L</button
+        >
+      </div>
+      <button type="button" class="stereo-stop" data-stereo-stop disabled
+        ><span class="transport-stop-shape" aria-hidden="true"
+        ></span>Stop</button
+      >
+    </section>
+
+    <div class="stereo-state-strip">
+      <strong>Low volume</strong><p>
+        Start with your device/headphone volume low. Increase it only to a
+        comfortable listening level. Do not turn the volume up to compensate for
+        a tone you cannot hear.
+      </p>
+    </div>
+    <p class="stereo-error" data-stereo-error role="alert" hidden></p>
+  </SonicInstrument>
 </div>
 
 <script>
@@ -109,324 +120,366 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 </script>
 
 <style>
-  .stereo-instrument {
-    display: grid;
-    grid-template-columns: minmax(0, 1.06fr) minmax(360px, 0.94fr);
-    min-height: 410px;
-  }
-
-  .stereo-visual,
-  .stereo-controls {
-    min-width: 0;
-    padding: clamp(22px, 3vw, 34px);
-  }
-
-  .stereo-visual {
-    display: grid;
-    grid-template-rows: auto 1fr auto auto;
-    border-right: 1px solid var(--color-border);
-    background:
-      radial-gradient(
-        circle at 50% 54%,
-        rgb(143 124 255 / 0.19),
-        transparent 34%
-      ),
-      linear-gradient(145deg, rgb(255 253 252 / 0.92), rgb(247 244 255 / 0.8));
-  }
-
-  .stereo-visual__header {
+  .stereo-sheet__bar {
     display: flex;
-    align-items: flex-start;
+    min-height: 48px;
+    align-items: center;
     justify-content: space-between;
     gap: 18px;
+    padding: 6px 18px;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
-
-  .stereo-reference {
+  .stereo-sheet__state {
     display: grid;
     justify-items: end;
-    gap: 3px;
+    gap: 1px;
+    text-align: right;
   }
-
-  .stereo-reference strong {
-    font-size: 1.3rem;
+  .stereo-sheet__state span,
+  .stereo-field__heading > div > span,
+  .stereo-pan-copy > span {
+    color: var(--sonic-muted);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
   }
-
-  .stereo-reference span,
-  .stereo-group span,
-  .stereo-visual__note {
-    color: var(--color-ink-muted);
-    font-size: 0.78rem;
-    line-height: 1.45;
+  .stereo-sheet__state strong {
+    font-size: 0.82rem;
   }
-
+  .stereo-field {
+    display: grid;
+    gap: 9px;
+    min-height: 252px;
+    padding: 16px 22px 14px;
+    border-bottom: 1px solid var(--sonic-border);
+    background: var(--sonic-field);
+  }
+  .stereo-field__heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 20px;
+  }
+  .stereo-field__heading > div {
+    display: grid;
+    gap: 2px;
+  }
+  .stereo-field__heading strong {
+    font-size: 0.88rem;
+  }
+  .stereo-field__reference {
+    color: var(--sonic-muted);
+    font-size: 0.72rem;
+    font-variant-numeric: tabular-nums;
+    white-space: nowrap;
+  }
   .stereo-track {
     position: relative;
-    min-height: 190px;
-    margin: 20px 34px 8px;
+    width: min(100%, 760px);
+    min-height: 146px;
+    margin-inline: auto;
   }
-
   .stereo-track__rail {
     position: absolute;
     top: 50%;
-    right: 0;
-    left: 0;
-    height: 4px;
-    border-radius: 999px;
-    background: rgb(143 124 255 / 0.2);
-    transform: translateY(-50%);
+    right: 7%;
+    left: 7%;
+    height: 1px;
+    background: var(--sonic-border);
   }
-
+  .stereo-track__rail::before,
+  .stereo-track__rail::after {
+    position: absolute;
+    top: -3px;
+    width: 7px;
+    height: 7px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 50%;
+    background: var(--sonic-field);
+    content: "";
+  }
+  .stereo-track__rail::before {
+    left: 0;
+  }
+  .stereo-track__rail::after {
+    right: 0;
+  }
   .stereo-track__signal,
   .stereo-track__trail {
     position: absolute;
+    z-index: 2;
     top: 50%;
     left: 50%;
-    width: 54px;
-    height: 54px;
-    border-radius: 999px;
+    width: 48px;
+    height: 48px;
+    border-radius: 50%;
     transform: translate(-50%, -50%);
   }
-
   .stereo-track__signal {
-    z-index: 3;
     display: grid;
     place-items: center;
-    background: var(--color-ink);
-    color: var(--color-surface);
-    box-shadow: 0 14px 36px rgb(93 74 232 / 0.2);
+    border: 1px solid var(--sonic-signal);
+    background: var(--sonic-field-deep);
+    color: #f7f6ef;
+    font-size: 1.1rem;
     transition: left 180ms ease;
   }
-
   .stereo-track__trail {
-    z-index: 2;
-    background: rgb(143 124 255 / 0.18);
+    z-index: 1;
+    border: 1px solid rgb(39 127 138 / 0.32);
     opacity: 0;
-    filter: blur(1px);
   }
-
-  .stereo-track__label {
+  .stereo-track__target {
     position: absolute;
-    bottom: 18px;
+    z-index: 3;
+    bottom: 2px;
+    min-width: 72px;
+    min-height: 44px;
+    padding: 0 10px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 5px;
+    background: rgb(238 234 224 / 0.9);
+    color: var(--sonic-ink);
     font-weight: 800;
-    color: var(--color-ink-muted);
+    cursor: pointer;
   }
-
-  .stereo-track__label--left {
+  .stereo-track__target--left {
     left: 0;
   }
-
-  .stereo-track__label--center {
+  .stereo-track__target--center {
     left: 50%;
     transform: translateX(-50%);
   }
-
-  .stereo-track__label--right {
+  .stereo-track__target--right {
     right: 0;
   }
-
-  [data-stereo-visual="left"] .stereo-track__signal {
-    left: 0;
+  .stereo-track__target[aria-pressed="true"] {
+    border-color: var(--sonic-signal);
+    background: #eef0e7;
+    color: var(--sonic-signal);
   }
-
+  [data-stereo-visual="left"] .stereo-track__signal {
+    left: 7%;
+  }
   [data-stereo-visual="center"] .stereo-track__signal {
     left: 50%;
   }
-
   [data-stereo-visual="right"] .stereo-track__signal {
-    left: 100%;
+    left: 93%;
   }
-
   [data-stereo-visual="left-to-right"] .stereo-track__signal,
   [data-stereo-visual="left-to-right"] .stereo-track__trail {
     animation: stereo-left-to-right 4s linear both;
   }
-
   [data-stereo-visual="right-to-left"] .stereo-track__signal,
   [data-stereo-visual="right-to-left"] .stereo-track__trail {
     animation: stereo-right-to-left 4s linear both;
   }
-
   [data-stereo-visual*="to"] .stereo-track__trail {
     opacity: 1;
   }
-
   [data-stereo-visual*="to"] .stereo-track__trail--one {
     animation-delay: 0.08s;
-    opacity: 0.5;
+    opacity: 0.48;
   }
-
   [data-stereo-visual*="to"] .stereo-track__trail--two {
     animation-delay: 0.16s;
-    opacity: 0.24;
+    opacity: 0.22;
   }
-
+  [data-stereo-visual="return-from-right"] .stereo-track__signal {
+    animation: stereo-return-right 240ms ease-out both;
+  }
+  [data-stereo-visual="return-from-left"] .stereo-track__signal {
+    animation: stereo-return-left 240ms ease-out both;
+  }
   @keyframes stereo-left-to-right {
     from {
-      left: 0;
+      left: 7%;
     }
     to {
-      left: 100%;
+      left: 93%;
     }
   }
-
   @keyframes stereo-right-to-left {
     from {
-      left: 100%;
+      left: 93%;
     }
     to {
-      left: 0;
+      left: 7%;
     }
   }
-
-  .stereo-position {
+  @keyframes stereo-return-right {
+    from {
+      left: 93%;
+    }
+    to {
+      left: 50%;
+    }
+  }
+  @keyframes stereo-return-left {
+    from {
+      left: 7%;
+    }
+    to {
+      left: 50%;
+    }
+  }
+  .stereo-field__note {
     margin: 0;
-    text-align: center;
-    font-size: 0.92rem;
+    color: var(--sonic-muted);
+    font-size: 0.71rem;
+    line-height: 1.35;
   }
-
-  .stereo-visual__note {
-    max-width: 560px;
-    margin: 10px auto 0;
-    text-align: center;
-  }
-
-  .stereo-controls {
+  .stereo-rail {
     display: grid;
-    align-content: start;
-    gap: 10px;
-    padding: clamp(20px, 2.4vw, 24px);
-    background: rgb(255 253 252 / 0.74);
+    grid-template-columns: minmax(300px, 1fr) minmax(260px, 0.9fr) 120px;
+    min-height: 132px;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
-
-  .stereo-safety {
+  .stereo-rail > * {
+    min-width: 0;
+    padding: 14px 16px;
+  }
+  .stereo-rail > * + * {
+    border-left: 1px solid var(--sonic-border-soft);
+  }
+  .stereo-pan-copy {
     display: grid;
-    grid-template-columns: auto 1fr;
-    gap: 10px;
-    padding: 11px 13px;
-    border-radius: var(--radius-control);
-    background: rgb(255 215 106 / 0.18);
+    align-content: center;
+    gap: 2px;
   }
-
-  .stereo-safety p,
-  .stereo-error {
+  .stereo-pan-copy strong {
+    font-size: 0.86rem;
+  }
+  .stereo-pan-copy p {
     margin: 0;
-    font-size: 0.8rem;
-    line-height: 1.45;
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+    line-height: 1.35;
   }
-
-  .stereo-group {
+  .stereo-pan-actions {
     display: grid;
-    gap: 8px;
-  }
-
-  .stereo-group > div:first-child {
-    display: grid;
-    gap: 3px;
-  }
-
-  .stereo-actions {
-    display: grid;
-    gap: 8px;
-  }
-
-  .stereo-actions--static {
-    grid-template-columns: repeat(3, minmax(0, 1fr));
-  }
-
-  .stereo-actions--pan {
     grid-template-columns: repeat(2, minmax(0, 1fr));
+    align-content: center;
+    gap: 8px;
   }
-
-  .stereo-actions button,
+  .stereo-pan-actions button,
   .stereo-stop {
-    min-height: 48px;
-    border-radius: var(--radius-button);
+    min-height: 44px;
+    border: 1px solid var(--sonic-border);
+    border-radius: 5px;
+    background: transparent;
+    color: var(--sonic-ink);
     font-weight: 800;
     cursor: pointer;
   }
-
-  .stereo-actions button {
-    border: 1px solid var(--color-border);
-    background: var(--color-surface);
-    color: var(--color-ink);
+  .stereo-pan-actions button[aria-pressed="true"] {
+    border-color: var(--sonic-signal);
+    background: rgb(39 127 138 / 0.07);
+    color: #0b6570;
   }
-
   .stereo-stop {
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    gap: 8px;
-    border: 1px solid var(--color-border);
-    background: transparent;
-    color: var(--color-ink);
+    align-self: center;
+    margin: 14px;
+    padding: 0 10px;
   }
-
+  .transport-stop-shape {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    margin-right: 7px;
+    border-radius: 1px;
+    background: currentColor;
+  }
   button:disabled {
     cursor: not-allowed;
-    opacity: 0.48;
+    opacity: 0.5;
   }
-
+  .stereo-state-strip {
+    display: grid;
+    grid-template-columns: 92px minmax(0, 1fr);
+    gap: 12px;
+    padding: 8px 18px;
+    color: var(--sonic-muted);
+  }
+  .stereo-state-strip strong {
+    color: var(--sonic-current);
+    font-size: 0.68rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+  }
+  .stereo-state-strip p,
   .stereo-error {
-    padding: 11px 13px;
-    border-radius: var(--radius-control);
-    background: rgb(155 47 47 / 0.08);
-    color: #7f2929;
+    margin: 0;
+    font-size: 0.7rem;
+    line-height: 1.35;
   }
-
+  .stereo-error {
+    padding: 8px 18px 10px;
+    color: var(--sonic-opposing);
+  }
   .stereo-error[hidden] {
     display: none;
   }
-
-  @media (max-width: 900px) {
-    .stereo-instrument {
+  @media (min-width: 981px) and (max-height: 920px) {
+    .stereo-field {
+      min-height: 222px;
+      padding-block: 12px 10px;
+    }
+    .stereo-track {
+      min-height: 118px;
+    }
+    .stereo-rail {
+      min-height: 112px;
+    }
+    .stereo-rail > * {
+      padding-block: 10px;
+    }
+  }
+  @media (max-width: 760px) {
+    .stereo-sheet__bar {
+      padding-inline: 14px;
+    }
+    .stereo-field {
+      min-height: 224px;
+      padding: 13px 14px 11px;
+    }
+    .stereo-field__reference {
+      display: none;
+    }
+    .stereo-track {
+      min-height: 126px;
+    }
+    .stereo-track__target {
+      min-width: 66px;
+      padding-inline: 8px;
+    }
+    .stereo-rail {
       grid-template-columns: 1fr;
     }
-
-    .stereo-visual {
-      min-height: 330px;
-      border-right: 0;
-      border-bottom: 1px solid var(--color-border);
+    .stereo-rail > * + * {
+      border-left: 0;
+      border-top: 1px solid var(--sonic-border-soft);
+    }
+    .stereo-state-strip {
+      grid-template-columns: 1fr;
+      gap: 4px;
+      padding-inline: 14px;
     }
   }
-
-  @media (max-width: 560px) {
-    .stereo-visual,
-    .stereo-controls {
-      padding: 18px 20px;
-    }
-
-    .stereo-visual {
-      min-height: 240px;
-    }
-
-    .stereo-track {
-      min-height: 96px;
-      margin: 5px 28px 2px;
-    }
-
-    .stereo-track__signal,
-    .stereo-track__trail {
-      width: 44px;
-      height: 44px;
-    }
-
-    .stereo-track__label {
-      bottom: 2px;
-    }
-  }
-
   @media (prefers-reduced-motion: reduce) {
     .stereo-track__signal,
     .stereo-track__trail {
       animation: none !important;
       transition: none;
     }
-
     [data-stereo-visual="left-to-right"] .stereo-track__signal,
-    [data-stereo-visual="right-to-left"] .stereo-track__signal {
+    [data-stereo-visual="right-to-left"] .stereo-track__signal,
+    [data-stereo-visual="return-from-right"] .stereo-track__signal,
+    [data-stereo-visual="return-from-left"] .stereo-track__signal {
       left: 50%;
     }
-
     .stereo-track__trail {
       display: none;
     }

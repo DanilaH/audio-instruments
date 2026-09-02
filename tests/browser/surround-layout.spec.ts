@@ -117,3 +117,40 @@ test("Surround keeps the primary 5.1 sequence action and Stop inside 1366x768", 
   await expectInsideViewport(page.getByRole("button", { name: "Stop" }), 768);
   await expectNoHorizontalOverflow(page);
 });
+
+async function readStageBox(page: Page) {
+  return page.locator("[data-surround-stage]").evaluate((element) => {
+    const box = element.getBoundingClientRect();
+    return { x: box.x, y: box.y, width: box.width, height: box.height };
+  });
+}
+
+test("Surround keeps its spatial stage footprint fixed through capability negotiation and mode changes", async ({
+  page,
+}) => {
+  await installExactFiveOneContext(page);
+  await page.setViewportSize({ width: 1366, height: 768 });
+  await page.goto("/surround-sound-test");
+
+  const before = await readStageBox(page);
+  await page.getByRole("button", { name: "Check surround support" }).click();
+  const afterCapability = await readStageBox(page);
+
+  for (const key of ["x", "y", "width", "height"] as const) {
+    expect(afterCapability[key]).toBeCloseTo(before[key], 1);
+  }
+
+  await expect(page.locator("[data-surround-51-channel]")).toHaveCount(6);
+  await expect(page.locator("[data-surround-stereo]")).toHaveCount(5);
+
+  const stereoMode = page.getByRole("button", {
+    name: "Stereo spatial preview",
+  });
+  if (await stereoMode.isVisible()) {
+    await stereoMode.click();
+    const afterMode = await readStageBox(page);
+    for (const key of ["x", "y", "width", "height"] as const) {
+      expect(afterMode[key]).toBeCloseTo(before[key], 1);
+    }
+  }
+});
