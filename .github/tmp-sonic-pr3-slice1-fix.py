@@ -72,34 +72,44 @@ replacement = """  @media (max-width: 900px) {
 """
 text = replace_once(text, needle, replacement, "Tone narrow mode layout")
 
-# Compact desktop gets a tighter non-interactive visualization and spacing.
-# 44/48px controls are deliberately unchanged.
+# Compact desktop gets a deliberately shallow visualization and tighter
+# non-interactive spacing. The waveform is a reference visualization, while
+# exact frequency/level state remains in the bar and controls. 44/48px control
+# heights are deliberately unchanged.
 compact_tone = """
   @media (min-width: 901px) and (max-height: 820px) {
+    .tone-bar {
+      min-height: 48px;
+      padding: 8px 14px;
+    }
+
     .tone-field {
-      grid-template-rows: auto 118px auto;
+      grid-template-rows: auto 88px auto;
       min-height: 0;
-      gap: 5px;
-      padding-block: 10px 7px;
+      gap: 4px;
+      padding: 7px 14px 5px;
     }
 
     .tone-canvas-wrap,
     .tone-canvas-wrap canvas {
-      min-height: 118px;
+      min-height: 88px;
     }
 
     .tone-rail {
-      min-height: 168px;
+      grid-template-columns:
+        minmax(235px, 1.1fr) minmax(315px, 1.55fr) minmax(165px, 0.72fr)
+        minmax(150px, 0.58fr);
+      min-height: 154px;
     }
 
     .tone-rail > div {
-      gap: 5px;
-      padding: 9px 11px;
+      gap: 4px;
+      padding: 6px 10px;
     }
 
     .tone-state-strip {
       min-height: 44px;
-      padding-block: 7px;
+      padding-block: 4px;
     }
   }
 """
