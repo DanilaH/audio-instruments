@@ -1,0 +1,242 @@
+name: Post-Sonic Field Release Audit
+
+on:
+  push:
+    branches:
+      - audit/post-sonic-field-release
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install disposable axe-core
+        run: pnpm add -Dw --ignore-scripts axe-core@4.10.3
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Run runtime accessibility, overflow and visual audit
+        run: |
+          pnpm preview > /tmp/browser-audio-lab-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill "$PREVIEW_PID" 2>/dev/null || true' EXIT
+
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:4321/ > /dev/null; then
+              break
+            fi
+            if [ "$attempt" -eq 40 ]; then
+              cat /tmp/browser-audio-lab-preview.log
+              exit 1
+            fi
+            sleep 0.5
+          done
+
+          cat > /tmp/post-sonic-release-audit.mjs <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { createRequire } from 'node:module';
+          import { chromium, firefox, webkit } from '@playwright/test';
+
+          const require = createRequire(import.meta.url);
+          const axeSource = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
+          const baseUrl = 'http://127.0.0.1:4321';
+          const outputDir = 'artifacts/post-sonic-release-audit';
+          fs.mkdirSync(outputDir, { recursive: true });
+
+          const routes = [
+            '/',
+            '/privacy',
+            '/sound-test',
+            '/speaker-test',
+            '/headphone-test',
+            '/stereo-test',
+            '/phase-test',
+            '/surround-sound-test',
+            '/bass-test',
+            '/tone-generator',
+            '/frequency-sweep',
+            '/noise-generator',
+            '/microphone-test',
+            '/spectrum-analyzer',
+            '/pitch-detector',
+            '/decibel-meter',
+            '/audio-latency-test',
+            '/hearing-frequency-test',
+          ];
+
+          const axeViewports = [
+            { name: 'desktop-1366x768', width: 1366, height: 768 },
+            { name: 'mobile-390x844', width: 390, height: 844 },
+            { name: 'mobile-320x844', width: 320, height: 844 },
+          ];
+
+          const visualViewports = [
+            { name: 'desktop-1366x768', width: 1366, height: 768 },
+            { name: 'mobile-390x844', width: 390, height: 844 },
+          ];
+
+          const spotRoutes = [
+            '/',
+            '/speaker-test',
+            '/microphone-test',
+            '/spectrum-analyzer',
+            '/decibel-meter',
+            '/audio-latency-test',
+          ];
+
+          const slug = (route) => route === '/' ? 'home' : route.slice(1).replaceAll('/', '-');
+          const failures = [];
+          const results = [];
+
+          const chromiumBrowser = await chromium.launch();
+          try {
+            for (const viewport of axeViewports) {
+              const context = await chromiumBrowser.newContext({
+                viewport: { width: viewport.width, height: viewport.height },
+                reducedMotion: 'reduce',
+              });
+              const page = await context.newPage();
+
+              for (const route of routes) {
+                await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+                await page.addScriptTag({ content: axeSource });
+
+                const overflow = await page.evaluate(() => ({
+                  scrollWidth: document.documentElement.scrollWidth,
+                  clientWidth: document.documentElement.clientWidth,
+                }));
+
+                const axe = await page.evaluate(async () => {
+                  const result = await globalThis.axe.run(document, {
+                    runOnly: {
+                      type: 'tag',
+                      values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'],
+                    },
+                  });
+                  return result.violations.map((violation) => ({
+                    id: violation.id,
+                    impact: violation.impact,
+                    help: violation.help,
+                    nodes: violation.nodes.map((node) => ({
+                      target: node.target,
+                      failureSummary: node.failureSummary,
+                    })),
+                  }));
+                });
+
+                const record = {
+                  browser: 'chromium',
+                  viewport: viewport.name,
+                  route,
+                  overflow,
+                  violations: axe,
+                };
+                results.push(record);
+
+                if (overflow.scrollWidth > overflow.clientWidth || axe.length > 0) {
+                  failures.push(record);
+                }
+              }
+
+              await context.close();
+            }
+
+            for (const viewport of visualViewports) {
+              const context = await chromiumBrowser.newContext({
+                viewport: { width: viewport.width, height: viewport.height },
+                reducedMotion: 'reduce',
+              });
+              const page = await context.newPage();
+              for (const route of routes) {
+                await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+                await page.screenshot({
+                  path: path.join(outputDir, `chromium-${viewport.name}-${slug(route)}.png`),
+                  fullPage: false,
+                });
+              }
+              await context.close();
+            }
+          } finally {
+            await chromiumBrowser.close();
+          }
+
+          for (const [browserName, browserType] of [['firefox', firefox], ['webkit', webkit]]) {
+            const browser = await browserType.launch();
+            try {
+              for (const viewport of visualViewports) {
+                const context = await browser.newContext({
+                  viewport: { width: viewport.width, height: viewport.height },
+                  reducedMotion: 'reduce',
+                });
+                const page = await context.newPage();
+                for (const route of spotRoutes) {
+                  await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+                  await page.screenshot({
+                    path: path.join(outputDir, `${browserName}-${viewport.name}-${slug(route)}.png`),
+                    fullPage: false,
+                  });
+                }
+                await context.close();
+              }
+            } finally {
+              await browser.close();
+            }
+          }
+
+          const summary = {
+            productBaseline: process.env.GITHUB_SHA,
+            axeSurfaces: results.length,
+            axeViolationSurfaces: results.filter((result) => result.violations.length > 0).length,
+            overflowSurfaces: results.filter((result) => result.overflow.scrollWidth > result.overflow.clientWidth).length,
+            failures,
+            results,
+          };
+
+          fs.writeFileSync(
+            path.join(outputDir, 'audit.json'),
+            JSON.stringify(summary, null, 2),
+          );
+          console.log(JSON.stringify({
+            axeSurfaces: summary.axeSurfaces,
+            axeViolationSurfaces: summary.axeViolationSurfaces,
+            overflowSurfaces: summary.overflowSurfaces,
+          }, null, 2));
+
+          if (failures.length > 0) process.exitCode = 1;
+          NODE
+
+          node /tmp/post-sonic-release-audit.mjs
+
+      - name: Upload audit evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-sonic-field-release-audit
+          path: artifacts/post-sonic-release-audit
+          if-no-files-found: error
+          retention-days: 30
