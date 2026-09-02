@@ -4,6 +4,8 @@ import {
 } from "../../browser/audio-output/AudioOutputEngine";
 import { AudioSession } from "../../browser/audio-session/AudioSession";
 import {
+  AV_SYNC_OFFSET_MAX_MS,
+  AV_SYNC_OFFSET_MIN_MS,
   AV_SYNC_SCHEDULE_HORIZON_MS,
   AV_SYNC_SCHEDULER_TICK_MS,
   AV_SYNC_VISUAL_ARM_LEAD_MS,
@@ -16,6 +18,8 @@ import {
 
 const AV_SYNC_CLICK_FREQUENCY_HZ = 1_000;
 const AV_SYNC_CLICK_DURATION_SECONDS = 0.1;
+const AV_SYNC_TRACK_MIN_PERCENT = 8;
+const AV_SYNC_TRACK_MAX_PERCENT = 92;
 
 interface ScheduledClick {
   readonly playback: MonoOscillatorPlayback;
@@ -68,6 +72,7 @@ export class AudioLatencyController {
   readonly #stopButton: HTMLButtonElement;
   readonly #offsetInput: HTMLInputElement;
   readonly #offsetValues: readonly HTMLElement[];
+  readonly #offsetMarker: HTMLElement;
   readonly #resultValue: HTMLElement;
   readonly #pulse: HTMLElement;
   readonly #baseLatency: HTMLElement;
@@ -98,6 +103,7 @@ export class AudioLatencyController {
     this.#stopButton = requireElement(root, "[data-latency-stop]");
     this.#offsetInput = requireElement(root, "[data-latency-offset]");
     this.#offsetValues = requireElements(root, "[data-latency-offset-value]");
+    this.#offsetMarker = requireElement(root, "[data-latency-offset-marker]");
     this.#resultValue = requireElement(root, "[data-latency-result]");
     this.#pulse = requireElement(root, "[data-latency-pulse]");
     this.#baseLatency = requireElement(root, "[data-latency-base]");
@@ -429,6 +435,21 @@ export class AudioLatencyController {
       element.textContent = label;
     }
     this.#resultValue.textContent = `Your selected sync offset: ${label}`;
+
+    const offsetRangeMs = AV_SYNC_OFFSET_MAX_MS - AV_SYNC_OFFSET_MIN_MS;
+    const offsetRatio = (offsetMs - AV_SYNC_OFFSET_MIN_MS) / offsetRangeMs;
+    const markerPosition =
+      AV_SYNC_TRACK_MIN_PERCENT +
+      offsetRatio * (AV_SYNC_TRACK_MAX_PERCENT - AV_SYNC_TRACK_MIN_PERCENT);
+
+    // This position visualizes the user's manual offset setting only. It does
+    // not imply measured end-to-end latency or timing accuracy.
+    this.#offsetMarker.style.setProperty(
+      "--latency-audio-position",
+      `${markerPosition}%`,
+    );
+    this.#offsetMarker.dataset.offsetRelation =
+      offsetMs > 0 ? "after" : offsetMs < 0 ? "before" : "aligned";
   }
 
   #renderControls(): void {
