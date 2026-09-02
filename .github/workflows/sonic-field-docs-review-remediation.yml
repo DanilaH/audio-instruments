@@ -1,0 +1,55 @@
+name: Sonic Field Docs Review Remediation
+
+on:
+  push:
+    branches:
+      - docs/sonic-field-closure
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: docs/sonic-field-closure
+      - name: Apply review remediation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path_str: str, old: str, new: str) -> None:
+              path = Path(path_str)
+              text = path.read_text()
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'{path_str}: expected one anchor, got {count}: {old!r}')
+              path.write_text(text.replace(old, new, 1))
+
+          replace_exact(
+              'AGENTS.md',
+              'P0 package/scripts/lint/format/test tooling\n→ docs/20_P0_TOOLING_CONTRACT.md',
+              'P0 package/scripts/lint/format/test tooling\n→ docs/20_P0_TOOLING_CONTRACT.md\n\nSonic Field production migration / completion record\n→ docs/21_SONIC_FIELD_PRODUCTION_MIGRATION.md',
+          )
+          replace_exact(
+              'docs/21_SONIC_FIELD_PRODUCTION_MIGRATION.md',
+              '- PR #88 — post-release Sonic Field contrast closure.',
+              '- post-release audit + PR #88 — final cross-tool/site-shell verification and contrast closure.',
+          )
+          replace_exact(
+              'docs/21_SONIC_FIELD_PRODUCTION_MIGRATION.md',
+              '### PR 6 — Audio Latency + site-shell finishing pass — COMPLETED (#87)',
+              '### PR 6 — Audio Latency + final consistency verification — COMPLETED (#87 + post-release audit)',
+          )
+          PY
+      - name: Commit review remediation
+        run: |
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add AGENTS.md docs/21_SONIC_FIELD_PRODUCTION_MIGRATION.md
+          git diff --cached --check
+          git commit -m 'docs: clarify Sonic Field completion provenance'
+          git push origin HEAD:docs/sonic-field-closure
