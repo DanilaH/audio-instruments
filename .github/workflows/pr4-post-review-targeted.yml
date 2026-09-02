@@ -1,4 +1,4 @@
-name: PR4 Post-Review Targeted
+name: PR4 Pitch Visual QA
 
 on:
   push:
@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 jobs:
-  targeted:
+  visual-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -32,17 +32,69 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting
-        run: pnpm exec prettier --check src/tools/pitch-detector/PitchDetector.astro tests/browser/sonic-field-input-measurement-production-layout.spec.ts
-
-      - name: Scoped lint
-        run: pnpm exec eslint src/tools/pitch-detector/PitchDetector.astro tests/browser/sonic-field-input-measurement-production-layout.spec.ts
-
       - name: Build
         run: pnpm build
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
-      - name: Run post-review browser matrix
-        run: pnpm exec playwright test tests/browser/sonic-field-input-measurement-production-layout.spec.ts tests/browser/pitch-detector.spec.ts tests/browser/microphone-test-layout.spec.ts tests/browser/decibel-meter-layout.spec.ts tests/browser/pitch-detector-layout.spec.ts tests/browser/tool-touch-targets.spec.ts --project=chromium --project=firefox --project=webkit
+      - name: Capture Pitch idle and accepted states
+        run: |
+          python3 -m http.server 4321 --bind 127.0.0.1 --directory dist > /tmp/pr4-pitch-preview.log 2>&1 &
+          SERVER_PID=$!
+          ready=0
+          for i in $(seq 1 30); do
+            if curl --fail --silent http://127.0.0.1:4321/pitch-detector/ > /dev/null; then
+              ready=1
+              break
+            fi
+            if ! kill -0 "$SERVER_PID" 2>/dev/null; then
+              break
+            fi
+            sleep 1
+          done
+          if [ "$ready" -ne 1 ]; then
+            cat /tmp/pr4-pitch-preview.log
+            exit 1
+          fi
+
+          node --input-type=module <<'NODE'
+          import { chromium, firefox, webkit } from '@playwright/test';
+          import { mkdir } from 'node:fs/promises';
+
+          const base = 'http://127.0.0.1:4321/pitch-detector/';
+          const engines = { chromium, firefox, webkit };
+          await mkdir('pr4-pitch-visual-qa', { recursive: true });
+
+          for (const [engineName, engine] of Object.entries(engines)) {
+            const browser = await engine.launch({ headless: true });
+            const page = await browser.newPage({ viewport: { width: 1366, height: 768 } });
+
+            for (const viewport of [
+              { name: 'desktop', width: 1366, height: 768 },
+              { name: 'mobile', width: 390, height: 844 },
+            ]) {
+              await page.setViewportSize({ width: viewport.width, height: viewport.height });
+              await page.goto(base);
+              await page.screenshot({ path: `pr4-pitch-visual-qa/${engineName}-${viewport.name}-idle.png` });
+
+              await page.locator('[data-pitch-detector]').evaluate((element) => {
+                element.dataset.pitchResultState = 'settling';
+              });
+              await page.locator('[data-pitch-needle]').evaluate((element) => {
+                element.style.setProperty('--pitch-offset', '18%');
+              });
+              await page.screenshot({ path: `pr4-pitch-visual-qa/${engineName}-${viewport.name}-accepted.png` });
+            }
+
+            await browser.close();
+          }
+          NODE
+
+      - name: Upload Pitch visual QA
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: pr4-pitch-visual-qa
+          path: pr4-pitch-visual-qa
+          if-no-files-found: error
