@@ -29,6 +29,10 @@ jobs:
               Path('tests/browser/decibel-meter-session-calibration.spec.ts'),
           ]
           helper = '''\nasync function openDbCalibration(page: Page): Promise<void> {\n  const disclosure = page.locator("[data-db-calibration-disclosure]");\n  if ((await disclosure.getAttribute("open")) === null) {\n    await disclosure.locator("summary").click();\n  }\n}\n'''
+          duplicate = (
+              '  await openDbCalibration(page);\n'
+              '  await openDbCalibration(page);\n'
+          )
 
           def ensure_open_before(text: str, target: str) -> str:
               guarded = f'  await openDbCalibration(page);\n{target}'
@@ -38,6 +42,9 @@ jobs:
 
           for path in files:
               text = path.read_text()
+              while duplicate in text:
+                  text = text.replace(duplicate, '  await openDbCalibration(page);\n')
+
               if 'async function openDbCalibration' not in text:
                   marker = '\nasync function '
                   index = text.find(marker)
