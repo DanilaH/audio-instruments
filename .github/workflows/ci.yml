@@ -73,6 +73,9 @@ jobs:
       - name: Verify live release verifier contract
         run: pnpm test:live-release-contract
 
+      - name: Verify VPS/Caddy deployment contract
+        run: pnpm test:deploy-contract
+
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
