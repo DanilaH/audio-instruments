@@ -60,13 +60,23 @@ Before enabling any analytics/ad provider:
 
 ## Selected analytics provider for rollout
 
-The selected v1 provider is **Cloudflare Web Analytics**, but it is **not enabled in the current product baseline**.
+The selected v1 provider is **Cloudflare Web Analytics**. The repository integration is fail-closed and **disabled by default**; production activation is not authorized merely because the integration exists.
 
-Official Cloudflare documentation reviewed on 2026-08-31 states that its Web Analytics usage-metric collection does not use cookies or localStorage and does not fingerprint individuals for Vitals collection. It currently does not support custom events or UTM parameters.
+Official Cloudflare documentation was refreshed on 2026-09-02 before implementation. Its Web Analytics usage-metric collection does not use cookies or localStorage and does not fingerprint individual visitors for this analytics collection. Cloudflare's RUM documentation states that source IP is received during ordinary HTTP handling but discarded at the nearest Cloudflare data center rather than stored in the RUM service's core databases/logs. Custom events and UTM analytics are not part of this v1 integration.
 
 That makes it suitable for the initial page/referrer/browser/device/Core-Web-Vitals need without introducing a broader product-event analytics surface.
 
-This decision does not change `/privacy` yet because no provider is active. Before enablement, the actual Cloudflare integration/network behavior and any required consent treatment must be reflected in `/privacy` and reviewed for the real deployment jurisdictions. Microphone/recording content remains prohibited from analytics.
+`/privacy` now reflects the actual build state: default builds state that analytics is disabled, while an explicitly authorized analytics build discloses Cloudflare Web Analytics and the technical data boundary. Activation still requires the real deployment-jurisdiction privacy/consent review and a real Cloudflare site token. Microphone audio, recordings, live FFT/pitch/meter values and Decibel calibration payloads remain prohibited from Browser Audio Lab analytics.
+
+The technical activation contract is:
+
+```text
+SITE_ANALYTICS=cloudflare-web-analytics
+ANALYTICS_PRIVACY_REVIEW=approved
+CLOUDFLARE_WEB_ANALYTICS_TOKEN=<Cloudflare site token>
+```
+
+The approval flag is a release-control mechanism, not a legal guarantee. Evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.
 
 ## Indexing
 
