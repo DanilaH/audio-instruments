@@ -49,7 +49,6 @@ const timerLabel = (minutes: number) =>
         <span class="noise-stage__grain noise-stage__grain--one"></span>
         <span class="noise-stage__grain noise-stage__grain--two"></span>
         <span class="noise-stage__grain noise-stage__grain--three"></span>
-        <span class="noise-stage__cursor"></span>
       </div>
 
       <p class="noise-field__note">
@@ -264,8 +263,7 @@ const timerLabel = (minutes: number) =>
   }
 
   .noise-stage__axis,
-  .noise-stage__grain,
-  .noise-stage__cursor {
+  .noise-stage__grain {
     position: absolute;
     left: 0;
     right: 0;
@@ -323,16 +321,6 @@ const timerLabel = (minutes: number) =>
       rgb(24 52 59 / 0.26) 11px,
       transparent 12px 22px
     );
-  }
-
-  .noise-stage__cursor {
-    top: 0;
-    bottom: 0;
-    left: 50%;
-    right: auto;
-    width: 1px;
-    background: var(--sonic-current);
-    opacity: 0.48;
   }
 
   [data-noise-kind="pink"] .noise-stage__grain--one {
