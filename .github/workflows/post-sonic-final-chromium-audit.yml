@@ -1,0 +1,105 @@
+name: Post-Sonic Final Chromium Audit
+
+on:
+  push:
+    branches:
+      - audit/post-sonic-field-release
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm add -Dw --ignore-scripts axe-core@4.10.3
+      - run: pnpm build
+      - name: Install Chromium only
+        run: pnpm exec playwright install chromium
+      - name: Run final accessibility and overflow audit
+        run: |
+          pnpm preview > /tmp/audio-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill "$PREVIEW_PID" 2>/dev/null || true' EXIT
+          for attempt in $(seq 1 40); do
+            if curl --fail --silent http://127.0.0.1:4321/ >/dev/null; then break; fi
+            if [ "$attempt" -eq 40 ]; then cat /tmp/audio-preview.log; exit 1; fi
+            sleep 0.5
+          done
+          cat > /tmp/final-audit.mjs <<'NODE'
+          import fs from 'node:fs';
+          import path from 'node:path';
+          import { createRequire } from 'node:module';
+          const require = createRequire(`${process.cwd()}/package.json`);
+          const { chromium } = require('@playwright/test');
+          const axeSource = fs.readFileSync(require.resolve('axe-core/axe.min.js'), 'utf8');
+          const baseUrl = 'http://127.0.0.1:4321';
+          const out = 'artifacts/post-sonic-final-audit';
+          fs.mkdirSync(out, { recursive: true });
+          const routes = ['/', '/privacy', '/sound-test', '/speaker-test', '/headphone-test', '/stereo-test', '/phase-test', '/surround-sound-test', '/bass-test', '/tone-generator', '/frequency-sweep', '/noise-generator', '/microphone-test', '/spectrum-analyzer', '/pitch-detector', '/decibel-meter', '/audio-latency-test', '/hearing-frequency-test'];
+          const viewports = [
+            { name: 'desktop-1366x768', width: 1366, height: 768 },
+            { name: 'mobile-390x844', width: 390, height: 844 },
+            { name: 'mobile-320x844', width: 320, height: 844 },
+          ];
+          const screenshotViewports = new Set(['desktop-1366x768', 'mobile-390x844']);
+          const slug = route => route === '/' ? 'home' : route.slice(1).replaceAll('/', '-');
+          const results = [];
+          const browser = await chromium.launch();
+          try {
+            for (const viewport of viewports) {
+              const context = await browser.newContext({ viewport: { width: viewport.width, height: viewport.height }, reducedMotion: 'reduce' });
+              const page = await context.newPage();
+              for (const route of routes) {
+                await page.goto(`${baseUrl}${route}`, { waitUntil: 'networkidle' });
+                await page.addScriptTag({ content: axeSource });
+                const overflow = await page.evaluate(() => ({ scrollWidth: document.documentElement.scrollWidth, clientWidth: document.documentElement.clientWidth }));
+                const violations = await page.evaluate(async () => {
+                  const result = await globalThis.axe.run(document, { runOnly: { type: 'tag', values: ['wcag2a', 'wcag2aa', 'wcag21a', 'wcag21aa'] } });
+                  return result.violations.map(v => ({ id: v.id, impact: v.impact, help: v.help, nodes: v.nodes.map(n => ({ target: n.target, failureSummary: n.failureSummary })) }));
+                });
+                results.push({ viewport: viewport.name, route, overflow, violations });
+                if (screenshotViewports.has(viewport.name)) {
+                  await page.screenshot({ path: path.join(out, `chromium-${viewport.name}-${slug(route)}.png`), fullPage: false });
+                }
+              }
+              await context.close();
+            }
+          } finally {
+            await browser.close();
+          }
+          const violationSurfaces = results.filter(r => r.violations.length > 0);
+          const overflowSurfaces = results.filter(r => r.overflow.scrollWidth > r.overflow.clientWidth);
+          const summary = {
+            sourceProductBaseline: '643ed304ad47a17dcbffebfe4090546cd9ed7546',
+            auditHead: process.env.GITHUB_SHA,
+            axeSurfaces: results.length,
+            axeViolationSurfaces: violationSurfaces.length,
+            overflowSurfaces: overflowSurfaces.length,
+            violations: violationSurfaces,
+            overflows: overflowSurfaces,
+            results,
+          };
+          fs.writeFileSync(path.join(out, 'audit.json'), JSON.stringify(summary, null, 2));
+          console.log(JSON.stringify({ axeSurfaces: summary.axeSurfaces, axeViolationSurfaces: summary.axeViolationSurfaces, overflowSurfaces: summary.overflowSurfaces }, null, 2));
+          if (violationSurfaces.length || overflowSurfaces.length) process.exitCode = 1;
+          NODE
+          node /tmp/final-audit.mjs
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: post-sonic-final-chromium-audit
+          path: artifacts/post-sonic-final-audit
+          if-no-files-found: error
+          retention-days: 30
