@@ -138,14 +138,12 @@ test("Audio Latency offset marker follows manual sign convention without reflow"
   await expect(marker).toHaveAttribute("data-offset-relation", "aligned");
 
   await setOffset(page, -300);
-  const beforeX = await centerX(marker);
   await expect(marker).toHaveAttribute("data-offset-relation", "before");
-  expect(beforeX).toBeLessThan(visualX - 20);
+  await expect.poll(async () => centerX(marker)).toBeLessThan(visualX - 20);
 
   await setOffset(page, 300);
-  const afterX = await centerX(marker);
   await expect(marker).toHaveAttribute("data-offset-relation", "after");
-  expect(afterX).toBeGreaterThan(visualX + 20);
+  await expect.poll(async () => centerX(marker)).toBeGreaterThan(visualX + 20);
 
   const finalSheet = await sheet.boundingBox();
   const finalField = await field.boundingBox();

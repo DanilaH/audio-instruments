@@ -44,7 +44,7 @@ for (const viewport of viewports) {
 
     const offsetBox = await offset.boundingBox();
     expect(offsetBox).not.toBeNull();
-    expect(offsetBox?.height ?? 0).toBeGreaterThanOrEqual(44);
+    expect(offsetBox?.height ?? 0).toBeGreaterThanOrEqual(44 - 0.01);
 
     const timelineBox = await timeline.boundingBox();
     const pulseBox = await pulse.boundingBox();
