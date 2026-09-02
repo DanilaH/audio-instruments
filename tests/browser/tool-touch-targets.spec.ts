@@ -9,7 +9,7 @@ const touchTargetCases = [
   { path: "/tone-generator", selectors: [".tone-presets button"] },
   {
     path: "/bass-test",
-    selectors: [".bass-mode-selector button", ".bass-presets button"],
+    selectors: [".bass-modes button", ".bass-presets button"],
   },
   {
     path: "/frequency-sweep",
@@ -20,7 +20,14 @@ const touchTargetCases = [
       "[data-frequency-sweep] .sweep-selector button",
     ],
   },
-  { path: "/noise-generator", selectors: [".noise-selector button"] },
+  {
+    path: "/noise-generator",
+    selectors: [".noise-selector button", ".noise-play", ".noise-stop"],
+  },
+  {
+    path: "/sound-test",
+    selectors: [".channel-actions button", ".sequence-button", ".stop-button"],
+  },
   {
     path: "/speaker-test",
     selectors: [

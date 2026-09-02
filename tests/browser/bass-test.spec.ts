@@ -129,6 +129,7 @@ async function installDeterministicAudioContext(
 
         constructor() {
           incrementCounter("__bassAudioContextCount");
+          Reflect.set(window, "__bassAudioContext", this);
         }
 
         async resume() {
@@ -271,7 +272,7 @@ test("Bass single tone is continuous until Stop and supports live preset changes
   expect(oscillators[0]?.stopTimes.at(-1)).toBeCloseTo(0.05, 10);
 });
 
-test("Bass slow sweep uses the shared 20 to 120 Hz logarithmic 12 second primitive", async ({
+test("Bass slow sweep uses the shared logarithmic primitive and reports its current scheduled frequency", async ({
   page,
 }) => {
   await installDeterministicAudioContext(page);
@@ -292,9 +293,27 @@ test("Bass slow sweep uses the shared 20 to 120 Hz logarithmic 12 second primiti
     value: 120,
     time: 12,
   });
-  await expect(page.locator("[data-bass-frequency-readout]")).toHaveText(
-    "20–120",
-  );
+  const readout = page.locator("[data-bass-frequency-readout]");
+  await expect(readout).toHaveText("20");
+
+  await page.evaluate(() => {
+    const context = Reflect.get(window, "__bassAudioContext") as
+      { currentTime: number } | undefined;
+    if (!context) throw new Error("Bass deterministic AudioContext is missing");
+    context.currentTime = 6;
+  });
+  await expect(readout).toHaveText("49");
+
+  await page.evaluate(() => {
+    const context = Reflect.get(window, "__bassAudioContext") as
+      { currentTime: number } | undefined;
+    if (!context) throw new Error("Bass deterministic AudioContext is missing");
+    context.currentTime = 12;
+  });
+  await expect(readout).toHaveText("120");
+
+  await page.locator("[data-bass-stop]").click();
+  await expect(readout).toHaveText("60");
 });
 
 test("Bass preset sequence schedules the exact seven tones with 800 ms bursts and 300 ms gaps", async ({

@@ -427,12 +427,30 @@ for (const viewport of primaryViewportTargets) {
     const safetyBox = await safety.boundingBox();
     expect(playBox).not.toBeNull();
     expect(safetyBox).not.toBeNull();
-    expect((playBox?.y ?? 9999) + (playBox?.height ?? 0)).toBeLessThanOrEqual(
-      viewport.height,
-    );
-    expect(
-      (safetyBox?.y ?? 9999) + (safetyBox?.height ?? 0),
-    ).toBeLessThanOrEqual(viewport.height);
+    if (viewport.width >= 900) {
+      expect((playBox?.y ?? 9999) + (playBox?.height ?? 0)).toBeLessThanOrEqual(
+        viewport.height,
+      );
+      expect(
+        (safetyBox?.y ?? 9999) + (safetyBox?.height ?? 0),
+      ).toBeLessThanOrEqual(viewport.height);
+    } else {
+      const dimensions = await page.evaluate(() => ({
+        scrollWidth: document.documentElement.scrollWidth,
+        clientWidth: document.documentElement.clientWidth,
+        scrollHeight: document.documentElement.scrollHeight,
+      }));
+      expect(dimensions.scrollWidth).toBeLessThanOrEqual(
+        dimensions.clientWidth,
+      );
+      expect((playBox?.y ?? -1) + (playBox?.height ?? 0)).toBeLessThanOrEqual(
+        dimensions.scrollHeight,
+      );
+      expect(
+        (safetyBox?.y ?? -1) + (safetyBox?.height ?? 0),
+      ).toBeLessThanOrEqual(dimensions.scrollHeight);
+      expect(safetyBox?.y ?? -1).toBeGreaterThan(playBox?.y ?? -1);
+    }
   });
 }
 

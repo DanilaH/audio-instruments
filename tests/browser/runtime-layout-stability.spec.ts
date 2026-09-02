@@ -5,7 +5,7 @@ const mobileViewport = { width: 320, height: 844 } as const;
 const modeCases = [
   { route: "/speaker-test", selector: "[data-speaker-mode]" },
   { route: "/headphone-test", selector: "[data-headphone-mode]" },
-  { route: "/bass-test", selector: ".bass-mode-selector button" },
+  { route: "/bass-test", selector: ".bass-modes button" },
   { route: "/noise-generator", selector: ".noise-selector button" },
   { route: "/frequency-sweep", selector: ".sweep-selector button" },
   { route: "/spectrum-analyzer", selector: ".spectrum-view-switch button" },

@@ -1,12 +1,12 @@
 ---
-import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
-import MetricReadout from "../../components/feedback/MetricReadout.astro";
-import ToolStatus from "../../components/feedback/ToolStatus.astro";
 import FrequencyControl from "../../components/controls/FrequencyControl.astro";
 import LevelControl from "../../components/controls/LevelControl.astro";
 import ModePills from "../../components/controls/ModePills.astro";
 import PlayStopControl from "../../components/controls/PlayStopControl.astro";
-import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import CapabilityNotice from "../../components/feedback/CapabilityNotice.astro";
+import MetricReadout from "../../components/feedback/MetricReadout.astro";
+import ToolStatus from "../../components/feedback/ToolStatus.astro";
+import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 
 const waveformOptions = [
   { value: "sine", label: "Sine" },
@@ -25,55 +25,51 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
 ---
 
 <div data-tone-generator>
-  <InstrumentSurface
+  <SonicInstrument
     label="Tone Generator controls and waveform"
-    accent="lavender"
+    class="tone-sheet"
   >
-    <div class="tone-instrument">
-      <section class="tone-visual" aria-label="Generated waveform preview">
-        <div class="tone-visual__header">
-          <ToolStatus id="tone-status" label="Idle" state="idle" />
-          <MetricReadout
-            id="tone-frequency-readout"
-            value="440"
-            unit="Hz"
-            label="Requested frequency"
-            size="large"
-          />
-        </div>
-        <div class="tone-canvas-wrap" aria-hidden="true">
-          <canvas data-tone-waveform></canvas>
-        </div>
-        <p class="tone-visual__note">
-          Stylized waveform preview. The numeric control is the requested
-          digital frequency.
-        </p>
-      </section>
+    <div class="tone-sheet__bar">
+      <ToolStatus id="tone-status" label="Idle" state="idle" />
+      <div class="tone-sheet__state">
+        <span>Requested frequency</span>
+        <MetricReadout
+          id="tone-frequency-readout"
+          value="440"
+          unit="Hz"
+          label="Requested frequency"
+          size="large"
+        />
+      </div>
+    </div>
 
-      <section class="tone-controls" aria-label="Tone settings">
-        <div class="tone-primary">
-          <div class="tone-safety">
-            <i class="ph ph-speaker-low" aria-hidden="true"></i>
-            <p>
-              Start with your device/headphone volume low. Increase it only to a
-              comfortable listening level. Do not turn the volume up to
-              compensate for a tone you cannot hear.
-            </p>
-          </div>
-
-          <div class="tone-actions">
-            <PlayStopControl id="tone-play-stop" isActive={false} />
-            <span>Stops with a short click-reduction fade.</span>
-          </div>
+    <section class="tone-field" aria-label="Generated waveform preview">
+      <div class="tone-field__heading">
+        <div>
+          <span>Generated signal</span>
+          <strong>Requested waveform preview</strong>
         </div>
+        <span class="tone-field__reference">20 Hz–20 kHz · digital request</span
+        >
+      </div>
+      <div class="tone-canvas-wrap" aria-hidden="true">
+        <canvas data-tone-waveform></canvas>
+      </div>
+      <p class="tone-field__note">
+        Stylized waveform preview. The numeric control is the requested digital
+        frequency; this is not an acoustic measurement.
+      </p>
+    </section>
 
+    <section class="tone-rail" aria-label="Tone settings">
+      <div class="tone-frequency-block">
+        <span class="tone-rail__label">Frequency</span>
         <FrequencyControl
           id="tone-frequency"
           valueHz={440}
           minHz={20}
           maxHz={20_000}
         />
-
         <div class="tone-presets" aria-label="Frequency presets">
           {
             presets.map((frequency) => (
@@ -84,29 +80,47 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
             ))
           }
         </div>
+      </div>
 
-        <div class="tone-mode-grid">
-          <ModePills
-            legend="Waveform"
-            name="tone-waveform"
-            options={waveformOptions}
-            value="sine"
-          />
-          <ModePills
-            legend="Output"
-            name="tone-channel"
-            options={channelOptions}
-            value="both"
-          />
-        </div>
+      <div class="tone-modes">
+        <span class="tone-rail__label">Signal</span>
+        <ModePills
+          legend="Waveform"
+          name="tone-waveform"
+          options={waveformOptions}
+          value="sine"
+        />
+        <ModePills
+          legend="Output"
+          name="tone-channel"
+          options={channelOptions}
+          value="both"
+        />
+      </div>
 
+      <div class="tone-level">
+        <span class="tone-rail__label">Level</span>
         <LevelControl id="tone-level" valueDb={-24} minDb={-60} maxDb={-12} />
+      </div>
 
-        <CapabilityNotice id="tone-frequency-cap" />
-        <p class="tone-error" data-tone-error role="alert" hidden></p>
-      </section>
+      <div class="tone-transport">
+        <span class="tone-rail__label">Transport</span>
+        <PlayStopControl id="tone-play-stop" isActive={false} />
+        <span>Short click-reduction fade on stop.</span>
+      </div>
+    </section>
+
+    <div class="tone-state-strip tone-safety">
+      <strong>Low volume</strong>
+      <p>
+        Start with your device/headphone volume low. Increase it only to a
+        comfortable listening level. Do not turn the volume up to compensate for
+        a tone you cannot hear.
+      </p>
     </div>
-  </InstrumentSurface>
+    <CapabilityNotice id="tone-frequency-cap" />
+    <p class="tone-error" data-tone-error role="alert" hidden></p>
+  </SonicInstrument>
 </div>
 
 <script>
@@ -135,82 +149,150 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
 </script>
 
 <style>
-  .tone-instrument {
-    display: grid;
-    grid-template-columns: minmax(0, 1.05fr) minmax(360px, 0.95fr);
-    min-height: 430px;
-  }
-
-  .tone-visual {
-    display: grid;
-    grid-template-rows: auto minmax(220px, 1fr) auto;
-    min-width: 0;
-    padding: clamp(22px, 3vw, 34px);
-    border-right: 1px solid var(--color-border);
-  }
-
-  .tone-visual__header {
+  .tone-sheet__bar {
     display: flex;
+    min-height: 50px;
     align-items: center;
     justify-content: space-between;
-    gap: 16px;
+    gap: 18px;
+    padding: 5px 18px;
+    border-bottom: 1px solid var(--sonic-border-soft);
+  }
+
+  .tone-sheet__state {
+    display: grid;
+    justify-items: end;
+    gap: 0;
+    min-width: 0;
+    text-align: right;
+  }
+
+  .tone-sheet__state > span,
+  .tone-field__heading > div > span,
+  .tone-rail__label {
+    color: var(--sonic-muted);
+    font-size: 0.66rem;
+    font-weight: 800;
+    letter-spacing: 0.09em;
+    text-transform: uppercase;
+  }
+
+  .tone-sheet__state :global(.metric-readout) {
+    color: var(--sonic-current);
+    font-size: clamp(1.2rem, 2vw, 1.75rem);
+  }
+
+  .tone-field {
+    display: grid;
+    grid-template-rows: auto clamp(132px, 20vh, 180px) auto;
+    gap: 8px;
+    min-height: 222px;
+    padding: 14px 18px 10px;
+    border-bottom: 1px solid var(--sonic-border-soft);
+    background: var(--sonic-field);
+  }
+
+  .tone-field__heading {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    gap: 18px;
+  }
+
+  .tone-field__heading > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .tone-field__heading strong {
+    font-size: 0.92rem;
+  }
+
+  .tone-field__reference,
+  .tone-field__note,
+  .tone-transport > span:last-child {
+    color: var(--sonic-muted);
+    font-size: 0.72rem;
+    line-height: 1.35;
+  }
+
+  .tone-field__reference {
+    text-align: right;
+    white-space: nowrap;
   }
 
   .tone-canvas-wrap {
-    min-height: 220px;
-    margin: 12px -10px 0;
+    min-height: 132px;
+    overflow: hidden;
+    border: 1px solid rgb(24 56 65 / 0.18);
+    border-radius: 7px;
+    background:
+      linear-gradient(rgb(24 56 65 / 0.07) 1px, transparent 1px),
+      linear-gradient(90deg, rgb(24 56 65 / 0.07) 1px, transparent 1px),
+      rgb(243 240 232 / 0.32);
+    background-size: 32px 32px;
   }
 
   .tone-canvas-wrap canvas {
     display: block;
     width: 100%;
     height: 100%;
-    min-height: 220px;
+    min-height: 132px;
   }
 
-  .tone-visual__note {
-    max-width: 520px;
-    margin: 8px 0 0;
-    color: var(--color-ink-muted);
-    font-size: 0.8rem;
-    line-height: 1.45;
+  .tone-field__note {
+    margin: 0;
   }
 
-  .tone-controls {
+  .tone-rail {
     display: grid;
-    align-content: start;
-    gap: 18px;
+    grid-template-columns:
+      minmax(290px, 1.35fr) minmax(290px, 1.2fr) minmax(180px, 0.75fr)
+      minmax(145px, 0.6fr);
+    min-height: 180px;
+    border-bottom: 1px solid var(--sonic-border-soft);
+  }
+
+  .tone-rail > div {
+    display: grid;
     min-width: 0;
-    padding: clamp(22px, 3vw, 34px);
-    background: rgb(255 253 252 / 0.72);
+    align-content: start;
+    gap: 7px;
+    padding: 12px 14px;
+    border-right: 1px solid var(--sonic-border-soft);
   }
 
-  .tone-primary {
-    display: grid;
-    gap: 12px;
+  .tone-rail > div:last-child {
+    border-right: 0;
+  }
+
+  .tone-frequency-block :global(.frequency-control),
+  .tone-level :global(.level-control) {
+    min-width: 0;
   }
 
   .tone-presets {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 7px;
-    margin-top: -7px;
+    display: grid;
+    grid-template-columns: repeat(5, minmax(0, 1fr));
+    gap: 5px;
   }
 
   .tone-presets button {
-    min-width: 52px;
-    min-height: 38px;
-    padding: 0 11px;
-    border: 1px solid var(--color-border);
-    border-radius: 999px;
-    background: var(--color-surface);
-    color: var(--color-ink-muted);
+    min-width: 0;
+    min-height: 44px;
+    padding: 0 8px;
+    border: 1px solid var(--sonic-border-soft);
+    border-radius: var(--sonic-control-radius);
+    background: var(--sonic-control-bg);
+    color: var(--sonic-ink);
+    font: inherit;
+    font-size: 0.76rem;
+    font-weight: 760;
     cursor: pointer;
   }
 
   .tone-presets button:hover:not(:disabled) {
-    border-color: var(--color-focus);
-    color: var(--color-ink);
+    border-color: var(--sonic-signal);
   }
 
   .tone-presets button:disabled {
@@ -218,53 +300,58 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
     opacity: 0.45;
   }
 
-  .tone-mode-grid {
-    display: grid;
-    grid-template-columns: minmax(0, 1.15fr) minmax(0, 0.85fr);
-    gap: 18px;
+  .tone-modes {
+    grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
   }
 
-  .tone-safety {
+  .tone-modes > .tone-rail__label {
+    grid-column: 1 / -1;
+  }
+
+  .tone-modes :global(fieldset) {
+    min-width: 0;
+  }
+
+  .tone-transport {
+    grid-template-rows: auto auto 1fr;
+  }
+
+  .tone-transport :global(button) {
+    width: 100%;
+    min-height: 48px;
+  }
+
+  .tone-state-strip {
     display: grid;
     grid-template-columns: auto 1fr;
-    gap: 10px;
-    padding: 11px 13px;
-    border-radius: var(--radius-control);
-    background: rgb(255 215 106 / 0.18);
+    gap: 12px;
+    align-items: start;
+    min-height: 52px;
+    padding: 9px 18px 10px;
   }
 
-  .tone-safety i {
-    margin-top: 3px;
+  .tone-state-strip strong {
+    color: var(--sonic-current);
+    font-size: 0.72rem;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
   }
 
-  .tone-safety p,
+  .tone-state-strip p,
   .tone-error {
     margin: 0;
-    font-size: 0.8rem;
-    line-height: 1.45;
+    font-size: 0.75rem;
+    line-height: 1.4;
   }
 
   .tone-error {
-    padding: 11px 13px;
-    border-radius: var(--radius-control);
-    background: rgb(155 47 47 / 0.08);
-    color: #7f2929;
+    padding: 10px 18px;
+    border-top: 1px solid rgb(149 80 59 / 0.2);
+    color: var(--sonic-opposing);
   }
 
   .tone-error[hidden] {
     display: none;
-  }
-
-  .tone-actions {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-  }
-
-  .tone-actions > span {
-    color: var(--color-ink-muted);
-    font-size: 0.78rem;
-    line-height: 1.4;
   }
 
   .sr-only {
@@ -279,38 +366,145 @@ const presets = [40, 100, 440, 1_000, 10_000] as const;
     border: 0;
   }
 
-  @media (max-width: 900px) {
-    .tone-instrument {
-      grid-template-columns: 1fr;
+  @media (min-width: 901px) and (max-height: 820px) {
+    .tone-sheet__bar {
+      min-height: 48px;
+      padding: 8px 14px;
     }
 
-    .tone-visual {
-      min-height: 330px;
-      border-right: 0;
-      border-bottom: 1px solid var(--color-border);
-    }
-  }
-
-  @media (max-width: 560px) {
-    .tone-visual {
-      grid-template-rows: auto 120px auto;
+    .tone-field {
+      grid-template-rows: auto 88px auto;
       min-height: 0;
-      padding: 18px 20px;
+      gap: 4px;
+      padding: 7px 14px 5px;
     }
 
     .tone-canvas-wrap,
     .tone-canvas-wrap canvas {
-      min-height: 120px;
+      min-height: 88px;
     }
 
-    .tone-mode-grid {
+    .tone-rail {
+      grid-template-columns:
+        minmax(235px, 1.1fr) minmax(315px, 1.55fr) minmax(165px, 0.72fr)
+        minmax(150px, 0.58fr);
+      min-height: 154px;
+    }
+
+    .tone-rail > div {
+      gap: 4px;
+      padding: 6px 10px;
+    }
+
+    .tone-state-strip {
+      min-height: 44px;
+      padding-block: 4px;
+    }
+  }
+
+  @media (max-width: 1120px) {
+    .tone-rail {
+      grid-template-columns: minmax(280px, 1.15fr) minmax(280px, 1fr) minmax(
+          150px,
+          0.65fr
+        );
+    }
+
+    .tone-transport {
+      grid-column: 1 / -1;
+      grid-template-columns: auto minmax(130px, 180px) 1fr;
+      align-items: center;
+      border-top: 1px solid var(--sonic-border-soft);
+    }
+  }
+
+  @media (max-width: 900px) {
+    .tone-field {
+      min-height: 210px;
+    }
+
+    .tone-modes {
       grid-template-columns: 1fr;
     }
 
-    .tone-actions {
+    .tone-modes > .tone-rail__label {
+      grid-column: auto;
+    }
+
+    .tone-rail {
+      grid-template-columns: 1fr 1fr;
+    }
+
+    .tone-rail > div:nth-child(2) {
+      border-right: 0;
+    }
+
+    .tone-level,
+    .tone-transport {
+      border-top: 1px solid var(--sonic-border-soft);
+    }
+
+    .tone-transport {
+      grid-column: auto;
+      grid-template-columns: 1fr;
+      align-items: start;
+    }
+  }
+
+  @media (max-width: 560px) {
+    .tone-sheet__bar {
       align-items: flex-start;
-      flex-direction: column;
-      gap: 8px;
+      padding-inline: 14px;
+    }
+
+    .tone-sheet__state :global(.metric-readout) {
+      font-size: 1.18rem;
+    }
+
+    .tone-field {
+      grid-template-rows: auto 112px auto;
+      min-height: 0;
+      padding: 12px 14px 10px;
+    }
+
+    .tone-field__heading {
+      align-items: flex-start;
+    }
+
+    .tone-field__reference {
+      max-width: 118px;
+      white-space: normal;
+    }
+
+    .tone-canvas-wrap,
+    .tone-canvas-wrap canvas {
+      min-height: 112px;
+    }
+
+    .tone-rail {
+      grid-template-columns: 1fr;
+    }
+
+    .tone-rail > div {
+      border-right: 0;
+      border-top: 1px solid var(--sonic-border-soft);
+      padding-inline: 14px;
+    }
+
+    .tone-rail > div:first-child {
+      border-top: 0;
+    }
+
+    .tone-presets {
+      grid-template-columns: repeat(5, minmax(48px, 1fr));
+      overflow-x: auto;
+      scrollbar-width: thin;
+    }
+
+    .tone-state-strip {
+      grid-template-columns: 1fr;
+      gap: 3px;
+      padding-inline: 14px;
     }
   }
 </style>
