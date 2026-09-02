@@ -26,6 +26,7 @@ jobs:
       - name: Apply Cold Review #1 product fixes
         run: |
           python <<'PY'
+          import re
           from pathlib import Path
 
           tone_path = Path('src/tools/tone-generator/ToneGenerator.astro')
@@ -53,20 +54,14 @@ jobs:
               1,
           )
 
-          cursor_block = '''  .noise-stage__cursor {
-            top: 0;
-            bottom: 0;
-            left: 50%;
-            right: auto;
-            width: 1px;
-            background: var(--sonic-current);
-            opacity: 0.48;
-          }
-
-          '''
-          if cursor_block not in noise:
-              raise SystemExit('Expected Noise cursor CSS block was not found')
-          noise = noise.replace(cursor_block, '', 1)
+          noise, removed = re.subn(
+              r'\n  \.noise-stage__cursor \{\n(?:    .*\n)+?  \}\n',
+              '\n',
+              noise,
+              count=1,
+          )
+          if removed != 1:
+              raise SystemExit(f'Expected exactly one Noise cursor CSS block, removed {removed}')
           noise_path.write_text(noise)
           PY
       - name: Format reviewed product files
