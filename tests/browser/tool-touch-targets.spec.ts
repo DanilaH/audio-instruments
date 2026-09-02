@@ -29,6 +29,15 @@ const touchTargetCases = [
     selectors: [".channel-actions button", ".sequence-button", ".stop-button"],
   },
   {
+    path: "/audio-latency-test",
+    selectors: [
+      ".latency-start",
+      ".latency-stop",
+      "[data-latency-offset]",
+      ".latency-reported summary",
+    ],
+  },
+  {
     path: "/speaker-test",
     selectors: [
       ".speaker-node",
