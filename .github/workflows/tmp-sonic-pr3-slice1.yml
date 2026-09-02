@@ -23,6 +23,8 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
+      - name: Apply slice-one remediation
+        run: python .github/tmp-sonic-pr3-slice1-fix.py
       - name: Format slice
         run: >-
           pnpm exec prettier --write
@@ -47,7 +49,7 @@ jobs:
           tests/browser/tool-touch-targets.spec.ts
           tests/browser/runtime-layout-stability.spec.ts
           --project=chromium --project=firefox --project=webkit
-      - name: Persist verified formatting
+      - name: Persist verified slice
         run: |
           if git diff --quiet -- src/tools/tone-generator/ToneGenerator.astro src/tools/frequency-sweep/FrequencySweep.astro tests/browser/sonic-field-generated-signal-production-layout.spec.ts; then
             exit 0
@@ -55,5 +57,5 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add src/tools/tone-generator/ToneGenerator.astro src/tools/frequency-sweep/FrequencySweep.astro tests/browser/sonic-field-generated-signal-production-layout.spec.ts
-          git commit -m "style: format generated-signal slice one"
+          git commit -m "fix: harden generated-signal slice one"
           git push origin HEAD:feat/sonic-field-generated-signal-family
