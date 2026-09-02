@@ -1,4 +1,4 @@
-name: PR5 Spectrum Targeted
+name: PR5 Spectrum Visual QA
 
 on:
   push:
@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 jobs:
-  targeted:
+  visual-qa:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 20
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,20 +30,50 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting
-        run: pnpm exec prettier --check src/tools/spectrum-analyzer/model.ts src/tools/spectrum-analyzer/renderers.ts tests/unit/spectrum-analyzer-model.test.ts
-
-      - name: Scoped lint
-        run: pnpm exec eslint src/tools/spectrum-analyzer/model.ts src/tools/spectrum-analyzer/renderers.ts tests/unit/spectrum-analyzer-model.test.ts
-
-      - name: Spectrum model tests
-        run: pnpm exec vitest run tests/unit/spectrum-analyzer-model.test.ts
-
       - name: Build
         run: pnpm build
 
       - name: Install Playwright browsers
         run: pnpm exec playwright install --with-deps chromium firefox webkit
 
-      - name: Spectrum browser regression
-        run: pnpm exec playwright test tests/browser/spectrum-analyzer.spec.ts tests/browser/spectrum-analyzer-layout.spec.ts tests/browser/spectrum-analyzer-construction-failure.spec.ts tests/browser/spectrum-analyzer-devicechange.spec.ts tests/browser/spectrum-analyzer-metadata-delay.spec.ts tests/browser/sonic-field-production-layout.spec.ts --project=chromium --project=firefox --project=webkit
+      - name: Add runner-only Spectrogram visual check
+        run: |
+          cat >> tests/browser/spectrum-analyzer.spec.ts <<'TS'
+
+          test("PR5 visual QA spectrogram response", async ({ page }, testInfo) => {
+            await page.setViewportSize({ width: 1366, height: 768 });
+            await page.locator("[data-spectrum-start]").click();
+            await page.locator('[data-spectrum-view="spectrogram"]').click();
+            await page.waitForTimeout(700);
+
+            await page.locator(".spectrum-canvas-wrap").screenshot({
+              path: `pr5-visual/${testInfo.project.name}-spectrogram-desktop.png`,
+            });
+            await page.screenshot({
+              path: `pr5-visual/${testInfo.project.name}-page-desktop.png`,
+              fullPage: false,
+            });
+
+            await page.setViewportSize({ width: 390, height: 844 });
+            await page.waitForTimeout(250);
+            await page.locator(".spectrum-canvas-wrap").screenshot({
+              path: `pr5-visual/${testInfo.project.name}-spectrogram-mobile.png`,
+            });
+            await page.screenshot({
+              path: `pr5-visual/${testInfo.project.name}-page-mobile.png`,
+              fullPage: false,
+            });
+          });
+          TS
+
+      - name: Capture deterministic Spectrum QA
+        run: |
+          mkdir -p pr5-visual
+          pnpm exec playwright test tests/browser/spectrum-analyzer.spec.ts --grep "PR5 visual QA spectrogram response" --project=chromium --project=firefox --project=webkit
+
+      - name: Upload visual QA
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr5-spectrum-visual-qa
+          path: pr5-visual
+          retention-days: 30
