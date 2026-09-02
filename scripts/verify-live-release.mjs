@@ -1,4 +1,5 @@
 import process from "node:process";
+import { URL } from "node:url";
 
 const BEACON_URL = "https://static.cloudflareinsights.com/beacon.min.js";
 const HTML_ROUTES = [
@@ -202,15 +203,17 @@ function verifyEnabledSitemaps({ sitemapIndex, sitemap, origin }) {
 async function fetchText(url, { origin, timeoutMs, expectedStatuses }) {
   let response;
   try {
-    response = await fetch(url, {
+    response = await globalThis.fetch(url, {
       redirect: "follow",
-      signal: AbortSignal.timeout(timeoutMs),
+      signal: globalThis.AbortSignal.timeout(timeoutMs),
       headers: {
         "user-agent": "BrowserAudioLabReleaseVerifier/1.0",
       },
     });
   } catch (error) {
-    throw new Error(`Request failed for ${url.href}: ${formatError(error)}`);
+    throw new Error(`Request failed for ${url.href}: ${formatError(error)}`, {
+      cause: error,
+    });
   }
 
   const finalUrl = new URL(response.url);
@@ -445,6 +448,7 @@ function expectThrows(callback, expectedPattern) {
     if (!expectedPattern.test(message)) {
       throw new Error(
         `Self-test expected ${expectedPattern}, got error: ${message}`,
+        { cause: error },
       );
     }
     return;
