@@ -14,12 +14,12 @@ tone.write_text(text)
 # Assert the controller-owned runtime state, not a made-up copy string.
 spec = Path("tests/browser/sonic-field-generated-signal-production-layout.spec.ts")
 text = spec.read_text()
-old = '    await expect(page.locator("#frequency-sweep-status")).toContainText("Playing");'
-new = '''    await expect(page.locator("#frequency-sweep-status")).toHaveAttribute(
+old = 'await expect(page.locator("#frequency-sweep-status")).toContainText("Playing");'
+new = '''await expect(page.locator("#frequency-sweep-status")).toHaveAttribute(
       "data-state",
       "playing",
     );'''
-if new not in text:
+if 'page.locator("#frequency-sweep-status")).toHaveAttribute(' not in text:
     if old not in text:
         raise SystemExit("Frequency active-state assertion anchor not found")
     text = text.replace(old, new, 1)
