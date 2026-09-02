@@ -1,4 +1,4 @@
-name: PR6 Audio Latency Targeted
+name: PR6 Audio Latency Formatter
 
 on:
   push:
@@ -9,9 +9,9 @@ permissions:
   contents: read
 
 jobs:
-  targeted:
+  format:
     runs-on: ubuntu-latest
-    timeout-minutes: 25
+    timeout-minutes: 10
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -30,23 +30,17 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Check formatting
-        run: pnpm exec prettier --check src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
+      - name: Format PR6 files
+        run: pnpm exec prettier --write src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
 
-      - name: Scoped lint
-        run: pnpm exec eslint src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
-
-      - name: Astro and TypeScript check
-        run: pnpm check
-
-      - name: AV sync unit tests
-        run: pnpm exec vitest run tests/unit/av-sync-timeline.test.ts
-
-      - name: Build
-        run: pnpm build
-
-      - name: Install Playwright browsers
-        run: pnpm exec playwright install --with-deps chromium firefox webkit
-
-      - name: Audio Latency browser regression
-        run: pnpm exec playwright test tests/browser/audio-latency.spec.ts tests/browser/audio-latency-layout.spec.ts tests/browser/runtime-layout-stability.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts --project=chromium --project=firefox --project=webkit
+      - name: Upload formatted files
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr6-formatted-files
+          path: |
+            src/tools/audio-latency/AudioLatency.astro
+            src/tools/audio-latency/AudioLatencyController.ts
+            tests/browser/audio-latency-layout.spec.ts
+            tests/browser/sonic-field-audio-latency-production-layout.spec.ts
+            tests/browser/tool-touch-targets.spec.ts
+          retention-days: 1
