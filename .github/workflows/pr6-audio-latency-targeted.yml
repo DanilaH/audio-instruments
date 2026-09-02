@@ -39,53 +39,26 @@ jobs:
 
           astro = Path("src/tools/audio-latency/AudioLatency.astro")
           text = astro.read_text()
-          old = '''    .latency-field__heading > span {
-              display: none;
-            }
-
-            .latency-sync-field {'''
-          new = '''    .latency-field__heading > span {
-              display: none;
-            }
-
-            .latency-result {
-              min-height: 2.5em;
-              line-height: 1.25;
-            }
-
-            .latency-sync-field {'''
-          if old not in text:
-              raise SystemExit("AudioLatency mobile insertion anchor not found")
+          old = "\n    .latency-sync-field {\n      grid-template-columns: 44px minmax(0, 1fr);\n    }"
+          new = "\n    .latency-result {\n      min-height: 2.5em;\n      line-height: 1.25;\n    }\n\n    .latency-sync-field {\n      grid-template-columns: 44px minmax(0, 1fr);\n    }"
+          if text.count(old) != 1:
+              raise SystemExit(f"AudioLatency mobile anchor count={text.count(old)}")
           astro.write_text(text.replace(old, new, 1))
 
           layout = Path("tests/browser/audio-latency-layout.spec.ts")
           text = layout.read_text()
           old = "expect(offsetBox?.height ?? 0).toBeGreaterThanOrEqual(44);"
           new = "expect(offsetBox?.height ?? 0).toBeGreaterThanOrEqual(44 - 0.01);"
-          if old not in text:
-              raise SystemExit("Audio Latency touch tolerance anchor not found")
+          if text.count(old) != 1:
+              raise SystemExit(f"Audio Latency touch anchor count={text.count(old)}")
           layout.write_text(text.replace(old, new, 1))
 
           production = Path("tests/browser/sonic-field-audio-latency-production-layout.spec.ts")
           text = production.read_text()
-          old = '''  await setOffset(page, -300);
-            const beforeX = await centerX(marker);
-            await expect(marker).toHaveAttribute("data-offset-relation", "before");
-            expect(beforeX).toBeLessThan(visualX - 20);
-
-            await setOffset(page, 300);
-            const afterX = await centerX(marker);
-            await expect(marker).toHaveAttribute("data-offset-relation", "after");
-            expect(afterX).toBeGreaterThan(visualX + 20);'''
-          new = '''  await setOffset(page, -300);
-            await expect(marker).toHaveAttribute("data-offset-relation", "before");
-            await expect.poll(async () => centerX(marker)).toBeLessThan(visualX - 20);
-
-            await setOffset(page, 300);
-            await expect(marker).toHaveAttribute("data-offset-relation", "after");
-            await expect.poll(async () => centerX(marker)).toBeGreaterThan(visualX + 20);'''
-          if old not in text:
-              raise SystemExit("Audio Latency marker transition anchor not found")
+          old = "  await setOffset(page, -300);\n  const beforeX = await centerX(marker);\n  await expect(marker).toHaveAttribute(\"data-offset-relation\", \"before\");\n  expect(beforeX).toBeLessThan(visualX - 20);\n\n  await setOffset(page, 300);\n  const afterX = await centerX(marker);\n  await expect(marker).toHaveAttribute(\"data-offset-relation\", \"after\");\n  expect(afterX).toBeGreaterThan(visualX + 20);"
+          new = "  await setOffset(page, -300);\n  await expect(marker).toHaveAttribute(\"data-offset-relation\", \"before\");\n  await expect.poll(async () => centerX(marker)).toBeLessThan(visualX - 20);\n\n  await setOffset(page, 300);\n  await expect(marker).toHaveAttribute(\"data-offset-relation\", \"after\");\n  await expect.poll(async () => centerX(marker)).toBeGreaterThan(visualX + 20);"
+          if text.count(old) != 1:
+              raise SystemExit(f"Audio Latency marker anchor count={text.count(old)}")
           production.write_text(text.replace(old, new, 1))
           PY
 
