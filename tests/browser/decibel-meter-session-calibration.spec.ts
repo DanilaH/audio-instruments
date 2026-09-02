@@ -184,10 +184,8 @@ test("calibration without a reported deviceId is session-only and clears on Stop
   );
 
   await openDbCalibration(page);
-  await openDbCalibration(page);
   await page.locator("[data-db-reference]").fill("72");
   await page.locator("[data-db-weighting-confirm]").check();
-  await openDbCalibration(page);
   await openDbCalibration(page);
   await page.locator("[data-db-calibrate]").click();
 
@@ -235,10 +233,8 @@ test("rejects an unstable calibration window through the controller UI", async (
   await page.locator("[data-db-start]").click();
   await setUnstableMeter(page, true);
   await openDbCalibration(page);
-  await openDbCalibration(page);
   await page.locator("[data-db-reference]").fill("72");
   await page.locator("[data-db-weighting-confirm]").check();
-  await openDbCalibration(page);
   await openDbCalibration(page);
   await page.locator("[data-db-calibrate]").click();
 
