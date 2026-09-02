@@ -9,7 +9,7 @@ const touchTargetCases = [
   { path: "/tone-generator", selectors: [".tone-presets button"] },
   {
     path: "/bass-test",
-    selectors: [".bass-mode-selector button", ".bass-presets button"],
+    selectors: [".bass-modes button", ".bass-presets button"],
   },
   {
     path: "/frequency-sweep",
