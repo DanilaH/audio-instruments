@@ -386,8 +386,10 @@ test("accepts a stable 3-second Z/Flat/Linear reference and persists it by devic
 }) => {
   await page.locator("[data-db-start]").click();
   await openDbCalibration(page);
+  await openDbCalibration(page);
   await page.locator("[data-db-reference]").fill("72");
   await page.locator("[data-db-weighting-confirm]").check();
+  await openDbCalibration(page);
   await openDbCalibration(page);
   await page.locator("[data-db-calibrate]").click();
 
@@ -437,6 +439,7 @@ test("resets only the active device calibration", async ({ page }) => {
     "Reset current-device calibration",
   );
 
+  await openDbCalibration(page);
   await openDbCalibration(page);
   await page.locator("[data-db-calibrate]").click();
   await expect(page.locator("[data-db-calibration-live-status]")).toHaveText(
@@ -530,8 +533,10 @@ test("rejects clipping during calibration and leaves the tool dBFS-only", async 
   await page.locator("[data-db-start]").click();
   await setMeterMode(page, "clipping");
   await openDbCalibration(page);
+  await openDbCalibration(page);
   await page.locator("[data-db-reference]").fill("72");
   await page.locator("[data-db-weighting-confirm]").check();
+  await openDbCalibration(page);
   await openDbCalibration(page);
   await page.locator("[data-db-calibrate]").click();
 
@@ -555,8 +560,10 @@ test("Stop cancels meter work and an in-flight calibration window", async ({
 }) => {
   await page.locator("[data-db-start]").click();
   await openDbCalibration(page);
+  await openDbCalibration(page);
   await page.locator("[data-db-reference]").fill("72");
   await page.locator("[data-db-weighting-confirm]").check();
+  await openDbCalibration(page);
   await openDbCalibration(page);
   await page.locator("[data-db-calibrate]").click();
   await page.waitForTimeout(350);
