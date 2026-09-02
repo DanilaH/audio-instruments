@@ -7,8 +7,8 @@ const hasLiveTools = getPublicTools().length > 0;
 const analytics = resolveSiteAnalyticsConfig({
   SITE_ANALYTICS: import.meta.env.SITE_ANALYTICS,
   ANALYTICS_PRIVACY_REVIEW: import.meta.env.ANALYTICS_PRIVACY_REVIEW,
-  CLOUDFLARE_WEB_ANALYTICS_TOKEN:
-    import.meta.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN,
+  CLOUDFLARE_WEB_ANALYTICS_TOKEN: import.meta.env
+    .CLOUDFLARE_WEB_ANALYTICS_TOKEN,
 });
 ---
 
@@ -63,8 +63,8 @@ const analytics = resolveSiteAnalyticsConfig({
           <ul>
             <li>
               Cloudflare documents Web Analytics as not using cookies or
-              localStorage for usage metrics and as not fingerprinting individual
-              visitors for this analytics collection.
+              localStorage for usage metrics and as not fingerprinting
+              individual visitors for this analytics collection.
             </li>
             <li>
               The analytics beacon loads from Cloudflare and sends analytics
@@ -81,17 +81,17 @@ const analytics = resolveSiteAnalyticsConfig({
           </ul>
           <p>
             This notice describes the technical integration. It is not a legal
-            determination about whether consent is required in every jurisdiction.
-            Production activation is gated on a separate deployment privacy and
-            consent review.
+            determination about whether consent is required in every
+            jurisdiction. Production activation is gated on a separate
+            deployment privacy and consent review.
           </p>
         </>
       ) : (
         <p>
-          No analytics provider is enabled in this build. Cloudflare Web Analytics
-          is selected for the production rollout, but activation remains
-          fail-closed until the deployment privacy/consent review is explicitly
-          approved and a site token is configured.
+          No analytics provider is enabled in this build. Cloudflare Web
+          Analytics is selected for the production rollout, but activation
+          remains fail-closed until the deployment privacy/consent review is
+          explicitly approved and a site token is configured.
         </p>
       )
     }

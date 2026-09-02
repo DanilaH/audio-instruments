@@ -100,7 +100,9 @@ function runBuild(overrides) {
   }
 
   if (build.status !== 0) {
-    throw new Error(`Analytics Astro build failed with exit code ${build.status}.`);
+    throw new Error(
+      `Analytics Astro build failed with exit code ${build.status}.`,
+    );
   }
 }
 

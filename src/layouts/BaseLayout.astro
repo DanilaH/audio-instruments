@@ -25,10 +25,11 @@ const canonicalUrl = buildCanonicalUrl(indexing, Astro.url.pathname);
 const analytics = resolveSiteAnalyticsConfig({
   SITE_ANALYTICS: import.meta.env.SITE_ANALYTICS,
   ANALYTICS_PRIVACY_REVIEW: import.meta.env.ANALYTICS_PRIVACY_REVIEW,
-  CLOUDFLARE_WEB_ANALYTICS_TOKEN:
-    import.meta.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN,
+  CLOUDFLARE_WEB_ANALYTICS_TOKEN: import.meta.env
+    .CLOUDFLARE_WEB_ANALYTICS_TOKEN,
 });
-const cloudflareBeaconConfig = buildCloudflareWebAnalyticsBeaconConfig(analytics);
+const cloudflareBeaconConfig =
+  buildCloudflareWebAnalyticsBeaconConfig(analytics);
 ---
 
 <!doctype html>
@@ -71,7 +72,7 @@ const cloudflareBeaconConfig = buildCloudflareWebAnalyticsBeaconConfig(analytics
           type="module"
           src={CLOUDFLARE_WEB_ANALYTICS_SCRIPT_URL}
           data-cf-beacon={cloudflareBeaconConfig}
-        ></script>
+        />
       )
     }
   </body>
