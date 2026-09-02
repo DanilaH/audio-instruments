@@ -96,6 +96,28 @@ Before those values are supplied in a real deployment, determine the required co
 
 Canonical implementation evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.
 
+## Live post-deploy verification
+
+The repository provides a parameterized real-origin verifier:
+
+```text
+pnpm verify:live-release -- --origin https://<REAL_PRODUCTION_ORIGIN> --indexing disabled --analytics disabled
+```
+
+The origin must be the actual deployed HTTPS origin. Do not substitute a synthetic/test hostname. The verifier checks all 18 HTML routes, same-origin redirects, robots metadata, canonical behavior, robots.txt, sitemap state, Cloudflare beacon multiplicity and `/privacy` build-state disclosure.
+
+Use it as a staged release gate rather than enabling everything at once:
+
+```text
+1. initial deploy: indexing=disabled, analytics=disabled
+2. after separately approved analytics activation: re-run with analytics=enabled
+3. after explicit indexing activation: re-run with indexing=enabled
+```
+
+Analytics and indexing expectations are independent; pass the state that is actually intended for that deployment. A green live verifier does not prove Cloudflare dashboard ingestion, Search Console indexing, or physical-device/browser QA.
+
+Deterministic no-network verifier logic is gated in CI through `pnpm test:live-release-contract`. Repository-side readiness evidence is recorded in `docs/evidence/P8_LIVE_RELEASE_VERIFIER_2026-09-02.md`. Real post-deploy verification remains incomplete until a real-origin command/result is recorded.
+
 ## Search Console
 
 After launch:
