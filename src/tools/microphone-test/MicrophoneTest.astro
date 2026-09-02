@@ -1,60 +1,63 @@
 ---
 import ToolStatus from "../../components/feedback/ToolStatus.astro";
-import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
+import SonicInstrument from "../../components/layout/SonicInstrument.astro";
 ---
 
 <div data-microphone-test data-mic-state="idle">
-  <InstrumentSurface
+  <SonicInstrument
+    class="mic-sheet"
     label="Microphone Test capture, meter and recording controls"
-    accent="cyan"
   >
-    <div class="mic-instrument">
-      <section
-        class="mic-monitor"
-        aria-label="Live microphone waveform and level"
-      >
-        <div class="mic-monitor__header">
-          <ToolStatus id="microphone-test-status" label="Ready" state="idle" />
-          <div class="mic-input-readout">
-            <span>Input</span>
-            <strong data-mic-active-input>No active input</strong>
-          </div>
-        </div>
+    <header class="mic-bar">
+      <ToolStatus id="microphone-test-status" label="Ready" state="idle" />
+      <div class="mic-input-readout">
+        <span>Input</span>
+        <strong data-mic-active-input>No active input</strong>
+      </div>
+    </header>
 
-        <div class="mic-waveform">
-          <canvas data-mic-waveform aria-label="Live microphone waveform"
-          ></canvas>
-          <span class="mic-waveform__baseline" aria-hidden="true"></span>
+    <section class="mic-field" aria-label="Live microphone waveform and level">
+      <div class="mic-field__heading">
+        <div>
+          <span>Live browser input</span>
+          <strong>Waveform + digital level</strong>
         </div>
+        <small>Local analysis · no speaker routing</small>
+      </div>
 
-        <div class="mic-meters" aria-label="Digital microphone level meters">
-          <div class="mic-meter">
-            <span>RMS</span>
-            <strong data-mic-rms>—</strong>
-            <small>100 ms · 10 Hz update</small>
-          </div>
-          <div class="mic-meter">
-            <span>Peak hold</span>
-            <strong data-mic-peak>—</strong>
-            <small>1 s hold · 20 dB/s decay</small>
-          </div>
+      <div class="mic-waveform">
+        <canvas data-mic-waveform aria-label="Live microphone waveform"
+        ></canvas>
+        <span class="mic-waveform__baseline" aria-hidden="true"></span>
+      </div>
+
+      <div class="mic-meters" aria-label="Digital microphone level meters">
+        <div class="mic-meter">
+          <span>RMS</span>
+          <strong data-mic-rms>—</strong>
+          <small>100 ms · 10 Hz update</small>
         </div>
-        <p class="mic-monitor__note">
+        <div class="mic-meter">
+          <span>Peak hold</span>
+          <strong data-mic-peak>—</strong>
+          <small>1 s hold · 20 dB/s decay</small>
+        </div>
+        <p class="mic-field__note">
           Values are digital dBFS from the browser audio stream, not calibrated
           sound-pressure level (SPL).
         </p>
-      </section>
+      </div>
+    </section>
 
-      <section class="mic-controls" aria-label="Microphone Test settings">
+    <section class="mic-rail" aria-label="Microphone Test controls">
+      <div class="mic-capture-pane">
         <div class="mic-permission">
           <i class="ph ph-microphone" aria-hidden="true"></i>
           <div>
-            <strong>Microphone permission is requested only after Start.</strong
-            >
+            <strong>Permission is requested only after Start.</strong>
             <p>
-              The tool asks the browser to disable echo cancellation, noise
-              suppression and automatic gain control where those constraint
-              names are supported. Reported track settings below remain
+              Echo cancellation, noise suppression and automatic gain control
+              are requested off where supported; reported track settings remain
               authoritative.
             </p>
           </div>
@@ -66,23 +69,25 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
             Start microphone
           </button>
           <button type="button" class="mic-stop" data-mic-stop disabled>
-            <i class="ph ph-stop" aria-hidden="true"></i>
+            <span class="transport-stop-shape" aria-hidden="true"></span>
             Stop
           </button>
         </div>
 
-        <label class="mic-input-field" data-mic-input-field hidden>
-          <span>Input device</span>
-          <select data-mic-input-select aria-label="Microphone input device"
-          ></select>
-        </label>
-        <p
-          class="mic-selection-error"
-          data-mic-selection-error
-          role="alert"
-          hidden
-        >
-        </p>
+        <div class="mic-input-slot">
+          <label class="mic-input-field" data-mic-input-field hidden>
+            <span>Input device</span>
+            <select data-mic-input-select aria-label="Microphone input device"
+            ></select>
+          </label>
+          <p
+            class="mic-selection-error"
+            data-mic-selection-error
+            role="alert"
+            hidden
+          >
+          </p>
+        </div>
 
         <details class="mic-details">
           <summary>Capture details</summary>
@@ -117,38 +122,45 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
             </div>
           </dl>
         </details>
+      </div>
 
-        <section class="mic-recording" aria-labelledby="mic-recording-title">
-          <div class="mic-recording__header">
-            <div>
-              <span class="mic-kicker">Local recording</span>
-              <h3 id="mic-recording-title">Record up to 15 seconds</h3>
-            </div>
-            <p data-mic-recording-status role="status" aria-live="polite">
-              No local recording yet
-            </p>
+      <section class="mic-recording" aria-labelledby="mic-recording-title">
+        <div class="mic-recording__header">
+          <div>
+            <span class="mic-kicker">Local recording</span>
+            <h3 id="mic-recording-title">Record up to 15 seconds</h3>
           </div>
+          <p data-mic-recording-status role="status" aria-live="polite">
+            No local recording yet
+          </p>
+        </div>
 
-          <div class="mic-recording__actions">
-            <button type="button" data-mic-record disabled>
-              <i class="ph ph-record" aria-hidden="true"></i>
-              Record
-            </button>
-            <button type="button" data-mic-record-stop disabled>
-              <i class="ph ph-stop-circle" aria-hidden="true"></i>
-              Stop recording
-            </button>
-          </div>
+        <div class="mic-recording__actions">
+          <button type="button" data-mic-record disabled>
+            <i class="ph ph-record" aria-hidden="true"></i>
+            Record
+          </button>
+          <button type="button" data-mic-record-stop disabled>
+            <span class="transport-stop-shape" aria-hidden="true"></span>
+            Stop recording
+          </button>
+        </div>
+
+        <div class="mic-recording__notice-slot">
           <p class="mic-recording__notice" data-mic-recording-notice hidden></p>
+        </div>
+        <div class="mic-recording__playback-slot">
           <audio data-mic-playback controls preload="metadata" hidden>
             Your browser does not support audio playback controls.
           </audio>
-        </section>
-
-        <p class="mic-error" data-mic-error role="alert" hidden></p>
+        </div>
       </section>
+    </section>
+
+    <div class="mic-feedback-slot">
+      <p class="mic-error" data-mic-error role="alert" hidden></p>
     </div>
-  </InstrumentSurface>
+  </SonicInstrument>
 </div>
 
 <script>
@@ -177,76 +189,104 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 </script>
 
 <style>
-  .mic-instrument {
-    display: grid;
-    grid-template-columns: minmax(0, 0.92fr) minmax(440px, 1.08fr);
-    min-height: 470px;
-  }
-
-  .mic-monitor,
-  .mic-controls {
-    min-width: 0;
-    padding: clamp(20px, 2.5vw, 30px);
-  }
-
-  .mic-monitor {
-    display: grid;
-    grid-template-rows: auto minmax(150px, 1fr) auto auto;
-    gap: 14px;
-    border-right: 1px solid var(--color-border);
-    background:
-      radial-gradient(
-        circle at 55% 38%,
-        rgb(89 211 230 / 0.14),
-        transparent 38%
-      ),
-      linear-gradient(145deg, rgb(251 254 255 / 0.98), rgb(239 249 251 / 0.88));
-  }
-
-  .mic-monitor__header,
-  .mic-recording__header,
-  .mic-primary-actions,
-  .mic-recording__actions {
+  .mic-bar {
     display: flex;
+    min-height: 50px;
     align-items: center;
     justify-content: space-between;
-    gap: 12px;
+    gap: 16px;
+    padding: 7px 18px;
+    border-bottom: 1px solid var(--sonic-border-soft);
   }
 
   .mic-input-readout {
     display: grid;
     justify-items: end;
-    gap: 2px;
+    gap: 1px;
+    min-width: 0;
     text-align: right;
   }
 
   .mic-input-readout span,
+  .mic-field__heading span,
   .mic-kicker,
-  .mic-meter span {
-    color: var(--color-ink-muted);
-    font-size: 0.72rem;
-    font-weight: 780;
-    letter-spacing: 0.06em;
+  .mic-meter span,
+  .mic-input-field > span {
+    color: var(--sonic-muted);
+    font-size: 0.67rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
   }
 
   .mic-input-readout strong {
-    max-width: 240px;
+    max-width: min(38vw, 300px);
     overflow: hidden;
-    font-size: 0.88rem;
+    font-size: 0.8rem;
     text-overflow: ellipsis;
     white-space: nowrap;
   }
 
+  .mic-field {
+    display: grid;
+    grid-template-rows: auto minmax(118px, 1fr) auto;
+    gap: 9px;
+    min-height: 238px;
+    padding: 12px 18px;
+    border-bottom: 1px solid var(--sonic-border);
+    background: var(--sonic-field);
+  }
+
+  .mic-field__heading {
+    display: flex;
+    align-items: end;
+    justify-content: space-between;
+    gap: 16px;
+  }
+
+  .mic-field__heading > div {
+    display: grid;
+    gap: 2px;
+  }
+
+  .mic-field__heading strong {
+    font-size: 0.9rem;
+  }
+
+  .mic-field__heading small,
+  .mic-field__note,
+  .mic-permission p,
+  .mic-recording__header p,
+  .mic-recording__notice,
+  .mic-selection-error,
+  .mic-error {
+    margin: 0;
+    color: var(--sonic-muted);
+    font-size: 0.7rem;
+    line-height: 1.4;
+  }
+
   .mic-waveform {
     position: relative;
-    min-height: 160px;
+    min-height: 118px;
     overflow: hidden;
-    border: 1px solid rgb(30 83 92 / 0.1);
-    border-radius: 24px;
-    background: rgb(255 255 255 / 0.66);
-    box-shadow: inset 0 0 0 1px rgb(255 255 255 / 0.5);
-    color: #177d8e;
+    border: 1px solid var(--sonic-border);
+    border-radius: var(--sonic-control-radius);
+    background:
+      linear-gradient(
+        to bottom,
+        transparent calc(50% - 1px),
+        rgb(24 56 65 / 0.12) 50%,
+        transparent calc(50% + 1px)
+      ),
+      repeating-linear-gradient(
+        90deg,
+        transparent 0,
+        transparent calc(12.5% - 1px),
+        rgb(24 56 65 / 0.07) 12.5%
+      ),
+      rgb(243 240 232 / 0.64);
+    color: var(--sonic-signal);
   }
 
   .mic-waveform canvas {
@@ -258,116 +298,154 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
   .mic-waveform__baseline {
     position: absolute;
-    inset: 50% 8% auto;
+    inset: 50% 0 auto;
     height: 1px;
-    background: rgb(31 88 97 / 0.12);
+    background: rgb(24 56 65 / 0.12);
     pointer-events: none;
   }
 
   .mic-meters {
     display: grid;
-    grid-template-columns: repeat(2, minmax(0, 1fr));
-    gap: 8px;
+    grid-template-columns: minmax(130px, 0.34fr) minmax(130px, 0.34fr) minmax(
+        260px,
+        1fr
+      );
+    align-items: stretch;
+    gap: 7px;
+  }
+
+  .mic-meter,
+  .mic-field__note {
+    min-width: 0;
+    padding: 8px 10px;
+    border: 1px solid var(--sonic-border-soft);
+    border-radius: var(--sonic-control-radius);
+    background: rgb(243 240 232 / 0.48);
   }
 
   .mic-meter {
     display: grid;
-    gap: 4px;
-    padding: 12px 14px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-control);
-    background: rgb(255 255 255 / 0.66);
+    grid-template-columns: auto 1fr;
+    align-items: baseline;
+    gap: 2px 8px;
   }
 
   .mic-meter strong {
-    font-size: clamp(1.15rem, 2.2vw, 1.55rem);
+    justify-self: end;
+    font-size: 1rem;
     font-variant-numeric: tabular-nums;
   }
 
-  .mic-meter small,
-  .mic-monitor__note,
-  .mic-permission p,
-  .mic-recording__header p,
-  .mic-recording__notice,
-  .mic-selection-error,
-  .mic-error {
-    margin: 0;
-    color: var(--color-ink-muted);
-    font-size: 0.75rem;
-    line-height: 1.45;
+  .mic-meter small {
+    grid-column: 1 / -1;
+    color: var(--sonic-muted);
+    font-size: 0.64rem;
   }
 
-  .mic-monitor__note {
-    max-width: 520px;
+  .mic-field__note {
+    align-content: center;
   }
 
-  .mic-controls {
+  .mic-rail {
     display: grid;
+    grid-template-columns: minmax(0, 1.08fr) minmax(360px, 0.92fr);
+    min-height: 196px;
+  }
+
+  .mic-capture-pane,
+  .mic-recording {
+    min-width: 0;
+    padding: 11px 14px;
+  }
+
+  .mic-capture-pane {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
     align-content: start;
-    gap: 13px;
+    gap: 7px 10px;
+    border-right: 1px solid var(--sonic-border-soft);
   }
 
   .mic-permission {
     display: flex;
     align-items: flex-start;
-    gap: 10px;
-    padding: 11px 12px;
-    border-radius: var(--radius-control);
-    background: rgb(89 211 230 / 0.12);
+    gap: 8px;
+    min-width: 0;
+  }
+
+  .mic-permission > i {
+    margin-top: 2px;
+    color: var(--sonic-signal);
   }
 
   .mic-permission strong {
     display: block;
-    margin-bottom: 3px;
-    font-size: 0.82rem;
+    margin-bottom: 2px;
+    font-size: 0.76rem;
+  }
+
+  .mic-primary-actions,
+  .mic-recording__actions {
+    display: grid;
+    gap: 6px;
   }
 
   .mic-primary-actions {
-    justify-content: flex-start;
+    grid-template-columns: minmax(132px, 1fr) minmax(84px, 0.55fr);
+    align-self: start;
+  }
+
+  .mic-start,
+  .mic-stop,
+  .mic-recording__actions button,
+  .mic-details summary,
+  .mic-input-field select {
+    min-height: 44px;
+    border: 1px solid var(--sonic-border);
+    border-radius: var(--sonic-control-radius);
+    background: transparent;
+    color: var(--sonic-ink);
+    font: inherit;
   }
 
   .mic-start,
   .mic-stop,
   .mic-recording__actions button {
     display: inline-flex;
-    min-height: 46px;
     align-items: center;
     justify-content: center;
-    gap: 8px;
-    padding: 0 15px;
-    border-radius: var(--radius-button);
-    font: inherit;
-    font-size: 0.82rem;
+    gap: 7px;
+    padding: 0 12px;
+    font-size: 0.76rem;
     font-weight: 800;
     cursor: pointer;
   }
 
   .mic-start {
-    border: 1px solid var(--color-ink);
-    background: var(--color-ink);
-    color: var(--color-surface);
+    border-color: var(--sonic-ink);
+    background: var(--sonic-ink);
+    color: var(--sonic-sheet);
   }
 
-  .mic-stop,
-  .mic-recording__actions button {
-    border: 1px solid var(--color-border-strong);
-    background: var(--color-surface);
-    color: var(--color-ink);
+  .transport-stop-shape {
+    display: inline-block;
+    width: 9px;
+    height: 9px;
+    flex: 0 0 auto;
+    border-radius: 1px;
+    background: currentColor;
   }
 
-  button:disabled,
-  select:disabled {
-    cursor: not-allowed;
-    opacity: 0.5;
+  .mic-input-slot {
+    grid-column: 1 / -1;
+    min-height: 50px;
   }
 
   .mic-input-field {
     display: grid;
     grid-template-columns: auto minmax(0, 1fr);
     align-items: center;
-    gap: 12px;
-    font-size: 0.82rem;
-    font-weight: 760;
+    gap: 10px;
   }
 
   .mic-input-field[hidden],
@@ -380,42 +458,47 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
   .mic-input-field select {
     min-width: 0;
-    min-height: 42px;
-    padding: 0 34px 0 11px;
-    border: 1px solid var(--color-border-strong);
-    border-radius: var(--radius-control);
-    background: var(--color-surface);
-    color: var(--color-ink);
-    font: inherit;
+    padding: 0 34px 0 10px;
+    background: var(--sonic-control-bg);
+  }
+
+  .mic-selection-error {
+    padding-top: 4px;
+    color: #773927;
   }
 
   .mic-details {
-    border-top: 1px solid var(--color-border);
-    border-bottom: 1px solid var(--color-border);
-    padding: 9px 0;
+    grid-column: 1 / -1;
+    border-top: 1px solid var(--sonic-border-soft);
   }
 
   .mic-details summary {
+    display: flex;
+    align-items: center;
+    border: 0;
+    border-radius: 0;
     cursor: pointer;
-    font-size: 0.82rem;
-    font-weight: 780;
+    font-size: 0.73rem;
+    font-weight: 800;
   }
 
   .mic-details dl {
     display: grid;
-    gap: 7px;
-    margin: 10px 0 2px;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    gap: 5px 12px;
+    margin: 4px 0 2px;
+    padding: 5px 0;
   }
 
   .mic-details dl > div {
     display: grid;
-    grid-template-columns: minmax(120px, 0.8fr) minmax(0, 1.2fr);
-    gap: 12px;
-    font-size: 0.75rem;
+    grid-template-columns: minmax(110px, 0.8fr) minmax(0, 1.2fr);
+    gap: 8px;
+    font-size: 0.68rem;
   }
 
   .mic-details dt {
-    color: var(--color-ink-muted);
+    color: var(--sonic-muted);
   }
 
   .mic-details dd {
@@ -427,90 +510,171 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
 
   .mic-recording {
     display: grid;
-    gap: 10px;
-    padding: 12px;
-    border: 1px solid var(--color-border);
-    border-radius: var(--radius-control);
-    background: rgb(31 36 48 / 0.025);
+    align-content: start;
+    gap: 7px;
   }
 
   .mic-recording__header {
-    align-items: flex-start;
+    display: flex;
+    align-items: start;
+    justify-content: space-between;
+    gap: 10px;
   }
 
   .mic-recording h3 {
-    margin: 2px 0 0;
-    font-size: 0.94rem;
+    margin: 1px 0 0;
+    font-size: 0.85rem;
   }
 
   .mic-recording__header p {
-    max-width: 190px;
+    max-width: 165px;
     text-align: right;
   }
 
   .mic-recording__actions {
-    justify-content: flex-start;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .mic-recording__notice-slot {
+    min-height: 20px;
+  }
+
+  .mic-recording__playback-slot {
+    display: flex;
+    min-height: 44px;
+    align-items: center;
   }
 
   .mic-recording audio {
     width: 100%;
-    height: 38px;
+    min-height: 44px;
+    height: 44px;
   }
 
-  .mic-selection-error,
+  .mic-feedback-slot:empty {
+    display: none;
+  }
+
   .mic-error {
-    color: var(--color-danger, #9a3434);
+    margin: 0;
+    padding: 8px 14px;
+    border-top: 1px solid rgb(149 80 59 / 0.25);
+    background: rgb(149 80 59 / 0.06);
+    color: #773927;
+  }
+
+  button:disabled,
+  select:disabled {
+    cursor: not-allowed;
+    opacity: 0.5;
+  }
+
+  @media (min-width: 901px) and (max-height: 820px) {
+    .mic-bar {
+      min-height: 46px;
+      padding-block: 5px;
+    }
+
+    .mic-field {
+      grid-template-rows: auto 92px auto;
+      min-height: 0;
+      gap: 6px;
+      padding-block: 8px;
+    }
+
+    .mic-waveform {
+      min-height: 92px;
+    }
+
+    .mic-rail {
+      min-height: 180px;
+    }
+
+    .mic-capture-pane,
+    .mic-recording {
+      padding-block: 8px;
+    }
+
+    .mic-input-slot {
+      min-height: 46px;
+    }
   }
 
   @media (max-width: 900px) {
-    .mic-instrument {
+    .mic-field {
+      min-height: 220px;
+    }
+
+    .mic-rail {
       grid-template-columns: 1fr;
     }
 
-    .mic-monitor {
+    .mic-capture-pane {
       border-right: 0;
-      border-bottom: 1px solid var(--color-border);
+      border-bottom: 1px solid var(--sonic-border-soft);
     }
   }
 
   @media (max-width: 560px) {
-    .mic-monitor,
-    .mic-controls {
-      padding: 16px;
+    .mic-bar {
+      align-items: flex-start;
+      padding: 7px 12px;
     }
 
-    .mic-monitor {
-      grid-template-rows: auto 130px auto auto;
+    .mic-input-readout strong {
+      max-width: 48vw;
+    }
+
+    .mic-field {
+      grid-template-rows: auto 112px auto;
+      gap: 7px;
+      min-height: 0;
+      padding: 10px 12px;
+    }
+
+    .mic-field__heading {
+      align-items: start;
+    }
+
+    .mic-field__heading small {
+      max-width: 130px;
+      text-align: right;
     }
 
     .mic-waveform {
-      min-height: 130px;
+      min-height: 112px;
     }
 
-    .mic-meter {
-      padding: 9px 10px;
+    .mic-meters {
+      grid-template-columns: repeat(2, minmax(0, 1fr));
+    }
+
+    .mic-field__note {
+      grid-column: 1 / -1;
     }
 
     .mic-meter small {
       display: none;
     }
 
-    .mic-primary-actions,
-    .mic-recording__actions {
-      display: grid;
-      grid-template-columns: repeat(2, minmax(0, 1fr));
+    .mic-capture-pane,
+    .mic-recording {
+      padding: 10px 12px;
     }
 
-    .mic-start,
-    .mic-stop,
-    .mic-recording__actions button {
-      width: 100%;
-      padding-inline: 10px;
+    .mic-capture-pane {
+      grid-template-columns: 1fr;
+    }
+
+    .mic-primary-actions,
+    .mic-input-slot,
+    .mic-details {
+      grid-column: 1;
     }
 
     .mic-input-field {
       grid-template-columns: 1fr;
-      gap: 6px;
+      gap: 4px;
     }
 
     .mic-recording__header {
@@ -520,6 +684,10 @@ import InstrumentSurface from "../../components/layout/InstrumentSurface.astro";
     .mic-recording__header p {
       max-width: none;
       text-align: left;
+    }
+
+    .mic-details dl {
+      grid-template-columns: 1fr;
     }
   }
 </style>

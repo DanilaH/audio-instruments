@@ -70,11 +70,11 @@ const touchTargetCases = [
       ".spectrum-stop",
     ],
   },
-  { path: "/pitch-detector", selectors: [".pitch-field select"] },
+  { path: "/pitch-detector", selectors: [".pitch-control-field select"] },
   {
     path: "/decibel-meter",
     selectors: [
-      ".db-field select",
+      ".db-control-field select",
       ".db-reference-input input",
       ".db-calibrate",
       ".db-details summary",
