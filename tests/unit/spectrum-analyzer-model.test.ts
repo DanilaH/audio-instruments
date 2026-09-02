@@ -3,14 +3,17 @@ import { describe, expect, it } from "vitest";
 import {
   DOMINANT_FFT_MIN_HZ,
   SPECTROGRAM_COLUMN_CAPACITY,
+  SPECTROGRAM_CONTRAST_GAMMA,
   SPECTROGRAM_HISTORY_MS,
   SPECTROGRAM_MIN_COLUMN_INTERVAL_MS,
   SpectrogramHistory,
   dbToDisplayRatio,
   findDominantFftBin,
   frequencyForFftBin,
+  frequencyFromLogRatio,
   frequencyToLogRatio,
   getSpectrumDisplayMaxHz,
+  spectrogramDbToIntensity,
   spectrogramTimestampToRatio,
 } from "../../src/tools/spectrum-analyzer/model";
 
@@ -27,12 +30,43 @@ describe("Spectrum Analyzer display model", () => {
     expect(frequencyToLogRatio(2_000, 20, 20_000)).toBeCloseTo(2 / 3, 6);
   });
 
+  it("maps spectrogram rows back through the same logarithmic frequency geometry", () => {
+    expect(frequencyFromLogRatio(0, 20, 20_000)).toBeCloseTo(20, 8);
+    expect(frequencyFromLogRatio(1, 20, 20_000)).toBeCloseTo(20_000, 8);
+    expect(frequencyFromLogRatio(1 / 3, 20, 20_000)).toBeCloseTo(200, 6);
+    expect(frequencyFromLogRatio(2 / 3, 20, 20_000)).toBeCloseTo(2_000, 6);
+    expect(frequencyFromLogRatio(-1, 20, 20_000)).toBeCloseTo(20, 8);
+    expect(frequencyFromLogRatio(2, 20, 20_000)).toBeCloseTo(20_000, 8);
+  });
+
   it("maps analyser dB values into the documented -100..-20 display clamp", () => {
     expect(dbToDisplayRatio(-120)).toBe(0);
     expect(dbToDisplayRatio(-100)).toBe(0);
     expect(dbToDisplayRatio(-60)).toBeCloseTo(0.5, 8);
     expect(dbToDisplayRatio(-20)).toBe(1);
     expect(dbToDisplayRatio(0)).toBe(1);
+  });
+
+  it("raises weak spectrogram contrast monotonically without changing the raw dB clamp", () => {
+    expect(SPECTROGRAM_CONTRAST_GAMMA).toBeGreaterThan(0);
+    expect(SPECTROGRAM_CONTRAST_GAMMA).toBeLessThan(1);
+    expect(spectrogramDbToIntensity(-120)).toBe(0);
+    expect(spectrogramDbToIntensity(-100)).toBe(0);
+    expect(spectrogramDbToIntensity(-20)).toBe(1);
+    expect(spectrogramDbToIntensity(0)).toBe(1);
+    expect(spectrogramDbToIntensity(-60)).toBeCloseTo(
+      Math.pow(0.5, SPECTROGRAM_CONTRAST_GAMMA),
+      8,
+    );
+    expect(spectrogramDbToIntensity(-80)).toBeGreaterThan(
+      dbToDisplayRatio(-80),
+    );
+    expect(spectrogramDbToIntensity(-90)).toBeLessThan(
+      spectrogramDbToIntensity(-70),
+    );
+    expect(spectrogramDbToIntensity(-70)).toBeLessThan(
+      spectrogramDbToIntensity(-40),
+    );
   });
 
   it("labels the strongest displayed FFT bin while ignoring ordinary dominance below 40 Hz", () => {
