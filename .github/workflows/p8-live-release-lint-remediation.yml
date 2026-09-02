@@ -1,0 +1,67 @@
+name: P8 Live Release Lint Remediation
+
+on:
+  push:
+    branches:
+      - feat/p8-live-release-verifier
+
+permissions:
+  contents: write
+
+jobs:
+  remediate:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/p8-live-release-verifier
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - name: Apply narrow lint remediation
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          path = Path('scripts/verify-live-release.mjs')
+          text = path.read_text()
+
+          replacements = [
+              (
+                  'import process from "node:process";\n',
+                  'import process from "node:process";\nimport { URL } from "node:url";\n',
+              ),
+              ('response = await fetch(url, {', 'response = await globalThis.fetch(url, {'),
+              ('signal: AbortSignal.timeout(timeoutMs),', 'signal: globalThis.AbortSignal.timeout(timeoutMs),'),
+              (
+                  'throw new Error(`Request failed for ${url.href}: ${formatError(error)}`);',
+                  'throw new Error(`Request failed for ${url.href}: ${formatError(error)}`, { cause: error });',
+              ),
+              (
+                  'throw new Error(\n        `Self-test expected ${expectedPattern}, got error: ${message}`,\n      );',
+                  'throw new Error(\n        `Self-test expected ${expectedPattern}, got error: ${message}`,\n        { cause: error },\n      );',
+              ),
+          ]
+
+          for old, new in replacements:
+              count = text.count(old)
+              if count != 1:
+                  raise SystemExit(f'expected one match, got {count}: {old!r}')
+              text = text.replace(old, new, 1)
+
+          path.write_text(text)
+          PY
+          pnpm exec prettier --write scripts/verify-live-release.mjs
+          pnpm exec eslint scripts/verify-live-release.mjs
+      - name: Commit remediation
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/verify-live-release.mjs
+          git commit -m "fix: satisfy live release verifier lint contract"
+          git push
