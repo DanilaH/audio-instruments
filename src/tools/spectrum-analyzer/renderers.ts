@@ -8,8 +8,10 @@ import {
   SPECTRUM_DISPLAY_MIN_HZ,
   dbToDisplayRatio,
   frequencyForFftBin,
+  frequencyFromLogRatio,
   frequencyToLogRatio,
   getSpectrumDisplayMaxHz,
+  spectrogramDbToIntensity,
   spectrogramTimestampToRatio,
   type SpectrogramColumn,
 } from "./model";
@@ -42,6 +44,7 @@ const FREQUENCY_GRID_HZ = [
   20, 50, 100, 200, 500, 1_000, 2_000, 5_000, 10_000, 20_000,
 ] as const;
 const DB_GRID = [-100, -80, -60, -40, -20] as const;
+const SPECTROGRAM_PIXEL_ALPHA = 232;
 
 function formatFrequency(frequencyHz: number): string {
   return frequencyHz >= 1_000
@@ -169,10 +172,14 @@ function writeSpectrogramPixel(
 ): void {
   const offset = pixelIndex * 4;
   const t = Math.min(1, Math.max(0, intensity));
-  data[offset] = Math.round(239 - 185 * t);
-  data[offset + 1] = Math.round(249 - 86 * t);
-  data[offset + 2] = Math.round(251 - 33 * t);
-  data[offset + 3] = Math.round(255 * Math.max(0.12, t));
+
+  // Interpolate from the instrument-field neutral to the same semantic signal
+  // teal used by the spectrum trace. Alpha is intentionally independent of
+  // intensity so weak real FFT bins are not attenuated twice.
+  data[offset] = Math.round(238 - 214 * t);
+  data[offset + 1] = Math.round(240 - 115 * t);
+  data[offset + 2] = Math.round(233 - 91 * t);
+  data[offset + 3] = SPECTROGRAM_PIXEL_ALPHA;
 }
 
 export class SpectrogramCanvas {
@@ -223,14 +230,18 @@ export class SpectrogramCanvas {
 
       for (let y = 0; y < geometry.pixelHeight; y += 1) {
         const frequencyRatio = 1 - y / Math.max(1, geometry.pixelHeight - 1);
-        const frequencyHz =
-          SPECTRUM_DISPLAY_MIN_HZ +
-          (maxHz - SPECTRUM_DISPLAY_MIN_HZ) * frequencyRatio;
+        const frequencyHz = frequencyFromLogRatio(
+          frequencyRatio,
+          SPECTRUM_DISPLAY_MIN_HZ,
+          maxHz,
+        );
         const binIndex = Math.min(
           column.valuesDb.length - 1,
           Math.max(0, Math.round((frequencyHz / sampleRate) * fftSize)),
         );
-        const intensity = dbToDisplayRatio(column.valuesDb[binIndex] ?? -100);
+        const intensity = spectrogramDbToIntensity(
+          column.valuesDb[binIndex] ?? -100,
+        );
 
         for (
           let x = xStart;
