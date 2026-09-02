@@ -1,13 +1,20 @@
 ---
 import BaseLayout from "../layouts/BaseLayout.astro";
+import { resolveSiteAnalyticsConfig } from "../config/site-analytics";
 import { getPublicTools } from "../registry/tools";
 
 const hasLiveTools = getPublicTools().length > 0;
+const analytics = resolveSiteAnalyticsConfig({
+  SITE_ANALYTICS: import.meta.env.SITE_ANALYTICS,
+  ANALYTICS_PRIVACY_REVIEW: import.meta.env.ANALYTICS_PRIVACY_REVIEW,
+  CLOUDFLARE_WEB_ANALYTICS_TOKEN:
+    import.meta.env.CLOUDFLARE_WEB_ANALYTICS_TOKEN,
+});
 ---
 
 <BaseLayout
   title="Privacy — Browser Audio Lab"
-  description="How Browser Audio Lab handles microphone audio and local calibration data."
+  description="How Browser Audio Lab handles microphone audio, local calibration data, and analytics."
   hasLiveTools={hasLiveTools}
 >
   <article class="shell prose">
@@ -15,8 +22,8 @@ const hasLiveTools = getPublicTools().length > 0;
     <h1>What stays in your browser.</h1>
     <p>
       Browser Audio Lab is designed around local browser processing for its core
-      audio tools. This page describes the core v1 baseline before analytics or
-      advertising providers are added.
+      audio tools. This page describes the behavior of this build, including
+      whether site analytics is active.
     </p>
 
     <h2>Accounts and microphone audio</h2>
@@ -26,6 +33,11 @@ const hasLiveTools = getPublicTools().length > 0;
       <li>
         Core v1 does not upload microphone recordings or microphone audio to our
         server.
+      </li>
+      <li>
+        Microphone audio, recordings, live FFT/pitch/meter values, and Decibel
+        Meter calibration payloads are not sent to site analytics by Browser
+        Audio Lab.
       </li>
     </ul>
 
@@ -38,11 +50,57 @@ const hasLiveTools = getPublicTools().length > 0;
       audio. Resetting calibration removes the relevant local calibration entry.
     </p>
 
-    <h2>Future analytics or advertising</h2>
+    <h2>Analytics</h2>
+    {
+      analytics.enabled ? (
+        <>
+          <p>
+            Cloudflare Web Analytics is enabled for this build to provide
+            aggregate site-usage and real-user performance information such as
+            page/path, referrer, browser, device type, country, and Core Web
+            Vitals-style performance metrics.
+          </p>
+          <ul>
+            <li>
+              Cloudflare documents Web Analytics as not using cookies or
+              localStorage for usage metrics and as not fingerprinting individual
+              visitors for this analytics collection.
+            </li>
+            <li>
+              The analytics beacon loads from Cloudflare and sends analytics
+              requests to Cloudflare. As with normal HTTP request handling, the
+              RUM service receives the source IP address at the network edge;
+              Cloudflare states that it discards that IP address at the nearest
+              data center and does not store it in the RUM service's core
+              databases or logs.
+            </li>
+            <li>
+              Browser Audio Lab does not add custom audio-content or microphone
+              measurement payloads to the Cloudflare beacon.
+            </li>
+          </ul>
+          <p>
+            This notice describes the technical integration. It is not a legal
+            determination about whether consent is required in every jurisdiction.
+            Production activation is gated on a separate deployment privacy and
+            consent review.
+          </p>
+        </>
+      ) : (
+        <p>
+          No analytics provider is enabled in this build. Cloudflare Web Analytics
+          is selected for the production rollout, but activation remains
+          fail-closed until the deployment privacy/consent review is explicitly
+          approved and a site token is configured.
+        </p>
+      )
+    }
+
+    <h2>Advertising</h2>
     <p>
-      If analytics or advertising is introduced later, this notice and any
-      required consent behavior must be updated before those providers are
-      enabled. Microphone or recording content must not be sent to analytics.
+      No advertising provider is part of the current core v1 baseline. If
+      advertising is introduced later, this notice and any required consent
+      behavior must be updated before that provider is enabled.
     </p>
   </article>
 </BaseLayout>

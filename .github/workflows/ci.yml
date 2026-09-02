@@ -64,6 +64,9 @@ jobs:
       - name: Unit and service tests
         run: pnpm test
 
+      - name: Verify analytics disabled/enabled build contract
+        run: pnpm test:analytics
+
       - name: Verify positive indexing build
         run: pnpm test:indexing
 
