@@ -1,4 +1,4 @@
-name: Temporary Sonic Field PR3 final generated-signal matrix
+name: Temporary Sonic Field PR3 review-fix gate
 
 on:
   push:
@@ -11,9 +11,9 @@ permissions:
   contents: write
 
 jobs:
-  generated-signal:
+  review-fixes:
     runs-on: ubuntu-24.04
-    timeout-minutes: 45
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@v7
       - uses: pnpm/setup@v2
@@ -23,83 +23,90 @@ jobs:
           cache: true
           install: false
       - run: pnpm install --frozen-lockfile
-      - name: Apply Bass live-readout patch
-        run: python .github/tmp-sonic-pr3-slice2.py
-      - name: Apply Bass mobile stability fix
-        run: python .github/tmp-sonic-pr3-bass-stability.py
-      - name: Apply Noise and Sound Sonic Field migration
-        run: python .github/tmp-sonic-pr3-noise-sound.py
-      - name: Format PR3 slice
+      - name: Apply Cold Review #1 product fixes
+        run: |
+          python <<'PY'
+          from pathlib import Path
+
+          tone_path = Path('src/tools/tone-generator/ToneGenerator.astro')
+          tone = tone_path.read_text()
+          old_tone = '    .tone-bar {\n      min-height: 48px;'
+          new_tone = '    .tone-sheet__bar {\n      min-height: 48px;'
+          if old_tone not in tone:
+              raise SystemExit('Expected dead Tone low-height selector was not found')
+          tone = tone.replace(old_tone, new_tone, 1)
+          tone_path.write_text(tone)
+
+          noise_path = Path('src/tools/noise-generator/NoiseGenerator.astro')
+          noise = noise_path.read_text()
+          marker = '        <span class="noise-stage__cursor"></span>\n'
+          if marker not in noise:
+              raise SystemExit('Expected Noise cursor markup was not found')
+          noise = noise.replace(marker, '', 1)
+
+          selector_group = '  .noise-stage__axis,\n  .noise-stage__grain,\n  .noise-stage__cursor {'
+          if selector_group not in noise:
+              raise SystemExit('Expected Noise cursor selector group was not found')
+          noise = noise.replace(
+              selector_group,
+              '  .noise-stage__axis,\n  .noise-stage__grain {',
+              1,
+          )
+
+          cursor_block = '''  .noise-stage__cursor {
+            top: 0;
+            bottom: 0;
+            left: 50%;
+            right: auto;
+            width: 1px;
+            background: var(--sonic-current);
+            opacity: 0.48;
+          }
+
+          '''
+          if cursor_block not in noise:
+              raise SystemExit('Expected Noise cursor CSS block was not found')
+          noise = noise.replace(cursor_block, '', 1)
+          noise_path.write_text(noise)
+          PY
+      - name: Format reviewed product files
         run: >-
           pnpm exec prettier --write
-          src/tools/bass-test/BassTest.astro
-          src/tools/bass-test/BassTestController.ts
+          src/tools/tone-generator/ToneGenerator.astro
           src/tools/noise-generator/NoiseGenerator.astro
-          src/tools/sound-test/SoundTest.astro
-          tests/browser/bass-test.spec.ts
-          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
-          tests/browser/runtime-layout-stability.spec.ts
-          tests/browser/tool-touch-targets.spec.ts
       - name: Verify formatting
         run: >-
           pnpm exec prettier --check
-          src/tools/bass-test/BassTest.astro
-          src/tools/bass-test/BassTestController.ts
+          src/tools/tone-generator/ToneGenerator.astro
           src/tools/noise-generator/NoiseGenerator.astro
-          src/tools/sound-test/SoundTest.astro
-          tests/browser/bass-test.spec.ts
-          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
-          tests/browser/runtime-layout-stability.spec.ts
-          tests/browser/tool-touch-targets.spec.ts
       - run: pnpm build
       - run: pnpm exec playwright install --with-deps chromium firefox webkit
-      - name: Chromium PR3 probe
+      - name: Verify review fixes across engines
         run: >-
           pnpm exec playwright test
           tests/browser/tone-generator.spec.ts
-          tests/browser/frequency-sweep.spec.ts
-          tests/browser/bass-test.spec.ts
           tests/browser/noise-generator.spec.ts
-          tests/browser/sound-test.spec.ts
-          tests/browser/sonic-field-generated-signal-production-layout.spec.ts
-          tests/browser/runtime-layout-stability.spec.ts
-          tests/browser/tool-touch-targets.spec.ts
-          --project=chromium
-      - name: Verify complete PR3 slice across engines
-        run: >-
-          pnpm exec playwright test
-          tests/browser/tone-generator.spec.ts
-          tests/browser/frequency-sweep.spec.ts
-          tests/browser/bass-test.spec.ts
-          tests/browser/noise-generator.spec.ts
-          tests/browser/sound-test.spec.ts
           tests/browser/sonic-field-generated-signal-production-layout.spec.ts
           tests/browser/runtime-layout-stability.spec.ts
           tests/browser/tool-touch-targets.spec.ts
           --project=chromium --project=firefox --project=webkit
-      - name: Persist verified PR3 slice
+      - name: Remove temporary PR3 QA infrastructure
         run: |
-          if git diff --quiet -- \
-            src/tools/bass-test/BassTest.astro \
-            src/tools/bass-test/BassTestController.ts \
-            src/tools/noise-generator/NoiseGenerator.astro \
-            src/tools/sound-test/SoundTest.astro \
-            tests/browser/bass-test.spec.ts \
-            tests/browser/sonic-field-generated-signal-production-layout.spec.ts \
-            tests/browser/runtime-layout-stability.spec.ts \
-            tests/browser/tool-touch-targets.spec.ts; then
-            exit 0
-          fi
+          git rm -rf \
+            .github/tmp-pr3-screenshots \
+            .github/tmp-sonic-pr3-bass-stability.py \
+            .github/tmp-sonic-pr3-noise-sound.py \
+            .github/tmp-sonic-pr3-slice1-fix.py \
+            .github/tmp-sonic-pr3-slice2.py \
+            .github/workflows/tmp-sonic-pr3-screenshots.yml \
+            .github/workflows/tmp-sonic-pr3-slice1.yml \
+            tests/browser/tmp-sonic-pr3-geometry.spec.ts
+      - name: Persist reviewed clean PR3 diff
+        run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add \
-            src/tools/bass-test/BassTest.astro \
-            src/tools/bass-test/BassTestController.ts \
-            src/tools/noise-generator/NoiseGenerator.astro \
-            src/tools/sound-test/SoundTest.astro \
-            tests/browser/bass-test.spec.ts \
-            tests/browser/sonic-field-generated-signal-production-layout.spec.ts \
-            tests/browser/runtime-layout-stability.spec.ts \
-            tests/browser/tool-touch-targets.spec.ts
-          git commit -m "feat: finish Sonic Field generated-signal family"
+            src/tools/tone-generator/ToneGenerator.astro \
+            src/tools/noise-generator/NoiseGenerator.astro
+          git commit -m "fix: resolve PR3 cold review findings"
           git push origin HEAD:feat/sonic-field-generated-signal-family
