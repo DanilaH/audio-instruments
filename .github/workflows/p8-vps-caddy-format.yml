@@ -1,0 +1,37 @@
+name: P8 VPS Caddy Format
+
+on:
+  push:
+    branches:
+      - feat/p8-vps-caddy-deploy-contract
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/p8-vps-caddy-deploy-contract
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write scripts/verify-deploy-contract.mjs package.json
+      - name: Commit formatter output
+        run: |
+          if git diff --quiet; then
+            echo "No formatter changes required."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add scripts/verify-deploy-contract.mjs package.json
+          git commit -m "style: format VPS Caddy deployment contract"
+          git push
