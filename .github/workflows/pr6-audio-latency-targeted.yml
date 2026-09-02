@@ -1,4 +1,4 @@
-name: PR6 Audio Latency Remediation
+name: PR6 Audio Latency Targeted
 
 on:
   push:
@@ -6,17 +6,15 @@ on:
       - feat/sonic-field-audio-latency
 
 permissions:
-  contents: write
+  contents: read
 
 jobs:
-  remediate:
+  targeted:
     runs-on: ubuntu-latest
-    timeout-minutes: 10
+    timeout-minutes: 30
     steps:
       - name: Checkout
         uses: actions/checkout@v4
-        with:
-          ref: feat/sonic-field-audio-latency
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -32,44 +30,78 @@ jobs:
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-      - name: Apply diagnosed fixes
+      - name: Check formatting
+        run: pnpm format:check
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Astro and TypeScript check
+        run: pnpm check
+
+      - name: AV sync timeline unit tests
+        run: pnpm exec vitest run tests/unit/av-sync-timeline.test.ts
+
+      - name: Build
+        run: pnpm build
+
+      - name: Install Playwright browsers
+        run: pnpm exec playwright install --with-deps chromium firefox webkit
+
+      - name: Audio Latency browser regression
+        run: >-
+          pnpm exec playwright test
+          tests/browser/audio-latency.spec.ts
+          tests/browser/audio-latency-layout.spec.ts
+          tests/browser/sonic-field-audio-latency-production-layout.spec.ts
+          tests/browser/runtime-layout-stability.spec.ts
+          tests/browser/tool-touch-targets.spec.ts
+          --project=chromium --project=firefox --project=webkit
+
+      - name: Add runner-only rendered QA
         run: |
-          python - <<'PY'
-          from pathlib import Path
+          cat >> tests/browser/audio-latency.spec.ts <<'TS'
 
-          astro = Path("src/tools/audio-latency/AudioLatency.astro")
-          text = astro.read_text()
-          old = "\n    .latency-sync-field {\n      grid-template-columns: 44px minmax(0, 1fr);\n    }"
-          new = "\n    .latency-result {\n      min-height: 2.5em;\n      line-height: 1.25;\n    }\n\n    .latency-sync-field {\n      grid-template-columns: 44px minmax(0, 1fr);\n    }"
-          if text.count(old) != 1:
-              raise SystemExit(f"AudioLatency mobile anchor count={text.count(old)}")
-          astro.write_text(text.replace(old, new, 1))
+          test("PR6 rendered QA active Audio Latency", async ({ page }, testInfo) => {
+            await installLatencyHarness(page, {
+              baseLatency: 0.01254,
+              outputLatency: 0.03444,
+            });
 
-          layout = Path("tests/browser/audio-latency-layout.spec.ts")
-          text = layout.read_text()
-          old = "expect(offsetBox?.height ?? 0).toBeGreaterThanOrEqual(44);"
-          new = "expect(offsetBox?.height ?? 0).toBeGreaterThanOrEqual(44 - 0.01);"
-          if text.count(old) != 1:
-              raise SystemExit(f"Audio Latency touch anchor count={text.count(old)}")
-          layout.write_text(text.replace(old, new, 1))
+            for (const viewport of [
+              { width: 1366, height: 768 },
+              { width: 1280, height: 720 },
+              { width: 390, height: 844 },
+              { width: 320, height: 844 },
+            ]) {
+              await page.setViewportSize(viewport);
+              await page.goto("/audio-latency-test");
+              await page.locator("[data-latency-start]").click();
+              await expect(
+                page.locator("#audio-latency-status [data-status-label]"),
+              ).toHaveText("AV sync loop active");
+              await setOffset(page, 300);
+              await expect(
+                page.locator("[data-latency-offset-marker]"),
+              ).toHaveAttribute("data-offset-relation", "after");
+              await page.waitForTimeout(120);
 
-          production = Path("tests/browser/sonic-field-audio-latency-production-layout.spec.ts")
-          text = production.read_text()
-          old = "  await setOffset(page, -300);\n  const beforeX = await centerX(marker);\n  await expect(marker).toHaveAttribute(\"data-offset-relation\", \"before\");\n  expect(beforeX).toBeLessThan(visualX - 20);\n\n  await setOffset(page, 300);\n  const afterX = await centerX(marker);\n  await expect(marker).toHaveAttribute(\"data-offset-relation\", \"after\");\n  expect(afterX).toBeGreaterThan(visualX + 20);"
-          new = "  await setOffset(page, -300);\n  await expect(marker).toHaveAttribute(\"data-offset-relation\", \"before\");\n  await expect.poll(async () => centerX(marker)).toBeLessThan(visualX - 20);\n\n  await setOffset(page, 300);\n  await expect(marker).toHaveAttribute(\"data-offset-relation\", \"after\");\n  await expect.poll(async () => centerX(marker)).toBeGreaterThan(visualX + 20);"
-          if text.count(old) != 1:
-              raise SystemExit(f"Audio Latency marker anchor count={text.count(old)}")
-          production.write_text(text.replace(old, new, 1))
-          PY
+              await page.screenshot({
+                path: `pr6-visual/${testInfo.project.name}-${viewport.width}x${viewport.height}.png`,
+                fullPage: false,
+              });
+            }
+          });
+          TS
 
-      - name: Format remediated files
-        run: pnpm exec prettier --write src/tools/audio-latency/AudioLatency.astro tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts
-
-      - name: Commit remediation only
+      - name: Capture rendered QA
         run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add src/tools/audio-latency/AudioLatency.astro tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts
-          git diff --cached --check
-          git commit -m "fix: stabilize Audio Latency mobile geometry"
-          git push origin HEAD:feat/sonic-field-audio-latency
+          mkdir -p pr6-visual
+          pnpm exec playwright test tests/browser/audio-latency.spec.ts --grep "PR6 rendered QA active Audio Latency" --project=chromium --project=firefox --project=webkit
+
+      - name: Upload rendered QA
+        uses: actions/upload-artifact@v7
+        with:
+          name: pr6-audio-latency-visual-qa
+          path: pr6-visual
+          retention-days: 30
