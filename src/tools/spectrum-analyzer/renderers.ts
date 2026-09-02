@@ -219,6 +219,20 @@ export class SpectrogramCanvas {
       1,
       Math.ceil(geometry.pixelWidth / SPECTROGRAM_COLUMN_CAPACITY),
     );
+    const binIndexByY = new Uint32Array(geometry.pixelHeight);
+
+    for (let y = 0; y < geometry.pixelHeight; y += 1) {
+      const frequencyRatio = 1 - y / Math.max(1, geometry.pixelHeight - 1);
+      const frequencyHz = frequencyFromLogRatio(
+        frequencyRatio,
+        SPECTRUM_DISPLAY_MIN_HZ,
+        maxHz,
+      );
+      binIndexByY[y] = Math.min(
+        fftSize / 2 - 1,
+        Math.max(0, Math.round((frequencyHz / sampleRate) * fftSize)),
+      );
+    }
 
     for (const column of columns) {
       if (column.valuesDb.length !== fftSize / 2) continue;
@@ -229,16 +243,7 @@ export class SpectrogramCanvas {
       );
 
       for (let y = 0; y < geometry.pixelHeight; y += 1) {
-        const frequencyRatio = 1 - y / Math.max(1, geometry.pixelHeight - 1);
-        const frequencyHz = frequencyFromLogRatio(
-          frequencyRatio,
-          SPECTRUM_DISPLAY_MIN_HZ,
-          maxHz,
-        );
-        const binIndex = Math.min(
-          column.valuesDb.length - 1,
-          Math.max(0, Math.round((frequencyHz / sampleRate) * fftSize)),
-        );
+        const binIndex = binIndexByY[y] ?? 0;
         const intensity = spectrogramDbToIntensity(
           column.valuesDb[binIndex] ?? -100,
         );
