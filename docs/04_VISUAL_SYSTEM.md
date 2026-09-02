@@ -93,17 +93,15 @@ Keyboard focus is not the same semantic as “current signal”.
 
 Exact production values are validated in rendered context. Do not choose a color merely because it fits a palette trend.
 
-No new migrated tool should use lavender/purple branding or a separate pastel accent just to differentiate itself.
+No live tool or new production work should use lavender/purple branding or a separate pastel accent just to differentiate itself.
 
-## Transitional legacy tokens
+## Legacy cleanup boundary
 
-The old Soft Sonic Studio tokens/components may remain temporarily in source **only for tools that have not yet migrated**.
+The Sonic Field migration is complete across all live tools. Soft Sonic Studio is superseded and is not an approved alternative production visual system.
 
-They are implementation debt during the staged rollout, not an approved alternative visual system.
+Any old Soft Sonic Studio tokens/components that remain in source are cleanup debt only; do not attach new live-route work to them.
 
-Do not use legacy `lavender / blue / mint / peach / yellow` tool accents in new Sonic Field work.
-
-`InstrumentSurface` remains a legacy primitive until its remaining consumers migrate. New migrated tools use the Sonic Field instrument primitive.
+Do not restore legacy `lavender / blue / mint / peach / yellow` tool accents, pastel split-panel surfaces or `InstrumentSurface`-style composition as primary working UI. Live tool work uses the Sonic Field production layer.
 
 ## Typography
 

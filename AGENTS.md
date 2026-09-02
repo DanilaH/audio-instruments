@@ -86,6 +86,9 @@ Privacy/legal behavior
 
 P0 package/scripts/lint/format/test tooling
 → docs/20_P0_TOOLING_CONTRACT.md
+
+Sonic Field production migration / completion record
+→ docs/21_SONIC_FIELD_PRODUCTION_MIGRATION.md
 ```
 
 ## 3. Implementation status
@@ -123,6 +126,8 @@ docs/evidence/P8_INDEXING_VALIDATION_2026-08-30.md
 `PRODUCTION_INDEXING_ARTIFACTS_READY = true` now means the technical sitemap/indexing artifacts exist and have positive build evidence. It is **not** release authorization. Default builds still remain `noindex,nofollow` with no production canonical or sitemap. Do not invent a production domain and do not enable final production indexing before the remaining P8 release gates and an explicit real-domain deployment decision.
 
 The 2026-08-31 automated P8 release evidence is recorded in `docs/evidence/P8_RELEASE_VALIDATION_2026-08-31.md`: exact-head hosted Chromium/Firefox/WebKit validation is green; visual QA covered the then-required 1440×900, 1366×768, 1024×768 and 390×844 matrix; runtime accessibility and cross-engine visual spot-checks are complete. A separate final adversarial audit on 2026-09-01 added 320×844 to the required matrix, fixed the homepage overflow found there, and validated the narrow browser/state/geometry surface; see `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`. Cloudflare Web Analytics is selected for v1 rollout but is not enabled. Remaining P8 work is actual device/browser smoke QA, production domain/deployment, analytics privacy/consent activation review, Search Console and explicit production indexing activation.
+
+The Sonic Field production migration is complete across all 16 live tools. Do not treat Soft Sonic Studio as an alternative active direction or reintroduce its pastel split-panel grammar. The final post-release accessibility/overflow closure and exact CI provenance are recorded in `docs/evidence/SONIC_FIELD_POST_RELEASE_CLOSURE_2026-09-02.md`.
 
 ## 4. Locked stack
 
@@ -225,14 +230,15 @@ If wording is unclear, consult `08_MEASUREMENT_HONESTY_AND_SAFETY.md`.
 Locked direction:
 
 ```text
-Soft Sonic Studio
-warm near-white base
-soft ink
-rounded/tinted instrument surfaces
-tool-specific visual grammar
-audio-derived visuals
-dynamic waveform motif
-subtle blur + short trail
+Sonic Field
+audio relationships made visible
+one coherent instrument sheet
+field / rail / state hierarchy
+low-chroma neutral working surfaces
+semantic teal / amber / rust only
+audio-native geometry
+motion only where signal/state is alive
+measurement-looking graphics only from real tool data/state
 ```
 
 Allowed later polish:

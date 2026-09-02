@@ -23,15 +23,16 @@ PROD-11 `/privacy` is a real static route governed by 19_PRIVACY_AND_LEGAL.md.
 ## Visual system
 
 ```text
-VIS-01 Soft Sonic Studio is the core art direction.
-VIS-02 Dynamic audio-derived visuals are a primary identity motif.
-VIS-03 Subtle blur and short fading trails are approved.
+VIS-01 Sonic Field is the core production art direction.
+VIS-02 Audio relationships made visible through real signal/state/spatial/frequency/time semantics are the primary identity motif.
+VIS-03 Blur, trails and motion are approved only when they communicate real signal/state; generic decorative motion is not approved.
 VIS-04 Baseline animation package = `motion`.
 VIS-05 Baseline vanilla icon package = `@phosphor-icons/web`.
 VIS-06 Do not substitute framework-specific Motion/Phosphor packages.
 VIS-07 Rive, OGL, Three.js and heavy WebGL are not bootstrap dependencies.
 VIS-08 Functional visual identity exists from the start; fine polish may continue later.
 VIS-09 Accent colors may not be used as text/focus/state indicators unless contrast requirements are satisfied.
+VIS-10 Soft Sonic Studio is superseded; legacy tokens/components are cleanup debt, not an alternative production system.
 ```
 
 ## Runtime and architecture

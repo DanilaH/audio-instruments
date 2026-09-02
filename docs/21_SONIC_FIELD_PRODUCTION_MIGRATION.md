@@ -1,8 +1,8 @@
 # 21 — Sonic Field Production Migration
 
-Status: **accepted direction / implementation plan**.
+Status: **production migration complete / canonical completion record**.
 
-This document converts the approved Sonic Field v3.1 prototype into a production migration plan for the 16 live Browser Audio Lab tools.
+This document records the approved Sonic Field v3.1 production migration for the 16 live Browser Audio Lab tools, including the historical QA baseline, execution units and completion gates.
 
 The goal is not to copy the prototype screenshot literally. The goal is to preserve the product-specific visual grammar that survived prototype stress testing while fixing the remaining manual-QA issues in the real tools.
 
@@ -25,18 +25,11 @@ The production language is:
 
 The direction must remain visibly distinct from Hardware Testing. A design that can be transplanted to a mouse/keyboard tester with only label changes is a failure.
 
-### 1.1 Source-of-truth precedence during migration
+### 1.1 Source-of-truth after migration
 
-The current `docs/04_VISUAL_SYSTEM.md` still describes the superseded **Soft Sonic Studio** direction. It conflicts with this migration plan on palette, radii, motion, surfaces and per-tool accents.
+The migration is complete. `docs/04_VISUAL_SYSTEM.md` and `docs/05_UX_UI.md` are the canonical current visual/UX contracts; this document preserves the migration rationale, historical QA baseline, execution sequence and completion provenance.
 
-Until PR1 updates the canonical visual-system docs:
-
-1. this document is authoritative for Sonic Field migration decisions;
-2. existing measurement/safety/browser/architecture contracts remain authoritative where they do not conflict with visual styling;
-3. PR1 must update `04_VISUAL_SYSTEM.md` to the accepted Sonic Field direction;
-4. PR1 must update `05_UX_UI.md` where the viewport gates/shared primitive inventory changed.
-
-Do not leave two active visual systems in the merged production documentation.
+Soft Sonic Studio is superseded. Do not treat historical rollout language below as permission to restore a second active visual system. Measurement, safety, browser and architecture contracts remain authoritative in their existing topic documents.
 
 ## 2. Non-negotiable visual rules
 
@@ -57,7 +50,7 @@ Do not restore:
 - decorative gradients/glow blobs;
 - color merely to distinguish panels.
 
-The current purple focus token is not grandfathered in. PR1 must replace it with a non-purple focus treatment that remains clearly visible and meets the existing contrast/accessibility contract. Pick the final treatment by rendered contrast/visibility, not by palette fashion.
+Purple focus treatment is not approved. Production uses a dedicated non-purple focus treatment that must remain clearly visible and satisfy the existing contrast/accessibility contract; choose future adjustments by rendered contrast/visibility, not palette fashion.
 
 ### 2.2 Geometry
 
@@ -259,9 +252,9 @@ Primary grammar:
 
 A tool may borrow a primitive from another archetype where the audio semantics justify it.
 
-## 6. Manual QA findings — current production status
+## 6. Manual QA findings — historical pre-migration baseline
 
-The following list comes from manual testing after the previous automated layout-hardening pass. The status below is based on a fresh inspection of current `main` (`68fef62`).
+The following list is preserved from manual testing before the Sonic Field rollout. Its per-item `Status` lines describe the pre-migration baseline inspected at `main` `68fef62`; they are historical findings, not the current production state. Their implementation resolution is represented by the completed PR sequence in section 8 and the post-release closure evidence.
 
 ### QA-01 — Speaker Test moves/jerks when switching to Sweep
 
@@ -458,11 +451,21 @@ Do not spread signal-field graphics into informational copy merely for branding.
 
 The tool should be the high-information object; supporting content should use restrained editorial layout.
 
-## 8. Implementation sequence
+## 8. Implementation sequence — completed
 
-The migration must follow the repository workflow in `15_DEVELOPMENT_WORKFLOW.md`: one coherent PR per development unit, Draft PR, cold review #1, fixes, cold review #2, full-CI authorization, full validation, green merge gate, squash merge.
+The migration completed through reviewed units following `15_DEVELOPMENT_WORKFLOW.md`:
 
-### PR 1 — Foundation + stress trio
+- PR #79 — foundation + Headphone / Spectrum visual / Hearing stress trio;
+- PR #81 — spatial output family;
+- PR #83 — generated-signal family;
+- PR #85 — input / measurement family;
+- PR #86 — Spectrum display-response audit;
+- PR #87 — Audio Latency;
+- post-release audit + PR #88 — final cross-tool/site-shell verification and contrast closure.
+
+The detailed per-PR scopes below are preserved as the execution record, not as open future work.
+
+### PR 1 — Foundation + stress trio — COMPLETED (#79)
 
 Scope:
 
@@ -510,7 +513,7 @@ Acceptance:
 - canonical visual/UX docs no longer prescribe the superseded Soft Sonic Studio system;
 - all existing product behaviour tests for these tools remain green.
 
-### PR 2 — Spatial output family
+### PR 2 — Spatial output family — COMPLETED (#81)
 
 Scope:
 
@@ -523,7 +526,7 @@ Scope:
 - Stereo smooth visual return to centre;
 - Speaker/Surround manual-QA shift fixes.
 
-### PR 3 — Generated-signal family
+### PR 3 — Generated-signal family — COMPLETED (#83)
 
 Scope:
 
@@ -535,7 +538,7 @@ Scope:
 - Bass live current-frequency readout;
 - preserve the exact Noise Generator long-play safety reminder contract.
 
-### PR 4 — Input / measurement family
+### PR 4 — Input / measurement family — COMPLETED (#85)
 
 Scope:
 
@@ -548,7 +551,7 @@ Scope:
 
 Spectrum algorithm/display-response work is intentionally not hidden inside this visual PR unless review determines it is inseparable.
 
-### PR 5 — Spectrum display-response audit
+### PR 5 — Spectrum display-response audit — COMPLETED (#86)
 
 Scope:
 
@@ -561,7 +564,7 @@ Scope:
 
 Synthetic frames in this PR are test fixtures and do not become unlabeled production data.
 
-### PR 6 — Audio Latency + site-shell finishing pass
+### PR 6 — Audio Latency + final consistency verification — COMPLETED (#87 + post-release audit)
 
 Scope:
 
@@ -672,11 +675,13 @@ Visual migration is not a reason to couple infrastructure deployment and a large
 
 If the existing `main` is deployed to VPS first, keep indexing fail-closed until the normal smoke/indexing decision is made.
 
-The Sonic Field production migration proceeds independently through reviewed PRs. Do not turn indexing on merely because the visual migration merged.
+The Sonic Field production migration completed independently through reviewed PRs. Its completion does not authorize indexing; do not turn indexing on merely because the visual migration merged.
 
-## 13. Definition of done for the complete migration
+## 13. Definition of done for the complete migration — SATISFIED
 
-The migration is complete when:
+The migration is complete. The checklist below is retained as the completion contract; final post-release accessibility/overflow and CI evidence is recorded in `docs/evidence/SONIC_FIELD_POST_RELEASE_CLOSURE_2026-09-02.md`.
+
+The migration was considered complete when:
 
 - all 16 live tools use the shared production Sonic Field system;
 - no tool retains the old pastel split-panel identity as its primary working surface;
