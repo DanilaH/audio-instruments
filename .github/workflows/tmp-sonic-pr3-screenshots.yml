@@ -1,0 +1,96 @@
+name: Temporary Sonic Field PR3 screenshot QA
+
+on:
+  push:
+    branches:
+      - feat/sonic-field-generated-signal-family
+    paths:
+      - .github/workflows/tmp-sonic-pr3-screenshots.yml
+
+permissions:
+  contents: write
+
+jobs:
+  screenshots:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Capture viewport screenshots
+        run: |
+          pnpm exec astro preview --host 127.0.0.1 > /tmp/pr3-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:4321/tone-generator >/dev/null; then break; fi
+            sleep 1
+          done
+          mkdir -p .github/tmp-pr3-screenshots
+          node <<'NODE'
+          const { chromium } = require('@playwright/test');
+          const fs = require('fs');
+          const routes = [
+            ['tone-generator', '/tone-generator', async (page) => {
+              await page.getByRole('button', { name: 'Play', exact: true }).click();
+            }],
+            ['frequency-sweep', '/frequency-sweep', async (page) => {
+              await page.getByRole('button', { name: 'Play sweep', exact: true }).click();
+            }],
+            ['bass-test', '/bass-test', async (page) => {
+              await page.locator('[data-bass-mode="sweep"]').click();
+              await page.locator('[data-bass-sweep-play]').click();
+            }],
+            ['noise-generator', '/noise-generator', async (page) => {
+              await page.locator('[data-noise-play]').click();
+            }],
+            ['sound-test', '/sound-test', async (page) => {
+              await page.locator('[data-sound-channel="left"]').click();
+            }],
+          ];
+          const viewports = [
+            [1366, 768],
+            [1440, 900],
+            [1280, 720],
+            [390, 844],
+          ];
+          (async () => {
+            const browser = await chromium.launch();
+            for (const [width, height] of viewports) {
+              for (const [name, route, activate] of routes) {
+                const page = await browser.newPage({ viewport: { width, height } });
+                await page.goto(`http://127.0.0.1:4321${route}`, { waitUntil: 'networkidle' });
+                try {
+                  await activate(page);
+                  await page.waitForTimeout(120);
+                } catch (error) {
+                  console.warn(`Activation failed for ${name} at ${width}x${height}:`, error.message);
+                }
+                await page.screenshot({
+                  path: `.github/tmp-pr3-screenshots/${name}-${width}x${height}.png`,
+                  fullPage: false,
+                });
+                await page.close();
+              }
+            }
+            await browser.close();
+          })().catch((error) => {
+            console.error(error);
+            process.exit(1);
+          });
+          NODE
+      - name: Persist screenshots for review
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add .github/tmp-pr3-screenshots
+          git commit -m "chore: add temporary PR3 visual QA screenshots"
+          git push origin HEAD:feat/sonic-field-generated-signal-family
