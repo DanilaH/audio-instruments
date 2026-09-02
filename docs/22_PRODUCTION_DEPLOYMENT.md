@@ -13,7 +13,7 @@ Deployment shape:
 ```text
 build dist/
 → upload immutable release directory
-→ switch /srv/browser-audio-lab/current symlink
+→ atomically replace /srv/browser-audio-lab/current symlink
 → validate/reload Caddy
 → run real-origin live verifier
 ```
@@ -22,15 +22,20 @@ Do not introduce Docker, nginx, Vercel, Netlify, Cloudflare Pages or a Node prod
 
 ## Required external inputs
 
-Before the first deployment, obtain the real values:
+Before the first deployment, obtain the real values and network prerequisites:
 
 ```text
 REAL_PRODUCTION_DOMAIN
 VPS SSH access
-DNS A/AAAA target for the VPS
+DNS A record pointing to the VPS
+DNS AAAA record pointing to the VPS only if IPv6 is intentionally served
+inbound TCP 80 reachable by Caddy
+inbound TCP 443 reachable by Caddy
 ```
 
 Do not substitute a synthetic hostname for the production-domain gate.
+
+Do not expect Caddy automatic HTTPS to succeed until the real hostname resolves to the VPS and the relevant public HTTP/HTTPS ports are reachable. If an AAAA record exists, its IPv6 destination must also reach this Caddy instance; do not leave a stale AAAA record pointing elsewhere.
 
 ## Server filesystem
 
@@ -43,7 +48,7 @@ Canonical layout:
   current -> /srv/browser-audio-lab/releases/<git-sha>
 ```
 
-Each uploaded release directory is immutable after publication. Rollback changes only the `current` symlink.
+Each uploaded release directory is immutable after publication. Rollback replaces only the `current` symlink.
 
 ## Caddy contract
 
@@ -90,7 +95,7 @@ Then:
 sudo systemctl reload caddy
 ```
 
-Caddy owns HTTPS certificate issuance/renewal for the real hostname.
+Once the real hostname resolves to this VPS and public ports 80/443 are reachable, Caddy owns HTTPS certificate issuance/renewal for that hostname.
 
 ## Initial fail-closed build
 
@@ -130,11 +135,14 @@ Create the release directory on the VPS and upload the contents of `dist/` into 
 /srv/browser-audio-lab/releases/<SHA>/
 ```
 
-After upload is complete, switch atomically:
+After upload is complete, prepare a temporary symlink and atomically rename it over `current`:
 
 ```text
-ln -sfn /srv/browser-audio-lab/releases/<SHA> /srv/browser-audio-lab/current
+ln -sfn /srv/browser-audio-lab/releases/<SHA> /srv/browser-audio-lab/current.next
+mv -Tf /srv/browser-audio-lab/current.next /srv/browser-audio-lab/current
 ```
+
+On the Linux VPS, the second command replaces the directory entry for `current` through a rename rather than mutating the live symlink in place. The target release directory already exists and is complete before that switch.
 
 Then validate/reload Caddy.
 
@@ -153,7 +161,7 @@ pnpm verify:live-release -- \
 
 A failure blocks further rollout.
 
-This stage must prove the real public origin still has:
+This first real-origin verification must prove the public origin still has:
 
 ```text
 all 18 HTML routes reachable
@@ -179,7 +187,7 @@ CLOUDFLARE_WEB_ANALYTICS_TOKEN=<real token>
 
 For a Cloudflare-proxied hostname, automatic Web Analytics injection must remain disabled / manual snippet mode must be selected so the repository-owned beacon remains the single installation owner.
 
-Rebuild, publish a new immutable release, switch `current`, then verify:
+Rebuild, publish a new immutable release, atomically switch `current`, then verify the new intended state:
 
 ```text
 pnpm verify:live-release -- \
@@ -199,7 +207,7 @@ SITE_INDEXING=enabled
 SITE_ORIGIN=https://<REAL_PRODUCTION_DOMAIN>
 ```
 
-Rebuild and deploy a new immutable release, then run:
+Rebuild and deploy a new immutable release, then re-run the verifier against the final intended analytics/indexing state:
 
 ```text
 pnpm verify:live-release -- \
@@ -212,15 +220,16 @@ Only a green real-origin enabled-indexing verifier permits sitemap submission to
 
 ## Rollback
 
-If a release has a critical defect, point `current` back to the last known-good immutable release:
+If a release has a critical defect, prepare a temporary symlink to the last known-good immutable release and atomically rename it over `current`:
 
 ```text
-ln -sfn /srv/browser-audio-lab/releases/<PREVIOUS_SHA> /srv/browser-audio-lab/current
+ln -sfn /srv/browser-audio-lab/releases/<PREVIOUS_SHA> /srv/browser-audio-lab/current.next
+mv -Tf /srv/browser-audio-lab/current.next /srv/browser-audio-lab/current
 sudo caddy validate --config /etc/caddy/Caddyfile --adapter caddyfile
 sudo systemctl reload caddy
 ```
 
-Then run the live verifier using the state expected for the rollback release.
+Then run the live verifier using the analytics/indexing state expected for the rollback release.
 
 Rollback does not authorize changing indexing or analytics state implicitly.
 
@@ -234,7 +243,7 @@ pnpm test:deploy-contract
 
 It verifies that `deploy/Caddyfile` remains domain-agnostic, static-only, preserves extensionless Astro route handling, serves immutable Astro assets with long-lived caching and does not silently introduce a reverse proxy or explicit redirects.
 
-This deterministic check is part of authoritative Full Validation.
+Authoritative Full Validation also runs the real Caddy 2.11.4 configuration parser against the repository Caddyfile. Targeted deployment readiness additionally runtime-smoked a fail-closed Astro build through Caddy and verified `/sound-test` returns HTTP 200 without a trailing-slash redirect.
 
 ## Still external after this document exists
 
@@ -242,7 +251,8 @@ The document/configuration do not claim completion of:
 
 ```text
 real domain registration
-DNS propagation
+DNS propagation to the VPS
+public TCP 80/443 reachability
 VPS filesystem/config changes
 TLS issuance
 first fail-closed deployment
