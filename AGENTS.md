@@ -86,6 +86,9 @@ Privacy/legal behavior
 
 P0 package/scripts/lint/format/test tooling
 → docs/20_P0_TOOLING_CONTRACT.md
+
+Sonic Field production migration / completion record
+→ docs/21_SONIC_FIELD_PRODUCTION_MIGRATION.md
 ```
 
 ## 3. Implementation status

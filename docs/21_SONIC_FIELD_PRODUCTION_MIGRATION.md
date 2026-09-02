@@ -461,7 +461,7 @@ The migration completed through reviewed units following `15_DEVELOPMENT_WORKFLO
 - PR #85 — input / measurement family;
 - PR #86 — Spectrum display-response audit;
 - PR #87 — Audio Latency;
-- PR #88 — post-release Sonic Field contrast closure.
+- post-release audit + PR #88 — final cross-tool/site-shell verification and contrast closure.
 
 The detailed per-PR scopes below are preserved as the execution record, not as open future work.
 
@@ -564,7 +564,7 @@ Scope:
 
 Synthetic frames in this PR are test fixtures and do not become unlabeled production data.
 
-### PR 6 — Audio Latency + site-shell finishing pass — COMPLETED (#87)
+### PR 6 — Audio Latency + final consistency verification — COMPLETED (#87 + post-release audit)
 
 Scope:
 
