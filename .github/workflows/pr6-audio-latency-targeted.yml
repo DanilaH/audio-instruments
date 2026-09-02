@@ -6,7 +6,7 @@ on:
       - feat/sonic-field-audio-latency
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   format:
@@ -15,6 +15,8 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v4
+        with:
+          ref: feat/sonic-field-audio-latency
 
       - name: Setup pnpm
         uses: pnpm/action-setup@v4
@@ -33,14 +35,14 @@ jobs:
       - name: Format PR6 files
         run: pnpm exec prettier --write src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
 
-      - name: Upload formatted files
-        uses: actions/upload-artifact@v7
-        with:
-          name: pr6-formatted-files
-          path: |
-            src/tools/audio-latency/AudioLatency.astro
-            src/tools/audio-latency/AudioLatencyController.ts
-            tests/browser/audio-latency-layout.spec.ts
-            tests/browser/sonic-field-audio-latency-production-layout.spec.ts
-            tests/browser/tool-touch-targets.spec.ts
-          retention-days: 1
+      - name: Commit exact formatter output
+        run: |
+          if git diff --quiet -- src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts; then
+            echo "No formatting changes needed."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/tools/audio-latency/AudioLatency.astro src/tools/audio-latency/AudioLatencyController.ts tests/browser/audio-latency-layout.spec.ts tests/browser/sonic-field-audio-latency-production-layout.spec.ts tests/browser/tool-touch-targets.spec.ts
+          git commit -m "style: format Audio Latency migration"
+          git push origin HEAD:feat/sonic-field-audio-latency
