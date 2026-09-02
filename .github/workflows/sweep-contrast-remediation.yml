@@ -20,21 +20,10 @@ jobs:
         run: |
           python - <<'PY'
           from pathlib import Path
-
           path = Path('src/tools/frequency-sweep/FrequencySweep.astro')
           text = path.read_text()
-          old = '''  .sweep-sheet__state strong {
-    display: inline-flex;
-    gap: 7px;
-    align-items: baseline;
-    color: var(--sonic-current);
-'''
-          new = '''  .sweep-sheet__state strong {
-    display: inline-flex;
-    gap: 7px;
-    align-items: baseline;
-    color: var(--sonic-current-ink);
-'''
+          old = "  .sweep-sheet__state strong {\n    display: inline-flex;\n    gap: 7px;\n    align-items: baseline;\n    color: var(--sonic-current);"
+          new = "  .sweep-sheet__state strong {\n    display: inline-flex;\n    gap: 7px;\n    align-items: baseline;\n    color: var(--sonic-current-ink);"
           if text.count(old) != 1:
               raise SystemExit(f'expected one sweep endpoint color anchor, got {text.count(old)}')
           path.write_text(text.replace(old, new, 1))
