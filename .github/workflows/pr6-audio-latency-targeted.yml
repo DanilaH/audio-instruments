@@ -61,25 +61,28 @@ jobs:
             return page.evaluate((selectorList) => {
               const entries = selectorList.map((selector) => {
                 const elements = [...document.querySelectorAll<HTMLElement>(selector)];
-                return [selector, elements.map((element) => {
-                  const rect = element.getBoundingClientRect();
-                  const style = getComputedStyle(element);
-                  return {
-                    text: element.textContent?.trim().replace(/\s+/g, " "),
-                    x: rect.x,
-                    y: rect.y,
-                    width: rect.width,
-                    height: rect.height,
-                    lineHeight: style.lineHeight,
-                    whiteSpace: style.whiteSpace,
-                  };
-                })];
+                return [
+                  selector,
+                  elements.map((element) => {
+                    const rect = element.getBoundingClientRect();
+                    const style = getComputedStyle(element);
+                    return {
+                      text: element.textContent?.trim().replace(/\s+/g, " "),
+                      x: rect.x,
+                      y: rect.y,
+                      width: rect.width,
+                      height: rect.height,
+                      lineHeight: style.lineHeight,
+                      whiteSpace: style.whiteSpace,
+                    };
+                  }),
+                ];
               });
               return {
                 documentHeight: document.documentElement.scrollHeight,
                 entries: Object.fromEntries(entries),
               };
-            }, selectorList);
+            }, selectors);
           }
 
           test("report Audio Latency 320px offset reflow", async ({ page }) => {
