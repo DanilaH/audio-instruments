@@ -1,0 +1,92 @@
+name: P8 Analytics Docs Sync
+
+on:
+  push:
+    branches:
+      - feat/p8-cloudflare-analytics-readiness
+
+permissions:
+  contents: write
+
+jobs:
+  sync:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: feat/p8-cloudflare-analytics-readiness
+      - name: Synchronize analytics readiness source of truth
+        run: |
+          python - <<'PY'
+          from pathlib import Path
+
+          def replace_exact(path_str, old, new, expected=1):
+              path = Path(path_str)
+              text = path.read_text()
+              count = text.count(old)
+              if count != expected:
+                  raise SystemExit(f"{path_str}: expected {expected}, got {count}: {old[:100]!r}")
+              path.write_text(text.replace(old, new, expected))
+
+          replace_exact(
+              "docs/11_RELEASE_AND_ANALYTICS.md",
+              "Status: **selected, not enabled**.",
+              "Status: **integration implemented, disabled by default; production activation not authorized**.",
+          )
+          replace_exact(
+              "docs/11_RELEASE_AND_ANALYTICS.md",
+              "The v1 reason is deliberately narrow: page/referrer/browser/device/OS visibility and real-user Core Web Vitals are useful immediately, while a heavier custom-event analytics surface is not yet justified. Official Cloudflare documentation reviewed on 2026-08-31 states that Web Analytics does not use cookies or localStorage for usage metrics and does not fingerprint individuals for Vitals collection. It currently does not support custom events or UTM parameters.",
+              "The v1 reason is deliberately narrow: page/referrer/browser/device/OS visibility and real-user Core Web Vitals are useful immediately, while a heavier custom-event analytics surface is not yet justified. Official Cloudflare documentation was refreshed on 2026-09-02 before the integration unit: Web Analytics does not use cookies or localStorage for usage metrics and does not fingerprint individuals for this analytics collection. The RUM documentation states that source IP is received during ordinary HTTP handling but discarded at the nearest Cloudflare data center rather than stored in the RUM service's core databases/logs. Custom events and UTM analytics remain outside this v1 integration.",
+          )
+          replace_exact(
+              "docs/11_RELEASE_AND_ANALYTICS.md",
+              "Before Cloudflare Web Analytics is enabled, update `/privacy`, determine required consent behavior for the actual deployment jurisdictions, verify that no microphone/recording content enters analytics, and record the final deployment behavior.\n\nCurrent product baseline contains no analytics provider integration.",
+              "The repository now contains a fail-closed Cloudflare Web Analytics integration and build-state-aware `/privacy` copy. Default builds emit no analytics beacon. Production activation requires all three build-time inputs together:\n\n```text\nSITE_ANALYTICS=cloudflare-web-analytics\nANALYTICS_PRIVACY_REVIEW=approved\nCLOUDFLARE_WEB_ANALYTICS_TOKEN=<Cloudflare site token>\n```\n\nBefore those values are supplied in a real deployment, determine the required consent behavior for the actual deployment jurisdictions, verify the real Cloudflare site/token and network behavior, confirm that no microphone/recording content enters analytics, and record the deployment decision. `ANALYTICS_PRIVACY_REVIEW=approved` is a technical release gate, not a universal legal conclusion.\n\nCanonical implementation evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.",
+          )
+
+          replace_exact(
+              "docs/19_PRIVACY_AND_LEGAL.md",
+              "The selected v1 provider is **Cloudflare Web Analytics**, but it is **not enabled in the current product baseline**.",
+              "The selected v1 provider is **Cloudflare Web Analytics**. The repository integration is fail-closed and **disabled by default**; production activation is not authorized merely because the integration exists.",
+          )
+          replace_exact(
+              "docs/19_PRIVACY_AND_LEGAL.md",
+              "Official Cloudflare documentation reviewed on 2026-08-31 states that its Web Analytics usage-metric collection does not use cookies or localStorage and does not fingerprint individuals for Vitals collection. It currently does not support custom events or UTM parameters.",
+              "Official Cloudflare documentation was refreshed on 2026-09-02 before implementation. Its Web Analytics usage-metric collection does not use cookies or localStorage and does not fingerprint individual visitors for this analytics collection. Cloudflare's RUM documentation states that source IP is received during ordinary HTTP handling but discarded at the nearest Cloudflare data center rather than stored in the RUM service's core databases/logs. Custom events and UTM analytics are not part of this v1 integration.",
+          )
+          replace_exact(
+              "docs/19_PRIVACY_AND_LEGAL.md",
+              "This decision does not change `/privacy` yet because no provider is active. Before enablement, the actual Cloudflare integration/network behavior and any required consent treatment must be reflected in `/privacy` and reviewed for the real deployment jurisdictions. Microphone/recording content remains prohibited from analytics.",
+              "`/privacy` now reflects the actual build state: default builds state that analytics is disabled, while an explicitly authorized analytics build discloses Cloudflare Web Analytics and the technical data boundary. Activation still requires the real deployment-jurisdiction privacy/consent review and a real Cloudflare site token. Microphone audio, recordings, live FFT/pitch/meter values and Decibel calibration payloads remain prohibited from Browser Audio Lab analytics.\n\nThe technical activation contract is:\n\n```text\nSITE_ANALYTICS=cloudflare-web-analytics\nANALYTICS_PRIVACY_REVIEW=approved\nCLOUDFLARE_WEB_ANALYTICS_TOKEN=<Cloudflare site token>\n```\n\nThe approval flag is a release-control mechanism, not a legal guarantee. Evidence: `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`.",
+          )
+
+          replace_exact(
+              "docs/13_BACKLOG_AND_ROADMAP.md",
+              "P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; real-device/rollout gates remain",
+              "P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; Cloudflare Web Analytics repository readiness is implemented fail-closed; real-device/deployment/provider-activation/indexing rollout gates remain",
+          )
+          replace_exact(
+              "docs/13_BACKLOG_AND_ROADMAP.md",
+              "Cloudflare Web Analytics selected for v1 rollout but not enabled",
+              "Cloudflare Web Analytics selected for v1 rollout; fail-closed repository integration/readiness validated, production activation still disabled",
+          )
+          replace_exact(
+              "docs/13_BACKLOG_AND_ROADMAP.md",
+              "enable Cloudflare Web Analytics only with updated privacy/consent review",
+              "configure the real Cloudflare site/token and approve deployment-jurisdiction privacy/consent behavior before enabling Web Analytics",
+          )
+          replace_exact(
+              "docs/13_BACKLOG_AND_ROADMAP.md",
+              "The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence.",
+              "The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence. Repository-side analytics readiness is recorded in `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`; it does not claim a real Cloudflare site/token, deployment or jurisdiction-specific activation approval.",
+          )
+          PY
+          git diff --check
+      - name: Commit documentation synchronization
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add docs/11_RELEASE_AND_ANALYTICS.md docs/19_PRIVACY_AND_LEGAL.md docs/13_BACKLOG_AND_ROADMAP.md
+          git commit -m "docs: synchronize P8 analytics readiness"
+          git push
