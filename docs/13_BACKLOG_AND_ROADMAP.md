@@ -12,7 +12,7 @@ Do not begin the next roadmap unit before the current one is merged unless expli
 P0–P6.3 implemented and merged
 all 16 core v1 tool routes live
 P7 live Runner evidence collected, reviewed and applied; P7 complete in the current source baseline
-P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; Cloudflare Web Analytics repository readiness is implemented fail-closed; a parameterized live-release verifier is implemented but has not been run on a real origin; real-device/deployment/provider-activation/indexing rollout gates remain
+P8 in progress: P8.1–P8.3 complete; hosted full browser validation, the 2026-08-31 four-viewport visual matrix, runtime accessibility and cross-engine visual spot-checks are complete; the 2026-09-01 final adversarial audit adds validated 320×844 browser/state/geometry coverage; Cloudflare Web Analytics repository readiness is implemented fail-closed; a parameterized live-release verifier is implemented but has not been run on a real origin; VPS + Caddy static deployment readiness is implemented and runtime-smoked locally; real-domain/DNS/VPS, real-device, provider-activation and indexing rollout gates remain
 ```
 
 P7 live-run provenance and decisions are preserved in `docs/evidence/P7_AUDIO_EVIDENCE_2026-08-30.md`.
@@ -281,16 +281,17 @@ actual Android Chrome smoke QA
 actual Edge smoke QA
 real microphone/output-device smoke QA where practical
 configure the real Cloudflare site/token, disable Cloudflare automatic beacon injection in favor of the repository-owned manual snippet, and approve deployment-jurisdiction privacy/consent behavior before enabling Web Analytics
-deploy
-GSC
+deploy the fail-closed static build through the reviewed VPS + Caddy contract in `docs/22_PRODUCTION_DEPLOYMENT.md`
+run and record the first real-origin verifier with indexing=disabled and analytics=disabled
+GSC preparation
 explicit production indexing activation
-run the real-origin live-release verifier against the intended fail-closed/activated state
-post-deploy canonical/sitemap/indexing verification on the real origin
+rerun the real-origin verifier after every analytics/indexing activation state change
+post-activation canonical/sitemap/indexing verification on the real origin
 ```
 
 P8 must not enable production indexing merely because P7 has evidence or because P8.3 makes the positive build path technically available. Production indexability remains an explicit release decision after the remaining gates pass.
 
-The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence. Repository-side analytics readiness is recorded in `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`; it does not claim a real Cloudflare site/token, deployment or jurisdiction-specific activation approval. Repository-side live-release verifier readiness is recorded in `docs/evidence/P8_LIVE_RELEASE_VERIFIER_2026-09-02.md`; it does not claim that any real production origin has passed the verifier.
+The later 320×844 adversarial release check and its narrow homepage fix are recorded separately in `docs/evidence/P8_FINAL_ADVERSARIAL_AUDIT_2026-09-01.md`; this supplements rather than rewrites the historical 2026-08-31 visual evidence. Repository-side analytics readiness is recorded in `docs/evidence/P8_ANALYTICS_READINESS_2026-09-02.md`; it does not claim a real Cloudflare site/token, deployment or jurisdiction-specific activation approval. Repository-side live-release verifier readiness is recorded in `docs/evidence/P8_LIVE_RELEASE_VERIFIER_2026-09-02.md`; it does not claim that any real production origin has passed the verifier. VPS + Caddy deployment readiness is recorded in `docs/evidence/P8_VPS_CADDY_DEPLOYMENT_READINESS_2026-09-02.md`; it does not claim a registered domain, DNS change, VPS publication or TLS issuance.
 
 ## Polish backlog
 

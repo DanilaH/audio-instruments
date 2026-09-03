@@ -1,0 +1,13 @@
+{$SITE_DOMAIN} {
+	root * {$SITE_ROOT:/srv/browser-audio-lab/current}
+	encode zstd gzip
+
+	# Astro static routes are emitted as /route/index.html. Rewrite extensionless
+	# requests directly to the file so Caddy does not need a directory redirect.
+	try_files {path}.html {path}/index.html {path}
+
+	@immutableAssets path /_astro/*
+	header @immutableAssets Cache-Control "public, max-age=31536000, immutable"
+
+	file_server
+}
