@@ -1,0 +1,52 @@
+.featured-card .featured-card__visual,
+.featured-card .featured-card__device {
+  border-color: #9eaaa8 !important;
+  border-radius: 6px !important;
+  background: #d9e1de !important;
+  box-shadow: none !important;
+}
+
+.featured-card .featured-speaker__ring {
+  border-color: rgb(39 127 138 / 0.3) !important;
+}
+
+.featured-card .featured-speaker__cone {
+  background: rgb(39 127 138 / 0.24) !important;
+  box-shadow: inset 0 0 0 11px rgb(238 234 224 / 0.62) !important;
+}
+
+.featured-card .featured-speaker__cone span {
+  background: #18343b !important;
+}
+
+.featured-card .featured-microphone__halo {
+  background: rgb(39 127 138 / 0.12) !important;
+  box-shadow: 0 0 0 18px rgb(39 127 138 / 0.05) !important;
+}
+
+.featured-card .featured-microphone__capsule,
+.featured-card .featured-headphone__ear {
+  border-color: #9eaaa8 !important;
+  background: #f3f0e8 !important;
+  box-shadow: none !important;
+}
+
+.featured-card .featured-microphone__capsule i,
+.featured-card .featured-headphone__ear strong {
+  color: #277f8a !important;
+}
+
+.featured-card .featured-microphone__wave i,
+.featured-card .featured-headphone__signal {
+  background: #277f8a !important;
+}
+
+.featured-card .featured-headphone__signal {
+  box-shadow:
+    -38px 0 0 rgb(39 127 138 / 0.16),
+    38px 0 0 rgb(39 127 138 / 0.16) !important;
+}
+
+.featured-card .featured-headphone__arc {
+  border-color: rgb(39 127 138 / 0.24) !important;
+}

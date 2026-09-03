@@ -7,6 +7,7 @@
  * button/input rule. !important is deliberate here because several scoped
  * mobile rules explicitly shrink these exact targets to 34–42px.
  */
+.site-nav a,
 .tone-presets button,
 .bass-mode-selector button,
 .bass-presets button,
