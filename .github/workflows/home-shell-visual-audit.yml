@@ -1,0 +1,74 @@
+name: Home Shell Visual Audit
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  capture:
+    if: github.head_ref == 'fix/home-shell-sonic-alignment'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: pnpm/action-setup@v4
+        with:
+          version: 11.21.0
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24.16.0
+          cache: pnpm
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+      - run: pnpm exec playwright install --with-deps chromium
+      - name: Capture homepage and representative tools
+        run: |
+          pnpm exec astro preview --host 127.0.0.1 > /tmp/audio-preview.log 2>&1 &
+          PREVIEW_PID=$!
+          trap 'kill $PREVIEW_PID || true' EXIT
+          for i in {1..30}; do
+            if curl -fsS http://127.0.0.1:4321/ >/dev/null; then break; fi
+            sleep 1
+          done
+          node --input-type=module <<'EOF'
+          import { chromium } from '@playwright/test';
+          import fs from 'node:fs/promises';
+          const browser = await chromium.launch();
+          await fs.mkdir('home-shell-audit', { recursive: true });
+          const cases = [
+            { name: 'home-desktop', path: '/', width: 1366, height: 768 },
+            { name: 'home-mobile', path: '/', width: 390, height: 844 },
+            { name: 'tone-desktop', path: '/tone-generator', width: 1366, height: 768 },
+            { name: 'tone-mobile', path: '/tone-generator', width: 390, height: 844 },
+            { name: 'speaker-desktop', path: '/speaker-test', width: 1366, height: 768 },
+            { name: 'speaker-mobile', path: '/speaker-test', width: 390, height: 844 },
+          ];
+          const metrics = [];
+          for (const entry of cases) {
+            const page = await browser.newPage({ viewport: { width: entry.width, height: entry.height } });
+            const errors = [];
+            page.on('pageerror', (error) => errors.push(String(error)));
+            page.on('console', (message) => {
+              if (message.type() === 'error') errors.push(message.text());
+            });
+            await page.goto(`http://127.0.0.1:4321${entry.path}`, { waitUntil: 'networkidle' });
+            const layout = await page.evaluate(() => ({
+              scrollWidth: document.documentElement.scrollWidth,
+              clientWidth: document.documentElement.clientWidth,
+              scrollHeight: document.documentElement.scrollHeight,
+              headerHeight: document.querySelector('.site-header')?.getBoundingClientRect().height ?? null,
+            }));
+            metrics.push({ ...entry, ...layout, errors });
+            await page.screenshot({ path: `home-shell-audit/${entry.name}.png`, fullPage: true });
+            await page.close();
+          }
+          await fs.writeFile('home-shell-audit/metrics.json', JSON.stringify(metrics, null, 2));
+          await browser.close();
+          EOF
+      - uses: actions/upload-artifact@v4
+        with:
+          name: home-shell-visual-audit-${{ github.run_id }}
+          path: home-shell-audit
+          if-no-files-found: error
