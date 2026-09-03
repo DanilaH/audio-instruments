@@ -33,7 +33,7 @@ These findings do not replace real-device audio validation. They concern browser
 ### In scope
 
 1. Pitch Detector default-state overlap.
-2. Bass Test desktop mode-switch layout shift.
+2. Bass Test desktop mode-switch layout shift and duplicated low-volume safety copy.
 3. Surround Sound Test narrow-mobile idle whitespace and primary API/implementation copy.
 4. Spectrum Analyzer narrow-mobile idle reserved gap.
 5. Hearing Frequency Test developer-facing reserved-band sentence.
@@ -107,11 +107,12 @@ Add a browser geometry assertion covering non-intersection at desktop.
 
 ### Problem
 
-At `1366×768`, switching from `Single tone` to either `Slow sweep` or `Preset sequence` reduces instrument, rail, and document height by approximately 18 px.
+At `1366×768`, switching from `Single tone` to either `Slow sweep` or `Preset sequence` reduces instrument, rail, and document height by approximately 18 px. The low-volume state strip also repeats the same safety instruction twice.
 
 ### Required behavior
 
-Switching among the three Bass modes must not move content below the instrument on desktop.
+- switching among the three Bass modes must not move content below the instrument on desktop;
+- keep the low-volume safety instruction once, without a near-duplicate second sentence block.
 
 ### Preferred implementation direction
 
@@ -124,7 +125,8 @@ At `1366×768` and `1280×720`:
 - `Single tone`, `Slow sweep`, and `Preset sequence` keep document/instrument height within 1 px of one another;
 - controls remain vertically balanced;
 - no mode content is clipped;
-- mobile geometry remains no worse than the audited baseline.
+- mobile geometry remains no worse than the audited baseline;
+- the existing safety meaning remains visible exactly once in the state strip.
 
 ### Regression evidence
 
@@ -141,18 +143,19 @@ Before capability negotiation, narrow mobile exposes a large empty reserved acti
 ### Required behavior
 
 - no conspicuous blank block that reads as missing/unfinished UI at `320×844` and `390×844`;
-- post-negotiation mode switching remains layout-stable enough that the instrument does not visibly jump;
+- use purposeful idle content and/or a smaller common action-slot footprint rather than trading compactness for a later jump;
 - primary copy describes the user task and truthful limitation, not browser graph implementation details;
 - detailed API/capability explanation may remain in secondary help/details where useful.
 
 ### Preferred implementation direction
 
-Keep a stable state slot but compact it on narrow mobile and provide a useful idle state while controls are unavailable. Use overlays/state replacement where appropriate rather than multiple vertically stacked reservations.
+Keep one stable state slot, compact it only as far as every real mode can fit, and provide a useful idle state while controls are unavailable. Use overlays/state replacement where appropriate rather than multiple vertically stacked reservations.
 
 ### Acceptance criteria
 
 - idle narrow-mobile action area has purposeful visible content or materially reduced footprint;
 - capability/mode controls fit without overlap after negotiation;
+- at `320×844` and `390×844`, deterministically exercised `unknown`, `five-one`, `experimental-eight`, and `stereo-preview` states keep document and instrument height within 1 px of one another;
 - no new horizontal overflow;
 - existing surround stage geometry/stability regressions remain green;
 - no claim is introduced that browser routing proves physical speaker wiring.
@@ -236,6 +239,8 @@ The collapsed state should read as an optional compact control, not a large empt
 - expanded calibration remains fully accessible and unclipped;
 - default capture/result hierarchy remains dominant;
 - no claim of true/certified SPL is introduced.
+
+A deliberate user-triggered expansion of the calibration disclosure may reflow the page. The no-layout-shift requirement in this remediation pass applies to mode/tab/setting changes that are expected to preserve the tool footprint, not to an explicitly opened details panel.
 
 ---
 
@@ -325,7 +330,8 @@ During development, use narrow checks for touched tools only. At minimum:
 
 - no horizontal overflow on touched tools;
 - no new runtime console/page errors in focused browser smoke;
-- no new material document/instrument height changes when switching tested modes/settings;
+- no new material document/instrument height changes when switching tested modes/settings that are expected to preserve the tool footprint;
+- deliberate user expansion/collapse of optional details may reflow when that is the interaction itself;
 - touch targets remain at least 44 px where the existing product contract requires it;
 - technical disclosures remain measurement-honest;
 - no audio controller/service semantics are changed solely for presentation.
