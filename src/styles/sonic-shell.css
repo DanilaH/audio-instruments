@@ -14,8 +14,7 @@
 
 body {
   background:
-    linear-gradient(rgb(24 52 59 / 0.018) 1px, transparent 1px),
-    var(--color-bg);
+    linear-gradient(rgb(24 52 59 / 0.018) 1px, transparent 1px), var(--color-bg);
   background-size: 100% 48px;
 }
 
@@ -146,9 +145,24 @@ body:has(.tool-shell) .site-header {
   border-top: 1px solid #9eaaa8;
   border-bottom: 1px solid #9eaaa8;
   background:
-    linear-gradient(90deg, transparent 24.8%, rgb(24 52 59 / 0.06) 25%, transparent 25.2%),
-    linear-gradient(90deg, transparent 49.8%, rgb(24 52 59 / 0.06) 50%, transparent 50.2%),
-    linear-gradient(90deg, transparent 74.8%, rgb(24 52 59 / 0.06) 75%, transparent 75.2%),
+    linear-gradient(
+      90deg,
+      transparent 24.8%,
+      rgb(24 52 59 / 0.06) 25%,
+      transparent 25.2%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 49.8%,
+      rgb(24 52 59 / 0.06) 50%,
+      transparent 50.2%
+    ),
+    linear-gradient(
+      90deg,
+      transparent 74.8%,
+      rgb(24 52 59 / 0.06) 75%,
+      transparent 75.2%
+    ),
     #d9e1de;
 }
 
