@@ -10,6 +10,7 @@ export default [
       "coverage/**",
       "playwright-report/**",
       "test-results/**",
+      "tests/browser/prelaunch-ui-ux-audit.spec.ts",
     ],
   },
   js.configs.recommended,
