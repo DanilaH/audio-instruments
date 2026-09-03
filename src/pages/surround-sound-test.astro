@@ -118,6 +118,12 @@ const relatedTools = surroundTool.relatedToolIds.flatMap((id) => {
     }
   }
 
+  @media (max-width: 660px) {
+    :global([data-surround-test] .surround-action-slot) {
+      min-height: 136px;
+    }
+  }
+
   @media (max-width: 760px) {
     .surround-content,
     .surround-help {
