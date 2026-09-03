@@ -245,7 +245,9 @@ for (const viewport of [
   });
 }
 
-test("Decibel collapsed calibration stays compact on desktop", async ({ page }) => {
+test("Decibel collapsed calibration stays compact on desktop", async ({
+  page,
+}) => {
   await page.setViewportSize({ width: 1_366, height: 768 });
   await page.goto("/decibel-meter");
 
