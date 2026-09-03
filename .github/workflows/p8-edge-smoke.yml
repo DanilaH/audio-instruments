@@ -1,0 +1,88 @@
+name: P8 Microsoft Edge Smoke
+
+on:
+  push:
+    branches:
+      - test/p8-edge-smoke
+
+permissions:
+  contents: read
+
+jobs:
+  edge-smoke:
+    runs-on: windows-2025
+    timeout-minutes: 35
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm build
+
+      - name: Verify installed Microsoft Edge
+        shell: pwsh
+        run: |
+          $edgePath = 'C:\Program Files (x86)\Microsoft\Edge\Application\msedge.exe'
+          if (-not (Test-Path $edgePath)) {
+            throw "Microsoft Edge is not installed at $edgePath"
+          }
+          $version = (Get-Item $edgePath).VersionInfo.ProductVersion
+          Write-Host "Microsoft Edge version: $version"
+          "EDGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
+
+      - name: Write temporary Playwright Edge config
+        shell: pwsh
+        run: |
+          @'
+          import { defineConfig, devices } from "@playwright/test";
+
+          const baseURL = "http://127.0.0.1:4321";
+
+          export default defineConfig({
+            testDir: "./tests/browser",
+            fullyParallel: true,
+            forbidOnly: true,
+            retries: 0,
+            reporter: "line",
+            use: {
+              ...devices["Desktop Chrome"],
+              baseURL,
+              channel: "msedge",
+              trace: "retain-on-failure",
+              screenshot: "only-on-failure",
+            },
+            webServer: {
+              command: "pnpm preview",
+              url: baseURL,
+              reuseExistingServer: false,
+              timeout: 120_000,
+            },
+            projects: [
+              {
+                name: "msedge",
+                use: {
+                  ...devices["Desktop Chrome"],
+                  channel: "msedge",
+                },
+              },
+            ],
+          });
+          '@ | Set-Content -Path playwright.edge.config.ts
+
+      - name: Run full browser suite in Microsoft Edge
+        run: pnpm exec playwright test --config=playwright.edge.config.ts
+
+      - name: Upload Edge failure diagnostics
+        if: ${{ failure() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: p8-edge-failure-${{ github.run_id }}
+          path: test-results
+          if-no-files-found: ignore
+          retention-days: 7
