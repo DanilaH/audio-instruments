@@ -7,3 +7,4 @@ pnpm-lock.yaml
 docs
 README.md
 AGENTS.md
+tests/browser/prelaunch-ui-ux-audit.spec.ts
