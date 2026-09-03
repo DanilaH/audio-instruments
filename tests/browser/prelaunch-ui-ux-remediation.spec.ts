@@ -1,4 +1,4 @@
-import { expect, test, type Page } from "@playwright/test";
+import { expect, test, type Locator, type Page } from "@playwright/test";
 
 async function readFootprint(page: Page, rootSelector: string) {
   return page.evaluate((selector) => {
@@ -26,6 +26,29 @@ function expectStableFootprints(
   for (const footprint of footprints) {
     expect(footprint.overflow).toBeLessThanOrEqual(0);
   }
+}
+
+async function expectContained(
+  child: Locator,
+  parent: Locator,
+): Promise<void> {
+  await expect(child).toBeVisible();
+  const [childBox, parentBox] = await Promise.all([
+    child.boundingBox(),
+    parent.boundingBox(),
+  ]);
+  expect(childBox).not.toBeNull();
+  expect(parentBox).not.toBeNull();
+
+  const tolerance = 1;
+  expect(childBox!.x).toBeGreaterThanOrEqual(parentBox!.x - tolerance);
+  expect(childBox!.y).toBeGreaterThanOrEqual(parentBox!.y - tolerance);
+  expect(childBox!.x + childBox!.width).toBeLessThanOrEqual(
+    parentBox!.x + parentBox!.width + tolerance,
+  );
+  expect(childBox!.y + childBox!.height).toBeLessThanOrEqual(
+    parentBox!.y + parentBox!.height + tolerance,
+  );
 }
 
 async function installEightChannelContext(page: Page): Promise<void> {
@@ -130,7 +153,9 @@ for (const viewport of [
 
     expect(geometry.resultTop).toBeGreaterThanOrEqual(geometry.headingBottom);
     expect(geometry.eyebrowTop).toBeGreaterThanOrEqual(geometry.resultTop - 1);
-    expect(geometry.messageBottom).toBeLessThanOrEqual(geometry.resultBottom + 1);
+    expect(geometry.messageBottom).toBeLessThanOrEqual(
+      geometry.resultBottom + 1,
+    );
     expect(geometry.overflow).toBeLessThanOrEqual(0);
   });
 
@@ -161,21 +186,39 @@ for (const viewport of [
     await page.setViewportSize(viewport);
     await page.goto("/surround-sound-test");
 
+    const actionSlot = page.locator(".surround-action-slot");
     const placeholder = page.locator(".surround-action-placeholder");
     await expect(placeholder).toBeVisible();
     await expect(placeholder).toContainText("Check support");
+    await expectContained(placeholder, actionSlot);
 
     const footprints = [await readFootprint(page, "[data-surround-test]")];
     await page.getByRole("button", { name: "Check surround support" }).click();
-    await expect(page.getByRole("button", { name: "Test all 5.1 channels" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Test all 5.1 channels" }),
+    ).toBeVisible();
+    await expectContained(
+      page.locator('[data-surround-panel="five-one"]'),
+      actionSlot,
+    );
     footprints.push(await readFootprint(page, "[data-surround-test]"));
 
     await page.getByRole("button", { name: "Experimental 8-channel" }).click();
-    await expect(page.getByRole("button", { name: "Test all 8 channels" })).toBeVisible();
+    await expect(
+      page.getByRole("button", { name: "Test all 8 channels" }),
+    ).toBeVisible();
+    await expectContained(
+      page.locator('[data-surround-panel="experimental-eight"]'),
+      actionSlot,
+    );
     footprints.push(await readFootprint(page, "[data-surround-test]"));
 
     await page.getByRole("button", { name: "Stereo spatial preview" }).click();
     await expect(page.getByText("Stereo position preview")).toBeVisible();
+    await expectContained(
+      page.locator('[data-surround-panel="stereo-preview"]'),
+      actionSlot,
+    );
     footprints.push(await readFootprint(page, "[data-surround-test]"));
 
     expectStableFootprints(footprints);
