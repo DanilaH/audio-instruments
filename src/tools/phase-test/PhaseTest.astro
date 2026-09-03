@@ -10,7 +10,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       <div class="phase-reference">
         <span>Reference</span>
         <strong>Correlated pink noise</strong>
-        <small>same source · same playback position</small>
+        <small>matched left/right reference</small>
       </div>
     </div>
 
@@ -18,7 +18,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       <div class="phase-field__heading">
         <div>
           <span>Channel relationship</span><strong
-            >Compare polarity without moving the visual stage</strong
+            >Listen for the change between in-phase and inverted</strong
           >
         </div>
         <p class="phase-mode">
@@ -52,8 +52,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     <section class="phase-rail" aria-label="Phase Test actions">
       <div class="phase-copy">
         <span>Compare relationship</span><strong
-          >One deterministic source stays running</strong
-        ><p>Switching changes only the requested right-channel sign.</p>
+          >Compare the two polarity states</strong
+        ><p>Use In phase, Inverted, or A/B toggle while the reference plays.</p>
       </div>
       <div class="phase-actions phase-actions--modes">
         <button type="button" data-phase-in-phase aria-pressed="false"
