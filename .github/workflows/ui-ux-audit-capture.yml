@@ -1,0 +1,54 @@
+name: UI UX Audit Capture
+
+on:
+  pull_request:
+    types:
+      - synchronize
+      - reopened
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ui-ux-audit-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+jobs:
+  capture:
+    if: ${{ github.head_ref == 'audit/prelaunch-ui-ux-2026-09-03' }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v7
+
+      - name: Setup pnpm and Node
+        uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+          cache: true
+          install: false
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Install Chromium
+        run: pnpm exec playwright install --with-deps chromium
+
+      - name: Build audit target
+        run: pnpm build
+
+      - name: Capture UI UX evidence
+        continue-on-error: true
+        run: pnpm exec playwright test tests/browser/prelaunch-ui-ux-audit.spec.ts --project=chromium
+
+      - name: Upload UI UX evidence
+        if: ${{ always() }}
+        uses: actions/upload-artifact@v7
+        with:
+          name: ui-ux-audit-${{ github.run_id }}
+          path: test-results/ui-audit
+          if-no-files-found: error
+          retention-days: 7
