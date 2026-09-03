@@ -1,0 +1,26 @@
+name: Format Sonic Shell Artifact
+
+on:
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  format:
+    if: github.head_ref == 'fix/home-shell-sonic-alignment'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: pnpm/setup@v2
+        with:
+          version: 11.21.0
+          runtime: node@24
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm exec prettier --write src/styles/sonic-shell.css
+      - uses: actions/upload-artifact@v7
+        with:
+          name: formatted-sonic-shell-${{ github.run_id }}
+          path: src/styles/sonic-shell.css
+          if-no-files-found: error
