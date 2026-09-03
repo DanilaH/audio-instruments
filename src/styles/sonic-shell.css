@@ -30,7 +30,7 @@ body:has(.tool-shell) .site-header {
 }
 
 .site-header__inner {
-  min-height: 48px;
+  min-height: 47px;
 }
 
 .brand {
@@ -522,7 +522,7 @@ body:has(.tool-shell) .site-header {
   }
 
   .hero h1 {
-    font-size: clamp(2.45rem, 12vw, 3.35rem) !important;
+    font-size: clamp(2.45rem, calc(1.81rem + 3.2vw), 2.85rem) !important;
   }
 
   .hero-visual {
@@ -550,7 +550,7 @@ body:has(.tool-shell) .site-header {
 
   .featured-card__visual,
   .featured-card__device {
-    min-height: 154px !important;
+    min-height: 154px;
   }
 }
 
