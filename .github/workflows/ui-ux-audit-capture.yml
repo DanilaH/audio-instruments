@@ -42,7 +42,11 @@ jobs:
 
       - name: Capture UI UX evidence
         continue-on-error: true
-        run: pnpm exec playwright test tests/browser/prelaunch-ui-ux-audit.spec.ts --project=chromium
+        run: >-
+          pnpm exec playwright test
+          tests/browser/prelaunch-ui-ux-audit.spec.ts
+          tests/browser/prelaunch-ui-ux-extra-states.spec.ts
+          --project=chromium
 
       - name: Upload UI UX evidence
         if: ${{ always() }}
