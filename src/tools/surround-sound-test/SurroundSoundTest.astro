@@ -13,7 +13,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         state="idle"
       />
       <div class="surround-sheet__state">
-        <span>Requested route</span>
+        <span>Output target</span>
         <strong data-surround-visual-label>Not checked</strong>
       </div>
     </div>
@@ -22,10 +22,10 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       <div class="surround-field__heading">
         <div>
           <span>Spatial routing field</span>
-          <strong>Test the digital channel target directly in the map</strong>
+          <strong>Test available channel targets directly in the map</strong>
         </div>
         <span class="surround-field__reference"
-          >Requested routing · not physical verification</span
+          >Browser target · verify by listening</span
         >
       </div>
 
@@ -33,7 +33,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         <span class="surround-ring" aria-hidden="true"></span>
         <span class="surround-seat" aria-hidden="true">LISTENER</span>
         <span class="surround-stage__idle"
-          >Check output capability to choose a verified route.</span
+          >Check output capability to choose an available route.</span
         >
 
         <div
@@ -156,8 +156,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       </div>
 
       <p class="surround-field__note">
-        These are requested digital routing targets. A confirmed browser graph
-        does not prove physical speaker placement, wiring, or acoustic output.
+        The browser can target channels, but it cannot verify physical speaker
+        placement, wiring, or acoustic output. Confirm each result by listening.
       </p>
     </section>
 
@@ -166,10 +166,10 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         <div class="surround-check-panel">
           <div>
             <span>Capability</span>
-            <strong>Confirm browser output first</strong>
+            <strong>Check available output layouts first</strong>
             <p>
-              maxChannelCount is only a ceiling; 5.1 requires exact destination
-              readback.
+              The test enables only channel layouts the browser reports as
+              available.
             </p>
           </div>
           <button type="button" class="surround-primary" data-surround-check
@@ -214,14 +214,14 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       </div>
 
       <div class="surround-action-slot">
+        <p class="surround-action-placeholder">
+          Check support to unlock the output modes available in this browser.
+        </p>
         <div class="surround-panel" data-surround-panel="five-one" hidden>
           <div class="surround-panel__heading">
             <span>Standardized 5.1</span>
             <strong>FL · FR · Center · LFE · SL · SR</strong>
-            <p>
-              Use the map for individual channels or run the deterministic
-              sequence.
-            </p>
+            <p>Use the map for one channel or run the full sequence.</p>
           </div>
           <button type="button" class="surround-primary" data-surround-51-all
             >Test all 5.1 channels</button
@@ -235,8 +235,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         >
           <div class="surround-panel__heading">
             <span>Experimental 8-channel</span>
-            <strong>Raw discrete outputs only</strong>
-            <p>Not labeled or claimed as universal 7.1.</p>
+            <strong>Eight discrete browser channels</strong>
+            <p>Experimental mode; not treated as universal 7.1.</p>
           </div>
           <button type="button" class="surround-primary" data-surround-8-all
             >Test all 8 channels</button
@@ -246,7 +246,7 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
         <div class="surround-panel" data-surround-panel="stereo-preview" hidden>
           <div class="surround-panel__heading">
             <span>Stereo spatial preview</span>
-            <strong>Ordinary stereo routing/panning</strong>
+            <strong>Stereo position preview</strong>
             <p>This mode is not surround verification.</p>
           </div>
           <div class="surround-pan-actions">
@@ -572,7 +572,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
   }
   .surround-check-panel p,
   .surround-panel__heading p,
-  .surround-capability {
+  .surround-capability,
+  .surround-action-placeholder {
     margin: 0;
     color: var(--sonic-muted);
     font-size: 0.66rem;
@@ -602,6 +603,20 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     position: relative;
     min-height: 166px;
     overflow: hidden;
+  }
+  .surround-action-placeholder {
+    position: absolute;
+    inset: 10px 14px;
+    display: grid;
+    place-items: center;
+    padding: 10px;
+    border: 1px dashed var(--sonic-border-soft);
+    border-radius: 5px;
+    text-align: center;
+  }
+  [data-surround-mode]:not([data-surround-mode="unknown"])
+    .surround-action-placeholder {
+    display: none;
   }
   .surround-panel {
     position: absolute;
@@ -706,7 +721,8 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
     .surround-action-slot {
       min-height: 150px;
     }
-    .surround-panel {
+    .surround-panel,
+    .surround-action-placeholder {
       inset-block: 8px;
     }
   }
@@ -772,7 +788,11 @@ import SonicInstrument from "../../components/layout/SonicInstrument.astro";
       grid-template-columns: 1fr;
     }
     .surround-action-slot {
-      min-height: 146px;
+      min-height: 126px;
+    }
+    .surround-panel,
+    .surround-action-placeholder {
+      inset: 8px 14px;
     }
     .surround-state-strip {
       grid-template-columns: 1fr;

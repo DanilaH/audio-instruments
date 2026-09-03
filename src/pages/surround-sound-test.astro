@@ -118,6 +118,49 @@ const relatedTools = surroundTool.relatedToolIds.flatMap((id) => {
     }
   }
 
+  @media (max-width: 660px) {
+    :global([data-surround-test] .surround-sheet__bar) {
+      justify-content: flex-start;
+    }
+
+    :global([data-surround-test] .surround-sheet__state) {
+      display: none;
+    }
+
+    :global([data-surround-test] .surround-capability-zone) {
+      position: relative;
+      height: 150px;
+      min-height: 150px;
+    }
+
+    :global([data-surround-test] .surround-check-panel) {
+      position: absolute;
+      z-index: 1;
+      inset: 10px 14px;
+      background: var(--sonic-sheet);
+    }
+
+    :global([data-surround-test] .surround-capability-slot) {
+      position: absolute;
+      top: 10px;
+      right: 14px;
+      left: 14px;
+      min-height: 0;
+    }
+
+    :global([data-surround-test] .surround-mode-slot) {
+      position: absolute;
+      right: 14px;
+      bottom: 10px;
+      left: 14px;
+      min-height: 46px;
+    }
+
+    :global([data-surround-test] .surround-action-slot) {
+      min-height: 136px;
+    }
+  }
+
   @media (max-width: 760px) {
     .surround-content,
     .surround-help {

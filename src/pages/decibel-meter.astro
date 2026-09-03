@@ -102,6 +102,10 @@ const relatedTools = decibelTool.relatedToolIds.flatMap((id) => {
     line-height: 1.72;
   }
 
+  :global(.db-calibration:not([open])) {
+    align-self: start;
+  }
+
   @media (max-width: 760px) {
     .db-content,
     .db-help {

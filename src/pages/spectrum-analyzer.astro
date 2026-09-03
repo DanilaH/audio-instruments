@@ -102,6 +102,13 @@ const relatedTools = spectrumTool.relatedToolIds.flatMap((id) => {
     line-height: 1.72;
   }
 
+  @media (max-width: 620px) {
+    :global([data-spectrum-analyzer] .spectrum-input-slot),
+    :global([data-spectrum-analyzer] .spectrum-selection-slot) {
+      min-height: 0;
+    }
+  }
+
   @media (max-width: 760px) {
     .spectrum-content,
     .spectrum-help {

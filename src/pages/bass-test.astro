@@ -102,6 +102,12 @@ const relatedTools = bassTool.relatedToolIds.flatMap((id) => {
     line-height: 1.72;
   }
 
+  @media (min-width: 901px) {
+    :global([data-bass-test] .bass-panel) {
+      min-height: 183px;
+    }
+  }
+
   @media (max-width: 760px) {
     .bass-content,
     .bass-help {
