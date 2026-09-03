@@ -28,10 +28,7 @@ function expectStableFootprints(
   }
 }
 
-async function expectContained(
-  child: Locator,
-  parent: Locator,
-): Promise<void> {
+async function expectContained(child: Locator, parent: Locator): Promise<void> {
   await expect(child).toBeVisible();
   const [childBox, parentBox] = await Promise.all([
     child.boundingBox(),
