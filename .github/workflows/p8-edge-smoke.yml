@@ -11,7 +11,7 @@ permissions:
 jobs:
   edge-smoke:
     runs-on: windows-2025
-    timeout-minutes: 35
+    timeout-minutes: 20
     steps:
       - uses: actions/checkout@v7
 
@@ -34,7 +34,6 @@ jobs:
           }
           $version = (Get-Item $edgePath).VersionInfo.ProductVersion
           Write-Host "Microsoft Edge version: $version"
-          "EDGE_VERSION=$version" | Out-File -FilePath $env:GITHUB_ENV -Encoding utf8 -Append
 
       - name: Write temporary Playwright Edge config
         shell: pwsh
@@ -76,18 +75,71 @@ jobs:
           });
           '@ | Set-Content -Path playwright.edge.config.ts
 
-      - name: Rerun affected layout specs serially in Microsoft Edge
-        run: >-
-          pnpm exec playwright test --config=playwright.edge.config.ts --workers=1
-          tests/browser/runtime-layout-stability.spec.ts
-          tests/browser/sonic-field-production-layout.spec.ts
-          tests/browser/sonic-field-spatial-output-production-layout.spec.ts
+      - name: Write temporary Headphone geometry diagnostic
+        shell: pwsh
+        run: |
+          @'
+          import { test } from "@playwright/test";
 
-      - name: Upload Edge failure diagnostics
-        if: ${{ failure() }}
-        uses: actions/upload-artifact@v7
-        with:
-          name: p8-edge-failure-${{ github.run_id }}
-          path: test-results
-          if-no-files-found: ignore
-          retention-days: 7
+          async function nextLayout(page: import("@playwright/test").Page) {
+            await page.evaluate(
+              () =>
+                new Promise<void>((resolve) =>
+                  requestAnimationFrame(() => requestAnimationFrame(() => resolve())),
+                ),
+            );
+          }
+
+          async function snapshot(page: import("@playwright/test").Page) {
+            return page.evaluate(() => {
+              const rect = (selector: string) => {
+                const element = document.querySelector(selector);
+                if (!element) return null;
+                const box = element.getBoundingClientRect();
+                return { top: box.top, bottom: box.bottom, height: box.height };
+              };
+              const visiblePanel = [...document.querySelectorAll<HTMLElement>("[data-headphone-panel]")]
+                .find((element) => !element.hidden)?.dataset.headphonePanel ?? null;
+              const capability = document.querySelector<HTMLElement>("#headphone-frequency-cap");
+              return {
+                rootMode: document.querySelector<HTMLElement>("[data-headphone-test]")?.dataset.headphoneMode ?? null,
+                surface: rect("[data-sonic-instrument]"),
+                bar: rect(".headphone-sheet__bar"),
+                state: rect(".headphone-sheet__state"),
+                visualLabel: rect("[data-headphone-visual-label]"),
+                field: rect(".headphone-field"),
+                rail: rect(".headphone-rail"),
+                modeSlot: rect(".headphone-mode-slot"),
+                level: rect(".headphone-level"),
+                stop: rect(".headphone-stop"),
+                stateStrip: rect(".headphone-state-strip"),
+                documentHeight: document.documentElement.scrollHeight,
+                visualText: document.querySelector("[data-headphone-visual-label]")?.textContent?.trim() ?? null,
+                statusText: document.querySelector("#headphone-status [data-status-label]")?.textContent?.trim() ?? null,
+                visiblePanel,
+                capabilityHidden: capability?.hidden ?? null,
+                capabilityHeight: capability?.getBoundingClientRect().height ?? null,
+              };
+            });
+          }
+
+          test("log Headphone mobile geometry per mode", async ({ page }) => {
+            await page.setViewportSize({ width: 320, height: 844 });
+            await page.goto("/headphone-test");
+            const count = await page.locator("[data-headphone-mode]").count();
+
+            for (let index = 0; index < count; index += 1) {
+              await page.goto("/headphone-test");
+              const button = page.locator("[data-headphone-mode]").nth(index);
+              const mode = await button.getAttribute("data-headphone-mode");
+              const before = await snapshot(page);
+              await button.click();
+              await nextLayout(page);
+              const after = await snapshot(page);
+              console.log(`EDGE_HEADPHONE_DIAG ${JSON.stringify({ index, mode, before, after })}`);
+            }
+          });
+          '@ | Set-Content -Path tests/browser/_edge-headphone-diagnostic.spec.ts
+
+      - name: Run Headphone geometry diagnostic in Microsoft Edge
+        run: pnpm exec playwright test --config=playwright.edge.config.ts --workers=1 tests/browser/_edge-headphone-diagnostic.spec.ts
