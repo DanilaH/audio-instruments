@@ -119,6 +119,26 @@ const relatedTools = surroundTool.relatedToolIds.flatMap((id) => {
   }
 
   @media (max-width: 660px) {
+    :global([data-surround-test] .surround-sheet__bar) {
+      justify-content: flex-start;
+    }
+
+    :global([data-surround-test] .surround-sheet__state) {
+      display: none;
+    }
+
+    :global([data-surround-test] .surround-capability-zone) {
+      position: relative;
+      min-height: 110px;
+    }
+
+    :global([data-surround-test] .surround-check-panel) {
+      position: absolute;
+      z-index: 1;
+      inset: 10px 14px;
+      background: var(--sonic-sheet);
+    }
+
     :global([data-surround-test] .surround-action-slot) {
       min-height: 136px;
     }
